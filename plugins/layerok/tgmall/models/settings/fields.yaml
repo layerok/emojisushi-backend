@@ -1,0 +1,34 @@
+fields:
+    is_maintenance_mode:
+        label: Режим обслуживания
+        type: switch
+    pass_developer:
+        label: Позволить разработчика пользоваться ботом во время технических работ
+        type: switch
+    turn_off:
+        label: Полное отключение бота
+        type: switch
+    test_mode:
+        label: Режим тестирования
+        description: При работе с ботом будут использоваться тестовые данные
+        type: switch
+    test_chat_id:
+        label: chat_id для тестов
+        description: В этот чат будут приходить заказы
+        span: left
+    developer_chat_id:
+        label: chat_id разработчика
+        description: У этого chat_id может обходить режим обслуживания
+        span: right
+    products_per_page:
+        label: Товаров на странице
+        type: number
+        span: left
+        min: 1
+        max: 100
+
+
+
+
+
+

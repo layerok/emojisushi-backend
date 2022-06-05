@@ -1,0 +1,27 @@
+<?php namespace {{studly_author}}\{{studly_plugin}}\Classes\Keyboards;
+
+use Layerok\TgMall\Classes\Markups\InlineKeyboard;
+use Layerok\TgMall\Classes\Traits\CallbackData;
+use Layerok\TgMall\Classes\Traits\Lang;
+
+class {{studly_name}}Keyboard extends InlineKeyboard
+{
+    use Lang;
+    use CallbackData;
+
+    public function build(): void
+    {
+        $id = $this->vars['id'];
+
+        $this->append([
+            'text' => 'На главную',
+            'callback_data' => self::prepareCallbackData(
+                'start',
+                [
+                    'id' => 1,
+                ]
+            )
+        ])->nextRow();
+
+    }
+}

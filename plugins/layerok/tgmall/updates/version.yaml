@@ -1,0 +1,7 @@
+1.0.0:
+    - 'Init plugin'
+1.0.1:
+    - 'Create tables'
+    - create_layerok_tgmall_users.php
+    - create_layerok_tgmall_states.php
+    - create_layerok_tgmall_files.php
