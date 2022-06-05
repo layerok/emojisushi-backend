@@ -2,6 +2,7 @@
 
 use Backend;
 use Illuminate\Support\Facades\Event;
+use Layerok\PosterPos\Models\Spot;
 use OFFLINE\Mall\Controllers\Categories;
 use OFFLINE\Mall\Controllers\Products;
 use OFFLINE\Mall\Controllers\Variants;
@@ -49,6 +50,25 @@ class Plugin extends PluginBase
      */
     public function boot()
     {
+
+        Event::listen('system.extendConfigFile', function ( $path, $config) {
+            if ($path === '/plugins/offline/mall/models/product/fields_edit.yaml') {
+                $config['tabs']['fields']['hide_products_in_spot'] = [
+                    'label' => 'Скрыть товары в заведении',
+                    'type' => 'relation',
+                    'tab' => 'offline.mall::lang.product.general'
+                ];
+                return $config;
+            }
+
+            if ($path === '/plugins/offline/mall/models/category/fields.yaml') {
+                $config['fields']['hide_categories_in_spot'] = [
+                    'label' => 'Скрыть категорию в заведении',
+                    'type' => 'relation',
+                ];
+                return $config;
+            }
+        });
         Event::listen('backend.form.extendFields', function ($widget) {
 
             if (!$widget->getController() instanceof Categories &&
@@ -67,7 +87,7 @@ class Plugin extends PluginBase
             // Add an extra birthday field
             $widget->addFields([
                 'poster_id' => [
-                    'label'   => 'offline.mall::lang.extend.poster_id',
+                    'label'   => 'layerok.posterpos::lang.extend.poster_id',
                     'span' => 'left',
                     'type' => 'text'
                 ]
@@ -76,7 +96,7 @@ class Plugin extends PluginBase
             if ($widget->model instanceof Category) {
                 $widget->addFields([
                     'published' => [
-                        'label' => 'offline.mall::lang.extend.published',
+                        'label' => 'layerok.posterpos::lang.extend.published',
                         'span' => 'left',
                         'type' => 'switch'
                     ]
@@ -126,10 +146,23 @@ class Plugin extends PluginBase
 
             $model->casts['published'] = 'boolean';
             $model->rules['published'] = 'boolean';
+
+            $model->belongsToMany['hide_categories_in_spot'] = [
+                Spot::class,
+                'table'    => 'layerok_posterpos_hide_categories_in_spot',
+                'key'      => 'category_id',
+                'otherKey' => 'spot_id',
+            ];
         });
 
         Product::extend(function($model){
             $model->fillable[] = 'poster_id';
+            $model->belongsToMany['hide_products_in_spot'] = [
+                Spot::class,
+                'table'    => 'layerok_posterpos_hide_products_in_spot',
+                'key'      => 'product_id',
+                'otherKey' => 'spot_id',
+            ];
         });
     }
 
