@@ -21,6 +21,7 @@ class CreateBranchesTable extends Migration
             $table->integer('chat_id')->unsigned()->nullable();
             $table->string('code')->nullable();
             $table->text('phones')->nullable();
+            $table->string('address')->nullable();
             $table->boolean('published')->default(true);
             $table->timestamps();
         });

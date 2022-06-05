@@ -14,6 +14,9 @@ fields:
         type: relation
         label: Tablet
         span: auto
+    address:
+        label: Address
+        span: auto
     phones:
         label: Телефоны
         description: Введите телефоны через запятую
