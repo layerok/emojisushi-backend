@@ -1,0 +1,31 @@
+# ===================================
+#  Form Behavior Config
+# ===================================
+
+# Record name
+name: Bot
+
+# Model Form Field configuration
+form: $/layerok/telegram/models/bot/fields.yaml
+
+# Model Class name
+modelClass: Layerok\Telegram\Models\Bot
+
+# Default redirect location
+defaultRedirect: layerok/telegram/bot
+
+# Create page
+create:
+    title: backend::lang.form.create_title
+    redirect: layerok/telegram/bot/update/:id
+    redirectClose: layerok/telegram/bot
+
+# Update page
+update:
+    title: backend::lang.form.update_title
+    redirect: layerok/telegram/bot
+    redirectClose: layerok/telegram/bot
+
+# Preview page
+preview:
+    title: backend::lang.form.preview_title

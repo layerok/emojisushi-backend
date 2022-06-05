@@ -1,0 +1,34 @@
+# ===================================
+#  Form Field Definitions
+# ===================================
+
+fields:
+    name:
+        label: Название
+        description: Название этого заведения
+        span: auto
+    code:
+        label: Code
+        span: auto
+    tablet:
+        type: relation
+        label: Tablet
+        span: auto
+    phones:
+        label: Телефоны
+        description: Введите телефоны через запятую
+        span: auto
+    bot:
+        label: Bot
+        type: relation
+        span: auto
+    chat:
+        label: Chat
+        type: relation
+        span: auto
+    published:
+          label: 'layerok.posterpos::lang.extend.published'
+          span: left
+          type: switch
+
+

@@ -1,0 +1,11 @@
+columns:
+    id:
+        label: ID
+        searchable: true
+    name:
+        label: Name
+        searchable: true
+    published:
+          label: 'layerok.posterpos::lang.extend.published'
+          type: partial
+          path: $/offline/mall/models/product/_published.htm

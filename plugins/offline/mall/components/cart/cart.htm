@@ -1,0 +1,13 @@
+{% if cart.products.count < 1 %}
+    {% partial __SELF__ ~ '::empty' %}
+{% else %}
+    {% partial __SELF__ ~ '::table/base' %}
+    {% if __SELF__.showDiscountApplier %}
+        {% partial __SELF__ ~ '::discountapplier' %}
+    {% endif %}
+    <div data-validate-for="cart"></div>
+{% endif %}
+
+{% if __SELF__.showProceedToCheckoutButton and cart.products.count > 0 %}
+    {% partial __SELF__ ~ '::proceedtocheckout' %}
+{% endif %}

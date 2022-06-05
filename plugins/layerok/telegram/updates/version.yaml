@@ -1,0 +1,4 @@
+1.0.1:
+    - 'First version of Telegram'
+    - create_bots_table.php
+    - create_chats_table.php

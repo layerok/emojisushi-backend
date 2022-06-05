@@ -1,0 +1,31 @@
+# ===================================
+#  Form Behavior Config
+# ===================================
+
+# Record name
+name: Spot
+
+# Model Form Field configuration
+form: $/layerok/posterpos/models/spot/fields.yaml
+
+# Model Class name
+modelClass: Layerok\PosterPos\Models\Spot
+
+# Default redirect location
+defaultRedirect: layerok/posterpos/spot
+
+# Create page
+create:
+    title: backend::lang.form.create_title
+    redirect: layerok/posterpos/spot/update/:id
+    redirectClose: layerok/posterpos/spot
+
+# Update page
+update:
+    title: backend::lang.form.update_title
+    redirect: layerok/posterpos/spot
+    redirectClose: layerok/posterpos/spot
+
+# Preview page
+preview:
+    title: backend::lang.form.preview_title

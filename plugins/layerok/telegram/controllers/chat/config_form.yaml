@@ -1,0 +1,31 @@
+# ===================================
+#  Form Behavior Config
+# ===================================
+
+# Record name
+name: Chat
+
+# Model Form Field configuration
+form: $/layerok/telegram/models/chat/fields.yaml
+
+# Model Class name
+modelClass: Layerok\Telegram\Models\Chat
+
+# Default redirect location
+defaultRedirect: layerok/telegram/chat
+
+# Create page
+create:
+    title: backend::lang.form.create_title
+    redirect: layerok/telegram/chat/update/:id
+    redirectClose: layerok/telegram/chat
+
+# Update page
+update:
+    title: backend::lang.form.update_title
+    redirect: layerok/telegram/chat
+    redirectClose: layerok/telegram/chat
+
+# Preview page
+preview:
+    title: backend::lang.form.preview_title

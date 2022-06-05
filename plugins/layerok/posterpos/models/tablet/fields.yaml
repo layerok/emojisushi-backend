@@ -1,0 +1,10 @@
+# ===================================
+#  Form Field Definitions
+# ===================================
+
+fields:
+    name:
+        label: Name
+    spot:
+        lable: Spot
+        type: relation

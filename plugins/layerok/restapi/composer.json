@@ -1,0 +1,9 @@
+{
+    "name": "layerok/restapi-plugin",
+    "type": "october-plugin",
+    "description": "No description provided yet...",
+    "require": {
+        "composer/installers": "~1.0",
+        "fruitcake/laravel-cors": "^3.0"
+    }
+}

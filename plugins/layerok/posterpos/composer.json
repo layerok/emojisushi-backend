@@ -1,0 +1,9 @@
+{
+    "name": "layerok/posterpos-plugin",
+    "type": "october-plugin",
+    "description": "No description provided yet...",
+    "require": {
+        "composer/installers": "~1.0",
+        "poster/api": "^1.0"
+    }
+}

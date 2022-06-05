@@ -1,0 +1,9 @@
+# ===================================
+#  Form Field Definitions
+# ===================================
+
+fields:
+    token:
+        label: 'Token'
+    name:
+        label: 'Name'

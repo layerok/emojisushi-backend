@@ -1,0 +1,28 @@
+# ===================================
+#  Form Field Definitions
+# ===================================
+
+fields:
+    name:
+        label: rainlab.location::lang.country.name
+        span: full
+
+    is_enabled:
+        label: rainlab.location::lang.country.enabled
+        type: checkbox
+        span: left
+
+    is_pinned:
+        label: rainlab.location::lang.country.pinned
+        type: checkbox
+        span: right
+
+    code:
+        label: rainlab.location::lang.country.code
+        span: auto
+        comment: rainlab.location::lang.country.code_comment
+
+    calling_code:
+        label: rainlab.location::lang.country.calling_code
+        span: auto
+        comment: rainlab.location::lang.country.calling_code_comment
