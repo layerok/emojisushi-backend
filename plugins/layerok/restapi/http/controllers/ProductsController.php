@@ -11,12 +11,31 @@ class ProductsController extends Controller
 {
     public function all(Request $request): JsonResponse
     {
-        $products = Product::all();
+        $offset = input('offset');
+        $limit = input('limit');
+
+        $query =  Product::with([
+            'image_sets',
+            'prices',
+            'additional_prices'
+        ])->where('published', '=', '1');
+
+        if($limit) {
+            $query->limit($limit);
+        }
+
+        if($offset) {
+            $query->offset($offset);
+        }
+
+        $products = $query->get();
 
         return response()->json([
             'data' => $products->toArray(),
             'meta' => [
-                'total' => $products->count()
+                'total' => $products->count(),
+                'offset' => $offset,
+                'limit' => $limit
             ]
         ]);
     }
