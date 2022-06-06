@@ -4,16 +4,16 @@ namespace Layerok\Restapi\Http\Controllers;
 
 use Illuminate\Http\JsonResponse;
 use Illuminate\Routing\Controller;
-use OFFLINE\Mall\Models\Category;
+use Layerok\PosterPos\Models\Spot;
 
-class CategoryController extends Controller
+class SpotController extends Controller
 {
     public function fetch(): JsonResponse
     {
         $offset = input('offset');
         $limit = input('limit');
 
-        $query = Category::where('published', '=', '1');
+        $query = Spot::where('published', '=', '1');
 
         if($limit) {
             $query->limit($limit);
