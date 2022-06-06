@@ -8,6 +8,6 @@ Route::group([
     'middleware' => ExceptionsMiddleware::class,
     'prefix' => 'api'
 ], function () {
-    Route::get('products', [ProductController::class, 'all']);
+    Route::get('products', [ProductController::class, 'fetch']);
     Route::get('categories', [CategoryController::class, 'all']);
 });

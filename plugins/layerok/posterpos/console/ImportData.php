@@ -99,6 +99,8 @@ class ImportData extends Command {
         HideProduct::truncate();
         Spot::truncate();
         Tablet::truncate();
+        Property::truncate();
+        PropertyGroup::truncate();
 
 
         Artisan::call('cache:clear');
