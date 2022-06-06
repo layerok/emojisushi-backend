@@ -44,7 +44,7 @@ class Plugin extends PluginBase
      */
     public function boot()
     {
-        Config::set('cors', Config::get('sandbox.restapi::cors'));
+        Config::set('cors', Config::get('layerok.restapi::cors'));
 
         $this->app->register(CorsServiceProvider::class);
 
