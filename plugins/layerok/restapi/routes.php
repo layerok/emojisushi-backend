@@ -1,14 +1,11 @@
 <?php
 
 use Layerok\Restapi\Http\Middleware\ExceptionsMiddleware;
+use \Layerok\Restapi\Http\Controllers\ProductsController;
 
 Route::group([
-    'prefix'     => 'api',
-    'middleware' => [
-        ExceptionsMiddleware::class
-    ]
+    'middleware' => ExceptionsMiddleware::class,
+    'prefix' => 'api'
 ], function () {
-    Route::prefix('cart')->group(function() {
-
-    });
+    Route::get('products', [ProductsController::class, 'all']);
 });

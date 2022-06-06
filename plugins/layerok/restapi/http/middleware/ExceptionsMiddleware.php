@@ -5,7 +5,7 @@ namespace Layerok\Restapi\Http\Middleware;
 use App;
 use Closure;
 use Illuminate\Http\Request;
-use October\Rain\Exception\ValidationException;
+use Exception;
 
 class ExceptionsMiddleware
 {
@@ -18,10 +18,9 @@ class ExceptionsMiddleware
 
     private function registerExceptionHandlers(): void
     {
-        App::error(function (ValidationException $exception) {
+        App::error(function (Exception $exception) {
             return response()->json([
-                'message' => 'validation exception',
-                'errors'  => $exception->getErrors()
+                'error'  => $exception->getMessage()
             ], 422);
         });
     }
