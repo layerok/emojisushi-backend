@@ -7,9 +7,9 @@ use Illuminate\Routing\Controller;
 use OFFLINE\Mall\Models\Product;
 use Request;
 
-class ProductsController extends Controller
+class ProductController extends Controller
 {
-    public function all(Request $request): JsonResponse
+    public function all(): JsonResponse
     {
         $offset = input('offset');
         $limit = input('limit');
