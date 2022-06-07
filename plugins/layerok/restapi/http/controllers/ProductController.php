@@ -32,6 +32,8 @@ class ProductController extends Controller
             }
         }
 
+        $total = $query->get()->count();
+
         if($limit) {
             $query->limit($limit);
         }
@@ -42,11 +44,10 @@ class ProductController extends Controller
 
         $products = $query->get();
 
-
         return response()->json([
             'data' => $products->toArray(),
             'meta' => [
-                'total' => $products->count(),
+                'total' => $total,
                 'offset' => $offset,
                 'limit' => $limit
             ]
