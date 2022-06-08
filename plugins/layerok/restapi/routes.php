@@ -4,9 +4,14 @@ use Layerok\Restapi\Http\Controllers\SpotController;
 use Layerok\Restapi\Http\Middleware\ExceptionsMiddleware;
 use \Layerok\Restapi\Http\Controllers\ProductController;
 use \Layerok\Restapi\Http\Controllers\CategoryController;
+use \Layerok\Restapi\Http\Controllers\CartController;
+use \Layerok\Restapi\Http\Middleware\CustomSession;
 
 Route::group([
-    'middleware' => ExceptionsMiddleware::class,
+    'middleware' => [
+        ExceptionsMiddleware::class,
+        CustomSession::class,
+    ],
     'prefix' => 'api'
 ], function () {
     Route::get('products', [ProductController::class, 'fetch']);
