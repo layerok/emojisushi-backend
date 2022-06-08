@@ -9,7 +9,6 @@ use OFFLINE\Mall\Classes\Exceptions\OutOfStockException;
 use OFFLINE\Mall\Models\Cart;
 use OFFLINE\Mall\Models\CartProduct;
 use OFFLINE\Mall\Models\Product;
-use Session;
 
 class CartController extends Controller
 {
@@ -71,8 +70,42 @@ class CartController extends Controller
         ]);
     }
 
+    public function remove() {
+        $cart_product_id = input('cart_product_id');
+
+        request()->validate([
+            'cart_product_id' => 'required|exists:offline_mall_cart_products,id'
+        ]);
+
+        $cart = Cart::bySession();
+
+        $cartProduct = CartProduct::where([
+            ['cart_id', $cart->id],
+            ['id', $cart_product_id]
+        ])->first();
+
+        $cart->removeProduct($cartProduct);
+
+        $cart->refresh();
+
+        $records = $this->prepareProducts($cart);
+
+
+        return response()->json([
+            'data' => $records,
+            'meta' => [
+                'total' => $cart->getTotalFormattedPrice(),
+                'totalQuantity' => $cart->getTotalQuantity()
+            ]
+        ]);
+    }
+
     public function prepareProducts($cart) {
-        return $cart->products()->get()->each(function($p) {
+        return $cart->products()->with([
+            'product.image_sets',
+            'product.prices',
+            'product.additional_prices'
+        ])->get()->each(function($p) {
             $p->hidden = [];
             $p->price_formatted = $p->product->price()->price_formatted;
         });

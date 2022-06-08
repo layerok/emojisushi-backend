@@ -21,5 +21,6 @@ Route::group([
     Route::prefix('cart')->group(function() {
         Route::get('products', [CartController::class, 'all']);
         Route::get('add', [CartController::class, 'add']);
+        Route::get('remove', [CartController::class, 'remove']);
     });
 });
