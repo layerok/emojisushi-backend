@@ -6,7 +6,9 @@ use App;
 use Closure;
 use Illuminate\Http\Request;
 use Exception;
-
+use Illuminate\Validation\ValidationException;
+use Log;
+use Config;
 class ExceptionsMiddleware
 {
     public function handle(Request $request, Closure $next)
@@ -19,9 +21,15 @@ class ExceptionsMiddleware
     private function registerExceptionHandlers(): void
     {
         App::error(function (Exception $exception) {
-            return response()->json([
-                'error'  => $exception->getMessage()
-            ], 422);
+            $response = [];
+            $response['message'] = $exception->getMessage();
+
+            if ($exception instanceof ValidationException) {
+                $response['errors'] = $exception->errors();
+            }
+
+            Log::error('[API error] ' . $exception);
+            return response()->json($response, 422);
         });
     }
 }

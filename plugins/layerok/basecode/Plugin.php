@@ -2,15 +2,22 @@
 
 use Backend;
 use Layerok\BaseCode\Events\TgMallOrderHandler;
+use OFFLINE\Mall\Classes\Utils\Money;
+use OFFLINE\Mall\Models\Cart;
+use OFFLINE\Mall\Models\CartProduct;
+use OFFLINE\Mall\Models\Currency;
 use System\Classes\PluginBase;
 use Event;
 use Log;
+use Config;
 
 /**
  * BaseCode Plugin Information File
  */
 class Plugin extends PluginBase
 {
+
+    public $require = ['OFFLINE.Mall'];
     /**
      * Returns information about this plugin.
      *
@@ -44,6 +51,33 @@ class Plugin extends PluginBase
     public function boot()
     {
         Event::subscribe(new TgMallOrderHandler());
+        // debug to telegram
+        if(env('DEBUG_TO_TELEGRAM')) {
+
+            Config::set(
+                'logging.channels',
+                array_merge(
+                    Config::get('logging.channels'),
+                    [
+                        'telegram' => [
+                            'driver' => 'monolog',
+                            'level'  => 'info',
+                            'handler' => \Monolog\Handler\TelegramBotHandler::class,
+                            'with'    => [
+                                'apiKey' => env('MY_LOG_BOT_TOKEN'),
+                                'channel' => env('MY_LOG_BOT_CHAT_ID')
+                            ],
+                            'tap' => [
+                                \Layerok\BaseCode\Taps\CustomizeMonologTelegramHandler::class
+                            ]
+                        ]
+                    ]
+                )
+            );
+
+            Config::set( 'logging.channels.stack.channels', ['daily', 'telegram'] );
+            Config::set('logging.default', 'stack');
+        }
     }
 
     /**
