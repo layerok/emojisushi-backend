@@ -12,11 +12,8 @@ use Illuminate\Contracts\Http\Kernel;
  */
 class Plugin extends PluginBase
 {
-    /**
-     * Returns information about this plugin.
-     *
-     * @return array
-     */
+    public $require = ['OFFLINE.Mall', 'Layerok.BaseCode'];
+
     public function pluginDetails()
     {
         return [
@@ -27,21 +24,11 @@ class Plugin extends PluginBase
         ];
     }
 
-    /**
-     * Register method, called when the plugin is first registered.
-     *
-     * @return void
-     */
     public function register()
     {
 
     }
 
-    /**
-     * Boot method, called right before the request route.
-     *
-     * @return void
-     */
     public function boot()
     {
         Config::set('cors', Config::get('layerok.restapi::cors'));
@@ -51,54 +38,5 @@ class Plugin extends PluginBase
         $this->app[Kernel::class]->pushMiddleware(HandleCors::class);
     }
 
-    /**
-     * Registers any front-end components implemented in this plugin.
-     *
-     * @return array
-     */
-    public function registerComponents()
-    {
-        return []; // Remove this line to activate
 
-        return [
-            'Layerok\RestApi\Components\MyComponent' => 'myComponent',
-        ];
-    }
-
-    /**
-     * Registers any back-end permissions used by this plugin.
-     *
-     * @return array
-     */
-    public function registerPermissions()
-    {
-        return []; // Remove this line to activate
-
-        return [
-            'layerok.restapi.some_permission' => [
-                'tab' => 'RestApi',
-                'label' => 'Some permission'
-            ],
-        ];
-    }
-
-    /**
-     * Registers back-end navigation items for this plugin.
-     *
-     * @return array
-     */
-    public function registerNavigation()
-    {
-        return []; // Remove this line to activate
-
-        return [
-            'restapi' => [
-                'label'       => 'RestApi',
-                'url'         => Backend::url('layerok/restapi/mycontroller'),
-                'icon'        => 'icon-leaf',
-                'permissions' => ['layerok.restapi.*'],
-                'order'       => 500,
-            ],
-        ];
-    }
 }

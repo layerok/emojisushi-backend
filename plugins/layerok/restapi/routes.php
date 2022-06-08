@@ -18,4 +18,8 @@ Route::group([
     Route::get('categories', [CategoryController::class, 'fetch']);
     Route::get('spots', [SpotController::class, 'fetch']);
 
+    Route::prefix('cart')->group(function() {
+        Route::get('products', [CartController::class, 'all']);
+        Route::get('add', [CartController::class, 'add']);
+    });
 });

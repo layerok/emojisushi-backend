@@ -218,7 +218,7 @@ class ImportData extends Command {
         DB::table('offline_mall_currencies')->truncate();
         Currency::create([
             'code'     => 'UAH',
-            'format'   => '{{ currency.symbol }} {{ price|number_format(2, ".", ",") }}',
+            'format'   => '{{ price|number_format(0, ".", ",") }} {{ currency.symbol }} ',
             'decimals' => 2,
             'is_default' => true,
             'symbol'   => '₴',

@@ -8,7 +8,6 @@ use OFFLINE\Mall\Models\CartProduct;
 use OFFLINE\Mall\Models\Currency;
 use System\Classes\PluginBase;
 use Event;
-use Log;
 use Config;
 
 /**
@@ -40,6 +39,35 @@ class Plugin extends PluginBase
      */
     public function register()
     {
+        $money = $this->app->make(Money::class);
+        CartProduct::extend(function($model) use ($money) {
+            $model->addDynamicMethod('getTotalFormattedPrice', function() use ($model, $money) {
+                return $money->format(
+                    $model->price()->price * $model->quantity,
+                    null,
+                    Currency::$defaultCurrency
+                );
+            });
+        });
+        Cart::extend(function($model) use ($money) {
+            $model->addDynamicMethod('getTotalFormattedPrice', function() use ($model, $money) {
+                return $money->format(
+                    $model->totals()->totalPostTaxes(),
+                    null,
+                    Currency::$defaultCurrency
+                );
+            });
+
+            $model->addDynamicMethod('getTotalQuantity', function () use ($model) {
+                $total = $model->products()->get()->reduce(function($carry, $item) {
+                    return $carry + $item->quantity;
+                }) ;
+
+                return $total ?: 0;
+            });
+        });
+
+
 
     }
 

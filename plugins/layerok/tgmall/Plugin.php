@@ -21,7 +21,7 @@ use Validator;
 use Event;
 class Plugin extends PluginBase
 {
-    public $require = ['OFFLINE.Mall'];
+    public $require = ['OFFLINE.Mall', 'Layerok.BaseCode'];
     use Lang;
 
     public function boot() {
@@ -37,7 +37,6 @@ class Plugin extends PluginBase
     {
         $this->registerConsoleCommand('create:tg.mall.handler', \Layerok\TgMall\Console\CreateCallbackHandler::class);
         $this->registerConsoleCommand('create:tg.mall.keyboard', \Layerok\TgMall\Console\CreateKeyboard::class);
-        $money = $this->app->make(Money::class);
 
         SystemFile::extend(function($model) {
             $model->hasOne['tg'] = [TelegramFile::class, 'key' => 'system_file_id'];
@@ -90,25 +89,7 @@ class Plugin extends PluginBase
             });
         });
 
-        CartProduct::extend(function($model) use ($money) {
-            $model->addDynamicMethod('getTotalFormattedPrice', function() use ($model, $money) {
-                return $money->format(
-                    $model->price()->price * $model->quantity,
-                    null,
-                    Currency::$defaultCurrency
-                );
-            });
-        });
 
-        Cart::extend(function($model) use ($money) {
-            $model->addDynamicMethod('getTotalFormattedPrice', function() use ($model, $money) {
-                return $money->format(
-                    $model->totals()->totalPostTaxes(),
-                    null,
-                    Currency::$defaultCurrency
-                );
-            });
-        });
 
 
 
