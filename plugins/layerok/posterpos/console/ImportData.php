@@ -15,11 +15,13 @@ use OFFLINE\Mall\Classes\Index\VariantEntry;
 use OFFLINE\Mall\Models\Category;
 use OFFLINE\Mall\Models\Currency;
 use OFFLINE\Mall\Models\ImageSet;
+use OFFLINE\Mall\Models\PaymentMethod;
 use OFFLINE\Mall\Models\Product;
 use OFFLINE\Mall\Models\ProductPrice;
 use OFFLINE\Mall\Models\Property;
 use OFFLINE\Mall\Models\PropertyGroup;
 use OFFLINE\Mall\Models\PropertyValue;
+use OFFLINE\Mall\Models\ShippingMethod;
 use OFFLINE\Mall\Models\Variant;
 use poster\src\PosterApi;
 use Symfony\Component\Console\Input\InputOption;
@@ -44,15 +46,14 @@ class ImportData extends Command {
             return new Noop();
         });
 
-
         $this->cleanup();
         $this->createSpots();
         $this->createTablets();
         $this->createCurrencies();
+        $this->createPaymentMethods();
+        $this->createShippingMethods();
         $this->createCategories();
-
         $this->createProducts();
-
 
         app()->bind(Index::class, function () use ($originalIndex) {
             return $originalIndex;
@@ -63,19 +64,11 @@ class ImportData extends Command {
         $this->output->success('All done!');
     }
 
-    /**
-     * Get the console command arguments.
-     * @return array
-     */
     protected function getArguments()
     {
         return [];
     }
 
-    /**
-     * Get the console command options.
-     * @return array
-     */
     protected function getOptions()
     {
         return [
@@ -101,6 +94,8 @@ class ImportData extends Command {
         Tablet::truncate();
         Property::truncate();
         PropertyGroup::truncate();
+        PaymentMethod::truncate();
+        ShippingMethod::truncate();
 
 
         Artisan::call('cache:clear');
@@ -224,6 +219,58 @@ class ImportData extends Command {
             'symbol'   => '₴',
             'rate'     => 1,
         ]);
+    }
+
+    protected function createPaymentMethods() {
+        $this->output->newLine();
+        $this->output->writeln('Creating payment methods...');
+        $this->output->newLine();
+
+
+        $this->output->progressStart(2);
+
+        PaymentMethod::create([
+            'name' => 'Наличными',
+            'code' => 'cash',
+            'payment_provider' => 'offline'
+        ]);
+
+        $this->output->progressAdvance();
+
+        PaymentMethod::create([
+            'name' => 'Картой',
+            'code' => 'card',
+            'payment_provider' => 'offline'
+        ]);
+
+        $this->output->progressAdvance();
+
+
+        $this->output->progressFinish();
+    }
+
+    protected function createShippingMethods() {
+        $this->output->newLine();
+        $this->output->writeln('Creating shipping methods...');
+        $this->output->newLine();
+
+
+        $this->output->progressStart(2);
+
+        ShippingMethod::create([
+            'name' => 'Самовывоз',
+        ]);
+
+        $this->output->progressAdvance();
+
+        ShippingMethod::create([
+            'name' => 'Курьер',
+        ]);
+
+        $this->output->progressAdvance();
+
+
+        $this->output->progressFinish();
     }
 
 }
