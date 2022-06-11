@@ -23,6 +23,7 @@ Route::group([
     Route::get('shipping', [ShippingMethodController::class, 'all']);
     Route::get('payments', [PaymentMethodController::class, 'all']);
 
+
     Route::prefix('cart')->group(function() {
         Route::get('products', [CartController::class, 'all']);
         Route::get('add', [CartController::class, 'add']);

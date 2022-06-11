@@ -9,6 +9,7 @@ use Illuminate\Support\Collection;
 use Layerok\Restapi\Classes\Index\MySQL\MySQL;
 use OFFLINE\Mall\Classes\CategoryFilter\QueryString;
 use OFFLINE\Mall\Classes\CategoryFilter\SetFilter;
+use OFFLINE\Mall\Classes\CategoryFilter\SortOrder\Bestseller;
 use OFFLINE\Mall\Classes\CategoryFilter\SortOrder\SortOrder;
 use OFFLINE\Mall\Classes\Index\Index;
 use OFFLINE\Mall\Models\Category;
@@ -57,9 +58,14 @@ class ProductController extends Controller
             'meta' => [
                 'total' => $this->totalCount,
                 'offset' => $this->offset,
-                'limit' => $this->limit
+                'limit' => $this->limit,
+                'sort_options' => $this->getSortOptions()
             ]
         ]);
+    }
+
+    public function getSortOptions() {
+        return collect(SortOrder::options(true))->keys();
     }
 
     protected function getItems()
@@ -120,7 +126,6 @@ class ProductController extends Controller
 
     }
 
-
     protected function getCategory()
     {
         if ($this->category) {
@@ -134,19 +139,6 @@ class ProductController extends Controller
         } catch (\Exception $e) {
             return null;
         }
-    }
-
-    protected function getWishlistProductsIds() {
-        $wishlist = Wishlist::where('session_id', Session::get('wishlist_session_id'))
-            ->first();
-        $wishlist_ids = [];
-
-        if($wishlist) {
-            $items = $wishlist->items()->get();
-            $wishlist_ids = $items->pluck('product_id')->toArray();
-        }
-
-        return $wishlist_ids;
     }
 
     protected function getFilters(): Collection
@@ -192,7 +184,5 @@ class ProductController extends Controller
 
         return Product::with($this->productIncludes())->find($ids);
     }
-
-
 
 }
