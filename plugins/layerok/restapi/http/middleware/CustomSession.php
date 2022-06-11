@@ -12,6 +12,7 @@ class CustomSession
     {
         $session_id = input('session_id');
         Session::put('cart_session_id', $session_id);
+        Session::put('wishlist_session_id', $session_id);
 
         return $next($request);
     }

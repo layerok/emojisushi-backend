@@ -6,6 +6,8 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Routing\Controller;
 use OFFLINE\Mall\Models\Category;
 use OFFLINE\Mall\Models\Product;
+use OFFLINE\Mall\Models\Wishlist;
+use Session;
 
 class ProductController extends Controller
 {
@@ -14,6 +16,7 @@ class ProductController extends Controller
         $offset = input('offset');
         $limit = input('limit');
         $category_slug = input('category_slug');
+        $wishlist_only = input('wishlist');
 
         $with = [
             'image_sets',
@@ -32,6 +35,24 @@ class ProductController extends Controller
             }
         }
 
+
+        $wishlist = Wishlist::where('session_id', Session::get('wishlist_session_id'))
+            ->first();
+        $wishlist_ids = [];
+
+
+        if($wishlist) {
+            $items = $wishlist->items()->get();
+            $wishlist_ids = $items->pluck('product_id')->toArray();
+            if($wishlist_only) {
+                $query->whereIn('id', $wishlist_ids);
+            }
+        } else {
+            if($wishlist_only) {
+                $query->whereIn('id', []);
+            }
+        }
+
         $total = $query->get()->count();
 
         if($limit) {
@@ -43,6 +64,12 @@ class ProductController extends Controller
         }
 
         $products = $query->get();
+
+        $products->each(function($p, $i) use ($wishlist_ids, $products) {
+            if(in_array($p->id, $wishlist_ids)) {
+                $products[$i]->is_favorite_ = true;
+            }
+        });
 
         return response()->json([
             'data' => $products->toArray(),
