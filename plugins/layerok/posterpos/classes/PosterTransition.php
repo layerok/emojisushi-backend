@@ -159,18 +159,24 @@ class PosterTransition
 
             if (isset($value->ingredients)) {
                 foreach ($value->ingredients as $key => $i) {
-                    $ingr = $i->ingredient_name;
-                    $disallow = preg_match('/Бокс\s+д\/суши\s+большой/', $ingr);
+                    $property = Property::where('poster_id', $i->ingredient_id)->first();
+
+                    $name = preg_replace('/\s+ПФ/', '', $i->ingredient_name);
+
+                    $disallow = preg_match('/Бокс\s+д\/суши\s+большой/', $name);
 
                     if ($disallow) {
                         continue;
                     }
 
-                    $ingr = preg_replace('/\s+ПФ/', '', $i->ingredient_name);
-                    $product->description .= $ingr;
-                    if (count($value->ingredients) != $key + 1) {
-                        $product->description .= ", ";
+                    if($property) {
+                        PropertyValue::create([
+                           'product_id' => $product->id,
+                           'property_id' => $property->id,
+                           'value' => $name
+                        ]);
                     }
+
                 }
 
                 $product->save();

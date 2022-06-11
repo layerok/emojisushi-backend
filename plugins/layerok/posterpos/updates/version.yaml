@@ -17,3 +17,6 @@
 1.1.5:
     - 'create tablets table'
     - create_tablets_table.php
+1.1.6:
+    - 'add poster id to properties table'
+    - add_poster_id_to_properties_table.php

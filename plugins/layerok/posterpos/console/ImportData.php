@@ -32,6 +32,7 @@ use System\Models\File;
 class ImportData extends Command {
     protected $name = 'posterpos:import';
     protected $description = 'Import Layerok.PosterPos data';
+    public $ingredientsGroup = null;
 
     public function handle()
     {
@@ -48,12 +49,13 @@ class ImportData extends Command {
         });
 
         $this->cleanup();
+        $this->createIngredients();
+        $this->createCategories();
         $this->createSpots();
         $this->createTablets();
         $this->createCurrencies();
         $this->createPaymentMethods();
         $this->createShippingMethods();
-        $this->createCategories();
         $this->createProducts();
 
         app()->bind(Index::class, function () use ($originalIndex) {
@@ -93,11 +95,10 @@ class ImportData extends Command {
         HideProduct::truncate();
         Spot::truncate();
         Tablet::truncate();
-        Property::truncate();
-        PropertyGroup::truncate();
         PaymentMethod::truncate();
         ShippingMethod::truncate();
-
+        DB::table('offline_mall_property_property_group')->truncate();
+        DB::table('offline_mall_category_property_group')->truncate();
 
         Artisan::call('cache:clear');
 
@@ -130,6 +131,36 @@ class ImportData extends Command {
 
         foreach ($products->response as $value) {
             $transition->createProduct($value);
+            $this->output->progressAdvance();
+        }
+
+        $this->output->progressFinish();
+    }
+
+    protected function createIngredients() {
+        $this->output->newLine();
+        $this->output->writeln('Creating ingredients...');
+        $this->output->newLine();
+
+        $this->ingredientsGroup = PropertyGroup::create([
+            'name' => 'ingredients',
+            'display_name' => "Ингридиенты"
+        ]);
+
+        PosterApi::init();
+        $records = (object)PosterApi::menu()->getIngredients();
+        $count = count($records->response);
+
+        $this->output->progressStart($count);
+
+        foreach ($records->response as $value) {
+            $property = Property::create([
+                'type' => 'checkbox',
+                'poster_id' => $value->ingredient_id,
+                'name' => $value->ingredient_name,
+                'filter_type' => 'set',
+            ]);
+            $this->ingredientsGroup->properties()->attach([$property->id]);
             $this->output->progressAdvance();
         }
 
@@ -188,8 +219,7 @@ class ImportData extends Command {
     protected function createCategories()
     {
         $this->output->writeln('Creating categories...');
-        DB::table('offline_mall_categories')->truncate();
-        DB::table('offline_mall_category_property_group')->truncate();
+
 
         PosterApi::init();
         $categories = (object)PosterApi::menu()->getCategories();
@@ -199,12 +229,15 @@ class ImportData extends Command {
             $slug = $category->category_tag ?? str_slug($category->category_name);
 
 
-            Category::create([
+            $category = Category::create([
                 'name'          => (string)$category->category_name,
                 'slug'          => $slug,
                 'poster_id'     => (int)$poster_id,
                 'sort_order'    => (int)$category->sort_order
             ]);
+
+            // Привязываем к категории группу фильтров "Ингридиенты"
+            $category->property_groups()->attach([$this->ingredientsGroup->id]);
         }
     }
 
