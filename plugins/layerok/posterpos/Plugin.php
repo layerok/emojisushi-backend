@@ -7,7 +7,9 @@ use OFFLINE\Mall\Controllers\Categories;
 use OFFLINE\Mall\Controllers\Products;
 use OFFLINE\Mall\Controllers\Variants;
 use OFFLINE\Mall\Models\Category;
+use OFFLINE\Mall\Models\PaymentMethod;
 use OFFLINE\Mall\Models\Product;
+use OFFLINE\Mall\Models\ShippingMethod;
 use OFFLINE\Mall\Models\Variant;
 use System\Classes\PluginBase;
 
@@ -164,6 +166,15 @@ class Plugin extends PluginBase
                 'otherKey' => 'spot_id',
             ];
         });
+
+        PaymentMethod::extend(function($model){
+            $model->fillable[] = 'name';
+        });
+
+        ShippingMethod::extend(function($model){
+            $model->fillable[] = 'name';
+        });
+
     }
 
 
