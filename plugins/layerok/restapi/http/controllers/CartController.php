@@ -104,7 +104,8 @@ class CartController extends Controller
         return $cart->products()->with([
             'product.image_sets',
             'product.prices',
-            'product.additional_prices'
+            'product.additional_prices',
+            'product.property_values',
         ])->get()->each(function($p) {
             $p->hidden = [];
             $p->price_formatted = $p->product->price()->price_formatted;

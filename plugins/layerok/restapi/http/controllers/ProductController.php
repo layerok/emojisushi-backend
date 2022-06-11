@@ -167,9 +167,12 @@ class ProductController extends Controller
 
     protected function productIncludes(): array
     {
-        return [ 'image_sets',
+        return [
+            'image_sets',
             'prices',
-            'additional_prices',];
+            'additional_prices',
+            'property_values'
+            ];
     }
 
     protected function getGhosts(array $ids)
