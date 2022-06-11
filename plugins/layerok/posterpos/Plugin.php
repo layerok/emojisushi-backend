@@ -167,13 +167,6 @@ class Plugin extends PluginBase
             ];
         });
 
-        PaymentMethod::extend(function($model){
-            $model->fillable[] = 'name';
-        });
-
-        ShippingMethod::extend(function($model){
-            $model->fillable[] = 'name';
-        });
 
     }
 

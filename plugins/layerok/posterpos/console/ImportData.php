@@ -16,6 +16,7 @@ use OFFLINE\Mall\Models\Category;
 use OFFLINE\Mall\Models\Currency;
 use OFFLINE\Mall\Models\ImageSet;
 use OFFLINE\Mall\Models\PaymentMethod;
+use OFFLINE\Mall\Models\Price;
 use OFFLINE\Mall\Models\Product;
 use OFFLINE\Mall\Models\ProductPrice;
 use OFFLINE\Mall\Models\Property;
@@ -229,19 +230,21 @@ class ImportData extends Command {
 
         $this->output->progressStart(2);
 
-        PaymentMethod::create([
-            'name' => 'Наличными',
-            'code' => 'cash',
-            'payment_provider' => 'offline'
-        ]);
+        $method                   = new PaymentMethod();
+        $method->name             = 'Наличными';
+        $method->payment_provider = 'offline';
+        $method->sort_order       = 1;
+        $method->code             = 'cash';
+        $method->save();
 
         $this->output->progressAdvance();
 
-        PaymentMethod::create([
-            'name' => 'Картой',
-            'code' => 'card',
-            'payment_provider' => 'offline'
-        ]);
+        $method                   = new PaymentMethod();
+        $method->name             = 'Картой';
+        $method->payment_provider = 'offline';
+        $method->sort_order       = 1;
+        $method->code             = 'card';
+        $method->save();
 
         $this->output->progressAdvance();
 
@@ -257,15 +260,16 @@ class ImportData extends Command {
 
         $this->output->progressStart(2);
 
-        ShippingMethod::create([
-            'name' => 'Самовывоз',
-        ]);
+        $method                     = new ShippingMethod();
+        $method->name               = 'Самовывоз';
+        $method->save();
+
 
         $this->output->progressAdvance();
 
-        ShippingMethod::create([
-            'name' => 'Курьер',
-        ]);
+        $method                     = new ShippingMethod();
+        $method->name               = 'Курьер';
+        $method->save();
 
         $this->output->progressAdvance();
 
