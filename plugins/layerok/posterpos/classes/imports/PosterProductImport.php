@@ -30,6 +30,7 @@ class PosterProductImport implements ToModel
             PosterApi::init();
             $result = PosterApi::menu()->updateProduct([
                 'id' => $id,
+                'product_id' => $id,
                 'product_name' => $newName,
                 'modifications' => $with_modifications ? 1: 0
             ]);
