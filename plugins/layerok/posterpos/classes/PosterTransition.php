@@ -161,6 +161,7 @@ class PosterTransition
                 foreach ($value->ingredients as $key => $i) {
                     $property = Property::where('poster_id', $i->ingredient_id)->first();
 
+
                     $name = preg_replace('/\s+ПФ/', '', $i->ingredient_name);
 
                     $disallow = preg_match('/Бокс\s+д\/суши\s+большой/', $name);

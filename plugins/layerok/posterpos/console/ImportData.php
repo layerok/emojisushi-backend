@@ -157,6 +157,12 @@ class ImportData extends Command {
         $this->output->progressStart($count);
 
         foreach ($records->response as $value) {
+            $category_id = $value->category_id;
+
+            if($category_id === 8) {
+                // ignore "Хозтовары" category
+                continue;
+            }
             $property = Property::create([
                 'type' => 'checkbox',
                 'poster_id' => $value->ingredient_id,
