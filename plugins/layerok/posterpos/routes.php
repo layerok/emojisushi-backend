@@ -1,12 +1,12 @@
 <?php
 
+use Layerok\PosterPos\Classes\Exports\PosterProductsExport;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Route;
 use Layerok\PosterPos\Classes\PosterTransition;
-use OFFLINE\Mall\Models\ImageSet;
-use OFFLINE\Mall\Models\Product;
+use Maatwebsite\Excel\Facades\Excel;
 use poster\src\PosterApi;
-use System\Models\File;
+
 
 
 Route::post('/webhook/handle', function () {
@@ -128,3 +128,4 @@ Route::post('/webhook/handle', function () {
 
 
 });*/
+

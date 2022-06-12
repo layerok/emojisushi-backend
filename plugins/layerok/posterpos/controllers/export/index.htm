@@ -1,0 +1,17 @@
+<form type="post" action="/backend/layerok/posterpos/export/items">
+    <?= Form::token() ?>
+
+    <div>
+        <select name="type" id="">
+            <option value="product">products</option>
+            <option value="category">categories</option>
+            <option value="ingredient">ingredients</option>
+        </select>
+    </div>
+    <button style="margin-top: 20px" type="submit" class="btn btn-primary" >
+        Export
+    </button>
+</form>
+
+
+

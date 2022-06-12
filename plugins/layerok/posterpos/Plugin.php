@@ -2,7 +2,11 @@
 
 use Backend;
 use Illuminate\Support\Facades\Event;
+use Layerok\PosterPos\Console\ImportData;
 use Layerok\PosterPos\Models\Spot;
+use Layerok\Restapi\Http\Controllers\ProductController;
+use Maatwebsite\Excel\ExcelServiceProvider;
+use Maatwebsite\Excel\Facades\Excel;
 use OFFLINE\Mall\Controllers\Categories;
 use OFFLINE\Mall\Controllers\Products;
 use OFFLINE\Mall\Controllers\Variants;
@@ -13,6 +17,7 @@ use OFFLINE\Mall\Models\Property;
 use OFFLINE\Mall\Models\ShippingMethod;
 use OFFLINE\Mall\Models\Variant;
 use System\Classes\PluginBase;
+use App;
 
 /**
  * PosterPos Plugin Information File
@@ -43,7 +48,9 @@ class Plugin extends PluginBase
      */
     public function register()
     {
-        $this->registerConsoleCommand('posterpos.import', \Layerok\PosterPos\Console\ImportData::class);
+        $this->registerConsoleCommand('posterpos.import', ImportData::class);
+        App::register(ExcelServiceProvider::class);
+        App::registerClassAlias('Excel',  Excel::class);
     }
 
     /**
@@ -173,7 +180,6 @@ class Plugin extends PluginBase
         });
 
 
-
     }
 
 
@@ -203,6 +209,16 @@ class Plugin extends PluginBase
                         'icon'   => 'icon-tablet',
                         'url'    => Backend::url('layerok/posterpos/tablet'),
                     ],
+                    'posterpos-export' => [
+                        'label' => 'Export',
+                        'icon'   => 'icon-download',
+                        'url' => Backend::url('layerok/posterpos/export')
+                    ],
+                    'posterpos-import' => [
+                        'label' => 'Import',
+                        'icon' => 'icon-upload',
+                        'url' => Backend::url('layerok/posterpos/import')
+                    ]
                 ]
             ],
         ];

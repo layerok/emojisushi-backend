@@ -1,0 +1,14 @@
+<form method="post"
+      action="/backend/layerok/posterpos/import/items"
+      enctype="multipart/form-data">
+    <?= Form::token() ?>
+    <div>
+        <select name="type" id="">
+            <option value="product">products</option>
+            <option value="category">categories</option>
+            <option value="ingredient">ingredients</option>
+        </select>
+    </div>
+    <input style="margin-top: 8px;" type="file" name="file" accept=".xlsx">
+    <button style="margin-top: 8px;" class="btn btn-primary" type="submit">import</button>
+</form>

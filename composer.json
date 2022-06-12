@@ -16,7 +16,8 @@
         "poster/api": "^1.0",
         "fruitcake/laravel-cors": "^3.0",
         "rainlab/builder-plugin": "^1.2",
-        "irazasyed/telegram-bot-sdk": "^3.6"
+        "irazasyed/telegram-bot-sdk": "^3.6",
+        "maatwebsite/excel": "^3.1"
     },
     "require-dev": {
         "phpunit/phpunit": "^8.0|^9.0"
