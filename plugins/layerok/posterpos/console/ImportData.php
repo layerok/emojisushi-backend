@@ -33,6 +33,7 @@ class ImportData extends Command {
     protected $name = 'posterpos:import';
     protected $description = 'Import Layerok.PosterPos data';
     public $ingredientsGroup = null;
+    public $uaCurrency = null;
 
     public function handle()
     {
@@ -49,11 +50,11 @@ class ImportData extends Command {
         });
 
         $this->cleanup();
+        $this->createCurrencies();
         $this->createIngredients();
         $this->createCategories();
         $this->createSpots();
         $this->createTablets();
-        $this->createCurrencies();
         $this->createPaymentMethods();
         $this->createShippingMethods();
         $this->createProducts();
@@ -97,8 +98,10 @@ class ImportData extends Command {
         Tablet::truncate();
         PaymentMethod::truncate();
         ShippingMethod::truncate();
+        Currency::truncate();
         DB::table('offline_mall_property_property_group')->truncate();
         DB::table('offline_mall_category_property_group')->truncate();
+        DB::table('offline_mall_prices')->truncate();
 
         Artisan::call('cache:clear');
 
@@ -246,8 +249,7 @@ class ImportData extends Command {
     protected function createCurrencies()
     {
         $this->output->writeln('Creating currencies...');
-        DB::table('offline_mall_currencies')->truncate();
-        Currency::create([
+        $this->uaCurrency = Currency::create([
             'code'     => 'UAH',
             'format'   => '{{ price|number_format(0, ".", ",") }} {{ currency.symbol }} ',
             'decimals' => 2,
@@ -297,14 +299,30 @@ class ImportData extends Command {
 
         $method                     = new ShippingMethod();
         $method->name               = 'Самовывоз';
+        $method->sort_order = 1;
         $method->save();
+
+        (new Price([
+            'price'          => 0,
+            'currency_id'    => $this->uaCurrency->id,
+            'priceable_type' => ShippingMethod::MORPH_KEY,
+            'priceable_id'   => $method->id,
+        ]))->save();
 
 
         $this->output->progressAdvance();
 
         $method                     = new ShippingMethod();
         $method->name               = 'Курьер';
+        $method->sort_order = 1;
         $method->save();
+
+        (new Price([
+            'price'          => 0,
+            'currency_id'    => $this->uaCurrency->id,
+            'priceable_type' => ShippingMethod::MORPH_KEY,
+            'priceable_id'   => $method->id,
+        ]))->save();
 
         $this->output->progressAdvance();
 
