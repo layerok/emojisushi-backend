@@ -15,7 +15,7 @@ class ShippingMethodController extends Controller
         $records = ShippingMethod::all();
 
         return response()->json([
-            'data' => $records,
+            'data' => $records->toArray(),
             'meta' => [
                 'total' => $records->count(),
             ]
