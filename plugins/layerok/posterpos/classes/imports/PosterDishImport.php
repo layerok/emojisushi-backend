@@ -5,12 +5,12 @@ namespace Layerok\PosterPos\Classes\Imports;
 use Maatwebsite\Excel\Concerns\ToModel;
 use poster\src\PosterApi;
 
-class PosterProductImport implements ToModel
+class PosterDishImport implements ToModel
 {
     public $check = false;
     // 0 - poster_id
-    // 2 -  name
-    // 3 - translate name
+    // 1 -  name
+    // 2 - translate name
     public $updatedCount = 0;
     public $errors = [];
     public function model(array $row)
@@ -19,15 +19,13 @@ class PosterProductImport implements ToModel
         $name = $row[1];
         $newName =  $row[2];
 
-        if($id === 'Product ID') {
+        if($id === 'Dish ID') {
             // Пропускаем ряд с названиями колонок
             $this->check = true;
             return;
         }
 
         if($this->check && $newName) {
-
-
             PosterApi::init();
 
             $res = (object)PosterApi::menu()->getProduct([
@@ -36,24 +34,13 @@ class PosterProductImport implements ToModel
 
             $product = $res->response;
 
-            $data = [
-                'id' => $id,
-                'product_id' => (int)$id,
+            $result = (object)PosterApi::menu()->updateDish([
+                'dish_id' => $id,
                 'product_name' => $newName,
-                'modifications' => 0
-            ];
-
-            if(isset($product->modifications)) {
-                $data['modifications'] = 1;
-                $modifications = $product->modifications;
-                foreach((array)$modifications as $modification) {
-                    $data['modificator_id'][] = $modification->modificator_id;
-                    $data['modificator_name'][] = $modification->modificator_name;
-
-                }
-            }
-
-            $result = PosterApi::menu()->updateProduct($data);
+                'weight_flag' => $product->weight_flag,
+                'workshop' => $product->workshop,
+                'menu_category_id' => $product->menu_category_id
+            ]);
 
             if(isset($result->error)) {
                 $this->errors[$id][] = $result->message;

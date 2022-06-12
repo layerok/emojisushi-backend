@@ -1,6 +1,7 @@
 <?php namespace Layerok\Telegram;
 
 use Backend;
+use Layerok\Telegram\Console\ImportData;
 use System\Classes\PluginBase;
 
 /**
@@ -30,7 +31,7 @@ class Plugin extends PluginBase
      */
     public function register()
     {
-
+        $this->registerConsoleCommand('telegram.seed-test', ImportData::class);
     }
 
     /**

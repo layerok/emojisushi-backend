@@ -9,12 +9,11 @@ use Maatwebsite\Excel\Concerns\WithCustomValueBinder;
 use Maatwebsite\Excel\Concerns\WithHeadings;
 use Maatwebsite\Excel\Concerns\WithMapping;
 use Maatwebsite\Excel\Concerns\WithStyles;
-use OFFLINE\Mall\Models\Product;
 use PhpOffice\PhpSpreadsheet\Cell\StringValueBinder;
 use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 use poster\src\PosterApi;
 
-class PosterProductsExport extends StringValueBinder implements FromCollection,
+class PosterIngredientsExport extends StringValueBinder implements FromCollection,
     WithHeadings, WithMapping, WithCustomValueBinder, ShouldAutoSize, WithStyles
 {
     use Exportable;
@@ -22,25 +21,25 @@ class PosterProductsExport extends StringValueBinder implements FromCollection,
     public function collection()
     {
         PosterApi::init();
-        $products = (array)PosterApi::menu()->getProducts([
-            'type' => 'products'
-        ]);
+        $records= (array)PosterApi::menu()->getIngredients();
 
-        return new Collection($products['response']);
+        return new Collection($records['response']);
     }
 
-    public function map($product): array
+    public function map($record): array
     {
         return [
-            $product->product_id,
-            $product->product_name,
+            $record->ingredient_id,
+            $record->ingredient_unit,
+            $record->ingredient_name,
         ];
     }
 
     public function headings(): array
     {
         return [
-            'Product ID',
+            'Ingredient ID',
+            'Unit type',
             'Имя',
             'Перевод'
         ];
@@ -51,7 +50,6 @@ class PosterProductsExport extends StringValueBinder implements FromCollection,
         return [
             // Style the first row as bold text.
             1    => ['font' => ['bold' => true]],
-
         ];
     }
 

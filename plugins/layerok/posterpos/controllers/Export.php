@@ -2,8 +2,9 @@
 namespace Layerok\PosterPos\Controllers;
 
 use BackendMenu;
-use Layerok\PosterPos\Classes\Exports\PosterCategoryExport;
-use Layerok\PosterPos\Classes\Exports\PosterIngredientExport;
+use Layerok\PosterPos\Classes\Exports\PosterCategoriesExport;
+use Layerok\PosterPos\Classes\Exports\PosterDishesExport;
+use Layerok\PosterPos\Classes\Exports\PosterIngredientsExport;
 use Layerok\PosterPos\Classes\Exports\PosterProductsExport;
 use Maatwebsite\Excel\Facades\Excel;
 
@@ -24,8 +25,9 @@ class Export extends \Backend\Classes\Controller
     public function items() {
         $map = [
             'product' => PosterProductsExport::class,
-            'category' => PosterCategoryExport::class,
-            'ingredient' => PosterIngredientExport::class,
+            'category' => PosterCategoriesExport::class,
+            'ingredient' => PosterIngredientsExport::class,
+            'dish' => PosterDishesExport::class,
         ];
         $type = input('type');
         $exist = in_array($type, array_keys($map));

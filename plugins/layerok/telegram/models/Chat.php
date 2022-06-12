@@ -22,7 +22,7 @@ class Chat extends Model
     /**
      * @var array fillable attributes are mass assignable
      */
-    protected $fillable = [];
+    protected $fillable = ['internal_id', 'name'];
 
     /**
      * @var array rules for validation

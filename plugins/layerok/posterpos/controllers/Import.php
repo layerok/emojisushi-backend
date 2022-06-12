@@ -4,6 +4,7 @@ namespace Layerok\PosterPos\Controllers;
 use BackendMenu;
 use Input;
 use Layerok\PosterPos\Classes\Imports\PosterCategoryImport;
+use Layerok\PosterPos\Classes\Imports\PosterDishImport;
 use Layerok\PosterPos\Classes\Imports\PosterIngredientImport;
 use Layerok\PosterPos\Classes\Imports\PosterProductImport;
 use Maatwebsite\Excel\Facades\Excel;
@@ -29,6 +30,7 @@ class Import extends \Backend\Classes\Controller
             'product' => PosterProductImport::class,
             'category' => PosterCategoryImport::class,
             'ingredient' => PosterIngredientImport::class,
+            'dish' => PosterDishImport::class,
         ];
 
         $type = input('type');
