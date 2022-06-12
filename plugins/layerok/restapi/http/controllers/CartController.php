@@ -20,10 +20,8 @@ class CartController extends Controller
 
         return response()->json([
             'data' => $records,
-            'meta' => [
-                'total' => $cart->getTotalFormattedPrice(),
-                'totalQuantity' => $cart->getTotalQuantity()
-            ]
+            'total' => $cart->getTotalFormattedPrice(),
+            'totalQuantity' => $cart->getTotalQuantity()
         ]);
     }
 
@@ -63,10 +61,8 @@ class CartController extends Controller
 
         return response()->json([
             'data' => $records,
-            'meta' => [
-                'total' => $cart->getTotalFormattedPrice(),
-                'totalQuantity' => $cart->getTotalQuantity()
-            ]
+            'total' => $cart->getTotalFormattedPrice(),
+            'totalQuantity' => $cart->getTotalQuantity()
         ]);
     }
 
@@ -93,10 +89,8 @@ class CartController extends Controller
 
         return response()->json([
             'data' => $records,
-            'meta' => [
-                'total' => $cart->getTotalFormattedPrice(),
-                'totalQuantity' => $cart->getTotalQuantity()
-            ]
+            'total' => $cart->getTotalFormattedPrice(),
+            'totalQuantity' => $cart->getTotalQuantity()
         ]);
     }
 

@@ -59,13 +59,9 @@ class ProductController extends Controller
 
         return response()->json([
             'data' => $items->toArray(),
-            'meta' => [
-                'total' => $this->totalCount,
-                'offset' => $this->offset,
-                'limit' => $this->limit,
-                'sort_options' => $this->getSortOptions(),
-                'filters' => $filters
-            ]
+            'total' => $this->totalCount,
+            'sort_options' => $this->getSortOptions(),
+            'filters' => $filters
         ]);
     }
 
