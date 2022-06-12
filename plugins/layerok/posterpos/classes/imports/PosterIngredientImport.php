@@ -9,14 +9,16 @@ class PosterIngredientImport implements ToModel
 {
     public $check = false;
     // 0 - poster_id
-    // 1 - name
-    // 2 - translate name
+    // 1 - unit
+    // 2 -  name
+    // 3 - translate name
     public $updatedCount = 0;
     public $errors = [];
     public function model(array $row)
     {
         $id =  $row[0];
-        $newName =  $row[2];
+        $unit = $row[1];
+        $newName =  $row[3];
 
         if($id === 'Ingredient ID') {
             // Пропускаем ряд с названиями колонок
@@ -28,7 +30,8 @@ class PosterIngredientImport implements ToModel
             PosterApi::init();
             $result = PosterApi::menu()->updateIngredient([
                 'id' => $id,
-                'ingredient_name' => $newName
+                'ingredient_name' => $newName,
+                'type' => $unit
             ]);
             if(isset($result->error)) {
                 $this->errors[$id][] = $result->message;
