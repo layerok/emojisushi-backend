@@ -158,9 +158,11 @@ class ImportData extends Command {
                 'type' => 'checkbox',
                 'poster_id' => $value->ingredient_id,
                 'name' => $value->ingredient_name,
+
+            ]);
+            $this->ingredientsGroup->properties()->attach($property->id, [
                 'filter_type' => 'set',
             ]);
-            $this->ingredientsGroup->properties()->attach([$property->id]);
             $this->output->progressAdvance();
         }
 

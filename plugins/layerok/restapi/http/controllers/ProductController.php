@@ -14,6 +14,7 @@ use OFFLINE\Mall\Classes\CategoryFilter\SortOrder\SortOrder;
 use OFFLINE\Mall\Classes\Index\Index;
 use OFFLINE\Mall\Models\Category;
 use OFFLINE\Mall\Models\Product;
+use OFFLINE\Mall\Models\PropertyGroup;
 use OFFLINE\Mall\Models\Variant;
 use OFFLINE\Mall\Models\Wishlist;
 use Session;
@@ -52,6 +53,9 @@ class ProductController extends Controller
 
         $items = $this->getItems();
 
+        $group = PropertyGroup::where('id', 1)->first(); // 1 - id группы "Ингридиенты"
+        $filters = $group->properties()->get();
+
 
         return response()->json([
             'data' => $items->toArray(),
@@ -59,7 +63,8 @@ class ProductController extends Controller
                 'total' => $this->totalCount,
                 'offset' => $this->offset,
                 'limit' => $this->limit,
-                'sort_options' => $this->getSortOptions()
+                'sort_options' => $this->getSortOptions(),
+                'filters' => $filters
             ]
         ]);
     }

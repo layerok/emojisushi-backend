@@ -9,6 +9,7 @@ use \Layerok\Restapi\Http\Middleware\CustomSession;
 use \Layerok\Restapi\Http\Controllers\ShippingMethodController;
 use \Layerok\Restapi\Http\Controllers\PaymentMethodController;
 use \Layerok\Restapi\Http\Controllers\WishlistController;
+use \Layerok\Restapi\Http\Controllers\IngredientController;
 
 Route::group([
     'middleware' => [
@@ -22,6 +23,7 @@ Route::group([
     Route::get('spots', [SpotController::class, 'fetch']);
     Route::get('shipping', [ShippingMethodController::class, 'all']);
     Route::get('payments', [PaymentMethodController::class, 'all']);
+    Route::get('ingredients', [IngredientController::class, 'all']);
 
 
     Route::prefix('cart')->group(function() {
