@@ -30,12 +30,24 @@ class PosterProductImport implements ToModel
             PosterApi::init();
             $result = PosterApi::menu()->updateProduct([
                 'id' => $id,
-                'product_id' => $id,
-                'product_name' => $newName,
+                'product_id' => (int)$id,
+                'product_name' => (int)$newName,
                 'modifications' => $with_modifications ? 1: 0
             ]);
             if(isset($result->error)) {
-                $this->errors[$id][] = $result->message;
+                if($result->error === 32) {
+                    $result = PosterApi::menu()->updateProduct([
+                        'dish_id' => $id,
+                        'product_name' => (int)$newName,
+                    ]);
+
+                    if($result->error) {
+                        $this->errors[$id][] = $result->message;
+                    }
+                } else {
+                    $this->errors[$id][] = $result->message;
+                }
+
             } else {
                 $this->updatedCount++;
             }
