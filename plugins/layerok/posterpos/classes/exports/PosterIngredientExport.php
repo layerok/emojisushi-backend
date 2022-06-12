@@ -50,7 +50,6 @@ class PosterIngredientExport extends StringValueBinder implements FromCollection
         return [
             // Style the first row as bold text.
             1    => ['font' => ['bold' => true]],
-
         ];
     }
 

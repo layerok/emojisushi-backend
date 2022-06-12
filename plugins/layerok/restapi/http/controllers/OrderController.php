@@ -10,6 +10,7 @@ class OrderController extends Controller
 {
     public function place(): JsonResponse
     {
+        $all = request()->all();
 
         return response()->json([
 
