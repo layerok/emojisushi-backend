@@ -195,6 +195,8 @@ class ImportData extends Command {
             Spot::create([
                 'address' => $record->spot_adress,
                 'name' => $record->spot_name,
+                'bot_id' => 1,
+                'chat_id' => 1
             ]);
             $this->output->progressAdvance();
         }

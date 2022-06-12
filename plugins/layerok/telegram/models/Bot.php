@@ -22,7 +22,7 @@ class Bot extends Model
     /**
      * @var array fillable attributes are mass assignable
      */
-    protected $fillable = ['secret_key', 'name'];
+    protected $fillable = ['token', 'name'];
 
     /**
      * @var array rules for validation
