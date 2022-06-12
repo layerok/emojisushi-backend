@@ -12,6 +12,7 @@ class PosterIngredientImport implements ToModel
     // 1 - name
     // 2 - translate name
     public $updatedCount = 0;
+    public $errors = [];
     public function model(array $row)
     {
         $id =  $row[0];
@@ -25,11 +26,15 @@ class PosterIngredientImport implements ToModel
 
         if($this->check && $newName) {
             PosterApi::init();
-            PosterApi::menu()->updateIngredient([
+            $result = PosterApi::menu()->updateIngredient([
                 'id' => $id,
                 'ingredient_name' => $newName
             ]);
-            $this->updatedCount++;
+            if(isset($result->error)) {
+                $this->errors[$id][] = $result->message;
+            } else {
+                $this->updatedCount++;
+            }
         }
 
     }

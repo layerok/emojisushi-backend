@@ -13,6 +13,7 @@ class PosterCategoryImport implements ToModel
     // 2 - name
     // 3 - translate name
     public $updatedCount = 0;
+    public $errors = [];
     public function model(array $row)
     {
         $id =  $row[0];
@@ -32,7 +33,11 @@ class PosterCategoryImport implements ToModel
                 'category_name' => $newName,
                 'parent_category' => $parent_category
             ]);
-            $this->updatedCount++;
+            if(isset($result->error)) {
+                $this->errors[$id][] = $result->message;
+            } else {
+                $this->updatedCount++;
+            }
         }
 
     }
