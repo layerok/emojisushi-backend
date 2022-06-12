@@ -10,6 +10,7 @@ use \Layerok\Restapi\Http\Controllers\ShippingMethodController;
 use \Layerok\Restapi\Http\Controllers\PaymentMethodController;
 use \Layerok\Restapi\Http\Controllers\WishlistController;
 use \Layerok\Restapi\Http\Controllers\IngredientController;
+use \Layerok\Restapi\Http\Controllers\OrderController;
 
 Route::group([
     'middleware' => [
@@ -24,6 +25,9 @@ Route::group([
     Route::get('shipping', [ShippingMethodController::class, 'all']);
     Route::get('payments', [PaymentMethodController::class, 'all']);
     Route::get('ingredients', [IngredientController::class, 'all']);
+    Route::prefix('order')->group(function() {
+        Route::post('place', [OrderController::class, 'place']);
+    });
 
 
     Route::prefix('cart')->group(function() {

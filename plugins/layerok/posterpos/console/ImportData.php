@@ -4,6 +4,7 @@ namespace Layerok\PosterPos\Console;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Artisan;
 use Layerok\PosterPos\Classes\PosterTransition;
+use Layerok\PosterPos\Classes\RootCategory;
 use Layerok\PosterPos\Models\HideCategory;
 use Layerok\PosterPos\Models\HideProduct;
 use Layerok\PosterPos\Models\Spot;
@@ -27,7 +28,6 @@ use OFFLINE\Mall\Models\Variant;
 use poster\src\PosterApi;
 use Symfony\Component\Console\Input\InputOption;
 use DB;
-use System\Models\File;
 
 class ImportData extends Command {
     protected $name = 'posterpos:import';
@@ -235,6 +235,15 @@ class ImportData extends Command {
         PosterApi::init();
         $categories = (object)PosterApi::menu()->getCategories();
 
+        $root = Category::create([
+            'name' => 'Меню',
+            'slug'          => RootCategory::SLUG_KEY,
+            'poster_id'     => null,
+            'sort_order'    => 0,
+        ]);
+
+        $root->property_groups()->attach([$this->ingredientsGroup->id]);
+
         foreach ($categories->response as $category) {
             $poster_id = $category->category_id;
             $slug = $category->category_tag ?? str_slug($category->category_name);
@@ -244,7 +253,8 @@ class ImportData extends Command {
                 'name'          => (string)$category->category_name,
                 'slug'          => $slug,
                 'poster_id'     => (int)$poster_id,
-                'sort_order'    => (int)$category->sort_order
+                'sort_order'    => (int)$category->sort_order,
+                'parent_id'     => $root->id,
             ]);
 
             // Привязываем к категории группу фильтров "Ингридиенты"

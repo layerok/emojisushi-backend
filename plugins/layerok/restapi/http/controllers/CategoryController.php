@@ -4,6 +4,7 @@ namespace Layerok\Restapi\Http\Controllers;
 
 use Illuminate\Http\JsonResponse;
 use Illuminate\Routing\Controller;
+use Layerok\PosterPos\Classes\RootCategory;
 use OFFLINE\Mall\Models\Category;
 
 class CategoryController extends Controller
@@ -13,7 +14,12 @@ class CategoryController extends Controller
         $offset = input('offset');
         $limit = input('limit');
 
-        $query = Category::where('published', '=', '1');
+        $root = Category::where('slug', RootCategory::SLUG_KEY)->first();
+
+        $query = Category::where([
+            ['published', '=', '1'],
+            ['parent_id', '=', $root->id],
+        ]);
 
         if($limit) {
             $query->limit($limit);

@@ -4,7 +4,6 @@ namespace Layerok\PosterPos\Classes;
 
 
 use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\Log;
 use OFFLINE\Mall\Classes\Index\Index;
 use OFFLINE\Mall\Classes\Observers\ProductObserver;
 use OFFLINE\Mall\Models\Category;
@@ -42,13 +41,18 @@ class PosterTransition
             'inventory_management_method' => 'single',
         ]);
 
+        $rootCategory = Category::where('slug', RootCategory::SLUG_KEY)->first();
+
         // После создания товара нужно связать товар с категорией
         // 1. Найдем категорию к которой нужно привязать товар
         $category = Category::where('poster_id', '=', $value->menu_category_id)->first();
         // 2. Привяжем категорию к товару
         if (!empty($category)) {
-            $product->categories()->detach($category['id']);
-            $product->categories()->sync([$category['id'] => ['sort_order' => (int)$value->sort_order]]);
+            $product->categories()->detach([$category['id'], $rootCategory['id']]);
+            $product->categories()->sync([
+                $category['id'] => ['sort_order' => (int)$value->sort_order],
+                $rootCategory['id'] => ['sort_order' => (int)$value->sort_order],
+            ]);
         }
 
         $currency = Currency::where('code', '=', 'UAH')->first();
