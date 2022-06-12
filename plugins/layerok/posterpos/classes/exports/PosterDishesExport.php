@@ -14,7 +14,7 @@ use PhpOffice\PhpSpreadsheet\Cell\StringValueBinder;
 use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 use poster\src\PosterApi;
 
-class PosterCategoryExport extends StringValueBinder implements FromCollection,
+class PosterDishesExport extends StringValueBinder implements FromCollection,
     WithHeadings, WithMapping, WithCustomValueBinder, ShouldAutoSize, WithStyles
 {
     use Exportable;
@@ -22,26 +22,25 @@ class PosterCategoryExport extends StringValueBinder implements FromCollection,
     public function collection()
     {
         PosterApi::init();
-        $records= (array)PosterApi::menu()->getCategories();
+        $products = (array)PosterApi::menu()->getProducts([
+            'type' => 'batchtickets'
+        ]);
 
-        return new Collection($records['response']);
+        return new Collection($products['response']);
     }
 
-    public function map($record): array
+    public function map($product): array
     {
         return [
-            $record->category_id,
-            $record->parent_category,
-            $record->category_name,
-
+            $product->product_id,
+            $product->product_name,
         ];
     }
 
     public function headings(): array
     {
         return [
-            'Category ID',
-            'Родительская категория',
+            'Dish ID',
             'Имя',
             'Перевод'
         ];
