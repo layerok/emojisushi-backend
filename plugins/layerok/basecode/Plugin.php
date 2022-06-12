@@ -9,7 +9,7 @@ use OFFLINE\Mall\Models\Currency;
 use System\Classes\PluginBase;
 use Event;
 use Config;
-
+use Validator;
 /**
  * BaseCode Plugin Information File
  */
@@ -69,6 +69,7 @@ class Plugin extends PluginBase
 
 
 
+
     }
 
     /**
@@ -78,6 +79,15 @@ class Plugin extends PluginBase
      */
     public function boot()
     {
+        Validator::extend('phoneUa', function($attribute, $value, $parameters) {
+            $regex = "/^(((\+?)(38))\s?)?(([0-9]{3})|(\([0-9]{3}\)))(\-|\s)?(([0-9]{3})(\-|\s)?
+        ([0-9]{2})(\-|\s)?([0-9]{2})|([0-9]{2})(\-|\s)?([0-9]{2})(\-|\s)?
+        ([0-9]{3})|([0-9]{2})(\-|\s)?([0-9]{3})(\-|\s)?([0-9]{2}))$/";
+
+            return preg_match($regex, $value);
+        });
+
+
         Event::subscribe(new TgMallOrderHandler());
         // debug to telegram
         if(env('DEBUG_TO_TELEGRAM')) {

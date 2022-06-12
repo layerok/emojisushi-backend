@@ -2,7 +2,7 @@
 
 namespace Layerok\TgMall\Classes\Callbacks;
 
-use Layerok\TgMall\Classes\Receipt;
+use Layerok\BaseCode\Classes\Receipt;
 use Layerok\TgMall\Classes\Traits\Lang;
 use Layerok\TgMall\Classes\Traits\Warn;
 

@@ -6,7 +6,7 @@ use App;
 use Closure;
 use Illuminate\Http\Request;
 use Exception;
-use Illuminate\Validation\ValidationException;
+use October\Rain\Exception\ValidationException;
 use Log;
 use Config;
 class ExceptionsMiddleware
@@ -25,7 +25,7 @@ class ExceptionsMiddleware
             $response['message'] = $exception->getMessage();
 
             if ($exception instanceof ValidationException) {
-                $response['errors'] = $exception->errors();
+                $response['errors'] = $exception->getErrors();
             }
 
             Log::error('[API error] ' . $exception);

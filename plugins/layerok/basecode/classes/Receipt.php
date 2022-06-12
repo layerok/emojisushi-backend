@@ -1,5 +1,5 @@
 <?php
-namespace Layerok\TgMall\Classes;
+namespace Layerok\Basecode\Classes;
 
 class Receipt
 {
@@ -73,7 +73,7 @@ class Receipt
 
     public function products($products): Receipt
     {
-        $this->b("Товары в заказе")
+        $this->b($this->trans('order_items'))
             ->colon()
             ->newLine();
 
