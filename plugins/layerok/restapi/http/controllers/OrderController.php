@@ -106,20 +106,23 @@ class OrderController extends Controller
 
         $tablet_id = $spot->tablet->tablet_id ?? env('POSTER_FALLBACK_TABLET_ID');
 
-        PosterApi::init();
-        $result = (object)PosterApi::incomingOrders()
-            ->createIncomingOrder([
-                'spot_id' => $tablet_id,
-                'phone' => 23233232,
-                'address' => $data['address'] ?? "",
-                'comment' => $poster_comment,
-                'products' => $posterProducts->all(),
-                'first_name' => $data['first_name'] ?? "",
-            ]);
+        if(env('POSTER_SEND_ORDER_ENABLED')) {
+            PosterApi::init();
+            $result = (object)PosterApi::incomingOrders()
+                ->createIncomingOrder([
+                    'spot_id' => $tablet_id,
+                    'phone' => $data['phone'],
+                    'address' => $data['address'] ?? "",
+                    'comment' => $poster_comment,
+                    'products' => $posterProducts->all(),
+                    'first_name' => $data['first_name'] ?? "",
+                ]);
 
-        if(isset($result->error)) {
-            throw new ValidationException([$result->message]);
+            if(isset($result->error)) {
+                throw new ValidationException([$result->message]);
+            }
         }
+
 
         $this->cart->delete();
 

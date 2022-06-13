@@ -43,8 +43,6 @@ class Sync extends Controller
                 'weight'  => (int)$value->out,
             ]);
 
-            \Log::info($product->id . " " . (int)$value->out);
-
             // Реиндексация
             $observer = new ProductObserver(app(Index::class));
             Product::where('id', '=', $product['id'])->orderBy('id')->with([
