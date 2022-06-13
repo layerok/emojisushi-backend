@@ -4,6 +4,7 @@ namespace Layerok\Restapi\Http\Controllers;
 
 use Illuminate\Http\JsonResponse;
 use Illuminate\Routing\Controller;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
 use Layerok\PosterPos\Classes\PosterProducts;
 use Layerok\PosterPos\Classes\PosterUtils;
@@ -87,9 +88,11 @@ class OrderController extends Controller
             ->field('first_name', optional($data)['first_name'])
             ->field('last_name', optional($data)['last_name'])
             ->field('phone', $data['phone'])
-            ->field('comment', optional($data)['comment'])
             ->field('delivery_method_name', optional($shipping)->name)
+            ->field('address', optional($data)['address'])
             ->field('payment_method_name', optional($payment)->name)
+            ->field('change', optional($data)['change'])
+            ->field('comment', optional($data)['comment'])
             ->newLine()
             ->products($posterProducts->all())
             ->newLine()
@@ -107,12 +110,20 @@ class OrderController extends Controller
         $result = (object)PosterApi::incomingOrders()
             ->createIncomingOrder([
                 'spot_id' => $tablet_id,
-                'phone' => $data['phone'],
+                'phone' => 23233232,
                 'address' => $data['address'] ?? "",
                 'comment' => $poster_comment,
                 'products' => $posterProducts->all(),
                 'first_name' => $data['first_name'] ?? "",
             ]);
+
+        if(isset($result->error)) {
+            throw new ValidationException([$result->message]);
+        }
+
+        $this->cart->delete();
+
+
 
         return response()->json([
             'success' => true,
@@ -132,7 +143,7 @@ class OrderController extends Controller
         }
 
         // По умолчанию будет выбрано первое заведение
-        $selectedSpot = $spots->first();
+        return $spots->first();
     }
 
     public function getReceipt(): Receipt
