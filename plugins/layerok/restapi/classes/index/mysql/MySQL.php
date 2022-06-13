@@ -189,6 +189,7 @@ class MySQL implements Index
         $db->where('index', $index)->where('published', true);
 
         $this->applyHidden($db, $filters);
+        $this->applySearch($db);
 
         $filters = $this->applySpecialFilters($filters, $db);
 
@@ -211,6 +212,14 @@ class MySQL implements Index
             'items' => $items,
             'ids_in_wishlist' => $ids_in_wishlist
         ];
+    }
+
+    protected function applySearch($db) {
+        $search = input('search');
+        if($search) {
+            $db->where('name', 'like', '%'. $search .'%');
+        }
+
     }
 
     protected function applyHidden($db, $filters) {

@@ -100,7 +100,7 @@ class CartController extends Controller
         $cart->refresh();
 
         return response()->json([
-            'data' => [],
+            'data' => $cart->products()->get()->toArray(),
             'total' => $cart->getTotalFormattedPrice(),
             'totalQuantity' => $cart->getTotalQuantity()
         ]);
