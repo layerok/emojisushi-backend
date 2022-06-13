@@ -218,6 +218,11 @@ class Plugin extends PluginBase
                         'label' => 'Import',
                         'icon' => 'icon-upload',
                         'url' => Backend::url('layerok/posterpos/import')
+                    ],
+                    'posterpos-sync' => [
+                        'label' => 'Sync',
+                        'icon' => 'icon-upload',
+                        'url' => Backend::url('layerok/posterpos/sync')
                     ]
                 ]
             ],
