@@ -217,24 +217,21 @@ class MySQL implements Index
         $spot_id = Session::get('spot_id');
 
         // hide products in hidden categories
-        if ($filters->has('category_id')) {
-            $filter = $filters->get('category_id');
-            $value = $filter->values();
-            $hidden_categories = HideCategory::where([
-                'spot_id' => $spot_id
-            ])->pluck('category_id');
-            if(in_array($value[0], $hidden_categories->toArray())) {
-                $db->where('1', '!=', '1');
+        $hidden_categories = HideCategory::where([
+            'spot_id' => $spot_id
+        ])->pluck('category_id')->toArray();
+
+        $db->where(function($query) use ($hidden_categories) {
+            foreach($hidden_categories as $category_id) {
+                $query->orWhereRaw('NOT JSON_CONTAINS(category_id, ?)', json_encode([(int)$category_id]));
             }
-        }
+        });
 
         $hidden = HideProduct::where([
             ['spot_id', '=', $spot_id],
         ])->pluck('product_id');
 
         $db->whereNotIn('product_id', $hidden);
-
-
 
 
     }
