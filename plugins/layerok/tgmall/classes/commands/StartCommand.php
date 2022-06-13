@@ -3,6 +3,7 @@
 use Layerok\TgMall\Features\Index\MainMenuKeyboard;
 use Layerok\TgMall\Classes\Traits\Lang;
 use Telegram\Bot\Commands\Command;
+use Event;
 
 class StartCommand extends Command
 {
@@ -20,6 +21,10 @@ class StartCommand extends Command
      */
     public function handle()
     {
+        $stop = Event::fire('tgmall.command.start.starting', [$this], true);
+        if($stop) {
+            return;
+        }
         $update = $this->getUpdate();
         $from = $update->getMessage()
             ->getChat();

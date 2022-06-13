@@ -2,6 +2,8 @@
 
 use Backend;
 use Layerok\BaseCode\Events\TgMallOrderHandler;
+use Layerok\BaseCode\Events\TgMallStartCommandStarting;
+use Layerok\BaseCode\Events\TgMallStateCreated;
 use OFFLINE\Mall\Classes\Utils\Money;
 use OFFLINE\Mall\Models\Cart;
 use OFFLINE\Mall\Models\CartProduct;
@@ -89,6 +91,8 @@ class Plugin extends PluginBase
 
 
         Event::subscribe(new TgMallOrderHandler());
+        Event::subscribe(new TgMallStateCreated());
+        Event::subscribe(new TgMallStartCommandStarting());
         // debug to telegram
         if(env('DEBUG_TO_TELEGRAM')) {
 

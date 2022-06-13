@@ -31,6 +31,7 @@ use Telegram\Bot\Events\UpdateWasReceived;
 use Log;
 use Telegram\Bot\Exceptions\TelegramResponseException;
 use Telegram\Bot\Objects\Update;
+use Event;
 
 class Webhook
 {
@@ -72,6 +73,7 @@ class Webhook
     {
         CallbackQueryBus::instance()
             ->setTelegram($this->api)
+            ->setWebhook($this)
             ->addHandlers([
                 StartHandler::class,
                 WebsiteHandler::class,
@@ -121,6 +123,13 @@ class Webhook
             ->setUpdate($update);
 
         $this->state = $this->createState();
+
+        $stop = Event::fire('tgmall.state.created', [$this], true);
+
+        if($stop) {
+            $this->answerCallbackQuery($update);
+            return;
+        }
 
         $is_maintenance = $this->checkMaintenanceMode(
             $this->api,
@@ -241,12 +250,30 @@ class Webhook
     public function answerCallbackQuery($update)
     {
         try {
-            $this->api->answerCallbackQuery([
-                'callback_query_id' => $update->getCallbackQuery()->id,
-            ]);
+            if($update->isType('callback_query')) {
+                $this->api->answerCallbackQuery([
+                    'callback_query_id' => $update->getCallbackQuery()->id,
+                ]);
+            }
         } catch (TelegramResponseException $e) {
             Log::error($e);
         }
+    }
+
+    public function sendMessage($params) {
+        try {
+            $this->api->sendMessage(
+                array_merge($params, ['chat_id' => $this->getChatId()])
+            );
+        } catch (\Exception $e) {
+            \Log::error("Caught Exception ('{$e->getMessage()}')\n{$e}\n");
+        }
+
+    }
+
+    public function getChatId()
+    {
+        return $this->telegramUser->chat_id;
     }
 
 

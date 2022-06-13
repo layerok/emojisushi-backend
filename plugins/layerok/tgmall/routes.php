@@ -21,10 +21,14 @@ Route::post('/layerok/tgmall/webhook', function () use ($bot_token) {
 Route::get('/tgmall/set/webhook', function() use ($bot_token) {
     $api = new \Telegram\Bot\Api($bot_token);
     $resp = $api->setWebhook([
-        'url' => env('NGROK_URL') . '/webhook?XDEBUG_SESSION_START=1'
+        'url' => env('NGROK_URL') . '/layerok/tgmall/webhook?XDEBUG_SESSION_START=1'
     ]);
 
     dd($resp);
+});
+
+Route::get('/test', function() {
+    return 'test';
 });
 
 Route::get('/tgmall/set/webhook/real', function() use ($bot_token) {

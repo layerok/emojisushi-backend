@@ -25,6 +25,13 @@ class MainMenuKeyboard extends InlineKeyboard
             ])
             ->nextRow()
             ->append([
+                'text' => "Змінити заклад",
+                'callback_data' => self::prepareCallbackData(
+                    'change_spot',
+                    ['type' => 'list']
+                )
+            ])
+            ->append([
                 'text' => '🌐 Вебсайт',
                 'callback_data' => self::prepareCallbackData(
                     'website'
