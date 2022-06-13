@@ -174,13 +174,24 @@ class PosterTransition
                         continue;
                     }
 
-                    if($property) {
-                        PropertyValue::create([
-                           'product_id' => $product->id,
-                           'property_id' => $property->id,
-                           'value' => $name
+                    if(!$property) {
+                        $ingredientsGroup = PropertyGroup::where('name','ingredients')->first();
+                        $property = Property::create([
+                            'type' => 'checkbox',
+                            'poster_id' => $i->ingredient_id,
+                            'name' => $i->ingredient_name,
+
+                        ]);
+                        $ingredientsGroup->properties()->attach($property->id, [
+                            'filter_type' => 'set',
                         ]);
                     }
+
+                    PropertyValue::create([
+                        'product_id' => $product->id,
+                        'property_id' => $property->id,
+                        'value' => $name
+                    ]);
 
                 }
 

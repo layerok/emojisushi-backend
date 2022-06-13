@@ -5,6 +5,8 @@ namespace Layerok\Restapi\Classes\Index\MySQL;
 use Cache;
 use DB;
 use Illuminate\Support\Collection;
+use Layerok\PosterPos\Models\HideCategory;
+use Layerok\PosterPos\Models\HideProduct;
 use October\Rain\Database\Schema\Blueprint;
 use October\Rain\Support\Facades\Schema;
 use OFFLINE\Mall\Classes\CategoryFilter\Filter;
@@ -186,6 +188,8 @@ class MySQL implements Index
 
         $db->where('index', $index)->where('published', true);
 
+        $this->applyHidden($db, $filters);
+
         $filters = $this->applySpecialFilters($filters, $db);
 
         $this->applyCustomFilters($filters, $db);
@@ -197,6 +201,8 @@ class MySQL implements Index
             $this->applyWishlist($ids_in_wishlist, $db);
         }
 
+
+
         $this->handleOrder($order, $db);
 
         $items = $db->get()->toArray();
@@ -205,6 +211,32 @@ class MySQL implements Index
             'items' => $items,
             'ids_in_wishlist' => $ids_in_wishlist
         ];
+    }
+
+    protected function applyHidden($db, $filters) {
+        $spot_id = Session::get('spot_id');
+
+        // hide products in hidden categories
+        if ($filters->has('category_id')) {
+            $filter = $filters->get('category_id');
+            $value = $filter->values();
+            $hidden_categories = HideCategory::where([
+                'spot_id' => $spot_id
+            ])->pluck('category_id');
+            if(in_array($value[0], $hidden_categories->toArray())) {
+                $db->where('1', '!=', '1');
+            }
+        }
+
+        $hidden = HideProduct::where([
+            ['spot_id', '=', $spot_id],
+        ])->pluck('product_id');
+
+        $db->whereNotIn('product_id', $hidden);
+
+
+
+
     }
 
     protected function applySpecialFilters(Collection $filters, $db)

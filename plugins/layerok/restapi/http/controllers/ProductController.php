@@ -172,7 +172,9 @@ class ProductController extends Controller
             'image_sets',
             'prices',
             'additional_prices',
-            'property_values'
+            'property_values' => function($query) {
+                $query->where('value', '!=', '0');
+                }
             ];
     }
 
