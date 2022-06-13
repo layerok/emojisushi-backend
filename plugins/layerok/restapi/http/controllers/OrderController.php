@@ -13,6 +13,7 @@ use OFFLINE\Mall\Models\Cart;
 use OFFLINE\Mall\Models\CartProduct;
 use OFFLINE\Mall\Models\PaymentMethod;
 use OFFLINE\Mall\Models\ShippingMethod;
+use poster\src\PosterApi;
 use Telegram\Bot\Api;
 use Layerok\BaseCode\Classes\Receipt;
 
@@ -55,7 +56,9 @@ class OrderController extends Controller
 
         $posterProducts
             ->addCartProducts($products)
-            ->addSticks(
+            ->addProduct(
+                492,
+                $this->t('sticks_name'),
                 $data['sticks']
             );
 
@@ -70,7 +73,9 @@ class OrderController extends Controller
             'change' => $data['change'] ?? null,
             'payment_method_name' => $payment->name,
             'delivery_method_name' => $shipping->name
-        ]);
+        ], function($key) {
+            return $this->t($key);
+        });
 
         $token = optional($spot->bot)->token ?? env('TELEGRAM_FALLBACK_BOT_TOKEN');
         $chat_id = optional($spot->chat)->internal_id ?? env('TELEGRAM_FALLBACK_CHAT_ID');
@@ -78,15 +83,15 @@ class OrderController extends Controller
 
         $receipt = $this->getReceipt();
         $receipt
-            ->headline("Новый заказ!")
-            ->field('first_name', $data['name'])
+            ->headline($this->t('new_order'))
+            ->field('first_name', optional($data)['first_name'])
             ->field('last_name', optional($data)['last_name'])
             ->field('phone', $data['phone'])
-            ->field('comment', $poster_comment)
-            ->field('delivery_method_name', $shipping->name)
-            ->field('payment_method_name', $payment->name)
+            ->field('comment', optional($data)['comment'])
+            ->field('delivery_method_name', optional($shipping)->name)
+            ->field('payment_method_name', optional($payment)->name)
             ->newLine()
-            ->products($products)
+            ->products($posterProducts->all())
             ->newLine()
             ->field('total', $this->cart->getTotalFormattedPrice());
 
@@ -96,9 +101,21 @@ class OrderController extends Controller
             'chat_id' => $chat_id
         ]);
 
+        $tablet_id = $spot->tablet->tablet_id ?? env('POSTER_FALLBACK_TABLET_ID');
+
+        PosterApi::init();
+        $result = (object)PosterApi::incomingOrders()
+            ->createIncomingOrder([
+                'spot_id' => $tablet_id,
+                'phone' => $data['phone'],
+                'address' => $data['address'] ?? "",
+                'comment' => $poster_comment,
+                'products' => $posterProducts->all(),
+                'first_name' => $data['first_name'] ?? "",
+            ]);
 
         return response()->json([
-
+            'success' => true,
         ]);
     }
 
@@ -122,18 +139,22 @@ class OrderController extends Controller
     {
         $receipt = new Receipt();
 
-        $receipt->setProductNameResolver(function(CartProduct $cartProduct) {
-            return $cartProduct->product->name;
+        $receipt->setProductNameResolver(function($product) {
+            return $product['name'];
         });
-        $receipt->setProductCountResolver(function(CartProduct $cartProduct) {
-            return $cartProduct->quantity;
+        $receipt->setProductCountResolver(function($product) {
+            return $product['count'];
         });
 
         $receipt->setTransResolver(function($key) {
-            return \Lang::get('layerok.tgmall::lang.telegram.receipt.' . $key);
+            return $this->t($key);
         });
 
         return $receipt;
+    }
+
+    public function t($key) {
+        return \Lang::get('layerok.tgmall::lang.telegram.receipt.' . $key);
     }
 
 

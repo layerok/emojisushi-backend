@@ -20,8 +20,18 @@ class PosterUtils
      * ]
      */
 
-    public static function getComment($params): string
+    public static function getComment($params, $lang_resolver = null): string
     {
+        $translates = [
+            'change' => 'Приготовить сдачу с',
+            'payment_method' => 'Способ оплаты',
+            'delivery_method' => 'Способ доставки',
+        ];
+        if(!$lang_resolver) {
+            $lang_resolver = function($key) use($translates) {
+                return $translates[$key];
+            };
+        }
         $comment = "";
 
         function is($p, $key)
@@ -39,15 +49,15 @@ class PosterUtils
         }
 
         if (is($params, 'change')) {
-            $comment .= "Приготовить сдачу с: ".$params['change'] . $sep;
+            $comment .= $lang_resolver('change') . ": ".$params['change'] . $sep;
         }
 
         if (is($params, 'payment_method_name')) {
-            $comment .= "Способ оплаты: " . $params['payment_method_name'] . $sep;
+            $comment .=  $lang_resolver('payment_method') . ": " . $params['payment_method_name'] . $sep;
         }
 
         if (is($params, 'delivery_method_name')) {
-            $comment .= "Способ доставки: " . $params['delivery_method_name'] . $sep;
+            $comment .= $lang_resolver('delivery_method') . ": " . $params['delivery_method_name'] . $sep;
         }
         return substr($comment, 0, -4);
     }

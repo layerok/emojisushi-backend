@@ -45,6 +45,7 @@ return [
         ],
 
         'receipt' => [
+            'new_order' => 'Нове замовлення',
             'first_name' => "Ім'я",
             'last_name' => 'Прізвище',
             'phone' => 'Тел',
@@ -57,7 +58,11 @@ return [
             'change'   => 'Приготувати здачу з',
             'payment_method_name'   => 'Оплата',
             'payment_status'   => 'Статус оплати',
-            'spot_name' => 'Заклад'
+            'spot_name' => 'Заклад',
+            'order_items' => 'Замовлені товари',
+            'delivery_method' => 'Спосіб доставки',
+            'payment_method' => 'Спосіб оплаты',
+            'sticks_name' => 'Палички для суші'
         ]
     ],
 

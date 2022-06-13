@@ -94,6 +94,18 @@ class CartController extends Controller
         ]);
     }
 
+    public function clear(): JsonResponse {
+        $cart = Cart::bySession();
+        $cart->products()->delete();
+        $cart->refresh();
+
+        return response()->json([
+            'data' => [],
+            'total' => $cart->getTotalFormattedPrice(),
+            'totalQuantity' => $cart->getTotalQuantity()
+        ]);
+    }
+
     public function prepareProducts($cart) {
         return $cart->products()->with([
             'product.image_sets',

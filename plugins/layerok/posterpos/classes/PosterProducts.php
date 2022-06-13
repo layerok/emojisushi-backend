@@ -34,13 +34,13 @@ class PosterProducts
         return $this->items;
     }
 
-    public function addSticks($count): PosterProducts
+    public function addProduct($id, $name, $count): PosterProducts
     {
         if (!isset($count)) {
             return $this;
         }
         if (intval($count) > 0) {
-            $this->add("Палочки для суши", 492, intval($count));
+            $this->add($name, $id, intval($count));
         }
         return $this;
     }

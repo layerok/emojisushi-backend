@@ -34,6 +34,7 @@ Route::group([
         Route::get('products', [CartController::class, 'all']);
         Route::get('add', [CartController::class, 'add']);
         Route::get('remove', [CartController::class, 'remove']);
+        Route::get('clear', [CartController::class, 'clear']);
     });
 
     Route::prefix('wishlist')->group(function() {

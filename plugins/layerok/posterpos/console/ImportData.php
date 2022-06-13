@@ -196,7 +196,8 @@ class ImportData extends Command {
                 'address' => $record->spot_adress,
                 'name' => $record->spot_name,
                 'bot_id' => 1,
-                'chat_id' => 1
+                'chat_id' => 1,
+                'phones' => '+38 (093) 366 28 69, +38 (068) 303 45 51'
             ]);
             $this->output->progressAdvance();
         }
@@ -286,7 +287,7 @@ class ImportData extends Command {
         $this->output->progressStart(2);
 
         $method                   = new PaymentMethod();
-        $method->name             = 'Наличными';
+        $method->name             = 'Готівкою';
         $method->payment_provider = 'offline';
         $method->sort_order       = 1;
         $method->code             = 'cash';
@@ -295,7 +296,7 @@ class ImportData extends Command {
         $this->output->progressAdvance();
 
         $method                   = new PaymentMethod();
-        $method->name             = 'Картой';
+        $method->name             = 'Картою';
         $method->payment_provider = 'offline';
         $method->sort_order       = 1;
         $method->code             = 'card';
@@ -316,7 +317,7 @@ class ImportData extends Command {
         $this->output->progressStart(2);
 
         $method                     = new ShippingMethod();
-        $method->name               = 'Самовывоз';
+        $method->name               = 'Самовивіз';
         $method->sort_order = 1;
         $method->save();
 
@@ -331,7 +332,7 @@ class ImportData extends Command {
         $this->output->progressAdvance();
 
         $method                     = new ShippingMethod();
-        $method->name               = 'Курьер';
+        $method->name               = "Кур'єр";
         $method->sort_order = 1;
         $method->save();
 
