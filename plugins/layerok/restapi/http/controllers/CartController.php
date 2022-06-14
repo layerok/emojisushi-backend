@@ -111,7 +111,9 @@ class CartController extends Controller
             'product.image_sets',
             'product.prices',
             'product.additional_prices',
-            'product.property_values',
+            'product.property_values' => function($query) {
+                $query->where('value', '1');
+            },
         ])->get()->each(function($p) {
             $p->hidden = [];
             $p->price_formatted = $p->product->price()->price_formatted;
