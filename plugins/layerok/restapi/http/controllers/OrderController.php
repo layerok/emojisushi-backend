@@ -98,7 +98,7 @@ class OrderController extends Controller
             ->newLine()
             ->field('total', $this->cart->getTotalFormattedPrice())
             ->field('spot', $spot->name)
-            ->trans('target.site');
+            ->field('target', $receipt->trans('site'));
 
         $api->sendMessage([
             'text' => $receipt->getText(),
