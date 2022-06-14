@@ -58,11 +58,15 @@ return [
             'change'   => 'Приготовить сдачу с',
             'payment_method_name'   => 'Оплата',
             'payment_status'   => 'Статус оплаты',
-            'spot_name' => 'Заведение',
+            'spot' => 'Заведение',
             'order_items' => 'Товары в заказе',
             'delivery_method' => 'Способ доставки',
             'payment_method' => 'Способ оплаты',
-            'sticks_name' => 'Палочки для суши'
+            'sticks_name' => 'Палочки для суши',
+            'target' => [
+                'site' => 'Заказ сделан через сайт',
+                'bot' => 'Заказ сделан через чат-бот'
+            ]
         ]
     ],
 
