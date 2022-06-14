@@ -121,7 +121,10 @@ class OrderController extends Controller
                 ]);
 
             if(isset($result->error)) {
-                throw new ValidationException([$result->message]);
+                $try_translate_error = \Lang::get('layerok.restapi::lang.poster.errors.' . $result->error, [], null, $result->message);
+                throw new ValidationException([
+                    $result->error => $try_translate_error
+                ]);
             }
         }
 
