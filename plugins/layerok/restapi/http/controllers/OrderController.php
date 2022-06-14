@@ -78,6 +78,34 @@ class OrderController extends Controller
             return $this->t($key);
         });
 
+
+        $tablet_id = $spot->tablet->tablet_id ?? env('POSTER_FALLBACK_TABLET_ID');
+
+        if(env('POSTER_SEND_ORDER_ENABLED')) {
+            PosterApi::init();
+            $result = (object)PosterApi::incomingOrders()
+                ->createIncomingOrder([
+                    'spot_id' => $tablet_id,
+                    'phone' => $data['phone'],
+                    'address' => $data['address'] ?? "",
+                    'comment' => $poster_comment,
+                    'products' => $posterProducts->all(),
+                    'first_name' => $data['first_name'] ?? "",
+                ]);
+
+            if(isset($result->error)) {
+                $poster_err = \Lang::get(
+                    'layerok.restapi::lang.poster.errors.' . $result->error,
+                    [],
+                    null,
+                    $result->message
+                );
+                throw new ValidationException([
+                    $result->error => $poster_err
+                ]);
+            }
+        }
+
         $token = optional($spot->bot)->token ?? env('TELEGRAM_FALLBACK_BOT_TOKEN');
         $chat_id = optional($spot->chat)->internal_id ?? env('TELEGRAM_FALLBACK_CHAT_ID');
         $api = new Api($token);
@@ -105,28 +133,6 @@ class OrderController extends Controller
             'parse_mode' => "html",
             'chat_id' => $chat_id
         ]);
-
-        $tablet_id = $spot->tablet->tablet_id ?? env('POSTER_FALLBACK_TABLET_ID');
-
-        if(env('POSTER_SEND_ORDER_ENABLED')) {
-            PosterApi::init();
-            $result = (object)PosterApi::incomingOrders()
-                ->createIncomingOrder([
-                    'spot_id' => $tablet_id,
-                    'phone' => $data['phone'],
-                    'address' => $data['address'] ?? "",
-                    'comment' => $poster_comment,
-                    'products' => $posterProducts->all(),
-                    'first_name' => $data['first_name'] ?? "",
-                ]);
-
-            if(isset($result->error)) {
-                $try_translate_error = \Lang::get('layerok.restapi::lang.poster.errors.' . $result->error, [], null, $result->message);
-                throw new ValidationException([
-                    $result->error => $try_translate_error
-                ]);
-            }
-        }
 
 
         $this->cart->delete();
