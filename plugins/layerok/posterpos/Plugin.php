@@ -177,6 +177,7 @@ class Plugin extends PluginBase
 
         Property::extend(function($model){
             $model->fillable[] = 'poster_id';
+            $model->fillable[] = 'poster_type'; // batchticket or product
         });
 
 

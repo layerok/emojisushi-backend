@@ -20,3 +20,6 @@
 1.1.6:
     - 'add poster id to properties table'
     - add_poster_id_to_properties_table.php
+1.1.7:
+    - 'add poster type to products table'
+    - add_poster_type_to_products_table.php
