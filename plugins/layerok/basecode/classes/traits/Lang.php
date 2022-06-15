@@ -1,4 +1,6 @@
-<?php namespace Layerok\TgMall\Classes\Traits;
+<?php
+
+namespace Layerok\BaseCode\Classes\Traits;
 
 use Lang as Facade;
 
@@ -6,7 +8,7 @@ trait Lang
 {
     public static function lang($key, $params = [])
     {
-        $pluginPrefix = "layerok.tgmall::lang.telegram.";
+        $pluginPrefix = "layerok.basecode::lang.telegram.";
         return Facade::get($pluginPrefix . $key, $params);
     }
 

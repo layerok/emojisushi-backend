@@ -21,8 +21,7 @@ class StartCommand extends Command
      */
     public function handle()
     {
-        $stop = Event::fire('tgmall.command.start.starting', [$this], true);
-        if($stop) {
+        if($stop = Event::fire('tgmall.command.start.starting', [$this], true)) {
             return;
         }
         $update = $this->getUpdate();

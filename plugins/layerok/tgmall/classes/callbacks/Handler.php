@@ -199,4 +199,8 @@ abstract class Handler implements HandlerInterface
 
         return $receipt;
     }
+
+    public function setWebhook(Webhook $webhook) {
+        $this->webhook = $webhook;
+    }
 }

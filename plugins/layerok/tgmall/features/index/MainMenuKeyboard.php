@@ -3,6 +3,7 @@
 use Layerok\TgMall\Classes\Keyboards\InlineKeyboard;
 use Layerok\TgMall\Classes\Traits\CallbackData;
 use Layerok\TgMall\Classes\Traits\Lang;
+use Event;
 
 class MainMenuKeyboard extends InlineKeyboard
 {
@@ -11,6 +12,7 @@ class MainMenuKeyboard extends InlineKeyboard
 
     public function build(): void
     {
+        Event::fire('tgmall.keyboard.main.beforeBuild', [$this]);
         $this
             ->append([
                 'text' => self::lang('buttons.categories'),
@@ -24,13 +26,6 @@ class MainMenuKeyboard extends InlineKeyboard
                 )
             ])
             ->nextRow()
-            ->append([
-                'text' => "Змінити заклад",
-                'callback_data' => self::prepareCallbackData(
-                    'change_spot',
-                    ['type' => 'list']
-                )
-            ])
             ->append([
                 'text' => '🌐 Вебсайт',
                 'callback_data' => self::prepareCallbackData(

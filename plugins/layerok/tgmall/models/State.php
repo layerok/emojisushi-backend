@@ -52,10 +52,6 @@ class State extends Model
         $this->setStateValue('spot_id', $id);
     }
 
-    public function getSpotId() {
-        $this->getStateValue('spot_id');
-    }
-
     public function setCallbackHandler($handler)
     {
         $this->setStateValue('callback_handler', $handler);
@@ -74,6 +70,10 @@ class State extends Model
     public function setCartCountMsg($info)
     {
         $this->setStateValue('cart_count_msg', $info);
+    }
+
+    public function getSpotId() {
+        return $this->getStateValue('spot_id');
     }
 
     public function getMessageHandler()

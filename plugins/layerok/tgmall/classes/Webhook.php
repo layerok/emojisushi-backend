@@ -43,6 +43,8 @@ class Webhook
     /** @var State */
     public $state;
 
+    public $handlerInfo;
+
     /** @var Api */
     protected $api;
 
@@ -71,27 +73,33 @@ class Webhook
 
     public function addCallbackQueryHandlers()
     {
+        $handlers = [
+            StartHandler::class,
+            WebsiteHandler::class,
+            CategoryItemsHandler::class,
+            CategoryItemHandler::class,
+            AddProductHandler::class,
+            CartHandler::class,
+            CheckoutHandler::class,
+            NoopHandler::class,
+            EnterPhoneHandler::class,
+            ChosePaymentMethodHandler::class,
+            ChoseDeliveryMethodHandler::class,
+            ListPaymentMethodsHandler::class,
+            ListDeliveryMethodsHandler::class,
+            LeaveCommentHandler::class,
+            PreConfirmOrderHandler::class,
+            ConfirmOrderHandler::class,
+        ];
+
+        if($extended = Event::fire('tgmall.handlers.extend', [$handlers], true)) {
+            $handlers = $extended;
+        }
+
         CallbackQueryBus::instance()
             ->setTelegram($this->api)
             ->setWebhook($this)
-            ->addHandlers([
-                StartHandler::class,
-                WebsiteHandler::class,
-                CategoryItemsHandler::class,
-                CategoryItemHandler::class,
-                AddProductHandler::class,
-                CartHandler::class,
-                CheckoutHandler::class,
-                NoopHandler::class,
-                EnterPhoneHandler::class,
-                ChosePaymentMethodHandler::class,
-                ChoseDeliveryMethodHandler::class,
-                ListPaymentMethodsHandler::class,
-                ListDeliveryMethodsHandler::class,
-                LeaveCommentHandler::class,
-                PreConfirmOrderHandler::class,
-                ConfirmOrderHandler::class,
-            ]);
+            ->addHandlers($handlers);
     }
 
     public function addListeners()
@@ -122,8 +130,13 @@ class Webhook
             ->setTelegramUser($this->telegramUser)
             ->setUpdate($update);
 
-        $this->state = $this->createState();
 
+
+
+        $this->state = $this->createState();
+        if($update->isType('callback_query')) {
+            $this->handlerInfo = CallbackQueryBus::instance()->parse($update);
+        }
         $stop = Event::fire('tgmall.state.created', [$this], true);
 
         if($stop) {
