@@ -30,6 +30,7 @@ class ImportSpots extends Command {
         HideProduct::truncate();
 
         $this->createSpots();
+        \Artisan::call('poster:import-tablets', ['--force' => true]);
 
         $this->output->success('All done!');
     }
