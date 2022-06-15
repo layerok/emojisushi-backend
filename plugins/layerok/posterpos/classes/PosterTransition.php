@@ -4,6 +4,7 @@ namespace Layerok\PosterPos\Classes;
 
 
 use Illuminate\Support\Collection;
+use Layerok\PosterPos\Models\HideProduct;
 use OFFLINE\Mall\Classes\Index\Index;
 use OFFLINE\Mall\Classes\Observers\ProductObserver;
 use OFFLINE\Mall\Models\Category;
@@ -19,19 +20,18 @@ use System\Models\File;
 
 class PosterTransition
 {
-    public function createProduct($value)
-    {
-        $productExist = Product::where('poster_id', '=', $value->product_id)->first();
+    public function createProductOrDish($value, $type) {
+        $product = Product::where('poster_id', '=', $value->product_id)->first();
 
-        if ($productExist) {
-            // Если товар с таким poster_id существует, то нужно обновить товара,
-            // но пока мы просто выходим
-            return;
+        if ($product) {
+            // deleting product
+            $product->delete();
+            HideProduct::where('product_id', $product->id)->delete();
         }
 
         $product = Product::create([
             'name' => (string)$value->product_name,
-            'slug' => (string)str_slug($value->product_name),
+            'slug' => str_slug($value->product_name),
             'poster_id' => (int)$value->product_id,
             'user_defined_id' => (int)$value->product_id,
             'weight'  => (int)$value->out,
@@ -39,6 +39,7 @@ class PosterTransition
             'published' => (int)$value->hidden == "0" ? 1: 0,
             'stock' => 9999999,
             'inventory_management_method' => 'single',
+            'poster_type' => $type
         ]);
 
         $rootCategory = Category::where('slug', RootCategory::SLUG_KEY)->first();
@@ -238,6 +239,15 @@ class PosterTransition
                 $observer->created($product);
             });
         });
+    }
+
+    public function createProduct($value)
+    {
+        $this->createProductOrDish($value, 'product');
+    }
+
+    public function createDish($value) {
+        $this->createProductOrDish($value, 'dish');
     }
 
     public function deleteProduct($id)

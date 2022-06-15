@@ -3,6 +3,8 @@
 use Backend;
 use Illuminate\Support\Facades\Event;
 use Layerok\PosterPos\Console\ImportData;
+use Layerok\PosterPos\Console\ImportProducts;
+use Layerok\PosterPos\Console\ImportSpots;
 use Layerok\PosterPos\Models\Spot;
 use Layerok\Restapi\Http\Controllers\ProductController;
 use Maatwebsite\Excel\ExcelServiceProvider;
@@ -48,7 +50,9 @@ class Plugin extends PluginBase
      */
     public function register()
     {
-        $this->registerConsoleCommand('posterpos.import', ImportData::class);
+        $this->registerConsoleCommand('poster.import', ImportData::class);
+        $this->registerConsoleCommand('poster.import-products', ImportProducts::class);
+        $this->registerConsoleCommand('poster.import-spots', ImportSpots::class);
         App::register(ExcelServiceProvider::class);
         App::registerClassAlias('Excel',  Excel::class);
     }
@@ -177,7 +181,7 @@ class Plugin extends PluginBase
 
         Property::extend(function($model){
             $model->fillable[] = 'poster_id';
-            $model->fillable[] = 'poster_type'; // batchticket or product
+            $model->fillable[] = 'poster_type'; // dish or product
         });
 
 

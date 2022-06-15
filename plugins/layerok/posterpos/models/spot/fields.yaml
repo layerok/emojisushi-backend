@@ -7,6 +7,9 @@ fields:
         label: Название
         description: Название этого заведения
         span: auto
+    poster_id:
+        label: ID в системе постер
+        span: auto
     code:
         label: Code
         span: auto

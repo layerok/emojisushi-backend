@@ -22,7 +22,8 @@ class Spot extends Model
         'phones',
         'bot_id',
         'chat_id',
-        'address'
+        'address',
+        'poster_id'
     ];
 
 

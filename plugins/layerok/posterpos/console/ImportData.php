@@ -30,7 +30,7 @@ use Symfony\Component\Console\Input\InputOption;
 use DB;
 
 class ImportData extends Command {
-    protected $name = 'posterpos:import';
+    protected $name = 'poster:import';
     protected $description = 'Import Layerok.PosterPos data';
     public $ingredientsGroup = null;
     public $uaCurrency = null;
