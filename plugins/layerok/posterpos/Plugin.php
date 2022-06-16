@@ -20,6 +20,7 @@ use OFFLINE\Mall\Controllers\Variants;
 use OFFLINE\Mall\Models\Category;
 use OFFLINE\Mall\Models\Product;
 use OFFLINE\Mall\Models\Property;
+use OFFLINE\Mall\Models\PropertyGroup;
 use OFFLINE\Mall\Models\Variant;
 use System\Classes\PluginBase;
 use App;
@@ -91,6 +92,16 @@ class Plugin extends PluginBase
                     'span' => 'left'
                 ];
                 $config['fields']['options']['form']['fields']['value']['span'] = 'right';
+                return $config;
+            }
+
+            if ($path === '/plugins/offline/mall/models/propertygroup/fields.yaml') {
+                $config['fields']['poster_id'] = [
+                    'label' => 'Poster ID',
+                    'type' => 'text',
+                    'span' => 'auto'
+                ];
+
                 return $config;
             }
 
@@ -203,6 +214,10 @@ class Plugin extends PluginBase
         Property::extend(function($model){
             $model->fillable[] = 'poster_id';
             $model->fillable[] = 'poster_type'; // dish or product
+        });
+
+        PropertyGroup::extend(function($model){
+            $model->fillable[] = 'poster_id';
         });
 
 

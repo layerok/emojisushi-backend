@@ -78,39 +78,19 @@ class ImportIngredients extends Command {
     {
         $this->output->writeln('Removing existing ingredients and more...');
 
+        $this->output->writeln('deleting property group for ingredients');
+        PropertyGroup::truncate();
+        $this->output->writeln('deleting properties in property group for ingredients');
+        Property::truncate();
+        $this->output->writeln('deleting property values for property in property group for ingredients');
+        PropertyValue::truncate();
 
+        $this->output->writeln('detaching property group from properties and categories');
+        DB::table('offline_mall_property_property_group')
+            ->truncate(); // detach properties from property group
+        DB::table('offline_mall_category_property_group')
+            ->truncate(); // detach categories from property group
 
-        $group = PropertyGroup::where('name', IngredientsGroup::SLUG_KEY)->first();
-        if($group) {
-            $properties_ids = $group->properties->pluck('id');
-
-            $this->output->writeln('deleting property group for ingredients');
-            DB::table('offline_mall_property_groups')
-                ->where('id', $group->id)
-                ->delete(); // delete property group
-
-
-            $this->output->writeln('deleting properties in property group for ingredients');
-            DB::table('offline_mall_properties')
-                ->whereIn('id', $properties_ids)
-                ->delete(); // delete properties
-
-
-            $this->output->writeln('deleting property values for property in property group for ingredients');
-            DB::table('offline_mall_property_values')
-                ->whereIn('property_id', $properties_ids)
-                ->delete(); // delete property values
-
-            $this->output->writeln('detaching property group from properties and categories');
-
-            DB::table('offline_mall_property_property_group')
-                ->where('property_group_id', $group->id)
-                ->delete(); // detach properties from property group
-
-            DB::table('offline_mall_category_property_group')
-                ->where('property_group_id', $group->id)
-                ->delete(); // detach categories from property group
-        }
 
         if($this->option('reindex')) {
             $index = app(Index::class);
@@ -123,12 +103,6 @@ class ImportIngredients extends Command {
         $this->output->newLine();
         $this->output->writeln('Creating ingredients...');
         $this->output->newLine();
-
-        $this->group = PropertyGroup::create([
-            'name' => IngredientsGroup::SLUG_KEY,
-            'display_name' => IngredientsGroup::DISPLAY_NAME
-        ]);
-
 
         PosterApi::init();
 
@@ -151,28 +125,27 @@ class ImportIngredients extends Command {
         foreach ($categories->response as $category) {
             $category_id = $category->category_id;
 
-            $options = [];
+            $group = PropertyGroup::create([
+                'name' => $category->name,
+                'poster_id' => $category_id
+            ]);
 
-            foreach($ingredients->response as $index => $ingredient) {
+            foreach($ingredients->response as $ingredient) {
                 if((int)$category_id === $ingredient->category_id) {
-                    $options[] = [
-                        "value" => $ingredient->ingredient_name,
-                        "poster_id" => $ingredient->ingredient_id,
-                        "_index" => $index
-                    ];
+
+                    $property = Property::create([
+                        'type' => 'checkbox',
+                        'poster_id' => $ingredient->ingredient_id,
+                        'name' => $ingredient->ingredient_name,
+                    ]);
+                    $group->properties()->attach($property->id, [
+                        'filter_type' => 'set',
+                        'use_for_variants' => true
+                    ]);
                 }
             }
 
-            $property = Property::create([
-                'type' => 'dropdown',
-                'poster_id' => $category_id,
-                'name' => $category->name,
-                'options' => $options
-            ]);
-            $this->group->properties()->attach($property->id, [
-                'filter_type' => 'set',
-                'use_for_variants' => true
-            ]);
+
             $this->output->progressAdvance();
         }
 

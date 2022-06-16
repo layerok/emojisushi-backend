@@ -26,3 +26,6 @@
 1.1.8:
     - 'add poster id to spots table'
     - add_poster_id_to_spots_table.php
+1.1.10:
+    - 'add poster id to property groups table'
+    - add_poster_id_to_property_groups_table.php
