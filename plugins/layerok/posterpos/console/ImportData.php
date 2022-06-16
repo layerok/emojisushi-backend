@@ -48,15 +48,19 @@ class ImportData extends Command {
 
         $this->cleanup();
         $this->createCurrencies();
-        $this->createIngredients();
 
         $this->output->newLine();
-        $this->output->writeln('Creating categories...');
+        $this->output->writeln('Importing ingredients...');
+        $this->output->newLine();
+        Artisan::call('poster:import-ingredients', ['--force' => true]);
+
+        $this->output->newLine();
+        $this->output->writeln('Importing categories...');
         $this->output->newLine();
         Artisan::call('poster:import-categories', ['--force' => true]);
 
         $this->output->newLine();
-        $this->output->writeln('Creating spots and tablets...');
+        $this->output->writeln('Importing spots and tablets...');
         $this->output->newLine();
         Artisan::call('poster:import-spots', ['--force' => true]);
 
@@ -89,17 +93,13 @@ class ImportData extends Command {
     {
         $this->output->writeln('Resetting plugin data...');
 
-
         Product::truncate();
         ProductPrice::truncate();
-        PropertyGroup::truncate();
-        PropertyValue::truncate();
-        Property::truncate();
         Variant::truncate();
         PaymentMethod::truncate();
         ShippingMethod::truncate();
         Currency::truncate();
-        DB::table('offline_mall_property_property_group')->truncate();
+
         DB::table('offline_mall_prices')->truncate();
 
         Artisan::call('cache:clear');
@@ -138,45 +138,6 @@ class ImportData extends Command {
 
         $this->output->progressFinish();
     }
-
-    protected function createIngredients() {
-        $this->output->newLine();
-        $this->output->writeln('Creating ingredients...');
-        $this->output->newLine();
-
-        $this->ingredientsGroup = PropertyGroup::create([
-            'name' => IngredientsGroup::SLUG_KEY,
-            'display_name' => "Ингридиенты"
-        ]);
-
-        PosterApi::init();
-        $records = (object)PosterApi::menu()->getIngredients();
-        $count = count($records->response);
-
-        $this->output->progressStart($count);
-
-        foreach ($records->response as $value) {
-            $category_id = $value->category_id;
-
-            if($category_id === 8) {
-                // ignore "Хозтовары" category
-                continue;
-            }
-            $property = Property::create([
-                'type' => 'checkbox',
-                'poster_id' => $value->ingredient_id,
-                'name' => $value->ingredient_name,
-
-            ]);
-            $this->ingredientsGroup->properties()->attach($property->id, [
-                'filter_type' => 'set',
-            ]);
-            $this->output->progressAdvance();
-        }
-
-        $this->output->progressFinish();
-    }
-
 
     protected function createCurrencies()
     {
