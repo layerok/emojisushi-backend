@@ -3,23 +3,16 @@ namespace Layerok\PosterPos\Console;
 
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Artisan;
-use Layerok\PosterPos\Classes\IngredientsGroup;
 use Layerok\PosterPos\Classes\PosterTransition;
-use Layerok\PosterPos\Classes\RootCategory;
 use OFFLINE\Mall\Classes\Index\Index;
 use OFFLINE\Mall\Classes\Index\Noop;
 use OFFLINE\Mall\Classes\Index\ProductEntry;
 use OFFLINE\Mall\Classes\Index\VariantEntry;
-use OFFLINE\Mall\Models\Category;
-use OFFLINE\Mall\Models\Currency;
 use OFFLINE\Mall\Models\ImageSet;
 use OFFLINE\Mall\Models\PaymentMethod;
 use OFFLINE\Mall\Models\Price;
 use OFFLINE\Mall\Models\Product;
 use OFFLINE\Mall\Models\ProductPrice;
-use OFFLINE\Mall\Models\Property;
-use OFFLINE\Mall\Models\PropertyGroup;
-use OFFLINE\Mall\Models\PropertyValue;
 use OFFLINE\Mall\Models\ShippingMethod;
 use OFFLINE\Mall\Models\Variant;
 use poster\src\PosterApi;
@@ -29,7 +22,6 @@ use DB;
 class ImportData extends Command {
     protected $name = 'poster:import';
     protected $description = 'Import Layerok.PosterPos data';
-    public $ingredientsGroup = null;
     public $uaCurrency = null;
 
     public function handle()
@@ -47,7 +39,15 @@ class ImportData extends Command {
         });
 
         $this->cleanup();
-        $this->createCurrencies();
+        $this->output->newLine();
+        $this->output->writeln('Create uah currency...');
+        $this->output->newLine();
+        Artisan::call('poster:create-uah-hryvna');
+        $this->output->newLine();
+        $this->output->writeln('Create payment and delivery methods...');
+        $this->output->newLine();
+        Artisan::call('poster:create-payment-methods');
+        Artisan::call('poster:create-shipping-methods');
 
         $this->output->newLine();
         $this->output->writeln('Importing ingredients...');
@@ -64,8 +64,7 @@ class ImportData extends Command {
         $this->output->newLine();
         Artisan::call('poster:import-spots', ['--force' => true]);
 
-        $this->createPaymentMethods();
-        $this->createShippingMethods();
+
         $this->createProducts();
 
         app()->bind(Index::class, function () use ($originalIndex) {
@@ -92,15 +91,17 @@ class ImportData extends Command {
     protected function cleanup()
     {
         $this->output->writeln('Resetting plugin data...');
+        ShippingMethod::truncate();
+        DB::table('offline_mall_prices')->truncate();
+
+        PaymentMethod::truncate();
+
+
 
         Product::truncate();
         ProductPrice::truncate();
         Variant::truncate();
-        PaymentMethod::truncate();
-        ShippingMethod::truncate();
-        Currency::truncate();
 
-        DB::table('offline_mall_prices')->truncate();
 
         Artisan::call('cache:clear');
 
@@ -139,88 +140,5 @@ class ImportData extends Command {
         $this->output->progressFinish();
     }
 
-    protected function createCurrencies()
-    {
-        $this->output->writeln('Creating currencies...');
-        $this->uaCurrency = Currency::create([
-            'code'     => 'UAH',
-            'format'   => '{{ price|number_format(0, ".", ",") }} {{ currency.symbol }} ',
-            'decimals' => 2,
-            'is_default' => true,
-            'symbol'   => '₴',
-            'rate'     => 1,
-        ]);
-    }
-
-    protected function createPaymentMethods() {
-        $this->output->newLine();
-        $this->output->writeln('Creating payment methods...');
-        $this->output->newLine();
-
-
-        $this->output->progressStart(2);
-
-        $method                   = new PaymentMethod();
-        $method->name             = 'Готівкою';
-        $method->payment_provider = 'offline';
-        $method->sort_order       = 1;
-        $method->code             = 'cash';
-        $method->save();
-
-        $this->output->progressAdvance();
-
-        $method                   = new PaymentMethod();
-        $method->name             = 'Картою';
-        $method->payment_provider = 'offline';
-        $method->sort_order       = 1;
-        $method->code             = 'card';
-        $method->save();
-
-        $this->output->progressAdvance();
-
-
-        $this->output->progressFinish();
-    }
-
-    protected function createShippingMethods() {
-        $this->output->newLine();
-        $this->output->writeln('Creating shipping methods...');
-        $this->output->newLine();
-
-
-        $this->output->progressStart(2);
-
-        $method                     = new ShippingMethod();
-        $method->name               = 'Самовивіз';
-        $method->sort_order = 1;
-        $method->save();
-
-        (new Price([
-            'price'          => 0,
-            'currency_id'    => $this->uaCurrency->id,
-            'priceable_type' => ShippingMethod::MORPH_KEY,
-            'priceable_id'   => $method->id,
-        ]))->save();
-
-
-        $this->output->progressAdvance();
-
-        $method                     = new ShippingMethod();
-        $method->name               = "Кур'єр";
-        $method->sort_order = 1;
-        $method->save();
-
-        (new Price([
-            'price'          => 0,
-            'currency_id'    => $this->uaCurrency->id,
-            'priceable_type' => ShippingMethod::MORPH_KEY,
-            'priceable_id'   => $method->id,
-        ]))->save();
-
-        $this->output->progressAdvance();
-
-
-        $this->output->progressFinish();
-    }
 
 }

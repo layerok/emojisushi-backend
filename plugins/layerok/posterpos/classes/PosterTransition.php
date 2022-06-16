@@ -60,16 +60,8 @@ class PosterTransition
 
         if(!$currency) {
             // Если не существует гривневой валюты, то создаем
-            $currency = Currency::create([
-                'code'     => 'UAH',
-                'format'   => '{{ currency.symbol }} {{ price|number_format(2, ".", ",") }}',
-                'decimals' => 2,
-                'is_default' => true,
-                'symbol'   => '₴',
-                'rate'     => 1,
-            ]);
+            \Artisan::call('poster:create-uah-currency');
         }
-
 
 
         // Добавим цену товару

@@ -3,23 +3,23 @@
 use Backend;
 use Illuminate\Support\Facades\Event;
 use Layerok\PosterPos\Console\ImportCategories;
+use Layerok\PosterPos\Console\CreatePaymentMethods;
+use Layerok\PosterPos\Console\CreateShippingMethods;
+use Layerok\PosterPos\Console\CreateUAHCurrency;
 use Layerok\PosterPos\Console\ImportData;
 use Layerok\PosterPos\Console\ImportIngredients;
 use Layerok\PosterPos\Console\ImportProducts;
 use Layerok\PosterPos\Console\ImportSpots;
 use Layerok\PosterPos\Console\ImportTablets;
 use Layerok\PosterPos\Models\Spot;
-use Layerok\Restapi\Http\Controllers\ProductController;
 use Maatwebsite\Excel\ExcelServiceProvider;
 use Maatwebsite\Excel\Facades\Excel;
 use OFFLINE\Mall\Controllers\Categories;
 use OFFLINE\Mall\Controllers\Products;
 use OFFLINE\Mall\Controllers\Variants;
 use OFFLINE\Mall\Models\Category;
-use OFFLINE\Mall\Models\PaymentMethod;
 use OFFLINE\Mall\Models\Product;
 use OFFLINE\Mall\Models\Property;
-use OFFLINE\Mall\Models\ShippingMethod;
 use OFFLINE\Mall\Models\Variant;
 use System\Classes\PluginBase;
 use App;
@@ -59,6 +59,9 @@ class Plugin extends PluginBase
         $this->registerConsoleCommand('poster.import-tablets', ImportTablets::class);
         $this->registerConsoleCommand('poster.import-categories', ImportCategories::class);
         $this->registerConsoleCommand('poster.import-ingredients', ImportIngredients::class);
+        $this->registerConsoleCommand('poster.create-uah-currency', CreateUAHCurrency::class);
+        $this->registerConsoleCommand('poster.create-payment-methods', CreatePaymentMethods::class);
+        $this->registerConsoleCommand('poster.create-shipping-methods', CreateShippingMethods::class);
         App::register(ExcelServiceProvider::class);
         App::registerClassAlias('Excel',  Excel::class);
     }
@@ -80,6 +83,18 @@ class Plugin extends PluginBase
                 ];
                 return $config;
             }
+
+            if ($path === '/plugins/offline/mall/models/property/fields_pivot.yaml') {
+                $config['fields']['options']['form']['fields']['poster_id'] = [
+                    'label' => 'Poster ID',
+                    'type' => 'text',
+                    'span' => 'left'
+                ];
+                $config['fields']['options']['form']['fields']['value']['span'] = 'right';
+                return $config;
+            }
+
+
 
             if ($path === '/plugins/offline/mall/models/category/fields.yaml') {
                 $config['fields']['hide_categories_in_spot'] = [

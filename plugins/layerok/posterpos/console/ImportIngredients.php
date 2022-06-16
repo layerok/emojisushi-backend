@@ -29,6 +29,7 @@ use DB;
 class ImportIngredients extends Command {
     protected $name = 'poster:import-ingredients';
     protected $description = 'Fetch ingredients from PosterPos api and import into database';
+    protected $group = null;
 
     public function handle()
     {
@@ -109,10 +110,7 @@ class ImportIngredients extends Command {
             DB::table('offline_mall_category_property_group')
                 ->where('property_group_id', $group->id)
                 ->delete(); // detach categories from property group
-
         }
-
-
 
         if($this->option('reindex')) {
             $index = app(Index::class);
@@ -126,32 +124,54 @@ class ImportIngredients extends Command {
         $this->output->writeln('Creating ingredients...');
         $this->output->newLine();
 
-        $this->ingredientsGroup = PropertyGroup::create([
+        $this->group = PropertyGroup::create([
             'name' => IngredientsGroup::SLUG_KEY,
-            'display_name' => "Ингридиенты"
+            'display_name' => IngredientsGroup::DISPLAY_NAME
         ]);
 
+
         PosterApi::init();
-        $records = (object)PosterApi::menu()->getIngredients();
-        $count = count($records->response);
+
+        $this->createIngredientCategories();
+
+
+    }
+
+    protected function createIngredientCategories() {
+        $this->output->newLine();
+        $this->output->newLine();
+        $this->output->writeln('Creating ingredient categories');
+        $ingredients = (object)PosterApi::menu()->getIngredients();
+        $categories = (object)PosterApi::menu()->getCategoriesIngredients();
+
+        $count = count($categories->response);
 
         $this->output->progressStart($count);
 
-        foreach ($records->response as $value) {
-            $category_id = $value->category_id;
+        foreach ($categories->response as $category) {
+            $category_id = $category->category_id;
 
-            if($category_id === 8) {
-                // ignore "Хозтовары" category
-                continue;
+            $options = [];
+
+            foreach($ingredients->response as $index => $ingredient) {
+                if((int)$category_id === $ingredient->category_id) {
+                    $options[] = [
+                        "value" => $ingredient->ingredient_name,
+                        "poster_id" => $ingredient->ingredient_id,
+                        "_index" => $index
+                    ];
+                }
             }
-            $property = Property::create([
-                'type' => 'checkbox',
-                'poster_id' => $value->ingredient_id,
-                'name' => $value->ingredient_name,
 
+            $property = Property::create([
+                'type' => 'dropdown',
+                'poster_id' => $category_id,
+                'name' => $category->name,
+                'options' => $options
             ]);
-            $this->ingredientsGroup->properties()->attach($property->id, [
+            $this->group->properties()->attach($property->id, [
                 'filter_type' => 'set',
+                'use_for_variants' => true
             ]);
             $this->output->progressAdvance();
         }
