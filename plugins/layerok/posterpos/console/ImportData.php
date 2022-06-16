@@ -3,12 +3,9 @@ namespace Layerok\PosterPos\Console;
 
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Artisan;
+use Layerok\PosterPos\Classes\IngredientsGroup;
 use Layerok\PosterPos\Classes\PosterTransition;
 use Layerok\PosterPos\Classes\RootCategory;
-use Layerok\PosterPos\Models\HideCategory;
-use Layerok\PosterPos\Models\HideProduct;
-use Layerok\PosterPos\Models\Spot;
-use Layerok\PosterPos\Models\Tablet;
 use OFFLINE\Mall\Classes\Index\Index;
 use OFFLINE\Mall\Classes\Index\Noop;
 use OFFLINE\Mall\Classes\Index\ProductEntry;
@@ -52,9 +49,17 @@ class ImportData extends Command {
         $this->cleanup();
         $this->createCurrencies();
         $this->createIngredients();
-        $this->createCategories();
-        $this->createSpots();
-        $this->createTablets();
+
+        $this->output->newLine();
+        $this->output->writeln('Creating categories...');
+        $this->output->newLine();
+        Artisan::call('poster:import-categories', ['--force' => true]);
+
+        $this->output->newLine();
+        $this->output->writeln('Creating spots and tablets...');
+        $this->output->newLine();
+        Artisan::call('poster:import-spots', ['--force' => true]);
+
         $this->createPaymentMethods();
         $this->createShippingMethods();
         $this->createProducts();
@@ -84,23 +89,17 @@ class ImportData extends Command {
     {
         $this->output->writeln('Resetting plugin data...');
 
-        Category::truncate();
+
         Product::truncate();
         ProductPrice::truncate();
         PropertyGroup::truncate();
         PropertyValue::truncate();
         Property::truncate();
         Variant::truncate();
-        Spot::truncate();
-        HideCategory::truncate();
-        HideProduct::truncate();
-        Spot::truncate();
-        Tablet::truncate();
         PaymentMethod::truncate();
         ShippingMethod::truncate();
         Currency::truncate();
         DB::table('offline_mall_property_property_group')->truncate();
-        DB::table('offline_mall_category_property_group')->truncate();
         DB::table('offline_mall_prices')->truncate();
 
         Artisan::call('cache:clear');
@@ -146,7 +145,7 @@ class ImportData extends Command {
         $this->output->newLine();
 
         $this->ingredientsGroup = PropertyGroup::create([
-            'name' => 'ingredients',
+            'name' => IngredientsGroup::SLUG_KEY,
             'display_name' => "Ингридиенты"
         ]);
 
@@ -178,92 +177,6 @@ class ImportData extends Command {
         $this->output->progressFinish();
     }
 
-    protected function createSpots() {
-        $this->output->newLine();
-        $this->output->writeln('Creating spots...');
-        $this->output->newLine();
-
-        PosterApi::init();
-
-        $records = (object)PosterApi::access()->getSpots();
-
-        $count = count($records->response);
-
-        $this->output->progressStart($count);
-
-        foreach ($records->response as $record) {
-            Spot::create([
-                'address' => $record->spot_adress,
-                'name' => $record->spot_name,
-                'bot_id' => 1,
-                'chat_id' => 1,
-                'phones' => '+38 (093) 366 28 69, +38 (068) 303 45 51'
-            ]);
-            $this->output->progressAdvance();
-        }
-
-        $this->output->progressFinish();
-    }
-
-    protected function createTablets() {
-        $this->output->newLine();
-        $this->output->writeln('Creating tablets...');
-        $this->output->newLine();
-
-        PosterApi::init();
-
-        $records = (object)PosterApi::access()->getTablets();
-
-        $count = count($records->response);
-
-        $this->output->progressStart($count);
-
-        foreach ($records->response as $record) {
-            Tablet::create([
-                'name' => $record->tablet_name,
-                'spot_id' => $record->spot_id,
-                'tablet_id' => $record->tablet_id
-            ]);
-            $this->output->progressAdvance();
-        }
-
-        $this->output->progressFinish();
-    }
-
-    protected function createCategories()
-    {
-        $this->output->writeln('Creating categories...');
-
-
-        PosterApi::init();
-        $categories = (object)PosterApi::menu()->getCategories();
-
-        $root = Category::create([
-            'name' => 'Меню',
-            'slug'          => RootCategory::SLUG_KEY,
-            'poster_id'     => null,
-            'sort_order'    => 0,
-        ]);
-
-        $root->property_groups()->attach([$this->ingredientsGroup->id]);
-
-        foreach ($categories->response as $category) {
-            $poster_id = $category->category_id;
-            $slug = $category->category_tag ?? str_slug($category->category_name);
-
-
-            $category = Category::create([
-                'name'          => (string)$category->category_name,
-                'slug'          => $slug,
-                'poster_id'     => (int)$poster_id,
-                'sort_order'    => (int)$category->sort_order,
-                'parent_id'     => $root->id,
-            ]);
-
-            // Привязываем к категории группу фильтров "Ингридиенты"
-            $category->property_groups()->attach([$this->ingredientsGroup->id]);
-        }
-    }
 
     protected function createCurrencies()
     {

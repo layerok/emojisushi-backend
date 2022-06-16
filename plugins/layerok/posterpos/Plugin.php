@@ -2,6 +2,7 @@
 
 use Backend;
 use Illuminate\Support\Facades\Event;
+use Layerok\PosterPos\Console\ImportCategories;
 use Layerok\PosterPos\Console\ImportData;
 use Layerok\PosterPos\Console\ImportProducts;
 use Layerok\PosterPos\Console\ImportSpots;
@@ -55,6 +56,7 @@ class Plugin extends PluginBase
         $this->registerConsoleCommand('poster.import-products', ImportProducts::class);
         $this->registerConsoleCommand('poster.import-spots', ImportSpots::class);
         $this->registerConsoleCommand('poster.import-tablets', ImportTablets::class);
+        $this->registerConsoleCommand('poster.import-categories', ImportCategories::class);
         App::register(ExcelServiceProvider::class);
         App::registerClassAlias('Excel',  Excel::class);
     }
