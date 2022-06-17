@@ -94,7 +94,7 @@ class Variant extends Model
         'customer_group_prices' => [CustomerGroupPrice::class, 'name' => 'priceable'],
         'additional_prices'     => [Price::class, 'name' => 'priceable'],
     ];
-    protected $fillable = [
+    public $fillable = [
         'product_id',
         'user_defined_id',
         'image_set_id',

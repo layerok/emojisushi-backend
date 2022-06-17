@@ -5,6 +5,7 @@ namespace Layerok\PosterPos\Classes;
 
 use Illuminate\Support\Collection;
 use Layerok\PosterPos\Models\HideProduct;
+use Layerok\PosterPos\Models\Spot;
 use OFFLINE\Mall\Classes\Index\Index;
 use OFFLINE\Mall\Classes\Observers\ProductObserver;
 use OFFLINE\Mall\Models\Category;
@@ -20,13 +21,12 @@ use System\Models\File;
 
 class PosterTransition
 {
-    public function createProductOrDish($value, $type) {
+    public function createProduct($value) {
         $product = Product::where('poster_id', '=', $value->product_id)->first();
 
         if ($product) {
             // deleting product
-            $product->delete();
-            HideProduct::where('product_id', $product->id)->delete();
+            return;
         }
 
         $product = Product::create([
@@ -34,13 +34,32 @@ class PosterTransition
             'slug' => str_slug($value->product_name),
             'poster_id' => (int)$value->product_id,
             'user_defined_id' => (int)$value->product_id,
-            'weight'  => (int)$value->out,
+            'weight'  => isset($value->out) ? (int)$value->out: 0,
             'allow_out_of_stock_purchases' => 1,
             'published' => (int)$value->hidden == "0" ? 1: 0,
             'stock' => 9999999,
-            'inventory_management_method' => 'single',
-            'poster_type' => $type
+            'inventory_management_method' => 'single'
         ]);
+
+        if(isset($value->spots)) {
+            foreach($value->spots as $spot) {
+                $spotModel = Spot::where('poster_id', $spot->spot_id)->first();
+                if(!$spotModel) {
+                    continue;
+                }
+                if(!(int)$spot->visible) {
+                    HideProduct::create([
+                        'spot_id' => $spotModel->id,
+                        'product_id' => $product->id
+                    ]);
+                } else {
+                    HideProduct::where([
+                        'spot_id' => $spotModel->id,
+                        'product_id' => $product->id
+                    ])->delete();
+                }
+            }
+        }
 
         $rootCategory = Category::where('slug', RootCategory::SLUG_KEY)->first();
 
@@ -61,15 +80,21 @@ class PosterTransition
         if(!$currency) {
             // Если не существует гривневой валюты, то создаем
             \Artisan::call('poster:create-uah-currency');
+            $currency = Currency::where('code', '=', 'UAH')->first();
         }
 
 
         // Добавим цену товару
         // Нужно учесть две ситуации, когда мы имеем дела с товаров и когда с тех картой
         if (isset($value->modifications)) {
+           $group = PropertyGroup::create([
+               "name" =>'Модификаторы для товара ' . $value->product_name
+           ]);
             // Товар
             $product->inventory_management_method = 'variant';
             $product->save();
+
+            $options = [];
 
             // Создадим свойства, которые можно будет выбрать при покупке товара
             $property = Property::create([
@@ -77,11 +102,13 @@ class PosterTransition
                 'slug' => str_slug($value->product_name) . "_mod",
                 'type' => 'dropdown',
             ]);
-
-
-            $options = [];
             foreach ($value->modifications as $mod) {
-                $options[] = ['value' => $mod->modificator_name];
+
+
+                $options[] = [
+                    'value' => $mod->modificator_name,
+                    'poster_id' => $mod->modificator_id
+                ];
 
                 // Создадим вариант для этого свойства
                 $variant = Variant::create([
@@ -114,37 +141,19 @@ class PosterTransition
             $property->options = $options;
             $property->save();
 
-
-            // Создадим группу свойств куда будет помещать модификаторы
-            $property_group_name = 'Модификаторы для товара ' . $value->product_name;
-
-            $property_group = PropertyGroup::create([
-                'name' => $property_group_name,
-                'slug' => str_slug($property_group_name),
-            ]);
-            // Привяжем свойство к группе свойств модификаторов
-            $property->property_groups()->attach($property_group['id'], ['use_for_variants' => 1]);
-
-
-
-
-
             //Создадим дочернию категорию, чтобы ограничить кол-во менеямых свойств
-            $child_category = Category::create([
+            $mod_category = Category::create([
                 'name'          => (string)$value->product_name,
                 'parent_id'     => $category['id'],
-                'slug'          => str_slug($value->product_name),
+                'slug'          => str_slug($value->product_name) . '_mod',
             ]);
-            if (!empty($child_category)) {
-                $product->categories()->detach($child_category['id']);
-                $product->categories()->sync([$child_category['id'] => ['sort_order' => (int)$value->sort_order]]);
-            }
+            $product->categories()->attach([$mod_category['id'] => ['sort_order' => (int)$value->sort_order]]);
 
             //Привяжем группу свойств к категории товаров
-            $child_category->property_groups()->attach($property_group['id']);
+            $mod_category->property_groups()->attach($group['id']);
 
-
-
+            // Привяжем свойство к группе свойств модификаторов
+            $property->property_groups()->attach($group->id, ['use_for_variants' => 1, 'filter_type'=>'set']);
         }
         else {
             // Тех. карта
@@ -159,13 +168,7 @@ class PosterTransition
                     $property = Property::where('poster_id', $i->ingredient_id)->first();
 
 
-                    $name = preg_replace('/\s+ПФ/', '', $i->ingredient_name);
-
-                    $disallow = preg_match('/Бокс\s+д\/суши\s+большой/', $name);
-
-                    if ($disallow) {
-                        continue;
-                    }
+                    $name = $i->ingredient_name;
 
                     if(!$property) {
                         $ingredientsGroup = PropertyGroup::where('name','ingredients')->first();
@@ -233,14 +236,6 @@ class PosterTransition
         });
     }
 
-    public function createProduct($value)
-    {
-        $this->createProductOrDish($value, 'product');
-    }
-
-    public function createDish($value) {
-        $this->createProductOrDish($value, 'dish');
-    }
 
     public function deleteProduct($id)
     {

@@ -3,7 +3,6 @@ namespace Layerok\PosterPos\Console;
 
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Artisan;
-use Layerok\PosterPos\Classes\IngredientsGroup;
 use Layerok\PosterPos\Classes\RootCategory;
 use Layerok\PosterPos\Models\HideCategory;
 use Layerok\PosterPos\Models\HideProduct;
@@ -56,9 +55,8 @@ class ImportCategories extends Command {
             'sort_order'    => 0,
         ]);
 
-        $ingredientsGroup = PropertyGroup::where('name', IngredientsGroup::SLUG_KEY)->first();
-        // todo: наверно какой-то ексепшн нужен для группы ингридиентов, если ее не существует
-        $root->property_groups()->attach([$ingredientsGroup->id]);
+        $ids = PropertyGroup::all()->pluck('id');
+        $root->property_groups()->attach($ids);
 
         foreach ($categories->response as $category) {
             $poster_id = $category->category_id;
@@ -102,7 +100,7 @@ class ImportCategories extends Command {
 
 
             // Привязываем к категории группу фильтров "Ингридиенты"
-            $categoryModel->property_groups()->attach([$ingredientsGroup->id]);
+            $categoryModel->property_groups()->attach($ids);
             $this->output->progressAdvance();
         }
 

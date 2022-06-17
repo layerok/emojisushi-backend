@@ -169,6 +169,8 @@ class ProductController extends Controller
     protected function productIncludes(): array
     {
         return [
+            'variants',
+            'variants.property_values',
             'image_sets',
             'prices',
             'additional_prices',

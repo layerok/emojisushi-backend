@@ -140,7 +140,7 @@ class ImportIngredients extends Command {
                     ]);
                     $group->properties()->attach($property->id, [
                         'filter_type' => 'set',
-                        'use_for_variants' => true
+                        'use_for_variants' => false
                     ]);
                 }
             }

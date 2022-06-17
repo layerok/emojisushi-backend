@@ -211,6 +211,10 @@ class Plugin extends PluginBase
             ];
         });
 
+        Variant::extend(function($model){
+            $model->fillable[] = 'poster_id';
+        });
+
         Property::extend(function($model){
             $model->fillable[] = 'poster_id';
             $model->fillable[] = 'poster_type'; // dish or product

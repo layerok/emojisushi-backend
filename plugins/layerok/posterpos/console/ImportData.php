@@ -50,22 +50,9 @@ class ImportData extends Command {
         Artisan::call('poster:create-shipping-methods');
 
         $this->output->newLine();
-        $this->output->writeln('Importing ingredients...');
+        $this->output->writeln('Importing products...');
         $this->output->newLine();
-        Artisan::call('poster:import-ingredients', ['--force' => true]);
-
-        $this->output->newLine();
-        $this->output->writeln('Importing categories...');
-        $this->output->newLine();
-        Artisan::call('poster:import-categories', ['--force' => true]);
-
-        $this->output->newLine();
-        $this->output->writeln('Importing spots and tablets...');
-        $this->output->newLine();
-        Artisan::call('poster:import-spots', ['--force' => true]);
-
-
-        $this->createProducts();
+        Artisan::call('poster:import-products', ['--force' => true]);
 
         app()->bind(Index::class, function () use ($originalIndex) {
             return $originalIndex;
@@ -91,54 +78,18 @@ class ImportData extends Command {
     protected function cleanup()
     {
         $this->output->writeln('Resetting plugin data...');
-        ShippingMethod::truncate();
         DB::table('offline_mall_prices')->truncate();
-
+        ShippingMethod::truncate();
         PaymentMethod::truncate();
 
-
-
-        Product::truncate();
-        ProductPrice::truncate();
-        Variant::truncate();
-
-
         Artisan::call('cache:clear');
-
-        DB::table('system_files')
-            ->where('attachment_type', 'LIKE', 'OFFLINE%Mall%')
-            ->orWhere('attachment_type', 'LIKE', 'mall.%')
-            ->delete();
-        ImageSet::truncate();
-
-
 
         $index = app(Index::class);
         $index->drop(ProductEntry::INDEX);
         $index->drop(VariantEntry::INDEX);
     }
 
-    protected function createProducts()
-    {
-        $this->output->newLine();
-        $this->output->writeln('Creating products...');
-        $this->output->newLine();
 
-        PosterApi::init();
-        $products = (object)PosterApi::menu()->getProducts();
-        $transition = new PosterTransition;
-        $count = count($products->response);
-
-
-        $this->output->progressStart($count);
-
-        foreach ($products->response as $value) {
-            $transition->createProduct($value);
-            $this->output->progressAdvance();
-        }
-
-        $this->output->progressFinish();
-    }
 
 
 }
