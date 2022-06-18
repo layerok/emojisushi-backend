@@ -1,3 +1,14 @@
 <a href="/backend/layerok/posterpos/sync/weight">
     Синхронизировать веса
 </a>
+
+<form action="/backend/layerok/posterpos/sync/description_short"
+      method="post"
+      enctype="multipart/form-data">
+    <?= Form::token() ?>
+
+    <input style="margin-top: 8px;" type="file" name="file" accept=".csv">
+    <button style="margin-top: 20px" type="submit" class="btn btn-primary" >
+        Sync description_short
+    </button>
+</form>

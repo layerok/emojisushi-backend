@@ -1,6 +1,7 @@
 <?php namespace Layerok\PosterPos;
 
 use Backend;
+use File;
 use Illuminate\Support\Facades\Event;
 use Layerok\PosterPos\Console\ImportCategories;
 use Layerok\PosterPos\Console\CreatePaymentMethods;
@@ -76,14 +77,7 @@ class Plugin extends PluginBase
     {
 
         Event::listen('system.extendConfigFile', function ( $path, $config) {
-            if ($path === '/plugins/offline/mall/models/product/fields_edit.yaml') {
-                $config['tabs']['fields']['hide_products_in_spot'] = [
-                    'label' => 'Скрыть товары в заведении',
-                    'type' => 'relation',
-                    'tab' => 'offline.mall::lang.product.general'
-                ];
-                return $config;
-            }
+
 
             if ($path === '/plugins/offline/mall/models/property/fields_pivot.yaml') {
                 $config['fields']['options']['form']['fields']['poster_id'] = [
@@ -107,6 +101,7 @@ class Plugin extends PluginBase
 
 
 
+
             if ($path === '/plugins/offline/mall/models/category/fields.yaml') {
                 $config['fields']['hide_categories_in_spot'] = [
                     'label' => 'Скрыть категорию в заведении',
@@ -114,18 +109,37 @@ class Plugin extends PluginBase
                 ];
                 return $config;
             }
+
+
+            if ($path === '/plugins/offline/mall/models/product/columns.yaml' ||
+                $path === '/plugins/offline/mall/models/product/fields_create.yaml' ||
+                $path === '/plugins/offline/mall/models/product/fields_edit.yaml') {
+
+                if($path === '/plugins/offline/mall/models/product/fields_edit.yaml') {
+                    $config['tabs']['fields']['hide_products_in_spot'] = [
+                        'type' => 'relation',
+                        'tab' => 'offline.mall::lang.product.general'
+                    ];
+                }
+                $config['fields']['poster_id'] = [
+                    'label'   => 'layerok.posterpos::lang.extend.poster_id',
+                    'span' => 'left',
+                    'type' => 'text'
+                ];
+                return $config;
+            }
+
+
         });
         Event::listen('backend.form.extendFields', function ($widget) {
 
             if (!$widget->getController() instanceof Categories &&
-                !$widget->getController() instanceof Products  &&
                 !$widget->getController() instanceof Variants) {
                 return;
             }
 
             // Only for the User model
             if (!$widget->model instanceof Category &&
-                !$widget->model instanceof Product  &&
                 !$widget->model instanceof Variant) {
                 return;
             }
@@ -186,6 +200,14 @@ class Plugin extends PluginBase
 
         });
 
+
+        Event::listen('backend.page.beforeDisplay', function ( $backendController, $action, $params) {
+            // workaround, trick controller to look for the template outside the self plugin folder
+            if($backendController instanceof Products && $action === 'export') {
+                $backendController->addViewPath(File::normalizePath("plugins\\layerok\\posterpos\\controllers\\products"));
+            }
+       });
+
         Category::extend(function($model){
             $model->fillable[] = 'poster_id';
             $model->fillable[] = 'published';
@@ -199,6 +221,11 @@ class Plugin extends PluginBase
                 'key'      => 'category_id',
                 'otherKey' => 'spot_id',
             ];
+        });
+
+        Products::extend(function($controller) {
+           $controller->addDynamicProperty('importExportConfig', 'plugins/layerok/posterpos/models/product/config_import_export.yaml');
+           $controller->implement[] =  \Backend\Behaviors\ImportExportController::class;
         });
 
         Product::extend(function($model){

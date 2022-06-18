@@ -10,8 +10,11 @@ class Bot extends Controller
 {
     public $implement = [
         \Backend\Behaviors\FormController::class,
-        \Backend\Behaviors\ListController::class
+        \Backend\Behaviors\ListController::class,
+        \Backend\Behaviors\ImportExportController::class
     ];
+
+    public $importExportConfig = 'config_export_import.yaml';
 
     /**
      * @var string formConfig file

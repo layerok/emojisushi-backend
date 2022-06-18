@@ -53,7 +53,9 @@ class ImportSpots extends Command {
         $this->output->writeln('Creating spots...');
         $this->output->newLine();
 
-        PosterApi::init();
+        PosterApi::init([
+            'access_token' => env('POSTER_ACCESS_TOKEN')
+        ]);
 
         $records = (object)PosterApi::access()->getSpots();
 

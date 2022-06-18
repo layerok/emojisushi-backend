@@ -1,8 +1,7 @@
 <?php namespace Layerok\PosterPos\Models;
 
 use October\Rain\Database\Model;
-use October\Rain\Database\Traits\Validation;
-use OFFLINE\Mall\Models\Product;
+use OFFLINE\Mall\Models\Category;
 
 
 class HideCategory extends Model
@@ -12,5 +11,10 @@ class HideCategory extends Model
     public $timestamps = false;
 
     public $fillable = ['category_id', 'spot_id', 'updated_at', 'created_at'];
+
+    public $belongsTo = [
+        'category' => Category::class,
+        'spot' => Spot::class,
+    ];
 
 }

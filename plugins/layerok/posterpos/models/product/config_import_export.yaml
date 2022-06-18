@@ -1,0 +1,14 @@
+# ===================================
+#  Import/Export Behavior Config
+# ===================================
+
+#import:
+#    title: Import products
+#    modelClass: OFFLINE\Mall\Models\Product
+#    list: $/offline/mall/models/product/columns.yaml
+
+export:
+    list: $/layerok/posterpos/models/product/columns_export.yaml
+    title: Export products
+    modelClass: Layerok\PosterPos\Models\ProductExport
+    redirect: offline/mall/products

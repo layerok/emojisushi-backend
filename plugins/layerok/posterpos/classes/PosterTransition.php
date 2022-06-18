@@ -37,7 +37,7 @@ class PosterTransition
             'user_defined_id' => (int)$value->product_id,
             'weight'  => isset($value->out) ? (int)$value->out: 0,
             'allow_out_of_stock_purchases' => 1,
-            'published' => (int)$value->hidden == "0" ? 1: 0,
+            'published' => (int)$value->hidden === 0 ? 1: 0,
             'stock' => 9999999,
             'inventory_management_method' => 'single'
         ]);
@@ -53,6 +53,8 @@ class PosterTransition
                         'spot_id' => $spotModel->id,
                         'product_id' => $product->id
                     ]);
+                    $product->published = 0;
+                    $product->save();
                 } else {
                     HideProduct::where([
                         'spot_id' => $spotModel->id,
@@ -181,6 +183,7 @@ class PosterTransition
                         ]);
 
                         $property->property_groups()->attach($group->id, ['use_for_variants' => 0, 'filter_type'=>'set']);
+                        $category->property_groups()->detach($group->id);
                         $category->property_groups()->attach($group->id);
 
                     }

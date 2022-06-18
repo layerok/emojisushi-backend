@@ -104,7 +104,9 @@ class ImportIngredients extends Command {
         $this->output->writeln('Creating ingredients...');
         $this->output->newLine();
 
-        PosterApi::init();
+        PosterApi::init([
+            'access_token' => env('POSTER_ACCESS_TOKEN')
+        ]);
 
         $this->createIngredientCategories();
 

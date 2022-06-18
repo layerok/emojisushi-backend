@@ -43,7 +43,9 @@ class ImportCategories extends Command {
         $this->output->writeln('Creating categories...');
         $this->output->newLine();
 
-        PosterApi::init();
+        PosterApi::init([
+            'access_token' => env('POSTER_ACCESS_TOKEN')
+        ]);
         $categories = (object)PosterApi::menu()->getCategories();
 
         $this->output->progressStart(count($categories->response));

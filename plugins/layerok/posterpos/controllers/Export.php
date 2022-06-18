@@ -1,6 +1,7 @@
 <?php
 namespace Layerok\PosterPos\Controllers;
 
+use Artisan;
 use BackendMenu;
 use Layerok\PosterPos\Classes\Exports\PosterCategoriesExport;
 use Layerok\PosterPos\Classes\Exports\PosterDishesExport;
@@ -36,5 +37,11 @@ class Export extends \Backend\Classes\Controller
             return Excel::download(new $class(), 'poster_' . $type . date('Y-m-d_h-m-s') .'.xlsx');
         }
 
+    }
+
+    public function latest() {
+        ini_set('max_execution_time', 18000);
+        set_time_limit(0);
+        Artisan::call('poster:import-products', ['--force' => true, '--reindex' => true]);
     }
 }

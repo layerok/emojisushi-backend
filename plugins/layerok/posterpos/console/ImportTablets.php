@@ -27,7 +27,9 @@ class ImportTablets extends Command {
         $this->output->writeln('Creating tablets...');
         $this->output->newLine();
 
-        PosterApi::init();
+        PosterApi::init([
+            'access_token' => env('POSTER_ACCESS_TOKEN')
+        ]);
 
         $records = (object)PosterApi::access()->getTablets();
 

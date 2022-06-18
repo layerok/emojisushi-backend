@@ -3,11 +3,14 @@
 use BackendMenu;
 use Backend\Classes\Controller;
 use Illuminate\Support\Collection;
+use Layerok\PosterPos\Classes\Imports\ProductImport;
 use Layerok\PosterPos\Classes\PosterTransition;
+use Maatwebsite\Excel\Facades\Excel;
 use OFFLINE\Mall\Classes\Index\Index;
 use OFFLINE\Mall\Classes\Observers\ProductObserver;
 use OFFLINE\Mall\Models\Product;
 use poster\src\PosterApi;
+use Input;
 
 /**
  * Spot Backend Controller
@@ -17,6 +20,8 @@ class Sync extends Controller
 
     public function __construct()
     {
+        ini_set('max_execution_time', 18000);
+        set_time_limit(0);
         parent::__construct();
 
         BackendMenu::setContext('Layerok.PosterPos', 'posterpos', 'sync');
@@ -28,6 +33,7 @@ class Sync extends Controller
     }
 
     public function weight() {
+        // get weight from poster and save it out database
         PosterApi::init();
         $products = (object)PosterApi::menu()->getProducts();
 
@@ -58,6 +64,21 @@ class Sync extends Controller
                 });
             });
         }
+
+    }
+
+    public function description_short() {
+
+
+        $hasFile = Input::hasFile('file');
+
+        if(!$hasFile) {
+            return;
+        }
+
+        $file = Input::file('file');
+        Excel::import(new ProductImport(), $file);
+
 
     }
 }

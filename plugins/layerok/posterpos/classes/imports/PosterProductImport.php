@@ -28,7 +28,9 @@ class PosterProductImport implements ToModel
         if($this->check && $newName) {
 
 
-            PosterApi::init();
+            PosterApi::init([
+                'access_token' => env('POSTER_ACCESS_TOKEN')
+            ]);
 
             $res = (object)PosterApi::menu()->getProduct([
                 'product_id' => $id

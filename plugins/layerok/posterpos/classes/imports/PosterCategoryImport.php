@@ -27,7 +27,9 @@ class PosterCategoryImport implements ToModel
         }
 
         if($this->check && $newName) {
-            PosterApi::init();
+            PosterApi::init([
+                'access_token' => env('POSTER_ACCESS_TOKEN')
+            ]);
             $result = PosterApi::menu()->updateCategory([
                 'category_id' => $id,
                 'category_name' => $newName,

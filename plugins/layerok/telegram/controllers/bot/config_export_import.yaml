@@ -1,0 +1,5 @@
+export:
+    title: Export bots
+    modelClass: Layerok\Telegram\Models\BotExport
+    list: $/layerok/telegram/models/bot/columns.yaml
+    redirect: layerok/telegram/bot

@@ -24,7 +24,7 @@ class Import extends \Backend\Classes\Controller
     }
 
     public function items() {
-        ini_set('max_execution_time', 1800); //3 minutes
+        ini_set('max_execution_time', 18000);
         set_time_limit(0);
         $map = [
             'product' => PosterProductImport::class,

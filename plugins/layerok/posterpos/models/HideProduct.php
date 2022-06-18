@@ -12,4 +12,9 @@ class HideProduct extends Model
     public $timestamps = false;
     public $fillable = ['product_id', 'spot_id'];
 
+    public $belongsTo = [
+        'product' => Product::class,
+        'spot' => Spot::class,
+    ];
+
 }

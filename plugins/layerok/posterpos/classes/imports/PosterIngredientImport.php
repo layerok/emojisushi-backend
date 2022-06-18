@@ -27,7 +27,9 @@ class PosterIngredientImport implements ToModel
         }
 
         if($this->check && $newName) {
-            PosterApi::init();
+            PosterApi::init([
+                'access_token' => env('POSTER_ACCESS_TOKEN')
+            ]);
             $result = PosterApi::menu()->updateIngredient([
                 'id' => $id,
                 'ingredient_name' => $newName,

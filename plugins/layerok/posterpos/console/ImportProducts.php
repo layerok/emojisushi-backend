@@ -5,11 +5,14 @@ use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Artisan;
 use Layerok\PosterPos\Classes\ModificatorsGroup;
 use Layerok\PosterPos\Classes\PosterTransition;
+use Layerok\PosterPos\Models\HideCategory;
 use Layerok\PosterPos\Models\HideProduct;
+use Layerok\PosterPos\Models\Spot;
 use OFFLINE\Mall\Classes\Index\Index;
 use OFFLINE\Mall\Classes\Index\Noop;
 use OFFLINE\Mall\Classes\Index\ProductEntry;
 use OFFLINE\Mall\Classes\Index\VariantEntry;
+use OFFLINE\Mall\Models\Category;
 use OFFLINE\Mall\Models\ImageSet;
 use OFFLINE\Mall\Models\Product;
 use OFFLINE\Mall\Models\ProductPrice;
@@ -37,6 +40,15 @@ class ImportProducts extends Command {
             return new Noop();
         });
 
+        $rememberedProducts = Product::with([
+            'hide_products_in_spot',
+        ])->get();
+
+        $rememberedCategories = Category::with([
+            'hide_categories_in_spot',
+        ])->get();
+
+
         $this->cleanup();
 
         Artisan::call('poster:create-uah-currency');
@@ -44,6 +56,43 @@ class ImportProducts extends Command {
         Artisan::call('poster:import-ingredients', ['--force' => true]);
         Artisan::call('poster:import-categories', ['--force' => true]);
         $this->createProducts();
+
+        $rememberedProducts->each(function($item) {
+            $product = Product::where('poster_id', $item->poster_id)->first();
+            if($product) {
+                $product->description_short = $item->description_short;
+                $product->published = $item->published;
+                $product->save();
+                $item->hide_products_in_spot->each(function($spot) use($product) {
+                    $spot = Spot::where('poster_id', $spot->poster_id)->first();
+
+                    if($spot) {
+                        HideProduct::firstOrCreate([
+                            'spot_id' => $spot->id,
+                            'product_id' => $product->id,
+                        ]);
+                    }
+            });
+            }
+        });
+
+        $rememberedCategories->each(function($item) {
+            $category = Category::where('poster_id', $item->category_id)->first();
+            if($category) {
+                $category->published = $item->published;
+                $category->save();
+                $item->hide_categories_in_spot->each(function($spot) use($category) {
+                    $spot = Spot::where('poster_id', $spot->poster_id)->first();
+
+                    if($spot) {
+                        HideCategory::firstOrCreate([
+                            'spot_id' => $spot->id,
+                            'category_id' => $category->id,
+                        ]);
+                    }
+                });
+            }
+        });
 
         app()->bind(Index::class, function () use ($originalIndex) {
             return $originalIndex;
@@ -85,7 +134,7 @@ class ImportProducts extends Command {
             ->delete();
         ImageSet::truncate();
 
-        Artisan::call('cache:clear');
+        //Artisan::call('cache:clear');
 
         if($this->option('reindex')) {
             $this->output->writeln('Dropping index...');
@@ -111,7 +160,9 @@ class ImportProducts extends Command {
             $this->output->writeln("Importing type [{$this->option('type')}]");
         }
 
-        PosterApi::init();
+        PosterApi::init([
+            'access_token' => env('POSTER_ACCESS_TOKEN')
+        ]);
         $products = (object)PosterApi::menu()->getProducts($params);
         $transition = new PosterTransition;
         $count = count($products->response);
