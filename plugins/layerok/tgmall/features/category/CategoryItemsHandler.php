@@ -17,7 +17,7 @@ class CategoryItemsHandler extends Handler
 
     public function run()
     {
-        $query = Category::query();
+        $query = Category::where('published', 1);
 
         Event::fire('tgmall.categories.query', [$query, $this]);
 

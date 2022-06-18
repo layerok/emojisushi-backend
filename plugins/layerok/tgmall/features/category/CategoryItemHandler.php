@@ -2,6 +2,7 @@
 
 namespace Layerok\Tgmall\Features\Category;
 
+use Event;
 use Illuminate\Support\Facades\Validator;
 use Layerok\TgMall\Classes\Callbacks\Handler;
 use OFFLINE\Mall\Models\Product;
@@ -90,12 +91,15 @@ class CategoryItemHandler extends Handler
         $offset = ($this->arguments['page'] - 1) * $limit;
         $category = CategoryModel::where('id', '=', $this->arguments['id'])->first();
 
-        $productsInCategory = $category
-            ->products()
-            ->where('published', '=', '1')
-            ->limit($limit)
-            ->offset($offset)
-            ->get();
+        $query = $category->products()->where('published', '=', '1');
+
+        Event::fire('tgmall.products.query', [$query, $this]);
+
+        $query->limit($limit)
+            ->offset($offset);
+
+
+        $productsInCategory = $query->get();
 
         $productsInCategory->map(
             function (

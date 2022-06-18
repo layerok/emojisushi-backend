@@ -33,7 +33,6 @@ class TgMallCategoriesQuery{
 
             $query->where([
                 ['parent_id', $root->id],
-                ['published', 1],
             ])->whereNotIn('id', $hidden);
 
 
