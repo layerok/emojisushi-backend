@@ -29,7 +29,6 @@ class CartController extends Controller
     public function add(): JsonResponse
     {
         $product_id = input('product_id');
-        $modificators = input('modificators') ?? [];
         $variant_id = input('variant_id');
         $quantity = input('quantity');
 
@@ -40,12 +39,6 @@ class CartController extends Controller
         $product = Product::published()->findOrFail($product_id);
 
         $variant = Variant::where('id', $variant_id)->first();
-        if(!$variant && isset($modificators) && count($modificators) > 0) {
-            $variant = Variant::where([
-                ['product_id', $product->id],
-                ['poster_id', $modificators[0]],
-            ])->first();
-        }
 
         $cart = Cart::bySession();
 
@@ -122,6 +115,8 @@ class CartController extends Controller
         return $cart->products()->with([
             'variant',
             'variant.property_values',
+            'variant.additional_prices',
+            'variant.prices',
             'product.image_sets',
             'product.prices',
             'product.additional_prices',

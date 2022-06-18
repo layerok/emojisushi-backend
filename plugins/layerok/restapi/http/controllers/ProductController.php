@@ -171,6 +171,7 @@ class ProductController extends Controller
         return [
             'variants',
             'variants.property_values',
+            'variants.additional_prices',
             'image_sets',
             'prices',
             'additional_prices',

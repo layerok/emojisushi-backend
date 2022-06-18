@@ -67,6 +67,7 @@ class ImportProducts extends Command {
         return [
             ['force', null, InputOption::VALUE_NONE, 'Don\'t ask before deleting the data.', null],
             ['reindex', null, InputOption::VALUE_NONE, 'Reindex after import.', null],
+            ['type', null, InputOption::VALUE_OPTIONAL, 'Specify type of products.', null],
         ];
     }
 
@@ -96,19 +97,22 @@ class ImportProducts extends Command {
 
     protected function createProducts()
     {
-/*        PropertyGroup::create([
-            'name' => ModificatorsGroup::NAME,
-            'display_name' => ModificatorsGroup::DISPLAY_NAME
-        ]);*/
-
+        PropertyGroup::create([
+           'name' => 'unknown_ingredient_group'
+        ]);
         $this->output->newLine();
         $this->output->writeln('Creating products...');
         $this->output->newLine();
 
+        $params = [];
+
+        if($this->option('type')) {
+            $params['type'] = $this->option('type');
+            $this->output->writeln("Importing type [{$this->option('type')}]");
+        }
+
         PosterApi::init();
-        $products = (object)PosterApi::menu()->getProducts([
-            'type' => 'products'
-        ]);
+        $products = (object)PosterApi::menu()->getProducts($params);
         $transition = new PosterTransition;
         $count = count($products->response);
 

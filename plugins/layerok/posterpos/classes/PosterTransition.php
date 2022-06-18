@@ -17,6 +17,7 @@ use OFFLINE\Mall\Models\Property;
 use OFFLINE\Mall\Models\PropertyGroup;
 use OFFLINE\Mall\Models\PropertyValue;
 use OFFLINE\Mall\Models\Variant;
+use poster\src\PosterApi;
 use System\Models\File;
 
 class PosterTransition
@@ -171,16 +172,17 @@ class PosterTransition
                     $name = $i->ingredient_name;
 
                     if(!$property) {
-                        $ingredientsGroup = PropertyGroup::where('name','ingredients')->first();
+                        $group = PropertyGroup::where('name', 'unknown_ingredient_group')->first();//must be created already
+
                         $property = Property::create([
                             'type' => 'checkbox',
                             'poster_id' => $i->ingredient_id,
                             'name' => $i->ingredient_name,
+                        ]);
 
-                        ]);
-                        $ingredientsGroup->properties()->attach($property->id, [
-                            'filter_type' => 'set',
-                        ]);
+                        $property->property_groups()->attach($group->id, ['use_for_variants' => 0, 'filter_type'=>'set']);
+                        $category->property_groups()->attach($group->id);
+
                     }
 
                     PropertyValue::create([
