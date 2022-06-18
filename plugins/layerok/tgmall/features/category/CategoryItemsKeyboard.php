@@ -3,7 +3,6 @@
 use Layerok\TgMall\Classes\Keyboards\InlineKeyboard;
 use Layerok\TgMall\Classes\Traits\CallbackData;
 use Layerok\TgMall\Classes\Traits\Lang;
-use OFFLINE\Mall\Models\Category;
 
 
 class CategoryItemsKeyboard extends InlineKeyboard
@@ -13,7 +12,7 @@ class CategoryItemsKeyboard extends InlineKeyboard
 
     public function build(): void
     {
-        $categories = Category::all();
+        $categories = collect($this->vars['categories']);
 
         $categories->map(function ($row) {
 

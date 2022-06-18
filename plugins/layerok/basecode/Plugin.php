@@ -1,6 +1,7 @@
 <?php namespace Layerok\BaseCode;
 
 use Backend;
+use Layerok\BaseCode\Events\TgMallCategoriesQuery;
 use Layerok\BaseCode\Events\TgMallHandlersExtend;
 use Layerok\BaseCode\Events\TgMallKeyboardMainBeforeBuild;
 use Layerok\BaseCode\Events\TgMallOrderHandler;
@@ -97,6 +98,7 @@ class Plugin extends PluginBase
         Event::subscribe(new TgMallStartCommandStarting());
         Event::subscribe(new TgMallHandlersExtend());
         Event::subscribe(new TgMallKeyboardMainBeforeBuild());
+        Event::subscribe(new TgMallCategoriesQuery());
         // debug to telegram
         if(env('DEBUG_TO_TELEGRAM')) {
 

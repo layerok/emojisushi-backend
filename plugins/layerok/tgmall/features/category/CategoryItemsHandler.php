@@ -5,6 +5,7 @@ use Layerok\TgMall\Classes\Traits\CallbackData;
 use Layerok\TgMall\Classes\Traits\Lang;
 use OFFLINE\Mall\Models\Category;
 use Telegram\Bot\Keyboard\Keyboard;
+use Event;
 
 class CategoryItemsHandler extends Handler
 {
@@ -16,7 +17,14 @@ class CategoryItemsHandler extends Handler
 
     public function run()
     {
-        $markup = new CategoryItemsKeyboard();
+        $query = Category::query();
+
+        Event::fire('tgmall.categories.query', [$query, $this]);
+
+        $categories = $query->get();
+        $markup = new CategoryItemsKeyboard([
+            'categories' => $categories
+        ]);
         $replyWith = [
             'text' => self::lang('texts.category'),
             'reply_markup' => $markup->getKeyboard()
