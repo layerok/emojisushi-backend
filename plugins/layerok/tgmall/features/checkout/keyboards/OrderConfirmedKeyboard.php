@@ -1,26 +1,21 @@
-<?php namespace {{studly_author}}\{{studly_plugin}}\Classes\Keyboards;
+<?php namespace Layerok\TgMall\Features\Checkout\Keyboards;
 
+use Layerok\TgMall\Classes\Keyboards\InlineKeyboard;
 use Layerok\TgMall\Classes\Traits\CallbackData;
 use Layerok\TgMall\Classes\Traits\Lang;
 
-class {{studly_name}}Keyboard extends InlineKeyboard
+class OrderConfirmedKeyboard extends InlineKeyboard
 {
     use Lang;
     use CallbackData;
 
     public function build(): void
     {
-        $id = $this->vars['id'];
-
         $this->append([
-            'text' => 'На главную',
+            'text' => self::lang('buttons.in_menu_main'),
             'callback_data' => self::prepareCallbackData(
-                'start',
-                [
-                    'id' => 1,
-                ]
+                'start'
             )
         ])->nextRow();
-
     }
 }

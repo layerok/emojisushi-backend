@@ -22,6 +22,7 @@ use OFFLINE\Mall\Models\Category;
 use OFFLINE\Mall\Models\Product;
 use OFFLINE\Mall\Models\Property;
 use OFFLINE\Mall\Models\PropertyGroup;
+use OFFLINE\Mall\Models\ShippingMethod;
 use OFFLINE\Mall\Models\Variant;
 use System\Classes\PluginBase;
 use App;
@@ -106,6 +107,21 @@ class Plugin extends PluginBase
                 $config['fields']['hide_categories_in_spot'] = [
                     'label' => 'Скрыть категорию в заведении',
                     'type' => 'relation',
+                ];
+                return $config;
+            }
+
+            if ($path === '/plugins/offline/mall/models/shippingmethod/fields.yaml') {
+                $config['fields']['code'] = [
+                    'label' => 'Code',
+                    'span' => 'auto'
+                ];
+                return $config;
+            }
+
+            if ($path === '/plugins/offline/mall/models/shippingmethod/columns.yaml') {
+                $config['columns']['code'] = [
+                    'label' => 'Code',
                 ];
                 return $config;
             }
@@ -207,6 +223,10 @@ class Plugin extends PluginBase
                 $backendController->addViewPath(File::normalizePath("plugins\\layerok\\posterpos\\controllers\\products"));
             }
        });
+
+        ShippingMethod::extend((function($model) {
+            $model->fillable[] = 'code';
+        }));
 
         Category::extend(function($model){
             $model->fillable[] = 'poster_id';

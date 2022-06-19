@@ -1,13 +1,13 @@
 <?php
 
-namespace Layerok\TgMall\Classes\Keyboards;
+namespace Layerok\TgMall\Features\Checkout\Keyboards;
 
+use Layerok\TgMall\Classes\Keyboards\InlineKeyboard;
 use Layerok\TgMall\Classes\Traits\CallbackData;
 use Layerok\TgMall\Classes\Traits\Lang;
 
-class YesNoKeyboard extends InlineKeyboard
+class IsRightPhoneKeyboard extends InlineKeyboard
 {
-
     use Lang;
     use CallbackData;
 
@@ -15,10 +15,10 @@ class YesNoKeyboard extends InlineKeyboard
     {
         $this->append([
             'text' => self::lang('buttons.yes'),
-            'callback_data' => self::prepareCallbackData($this->vars['yes']['handler'])
+            'callback_data' => self::prepareCallbackData('list_payment_methods')
         ])->append([
             'text' => self::lang('buttons.no'),
-            'callback_data' => self::prepareCallbackData($this->vars['no']['handler'])
+            'callback_data' => self::prepareCallbackData('enter_phone')
         ]);
     }
 }

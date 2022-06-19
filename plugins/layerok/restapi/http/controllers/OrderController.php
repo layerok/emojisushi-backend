@@ -34,7 +34,7 @@ class OrderController extends Controller
         $messages = [
             'email.required'          => trans('offline.mall::lang.components.signup.errors.email.required'),
             'email.email'             => trans('offline.mall::lang.components.signup.errors.email.email'),
-            'phone.phone_ua'          =>  "Не верный формат украинского номера"
+            'phone.phone_ua'          => trans('layerok.posterpos::lang.validation.phone.ua')
         ];
 
         $validation = Validator::make($data, $rules, $messages);

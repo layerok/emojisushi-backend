@@ -1,4 +1,4 @@
-<?php namespace OFFLINE\Mall\Updates;
+<?php namespace Layerok\PosterPos\Updates;
 
 use Artisan;
 use DB;

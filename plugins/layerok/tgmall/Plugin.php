@@ -81,7 +81,7 @@ class Plugin extends PluginBase
 
         Product::extend(function($model) {
             $model->addDynamicMethod('getCaptionForTelegram', function() use ($model) {
-                return "<b>" . $model->name . "</b>\n\n" . \Html::strip($model->description);
+                return "<b>" . $model->name . "</b>\n\n" . \Html::strip($model->description_short);
             });
 
             $model->addDynamicMethod('isVariant', function() use ($model) {

@@ -4,7 +4,7 @@ namespace Layerok\TgMall\Classes\Keyboards;
 
 use Telegram\Bot\Keyboard\Keyboard;
 
-abstract class InlineKeyboard implements InlineKeyboardInterface
+abstract class InlineKeyboard
 {
     protected $keyboard;
     protected $vars;

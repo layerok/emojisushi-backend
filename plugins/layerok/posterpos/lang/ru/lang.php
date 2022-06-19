@@ -2,7 +2,7 @@
 return [
     'extend' => [
         'poster_id' => 'Poster ID',
-        'published' => 'Published'
+        'published' => 'Опубликовано'
     ],
     'validation' => [
         'phone' => [

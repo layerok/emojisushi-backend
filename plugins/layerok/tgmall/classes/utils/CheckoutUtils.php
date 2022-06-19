@@ -2,6 +2,7 @@
 
 namespace Layerok\TgMall\Classes\Utils;
 
+use Layerok\PosterPos\Models\Spot;
 use Layerok\TgMall\Models\State;
 use OFFLINE\Mall\Models\Cart;
 use OFFLINE\Mall\Models\Customer;
@@ -23,16 +24,15 @@ class CheckoutUtils
 
     public static function getDeliveryMethodName(State $state)
     {
-        $delivery = ShippingMethod::find($state->getOrderInfoDeliveryMethodId())->first();
-        return $delivery->name;
+        $delivery = ShippingMethod::find($state->getOrderInfoDeliveryMethodId());
+        return optional($delivery)->name;
     }
 
     public static function getPaymentMethodName(State $state)
     {
-        $payment_method = PaymentMethod::find($state->getOrderInfoPaymentMethodId())
-            ->first();
+        $payment_method = PaymentMethod::find($state->getOrderInfoPaymentMethodId());
 
-        return $payment_method->name;
+        return optional($payment_method)->name;
     }
 
 

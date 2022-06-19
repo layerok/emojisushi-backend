@@ -2,12 +2,15 @@
 
 use Backend;
 use Layerok\BaseCode\Events\TgMallCategoriesQuery;
+use Layerok\BaseCode\Events\TgMallDeliveryMethodChosen;
 use Layerok\BaseCode\Events\TgMallHandlersExtend;
 use Layerok\BaseCode\Events\TgMallKeyboardMainBeforeBuild;
 use Layerok\BaseCode\Events\TgMallOrderHandler;
+use Layerok\BaseCode\Events\TgMallPaymentMethodChosen;
 use Layerok\BaseCode\Events\TgMallProductsQuery;
 use Layerok\BaseCode\Events\TgMallStartCommandStarting;
 use Layerok\BaseCode\Events\TgMallStateCreated;
+
 use OFFLINE\Mall\Classes\Utils\Money;
 use OFFLINE\Mall\Models\Cart;
 use OFFLINE\Mall\Models\CartProduct;
@@ -101,6 +104,9 @@ class Plugin extends PluginBase
         Event::subscribe(new TgMallKeyboardMainBeforeBuild());
         Event::subscribe(new TgMallCategoriesQuery());
         Event::subscribe(new TgMallProductsQuery());
+        Event::subscribe(new TgMallDeliveryMethodChosen());
+        Event::subscribe(new TgMallPaymentMethodChosen());
+
         // debug to telegram
         if(env('DEBUG_TO_TELEGRAM')) {
 

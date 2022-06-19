@@ -2,18 +2,22 @@
 
 use Layerok\TgMall\Classes\Callbacks\CallbackQueryBus;
 use Layerok\TgMall\Classes\Callbacks\NoopHandler;
-use Layerok\TgMall\Features\Checkout\ConfirmOrderHandler;
+use Layerok\TgMall\Features\Checkout\Handlers\ConfirmOrderHandler;
 use Layerok\Tgmall\Features\Cart\CartHandler;
 use Layerok\Tgmall\Features\Category\CategoryItemHandler;
 use Layerok\Tgmall\Features\Category\CategoryItemsHandler;
-use Layerok\TgMall\Features\Checkout\CheckoutHandler;
-use Layerok\TgMall\Features\Checkout\ChoseDeliveryMethodHandler;
-use Layerok\TgMall\Features\Checkout\ChosePaymentMethodHandler;
-use Layerok\TgMall\Features\Checkout\EnterPhoneHandler;
-use Layerok\TgMall\Features\Checkout\LeaveCommentHandler;
-use Layerok\TgMall\Features\Checkout\ListDeliveryMethodsHandler;
-use Layerok\TgMall\Features\Checkout\ListPaymentMethodsHandler;
-use Layerok\TgMall\Features\Checkout\PreConfirmOrderHandler;
+use Layerok\TgMall\Features\Checkout\Handlers\CheckoutHandler;
+use Layerok\TgMall\Features\Checkout\Handlers\ChoseDeliveryMethodHandler;
+use Layerok\TgMall\Features\Checkout\Handlers\ChosePaymentMethodHandler;
+use Layerok\TgMall\Features\Checkout\Handlers\EnterPhoneHandler;
+use Layerok\TgMall\Features\Checkout\Handlers\LeaveCommentHandler;
+use Layerok\TgMall\Features\Checkout\Handlers\ListDeliveryMethodsHandler;
+use Layerok\TgMall\Features\Checkout\Handlers\ListPaymentMethodsHandler;
+use Layerok\TgMall\Features\Checkout\Handlers\PreConfirmOrderHandler;
+use Layerok\TgMall\Features\Checkout\Handlers\PreparePaymentChangeHandler;
+use Layerok\TgMall\Features\Checkout\Handlers\UpdateSticksCounterHandler;
+use Layerok\TgMall\Features\Checkout\Handlers\WishToLeaveCommentHandler;
+use Layerok\TgMall\Features\Checkout\Handlers\YesSticksHandler;
 use Layerok\TgMall\Features\Index\WebsiteHandler;
 use Layerok\Tgmall\Features\Product\AddProductHandler;
 use Layerok\TgMall\Features\Index\StartHandler;
@@ -90,6 +94,10 @@ class Webhook
             LeaveCommentHandler::class,
             PreConfirmOrderHandler::class,
             ConfirmOrderHandler::class,
+            PreparePaymentChangeHandler::class,
+            YesSticksHandler::class,
+            UpdateSticksCounterHandler::class,
+            WishToLeaveCommentHandler::class,
         ];
 
         if($extended = Event::fire('tgmall.handlers.extend', [$handlers], true)) {
