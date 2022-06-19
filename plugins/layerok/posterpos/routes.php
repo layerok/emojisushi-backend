@@ -9,7 +9,7 @@ use poster\src\PosterApi;
 
 
 
-Route::post('/webhook/handle', function () {
+Route::post('/posterpos/webhook/handle', function () {
     //Log::info("Пришел хук от постера");
     // Секретный ключ вашего приложения
     $client_secret = env('POSTER_APPLICATION_SECRET');

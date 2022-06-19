@@ -263,17 +263,20 @@ class PosterTransition
         $product->update([
             'name' => (string)$value->product_name,
             'weight'  => (int)$value->out,
-            'allow_out_of_stock_purchases' => 1,
             'published' => (int)$value->spots[0]->visible,
         ]);
+
+        $rootCategory = Category::where('slug', RootCategory::SLUG_KEY)->first();
 
         // 1. Найдем категорию к которой нужно привязать товар
         $category = Category::where('poster_id', '=', $value->menu_category_id)->first();
         // 2. Привяжем категорию к товару
         if (!empty($category)) {
             $product->categories()->detach();
-            $product->categories()->sync([$category['id'] => ['sort_order' => (int)$value->sort_order]]);
+            $product->categories()->sync([$category['id'], $rootCategory['id']]);
         }
+
+
 
         // Добавим цену товару
         // Нужно учесть две ситуации, когда мы имеем дела с товаров и когда с тех картой
@@ -288,25 +291,7 @@ class PosterTransition
                     'price' => (int)substr($value->price->{'1'}, 0, -2),
                 ]);
             }
-//            $product->description = "";
-//            if (isset($value->ingredients)) {
-//
-//                foreach ($value->ingredients as $key => $i) {
-//                    $ingr = $i->ingredient_name;
-//                    $disallow = preg_match('/Бокс\s+д\/суши\s+большой/', $ingr);
-//
-//                    if ($disallow) {
-//                        continue;
-//                    }
-//
-//                    $ingr = preg_replace('/\s+ПФ/', '', $i->ingredient_name);
-//                    $product->description .= $ingr;
-//                    if (count($value->ingredients) != $key + 1) {
-//                        $product->description .= ", ";
-//                    }
-//                }
-//            }
-//            $product->save();
+
         }
 
 
