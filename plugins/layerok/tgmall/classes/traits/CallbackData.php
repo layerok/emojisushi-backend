@@ -16,7 +16,7 @@ trait CallbackData {
             $arguments = $data[1] ?? [];
             return [$name, $arguments];
         } catch (\ErrorException $e) {
-            \Log::error('Cannot parse callback query data.');
+            \Log::error('Cannot parse callback query data. Error happened inside [' . self::class . ']');
             \Log::error($e);
             return ['noop', []];
         }

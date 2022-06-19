@@ -129,7 +129,7 @@ class Webhook
 
         if(!isset($this->telegramUser)) {
             \Log::error("User was not created. We can't go further without this");
-            $this->answerCallbackQuery($telegram, $update);
+            $this->answerCallbackQuery($update);
             return;
         }
 
@@ -199,12 +199,17 @@ class Webhook
     public function createUser(Update $update) {
         $chat = $update->getChat();
 
+
         if($update->isType('callback_query')) {
             $from = $update->getCallbackQuery()
                 ->getFrom();
-        } else {
+        } else if($update->isType('message')) {
+
             $from = $update->getMessage()
                 ->getFrom();
+        } else {
+            Log::error('Update type is: ' . $update->detectType());
+            return null;
         }
 
 
