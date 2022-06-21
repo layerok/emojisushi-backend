@@ -7,4 +7,3 @@
 3. ```composer install``` (OctoberCms licence key is required)
 4. ```php artisan october:migrate```
 5. ```php artisan mall:seed-demo```
-6.
