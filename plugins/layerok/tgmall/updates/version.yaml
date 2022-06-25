@@ -5,3 +5,9 @@
     - create_layerok_tgmall_users.php
     - create_layerok_tgmall_states.php
     - create_layerok_tgmall_files.php
+1.0.2:
+    - 'Update users table'
+    - update_layerok_tgmall_users_table.php
+1.0.3:
+    - 'Update users table 2'
+    - update_layerok_tgmall_users_table2.php
