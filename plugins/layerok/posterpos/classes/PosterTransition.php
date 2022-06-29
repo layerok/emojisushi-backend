@@ -261,9 +261,9 @@ class PosterTransition
         }
 
         $product->update([
-            'name' => (string)$value->product_name,
+            /*'name' => (string)$value->product_name,*/
             'weight'  => (int)$value->out,
-            'published' => (int)$value->spots[0]->visible,
+            /*'published' => (int)$value->spots[0]->visible,*/
         ]);
 
         $rootCategory = Category::where('slug', RootCategory::SLUG_KEY)->first();
