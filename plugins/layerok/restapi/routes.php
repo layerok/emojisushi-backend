@@ -1,5 +1,6 @@
 <?php
 
+use Layerok\Restapi\Http\Controllers\AuthController;
 use Layerok\Restapi\Http\Controllers\SpotController;
 use Layerok\Restapi\Http\Middleware\ExceptionsMiddleware;
 use \Layerok\Restapi\Http\Controllers\ProductController;
@@ -40,5 +41,9 @@ Route::group([
 
     Route::prefix('wishlist')->group(function() {
         Route::get('add', [WishlistController::class, 'add']);
+    });
+
+    Route::prefix('auth')->group(function() {
+       Route::post('signup', [AuthController::class, 'signup']);
     });
 });
