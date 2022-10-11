@@ -21,7 +21,6 @@ use Layerok\RestApi\Classes\Index\IndexResult;
 use OFFLINE\Mall\Classes\Index\MySQL\IndexEntry;
 use OFFLINE\Mall\Models\Currency;
 use OFFLINE\Mall\Models\Wishlist;
-use Session;
 use Throwable;
 
 class MySQL implements Index
@@ -161,10 +160,10 @@ class MySQL implements Index
         Schema::dropIfExists($this->db()->table);
     }
 
-    public function fetch(string $index, Collection $filters, SortOrder $order, int $perPage, int $forPage, $wishlist_only = null): IndexResult
+    public function fetch(string $index, Collection $filters, SortOrder $order, int $perPage, int $forPage, $params = []): IndexResult
     {
         $skip  = $perPage * ($forPage - 1);
-        $searchResult = $this->search($index, $filters, $order, $wishlist_only);
+        $searchResult = $this->search($index, $filters, $order, $params);
         $items = $searchResult['items'];
         $ids_in_wishlist = $searchResult['ids_in_wishlist'];
 
@@ -175,8 +174,13 @@ class MySQL implements Index
         return new IndexResult($slice, count($items), $ids_in_wishlist);
     }
 
-    protected function search(string $index, Collection $filters, SortOrder $order, $wishlist_only = false)
+    protected function search(string $index, Collection $filters, SortOrder $order, $params)
     {
+
+        $wishlist_only = $params['wishlist_only'];
+        $spot_id = $params['spot_id'];
+        $wishlist_sid = $params['wishlist_sid'];
+
         $idCol      = $index === 'products' ? 'product_id' : 'variant_id';
         $otherIdCol = $idCol === 'product_id' ? 'variant_id' : 'product_id';
 
@@ -188,20 +192,19 @@ class MySQL implements Index
 
         $db->where('index', $index)->where('published', true);
 
-        $this->applyHidden($db, $filters);
+        $this->applyHidden($db, $spot_id);
         $this->applySearch($db);
 
         $filters = $this->applySpecialFilters($filters, $db);
 
         $this->applyCustomFilters($filters, $db);
 
-        $wishlist_sid = Session::get('wishlist_session_id');
 
         $ids_in_wishlist = $this->getProductIdsFromWishlist($wishlist_sid);
+
         if($wishlist_only) {
             $this->applyWishlist($ids_in_wishlist, $db);
         }
-
 
 
         $this->handleOrder($order, $db);
@@ -222,26 +225,25 @@ class MySQL implements Index
 
     }
 
-    protected function applyHidden($db, $filters) {
-        $spot_id = Session::get('spot_id');
-
+    protected function applyHidden($db, $spot_id) {
         // hide products in hidden categories
-        $hidden_categories = HideCategory::where([
-            'spot_id' => $spot_id
-        ])->pluck('category_id')->toArray();
+        if(!empty($spot_id)) {
+            $hidden_categories = HideCategory::where([
+                'spot_id' => $spot_id
+            ])->pluck('category_id')->toArray();
 
-        $db->where(function($query) use ($hidden_categories) {
-            foreach($hidden_categories as $category_id) {
-                $query->orWhereRaw('NOT JSON_CONTAINS(category_id, ?)', json_encode([(int)$category_id]));
-            }
-        });
+            $db->where(function($query) use ($hidden_categories) {
+                foreach($hidden_categories as $category_id) {
+                    $query->orWhereRaw('NOT JSON_CONTAINS(category_id, ?)', json_encode([(int)$category_id]));
+                }
+            });
 
-        $hidden = HideProduct::where([
-            ['spot_id', '=', $spot_id],
-        ])->pluck('product_id');
+            $hidden = HideProduct::where([
+                ['spot_id', '=', $spot_id],
+            ])->pluck('product_id');
 
-        $db->whereNotIn('product_id', $hidden);
-
+            $db->whereNotIn('product_id', $hidden);
+        }
 
     }
 

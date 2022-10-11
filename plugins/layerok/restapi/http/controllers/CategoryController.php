@@ -14,19 +14,23 @@ class CategoryController extends Controller
     {
         $offset = input('offset');
         $limit = input('limit');
+        $spot_id = input('spot_id');
 
         $root = Category::where('slug', RootCategory::SLUG_KEY)->first();
 
-        $hidden = HideCategory::where([
-            'spot_id' => input('spot_id')
-        ])->pluck('category_id');
-
-        $query = Category::where([
-            ['published', '=', '1'],
-            ['parent_id', '=', $root->id],
-        ])->whereNotIn('id', $hidden);
+        $query = Category::query();
 
 
+        if(!empty($spot_id)) {
+            $hidden = HideCategory::where([
+                'spot_id' => $spot_id
+            ])->pluck('category_id');
+
+            $query = Category::where([
+                ['published', '=', '1'],
+                ['parent_id', '=', $root->id],
+            ])->whereNotIn('id', $hidden);
+        }
 
         if($limit) {
             $query->limit($limit);

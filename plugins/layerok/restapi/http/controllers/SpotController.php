@@ -34,4 +34,9 @@ class SpotController extends Controller
             ]
         ]);
     }
+
+    public function saveSpotId()
+    {
+
+    }
 }

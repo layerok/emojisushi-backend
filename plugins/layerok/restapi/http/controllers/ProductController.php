@@ -3,20 +3,16 @@
 namespace Layerok\Restapi\Http\Controllers;
 
 use Illuminate\Http\JsonResponse;
-use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Routing\Controller;
 use Illuminate\Support\Collection;
 use Layerok\Restapi\Classes\Index\MySQL\MySQL;
 use OFFLINE\Mall\Classes\CategoryFilter\QueryString;
 use OFFLINE\Mall\Classes\CategoryFilter\SetFilter;
-use OFFLINE\Mall\Classes\CategoryFilter\SortOrder\Bestseller;
 use OFFLINE\Mall\Classes\CategoryFilter\SortOrder\SortOrder;
-use OFFLINE\Mall\Classes\Index\Index;
 use OFFLINE\Mall\Models\Category;
 use OFFLINE\Mall\Models\Product;
 use OFFLINE\Mall\Models\PropertyGroup;
 use OFFLINE\Mall\Models\Variant;
-use OFFLINE\Mall\Models\Wishlist;
 use Session;
 
 class ProductController extends Controller
@@ -32,6 +28,8 @@ class ProductController extends Controller
     public $limit;
     public $totalCount;
     public $wishlist_only;
+    public $spot_id;
+    public $wishlist_id;
 
     public function fetch(): JsonResponse
     {
@@ -40,7 +38,10 @@ class ProductController extends Controller
         $this->wishlist_only = input('wishlist');
 /*        $this->includeChildren = input('include_children');;*/
         $this->category = $this->getCategory();
+        // todo: force user to login before adding product to wishlist
+        $this->wishlist_id = input('wishlist_id');
         $this->filter = input('filter');
+        $this->spot_id = input('spot_id');
 
         $this->perPage = $this->limit;
 
@@ -86,7 +87,11 @@ class ProductController extends Controller
             $sortOrder,
             $this->perPage,
             $this->pageNumber,
-            $this->wishlist_only
+            [
+                'wishlist_only' => $this->wishlist_only,
+                'wishlist_sid' => Session::get('wishlist_session_id'),
+                'spot_id' => $this->spot_id
+            ]
         );
 
         $ids_in_wishlist = $result->ids_in_wishlist;
