@@ -1,6 +1,7 @@
 <?php
 
 use Layerok\Restapi\Http\Controllers\AuthController;
+use Layerok\Restapi\Http\Controllers\SessionController;
 use Layerok\Restapi\Http\Controllers\SpotController;
 use Layerok\Restapi\Http\Middleware\ExceptionsMiddleware;
 use \Layerok\Restapi\Http\Controllers\ProductController;
@@ -47,4 +48,7 @@ Route::group([
        Route::post('signup', [AuthController::class, 'signup']);
        Route::post('signin', [AuthController::class, 'signin']);
     });
+
+    Route::post('session', [SessionController::class, 'create']);
+    Route::get('session/{id}', [SessionController::class, 'get']);
 });
