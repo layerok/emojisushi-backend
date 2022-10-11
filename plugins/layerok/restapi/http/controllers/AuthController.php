@@ -14,7 +14,12 @@ class AuthController extends Controller
         $activate = input('activate');
         $autoLogin = input('auto_login');
         $name = input('name');
+        $agree = input('agree');
         $surname = input('surname');
+
+        if(!$agree) {
+            throw new ValidationException(['agree' => \Lang::get('layerok.restapi::validation.checkbox_required')]);
+        }
 
         $user = Auth::findUserByLogin($email);
 
@@ -32,5 +37,15 @@ class AuthController extends Controller
             'surname' => $surname
         ], $activate, $autoLogin);
 
+    }
+
+    public function signin() {
+        $login = input('login');
+        $password = input('password');
+
+        $user = Auth::attempt([
+            'email' => $login,
+            'password' => $password
+        ]);
     }
 }

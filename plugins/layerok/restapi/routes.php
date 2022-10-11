@@ -45,5 +45,6 @@ Route::group([
 
     Route::prefix('auth')->group(function() {
        Route::post('signup', [AuthController::class, 'signup']);
+       Route::post('signin', [AuthController::class, 'signin']);
     });
 });
