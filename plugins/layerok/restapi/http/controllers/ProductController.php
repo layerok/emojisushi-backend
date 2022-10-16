@@ -34,7 +34,7 @@ class ProductController extends Controller
     public function fetch(): JsonResponse
     {
         $this->offset = input('offset');
-        $this->limit = input('limit');
+        $this->limit = input('limit') ?? 25;
         $this->wishlist_only = input('wishlist');
 /*        $this->includeChildren = input('include_children');;*/
         $this->category = $this->getCategory();

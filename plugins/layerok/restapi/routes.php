@@ -17,7 +17,8 @@ Route::group([
     'middleware' => [
         ExceptionsMiddleware::class,
         CustomSession::class,
-        \Fruitcake\Cors\HandleCors::class
+        \Fruitcake\Cors\HandleCors::class,
+        'api'
     ],
     'prefix' => 'api'
 ], function () {
