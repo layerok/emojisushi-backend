@@ -200,7 +200,7 @@ class PosterTransition
             }
         }
 
-        if (!empty($value->photo)) {
+/*        if (!empty($value->photo)) {
             try {
                 $url = env('POSTER_URL') . (string)$value->photo;
 
@@ -222,7 +222,7 @@ class PosterTransition
                 echo 'Caught error', $e->getMessage(), "\n";
             }
 
-        }
+        }*/
 
 
         // Это какая-то переиндексация, короче если это не сделать, то товара не будет отображен пользователю
@@ -295,7 +295,7 @@ class PosterTransition
         }
 
 
-        $image_sets = ImageSet::where('product_id', '=', $product['id'])->get();
+/*        $image_sets = ImageSet::where('product_id', '=', $product['id'])->get();
         if ($image_sets) {
             $files = File::whereIn('attachment_id', $image_sets->pluck('id'))->get();
             if ($files) {
@@ -307,9 +307,9 @@ class PosterTransition
                 $set->delete();
             }
 
-        }
+        }*/
 
-        if (!empty($value->photo)) {
+/*        if (!empty($value->photo)) {
 
             $url = env('POSTER_URL') . (string)$value->photo;
 
@@ -327,7 +327,7 @@ class PosterTransition
             }
 
             $image_set->images()->add($file);
-        }
+        }*/
 
 
 

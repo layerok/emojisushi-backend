@@ -15,10 +15,10 @@ use \Layerok\Restapi\Http\Controllers\OrderController;
 
 Route::group([
     'middleware' => [
+        'api',
         ExceptionsMiddleware::class,
         CustomSession::class,
         \Fruitcake\Cors\HandleCors::class,
-        'api'
     ],
     'prefix' => 'api'
 ], function () {
