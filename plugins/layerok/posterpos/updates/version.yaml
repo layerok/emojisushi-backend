@@ -32,3 +32,9 @@
 1.1.11`:
     - 'add code field to shipping methods table'
     - add_code_field_to_shipping_methods_table.php
+1.1.12:
+    - 'add html content to spots table'
+    - add_html_content_field_to_spots_table.php
+1.1.13:
+    - 'add google map url filed to spots table'
+    - add_google_map_url_field_to_spots_table.php

@@ -20,6 +20,9 @@ fields:
     address:
         label: Address
         span: auto
+    google_map_url:
+        label: Google map url
+        span: auto
     phones:
         label: Телефоны
         description: Введите телефоны через запятую
@@ -36,5 +39,9 @@ fields:
           label: 'layerok.posterpos::lang.extend.published'
           span: left
           type: switch
+    html_content:
+        type: richeditor
+        toolbarButtons: fullscreen, bold, italic, underline, strikeThrough, subscript, superscript, fontFamily, fontSize, |, color, emoticons, inlineStyle, paragraphStyle, |, paragraphFormat, align, formatOL, formatUL, outdent, indent, quote, insertHR, -, insertLink, insertImage, insertVideo, insertAudio, insertFile, insertTable, undo, redo, clearFormatting, selectAll, html
+        size: huge
 
 
