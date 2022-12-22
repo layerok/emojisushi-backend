@@ -1,6 +1,7 @@
 <?php
 
-use Layerok\Restapi\Http\Controllers\AuthController;
+use Layerok\Restapi\Http\Controllers\ResetPasswordController;
+use Layerok\Restapi\Http\Controllers\RestorePasswordController;
 use Layerok\Restapi\Http\Controllers\SpotController;
 use Layerok\Restapi\Http\Middleware\ExceptionsMiddleware;
 use \Layerok\Restapi\Http\Controllers\ProductController;
@@ -12,6 +13,10 @@ use \Layerok\Restapi\Http\Controllers\PaymentMethodController;
 use \Layerok\Restapi\Http\Controllers\WishlistController;
 use \Layerok\Restapi\Http\Controllers\IngredientController;
 use \Layerok\Restapi\Http\Controllers\OrderController;
+use Layerok\Restapi\Http\Controllers\ActivationController;
+use Layerok\Restapi\Http\Controllers\AuthController;
+use Layerok\Restapi\Http\Controllers\RefreshController;
+use Layerok\Restapi\Http\Controllers\RegistrationController;
 
 Route::group([
     'middleware' => [
@@ -45,7 +50,23 @@ Route::group([
     });
 
     Route::prefix('auth')->group(function() {
-       Route::post('signup', [AuthController::class, 'signup']);
-       Route::post('signin', [AuthController::class, 'signin']);
+        Route::post('login', AuthController::class);
+        Route::post('refresh', RefreshController::class);
+        Route::post('register', RegistrationController::class);
+        Route::post('activate', ActivationController::class);
+        Route::post('reset-password', ResetPasswordController::class);
+        Route::post('restore-password', RestorePasswordController::class);
     });
+
+    Route::group([
+        'middleware' => [
+            \ReaZzon\JWTAuth\Http\Middlewares\ResolveUser::class
+        ]
+    ], function() {
+        Route::post('user', function() {
+            $jwtGuard = app('JWTGuard');
+            return $jwtGuard->user();
+        });
+    });
+
 });

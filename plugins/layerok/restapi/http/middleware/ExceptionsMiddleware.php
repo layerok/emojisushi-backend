@@ -27,8 +27,10 @@ class ExceptionsMiddleware
             if ($exception instanceof ValidationException) {
                 $response['errors'] = $exception->getErrors();
             }
-
-            Log::error('[API error] ' . $exception);
+            if ($exception instanceof  \Illuminate\Validation\ValidationException) {
+                $response['errors'] = $exception->errors();
+            }
+            //Log::error('[API error] ' . $exception);
             return response()->json($response, 422);
         });
     }

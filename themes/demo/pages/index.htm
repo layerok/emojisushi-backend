@@ -4,7 +4,25 @@ layout = "default"
 
 [resources]
 less[] = "pages/index.less"
+[account]
+
+[session]
+
 ==
+
+{% component 'account' %}
+
+{% component 'session' %}
+
+{% if user %}
+    <p>Hello {{ user.name }}</p>
+    <a data-request="onLogout" data-request-data="redirect: '/good-bye'">Sign out</a>
+{% else %}
+    <p>Nobody is logged in</p>
+{% endif %}
+
+
+
 <div class="jumbotron">
     <div class="container">
         <div class="row">
