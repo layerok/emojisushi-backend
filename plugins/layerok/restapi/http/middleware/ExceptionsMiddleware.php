@@ -4,11 +4,14 @@ namespace Layerok\Restapi\Http\Middleware;
 
 use App;
 use Closure;
+use Illuminate\Http\Exceptions\HttpResponseException;
 use Illuminate\Http\Request;
 use Exception;
 use October\Rain\Exception\ValidationException;
 use Log;
 use Config;
+use Symfony\Component\HttpKernel\Exception\HttpException;
+
 class ExceptionsMiddleware
 {
     public function handle(Request $request, Closure $next)
@@ -24,14 +27,23 @@ class ExceptionsMiddleware
             $response = [];
             $response['message'] = $exception->getMessage();
 
+            $code = 500;
+
             if ($exception instanceof ValidationException) {
                 $response['errors'] = $exception->getErrors();
+                $code = 422;
             }
             if ($exception instanceof  \Illuminate\Validation\ValidationException) {
                 $response['errors'] = $exception->errors();
+                $code = $exception->status;
             }
+
+            if($exception instanceof HttpException) {
+                $code = $exception->getStatusCode();
+            }
+
             //Log::error('[API error] ' . $exception);
-            return response()->json($response, 422);
+            return response()->json($response, $code);
         });
     }
 }
