@@ -1,8 +1,10 @@
 <?php
 
+use Layerok\Restapi\Http\Controllers\CustomerController;
 use Layerok\Restapi\Http\Controllers\ResetPasswordController;
 use Layerok\Restapi\Http\Controllers\RestorePasswordController;
 use Layerok\Restapi\Http\Controllers\SpotController;
+use Layerok\Restapi\Http\Controllers\UserController;
 use Layerok\Restapi\Http\Middleware\ExceptionsMiddleware;
 use \Layerok\Restapi\Http\Controllers\ProductController;
 use \Layerok\Restapi\Http\Controllers\CategoryController;
@@ -63,10 +65,12 @@ Route::group([
             \ReaZzon\JWTAuth\Http\Middlewares\ResolveUser::class
         ]
     ], function() {
-        Route::post('user', function() {
-            $jwtGuard = app('JWTGuard');
-            return $jwtGuard->user();
-        });
+        Route::get('user', [UserController::class, 'fetch']);
+        Route::post('user', [UserController::class, 'save']);
+        Route::post('user/password', [UserController::class, 'updatePassword']);
+
+
+        Route::post('customer', [CustomerController::class, 'save']);
     });
 
 });

@@ -17,9 +17,6 @@ class RegistrationRequest extends FormRequest
         return [
             'name' => 'required|string',
             'email' => 'unique:users,email|required|string',
-            'last_name' => 'sometimes|string',
-            'middle_name' => 'sometimes|string',
-            'phone' => 'sometimes|string',
             'password' => 'sometimes|confirmed',
             'password_confirmation' => 'required_with:password',
             'surname' => 'required|string',
