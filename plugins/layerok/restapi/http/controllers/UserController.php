@@ -4,14 +4,18 @@ namespace Layerok\Restapi\Http\Controllers;
 
 use Illuminate\Http\JsonResponse;
 use Illuminate\Routing\Controller;
+use OFFLINE\Mall\Models\Address;
 use OFFLINE\Mall\Models\User;
+use RainLab\Location\Models\Country;
 
 class UserController extends Controller
 {
     public function fetch(): JsonResponse
     {
         $jwtGuard = app('JWTGuard');
-        return response()->json(User::with('customer')->find($jwtGuard->user()->id));
+        $data = User::with(['customer.addresses'])
+            ->find($jwtGuard->user()->id);
+        return response()->json($data);
     }
 
     public function save()
@@ -61,6 +65,79 @@ class UserController extends Controller
             );
         }
 
+
+    }
+
+    public function createAddress() {
+        request()->validate([
+            'name' => 'required',
+            'lines' => 'required',
+            'zip' => 'required',
+            'city' => 'required',
+            'two_letters_country_code' => 'required'
+        ]);
+
+        $jwtGuard = app('JWTGuard');
+        $user = $jwtGuard->user();
+        $customer = $user->customer;
+
+        $name = input('name');
+        $lines = input('lines');
+        $zip = input('zip');
+        $city = input('city');
+        $two_letters_country_code =  input('two_letters_country_code');
+
+        $shippingAddress             = new Address();
+        $shippingAddress->name       = $name;
+        $shippingAddress->lines      = $lines;
+        $shippingAddress->zip        = $zip;
+        $shippingAddress->city       = $city;
+
+        $country = Country::where('code', 'UA')->first();
+        if($country) {
+            $shippingAddress->country_id = $country->id;
+        } else {
+            throw new \ValidationException([
+                'two_letter_country_code' => "Country with code[$two_letters_country_code] doesn't exist"
+            ]);
+        }
+
+
+        $customer->addresses()->save($shippingAddress);
+    }
+
+    public function deleteAddress() {
+        request()->validate([
+            'id' => 'required|integer|exists:offline_mall_addresses'
+        ]);
+
+        $jwtGuard = app('JWTGuard');
+        $user = $jwtGuard->user();
+        $customer = $user->customer;
+
+        $id = input('id');
+
+        $address = Address::find($id);
+        if($address) {
+            $address->delete();
+        }
+
+    }
+
+    public function setDefaultAddress() {
+        $jwtGuard = app('JWTGuard');
+        $user = $jwtGuard->user();
+        $customer = $user->customer;
+
+        request()->validate([
+            'id' => 'required|integer|exists:offline_mall_addresses'
+        ]);
+
+        $id = input('id');
+
+        $address = Address::find($id);
+        $customer->default_shipping_address_id = $address->id;
+        $customer->save();
 
     }
 }

@@ -68,9 +68,14 @@ Route::group([
         Route::get('user', [UserController::class, 'fetch']);
         Route::post('user', [UserController::class, 'save']);
         Route::post('user/password', [UserController::class, 'updatePassword']);
+        Route::get('user/addresses', [UserController::class, 'addresses']);
+        Route::post('user/address', [UserController::class, 'createAddress']);
+        Route::delete('user/address', [UserController::class, 'deleteAddress']);
+        Route::post('user/address/default', [UserController::class, 'setDefaultAddress']);
+
+        Route::post('user/customer', [CustomerController::class, 'save']);
 
 
-        Route::post('customer', [CustomerController::class, 'save']);
     });
 
 });
