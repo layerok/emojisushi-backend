@@ -4,9 +4,10 @@ namespace Layerok\Restapi\Http\Controllers;
 
 use Illuminate\Http\JsonResponse;
 use Illuminate\Routing\Controller;
+use Layerok\PosterPos\Models\Cart;
 use October\Rain\Exception\ValidationException;
 use OFFLINE\Mall\Classes\Exceptions\OutOfStockException;
-use OFFLINE\Mall\Models\Cart;
+
 use OFFLINE\Mall\Models\CartProduct;
 use OFFLINE\Mall\Models\Product;
 use OFFLINE\Mall\Models\Variant;
@@ -16,7 +17,9 @@ class CartController extends Controller
 
     public function all(): JsonResponse
     {
-        $cart = Cart::bySession();
+        $jwtGuard = app('JWTGuard');
+        $user = $jwtGuard->user();
+        $cart = Cart::byUser($user);
         $records = $this->prepareProducts($cart);
 
         return response()->json([
@@ -28,19 +31,21 @@ class CartController extends Controller
 
     public function add(): JsonResponse
     {
-        $product_id = input('product_id');
-        $variant_id = input('variant_id');
-        $quantity = input('quantity');
-
         request()->validate([
             'product_id' => 'required|exists:offline_mall_products,id'
         ]);
+
+        $product_id = input('product_id');
+        $variant_id = input('variant_id');
+        $quantity = input('quantity');
 
         $product = Product::published()->findOrFail($product_id);
 
         $variant = Variant::where('id', $variant_id)->first();
 
-        $cart = Cart::bySession();
+        $jwtGuard = app('JWTGuard');
+        $user = $jwtGuard->user();
+        $cart = Cart::byUser($user);
 
         $cartProduct = CartProduct::where([
             ['cart_id', $cart->id],
@@ -72,13 +77,16 @@ class CartController extends Controller
     }
 
     public function remove() {
-        $cart_product_id = input('cart_product_id');
 
         request()->validate([
             'cart_product_id' => 'required|exists:offline_mall_cart_products,id'
         ]);
 
-        $cart = Cart::bySession();
+        $cart_product_id = input('cart_product_id');
+
+        $jwtGuard = app('JWTGuard');
+        $user = $jwtGuard->user();
+        $cart = Cart::byUser($user);
 
         $cartProduct = CartProduct::where([
             ['cart_id', $cart->id],
@@ -100,7 +108,9 @@ class CartController extends Controller
     }
 
     public function clear(): JsonResponse {
-        $cart = Cart::bySession();
+        $jwtGuard = app('JWTGuard');
+        $user = $jwtGuard->user();
+        $cart = Cart::byUser($user);
         $cart->products()->delete();
         $cart->refresh();
 

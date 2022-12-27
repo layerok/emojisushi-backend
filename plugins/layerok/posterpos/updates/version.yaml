@@ -38,3 +38,8 @@
 1.1.13:
     - 'add google map url filed to spots table'
     - add_google_map_url_field_to_spots_table.php
+1.1.14:
+    - 'add spot_id to carts, wishlists, orders table'
+    - add_spot_id_to_carts_table.php
+    - add_spot_id_to_wishlists_table.php
+    - add_spot_id_to_orders_table.php

@@ -3,7 +3,10 @@ declare(strict_types=1);
 
 namespace Layerok\Restapi\Http\Controllers;
 
+use Layerok\PosterPos\Models\Cart;
+use Layerok\PosterPos\Models\Wishlist;
 use Layerok\Restapi\Http\Requests\RegistrationRequest;
+
 use OFFLINE\Mall\Models\Customer;
 
 /**
@@ -34,6 +37,9 @@ class RegistrationController extends Controller
         $customer->save();
 
         $user->customer = $customer;
+
+        Cart::transferSessionCartToCustomer($user->customer);
+        Wishlist::transferToCustomer($user->customer);
 
 
         if ($this->userPluginResolver->getResolver()->initActivation($user) !== 'on') {

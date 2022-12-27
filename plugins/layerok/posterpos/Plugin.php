@@ -18,12 +18,15 @@ use Maatwebsite\Excel\Facades\Excel;
 use OFFLINE\Mall\Controllers\Categories;
 use OFFLINE\Mall\Controllers\Products;
 use OFFLINE\Mall\Controllers\Variants;
+use OFFLINE\Mall\Models\Cart;
 use OFFLINE\Mall\Models\Category;
+use OFFLINE\Mall\Models\Order;
 use OFFLINE\Mall\Models\Product;
 use OFFLINE\Mall\Models\Property;
 use OFFLINE\Mall\Models\PropertyGroup;
 use OFFLINE\Mall\Models\ShippingMethod;
 use OFFLINE\Mall\Models\Variant;
+use OFFLINE\Mall\Models\Wishlist;
 use System\Classes\PluginBase;
 use App;
 
@@ -269,6 +272,23 @@ class Plugin extends PluginBase
 
         PropertyGroup::extend(function($model){
             $model->fillable[] = 'poster_id';
+        });
+
+
+
+        Cart::extend(function ($model) {
+            $model->fillable[] = 'spot_id';
+            $model->hasOne['spot'] = Spot::class;
+        });
+
+        Order::extend(function ($model) {
+            $model->fillable[] = 'spot_id';
+            $model->hasOne['spot'] = Spot::class;
+        });
+
+        Wishlist::extend(function ($model) {
+            $model->fillable[] = 'spot_id';
+            $model->hasOne['spot'] = Spot::class;
         });
 
 

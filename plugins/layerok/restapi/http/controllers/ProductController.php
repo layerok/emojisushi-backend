@@ -38,7 +38,7 @@ class ProductController extends Controller
         $this->wishlist_only = input('wishlist');
 /*        $this->includeChildren = input('include_children');;*/
         $this->category = $this->getCategory();
-        // todo: force user to login before adding product to wishlist
+
         $this->wishlist_id = input('wishlist_id');
         $this->filter = input('filter');
         $this->spot_id = input('spot_id');

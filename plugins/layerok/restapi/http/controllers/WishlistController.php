@@ -4,11 +4,9 @@ namespace Layerok\Restapi\Http\Controllers;
 
 use Illuminate\Http\JsonResponse;
 use Illuminate\Routing\Controller;
+use Layerok\PosterPos\Models\Wishlist;
 use October\Rain\Exception\ValidationException;
-use OFFLINE\Mall\Models\Wishlist;
 use OFFLINE\Mall\Models\WishlistItem;
-use RainLab\User\Facades\Auth;
-use Session;
 use Validator;
 
 class WishlistController extends Controller
@@ -25,10 +23,13 @@ class WishlistController extends Controller
             throw new ValidationException($v);
         }
 
-       $wishlists = Wishlist::byUser();
+        $jwtGuard = app('JWTGuard');
+        $user = $jwtGuard->user();
+
+       $wishlists = Wishlist::byUser($user);
 
         if ($wishlists->count() < 1) {
-            $wishlists = collect([Wishlist::createForUser(Auth::getUser())]);
+            $wishlists = collect([Wishlist::createForUser($user)]);
         }
 
         $wishlist = $wishlists->first();

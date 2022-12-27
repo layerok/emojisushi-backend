@@ -4,14 +4,13 @@ namespace Layerok\Restapi\Http\Controllers;
 
 use Illuminate\Http\JsonResponse;
 use Illuminate\Routing\Controller;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
 use Layerok\PosterPos\Classes\PosterProducts;
 use Layerok\PosterPos\Classes\PosterUtils;
+use Layerok\PosterPos\Models\Cart;
 use Layerok\PosterPos\Models\Spot;
 use October\Rain\Exception\ValidationException;
-use OFFLINE\Mall\Models\Cart;
-use OFFLINE\Mall\Models\CartProduct;
+
 use OFFLINE\Mall\Models\PaymentMethod;
 use OFFLINE\Mall\Models\ShippingMethod;
 use poster\src\PosterApi;
@@ -43,7 +42,11 @@ class OrderController extends Controller
             throw new ValidationException($validation);
         }
 
-        $this->cart = Cart::bySession();
+        $jwtGuard = app('JWTGuard');
+        $user = $jwtGuard->user();
+        $customer = $user->customer;
+
+        $this->cart = Cart::byUser($user);
 
         $products = $this->cart->products()->get();
 

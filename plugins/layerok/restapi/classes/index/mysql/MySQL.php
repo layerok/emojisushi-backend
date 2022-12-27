@@ -7,6 +7,7 @@ use DB;
 use Illuminate\Support\Collection;
 use Layerok\PosterPos\Models\HideCategory;
 use Layerok\PosterPos\Models\HideProduct;
+use Layerok\PosterPos\Models\Wishlist;
 use October\Rain\Database\Schema\Blueprint;
 use October\Rain\Support\Facades\Schema;
 use OFFLINE\Mall\Classes\CategoryFilter\Filter;
@@ -20,7 +21,6 @@ use OFFLINE\Mall\Classes\Index\IndexNotSupportedException;
 use Layerok\RestApi\Classes\Index\IndexResult;
 use OFFLINE\Mall\Classes\Index\MySQL\IndexEntry;
 use OFFLINE\Mall\Models\Currency;
-use OFFLINE\Mall\Models\Wishlist;
 use Throwable;
 
 class MySQL implements Index
@@ -298,13 +298,15 @@ class MySQL implements Index
     }
 
     protected function getProductIdsFromWishlist($session_id) {
-        $wishlist = Wishlist::where('session_id', $session_id)
-            ->first();
+        $jwtGuard = app('JWTGuard');
+        $user = $jwtGuard->user();
+
+        $wishlist = Wishlist::byUser($user)->first();
+
         $wishlist_ids = [
             'product' => [],
             'variant' => []
         ];
-
 
         if($wishlist) {
             $items = $wishlist->items()->get();

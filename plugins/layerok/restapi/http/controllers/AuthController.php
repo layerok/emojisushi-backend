@@ -3,6 +3,8 @@ declare(strict_types=1);
 
 namespace Layerok\Restapi\Http\Controllers;
 
+use Layerok\PosterPos\Models\Cart;
+use Layerok\PosterPos\Models\Wishlist;
 use October\Rain\Argon\Argon;
 use OFFLINE\Mall\Models\Customer;
 use ReaZzon\JWTAuth\Classes\Dto\TokenDto;
@@ -40,6 +42,10 @@ class AuthController extends Controller
 
             $user->customer = $customer;
         }
+
+        Cart::transferSessionCartToCustomer($user->customer);
+        Wishlist::transferToCustomer($user->customer);
+
 
         $tokenDto = new TokenDto([
             'token' => $this->JWTGuard->login($user),
