@@ -1,13 +1,13 @@
 <?php namespace Layerok\RestApi;
 
-use Backend;
-use OFFLINE\Mall\Classes\CategoryFilter\SortOrder\Bestseller;
+use Layerok\RestApi\Classes\Customer\DefaultSignUpHandler;
+use OFFLINE\Mall\Classes\Customer\SignUpHandler;
 use System\Classes\PluginBase;
 use Config;
 use Fruitcake\Cors\HandleCors;
 use Fruitcake\Cors\CorsServiceProvider;
 use Illuminate\Contracts\Http\Kernel;
-use Event;
+
 
 /**
  * RestApi Plugin Information File
@@ -36,6 +36,10 @@ class Plugin extends PluginBase
 /*        Event::listen('offline.mall.extendSortOrder', function() {
             return ['default' => new Bestseller()];
         });*/
+
+        $this->app->bind(SignUpHandler::class, function () {
+            return new DefaultSignUpHandler();
+        });
 
         Config::set('cors', Config::get('layerok.restapi::cors'));
 

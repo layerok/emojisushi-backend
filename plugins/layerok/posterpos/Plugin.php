@@ -12,13 +12,15 @@ use Layerok\PosterPos\Console\ImportIngredients;
 use Layerok\PosterPos\Console\ImportProducts;
 use Layerok\PosterPos\Console\ImportSpots;
 use Layerok\PosterPos\Console\ImportTablets;
+use Layerok\PosterPos\Models\Cart;
 use Layerok\PosterPos\Models\Spot;
+use Layerok\PosterPos\Models\Wishlist;
 use Maatwebsite\Excel\ExcelServiceProvider;
 use Maatwebsite\Excel\Facades\Excel;
 use OFFLINE\Mall\Controllers\Categories;
 use OFFLINE\Mall\Controllers\Products;
 use OFFLINE\Mall\Controllers\Variants;
-use OFFLINE\Mall\Models\Cart;
+
 use OFFLINE\Mall\Models\Category;
 use OFFLINE\Mall\Models\Order;
 use OFFLINE\Mall\Models\Product;
@@ -26,7 +28,7 @@ use OFFLINE\Mall\Models\Property;
 use OFFLINE\Mall\Models\PropertyGroup;
 use OFFLINE\Mall\Models\ShippingMethod;
 use OFFLINE\Mall\Models\Variant;
-use OFFLINE\Mall\Models\Wishlist;
+
 use System\Classes\PluginBase;
 use App;
 
@@ -282,7 +284,6 @@ class Plugin extends PluginBase
         });
 
         Order::extend(function ($model) {
-            $model->fillable[] = 'spot_id';
             $model->hasOne['spot'] = Spot::class;
         });
 

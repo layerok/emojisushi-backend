@@ -1,8 +1,6 @@
 <?php
 
 use Layerok\Restapi\Http\Controllers\CustomerController;
-use Layerok\Restapi\Http\Controllers\ResetPasswordController;
-use Layerok\Restapi\Http\Controllers\RestorePasswordController;
 use Layerok\Restapi\Http\Controllers\SpotController;
 use Layerok\Restapi\Http\Controllers\UserController;
 use Layerok\Restapi\Http\Middleware\ExceptionsMiddleware;
@@ -18,7 +16,6 @@ use \Layerok\Restapi\Http\Controllers\OrderController;
 use Layerok\Restapi\Http\Controllers\ActivationController;
 use Layerok\Restapi\Http\Controllers\AuthController;
 use Layerok\Restapi\Http\Controllers\RefreshController;
-use Layerok\Restapi\Http\Controllers\RegistrationController;
 
 Route::group([
     'middleware' => [
@@ -52,12 +49,14 @@ Route::group([
     });
 
     Route::prefix('auth')->group(function() {
-        Route::post('login', AuthController::class);
+        Route::post('login', [AuthController::class, 'login']);
+        Route::post('register', [AuthController::class, 'register']);
+        Route::post('reset-password', [AuthController::class, 'resetPassword']);
+        Route::post('restore-password', [AuthController::class, 'restorePassword']);
+
+
         Route::post('refresh', RefreshController::class);
-        Route::post('register', RegistrationController::class);
         Route::post('activate', ActivationController::class);
-        Route::post('reset-password', ResetPasswordController::class);
-        Route::post('restore-password', RestorePasswordController::class);
     });
 
     Route::group([

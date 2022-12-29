@@ -117,7 +117,10 @@ class UserController extends Controller
 
         $id = input('id');
 
-        $address = Address::find($id);
+        $address = Address::where([
+            ['id', $id],
+            ['customer_id', $customer->id]
+        ])->first();
         if($address) {
             $address->delete();
         }
@@ -135,9 +138,14 @@ class UserController extends Controller
 
         $id = input('id');
 
-        $address = Address::find($id);
-        $customer->default_shipping_address_id = $address->id;
-        $customer->save();
+        $address = Address::where([
+            ['id', $id],
+            ['customer_id', $customer->id]
+        ])->first();
 
+        if($address) {
+            $customer->default_shipping_address_id = $address->id;
+            $customer->save();
+        }
     }
 }
