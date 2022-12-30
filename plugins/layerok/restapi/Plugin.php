@@ -14,7 +14,7 @@ use Illuminate\Contracts\Http\Kernel;
  */
 class Plugin extends PluginBase
 {
-    public $require = ['OFFLINE.Mall', 'Layerok.BaseCode'];
+    public $require = ['OFFLINE.Mall', 'Layerok.BaseCode', 'ReaZzon.JWTAuth'];
 
     public function pluginDetails()
     {

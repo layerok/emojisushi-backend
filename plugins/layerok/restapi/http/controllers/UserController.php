@@ -22,17 +22,35 @@ class UserController extends Controller
     {
         $name = input('name');
         $surname = input('surname');
+        $phone = input('phone');
+
+        request()->validate([
+            'name' => 'required|min:2',
+            'surname' => 'required|min:2',
+            'phone' => 'nullable|phoneUa'
+        ], [
+            'phone.phone_ua' => trans('layerok.posterpos::lang.validation.phone.ua')
+        ]);
+
         $jwtGuard = app('JWTGuard');
         $user = $jwtGuard->user();
+        $customer = $user->customer;
 
         if($name) {
             $user->name = $name;
+            $customer->firstname = $name;
         }
 
         if($surname) {
             $user->surname = $surname;
+            $customer->lastname = $surname;
         }
 
+        if($phone) {
+            $user->phone = $phone;
+        }
+
+        $customer->save();
         $user->save();
     }
 

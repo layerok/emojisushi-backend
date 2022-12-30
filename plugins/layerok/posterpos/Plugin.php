@@ -3,6 +3,7 @@
 use Backend;
 use File;
 use Illuminate\Support\Facades\Event;
+use Layerok\PosterPos\Classes\Customer\AuthManager;
 use Layerok\PosterPos\Console\ImportCategories;
 use Layerok\PosterPos\Console\CreatePaymentMethods;
 use Layerok\PosterPos\Console\CreateShippingMethods;
@@ -81,6 +82,11 @@ class Plugin extends PluginBase
      */
     public function boot()
     {
+
+        // Use custom user model
+        App::singleton('user.auth', function () {
+            return AuthManager::instance();
+        });
 
         Event::listen('system.extendConfigFile', function ( $path, $config) {
 
@@ -291,7 +297,6 @@ class Plugin extends PluginBase
             $model->fillable[] = 'spot_id';
             $model->hasOne['spot'] = Spot::class;
         });
-
 
     }
 

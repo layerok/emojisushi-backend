@@ -86,6 +86,8 @@ class OrderController extends Controller
             throw new ValidationException([
                 'address' => 'Заповніть поле "Адреса доставки"'
             ]);
+        } else {
+            unset($data['address']);
         }
 
         $user = $this->registerGuestIfNeeded($data, $user);
