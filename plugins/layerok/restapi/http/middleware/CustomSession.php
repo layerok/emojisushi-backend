@@ -5,6 +5,7 @@ namespace Layerok\Restapi\Http\Middleware;
 use Closure;
 use Config;
 use Illuminate\Http\Request;
+use RainLab\Translate\Classes\Translator;
 use Session;
 
 class CustomSession
@@ -23,6 +24,7 @@ class CustomSession
         $lang = input('lang');
         if($lang) {
             app()->setLocale($lang);
+            Translator::instance()->setLocale($lang);
         }
 
         return $next($request);

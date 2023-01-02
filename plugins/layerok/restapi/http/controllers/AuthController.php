@@ -68,7 +68,11 @@ class AuthController extends Controller
         $tokenDto = new TokenDto([
             'token' => $this->JWTGuard->login($user),
             'expires' => Argon::createFromTimestamp($this->JWTGuard->getPayload()->get('exp')),
-            'user' => $user->load('customer.addresses'),
+            'user' => $user->load([
+                'customer.addresses',
+                'customer.orders.products.product.image_sets',
+                'customer.orders.order_state'
+            ]),
         ]);
 
         return ['data' => $tokenDto->toArray()];
