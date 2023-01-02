@@ -16,7 +16,6 @@ use OFFLINE\Mall\Models\Address;
 use OFFLINE\Mall\Models\Order;
 use OFFLINE\Mall\Models\PaymentMethod;
 use OFFLINE\Mall\Models\ShippingMethod;
-use OFFLINE\Mall\Models\User;
 use poster\src\PosterApi;
 use RainLab\Location\Models\Country;
 use Telegram\Bot\Api;
@@ -25,6 +24,7 @@ use Layerok\BaseCode\Classes\Receipt;
 class OrderController extends Controller
 {
     public $cart = null;
+    public $shippingAddress = null;
     public function place(): JsonResponse
     {
 
@@ -32,23 +32,20 @@ class OrderController extends Controller
 
         $rules = [
             'phone'             => 'required|phoneUa',
-            'email'             => 'email|required|non_existing_user',
-            'firstname'         => 'required',
-            'lastname'          => 'required',
-            'address'           => 'required',
-            'zip'               => 'required',
-            'city'              => 'required',
-            'country_code'      => 'required|exists:rainlab_location_countries,code',
-            'poster_firstname'  => 'min:2|nullable',
-            'poster_lastname'   => 'min:2|nullable',
-            'poster_email'      => 'email|nullable',
+            'firstname'         => 'min:2|nullable',
+            'lastname'          => 'min:2|nullable',
+            'email'             => 'email|nullable',
         ];
+
+        $jwtGuard = app('JWTGuard');
+        $user = $jwtGuard->user();
+
 
         $messages = [
             'email.required'          => trans('offline.mall::lang.components.signup.errors.email.required'),
             'email.email'             => trans('offline.mall::lang.components.signup.errors.email.email'),
             'phone.phone_ua'          => trans('layerok.posterpos::lang.validation.phone.ua'),
-            'email.non_existing_user' => trans('layerok.restapi::validation.customer_exists')
+            'email.non_existing_user' => trans('layerok.restapi::validation.customer_exists'),
         ];
 
         $validation = Validator::make($data, $rules, $messages);
@@ -57,8 +54,6 @@ class OrderController extends Controller
             throw new ValidationException($validation);
         }
 
-        $jwtGuard = app('JWTGuard');
-        $user = $jwtGuard->user();
 
         $this->cart = Cart::byUser($user);
         $spot = $this->getSelectedSpot();
@@ -82,17 +77,38 @@ class OrderController extends Controller
         }
         $this->cart->setShippingMethod($shippingMethod);
 
-        if($shippingMethod->code === 'courier' && empty($data['address'])) {
-            throw new ValidationException([
-                'address' => 'Заповніть поле "Адреса доставки"'
-            ]);
+        if($shippingMethod->code === 'courier') {
+
+            // todo: use laravel 'required_if', 'required_unless' rules to validate this
+            if(empty($data['address']) && empty($data['address_id'])) {
+                throw new ValidationException([
+                    'address' => 'Заповніть поле "Адреса доставки"'
+                ]);
+            }
+
+            if(empty($data['address']) && !empty($data['address_id'])) {
+                $this->shippingAddress = Address::find($data['address_id']);
+                if(!$this->shippingAddress) {
+                    throw new ValidationException([
+                        'address_id' => 'Не можемо знайти збереженний адрес. Спробуйте обрати інший'
+                    ]);
+                }
+            }
+
+
+
         } else {
             unset($data['address']);
+            unset($data['address_id']);
         }
 
-        $user = $this->registerGuestIfNeeded($data, $user);
+        if(!$user) {
+            $user = $this->registerGuest($data);
+            $this->cart = $this->cart->refresh();
+        }
 
-        $this->createShippingAddress($data, $user, $spot, $shippingMethod, $this->cart);
+
+        $this->createShippingAddress($data, $user, $this->cart, $spot,$shippingMethod);
 
         $order = Order::fromCart($this->cart);
         $order->spot_id = $spot->id;
@@ -109,7 +125,6 @@ class OrderController extends Controller
             );
 
 
-
         $poster_comment = PosterUtils::getComment([
             'comment' => $data['comment'] ?? null,
             'change' => $data['change'] ?? null,
@@ -123,16 +138,17 @@ class OrderController extends Controller
         $tablet_id = $spot->tablet->tablet_id ?? env('POSTER_FALLBACK_TABLET_ID');
 
         if(env('POSTER_SEND_ORDER_ENABLED')) {
+
             PosterApi::init();
             $result = (object)PosterApi::incomingOrders()
                 ->createIncomingOrder([
                     'spot_id' => $tablet_id,
                     'phone' => $data['phone'],
-                    'address' => $data['address'] ?? "",
+                    'address' => $shippingMethod->code === 'courier' ? $this->shippingAddress->lines: '',
                     'comment' => $poster_comment,
                     'products' => $posterProducts->all(),
-                    'first_name' => $data['poster_firstname'] ?? "",
-                    'last_name' => $data['poster_lastname'] ?? "",
+                    'first_name' => $data['firstname'] ?? "",
+                    'last_name' => $data['lastname'] ?? "",
                 ]);
 
             if(isset($result->error)) {
@@ -159,7 +175,7 @@ class OrderController extends Controller
             ->field('last_name', optional($data)['lastname'])
             ->field('phone', $data['phone'])
             ->field('delivery_method_name', optional($shippingMethod)->name)
-            ->field('address', optional($data)['address'])
+            ->field('address', $shippingMethod->code === 'courier' ? $this->shippingAddress->lines: '')
             ->field('payment_method_name', optional($paymentMethod)->name)
             ->field('change', optional($data)['change'])
             ->field('comment', optional($data)['comment'])
@@ -224,17 +240,21 @@ class OrderController extends Controller
         return \Lang::get('layerok.tgmall::lang.telegram.receipt.' . $key);
     }
 
-    public function registerGuestIfNeeded($data, ?User $user) {
-        if (!$user) {
-            // if user is not logged in, then he is a quest
-            $user = $this->registerGuest($data);
-            $this->cart = $this->cart->refresh();
-        }
-        return $user;
-    }
 
     public function registerGuest($data) {
-        $user = app(SignUpHandler::class)->handle($data, true);
+        $modified_data = $data;
+
+        // mocking some values if they weren't provided in order to be able to create user
+        if(empty($data['firstname'])) {
+            $modified_data['firstname'] = 'Гість';
+        }
+        if(empty($data['lastname'])) {
+            $modified_data['lastname'] = date('Y-m-d_His');
+        }
+        if(empty($data['email'])) {
+            $modified_data['email'] = 'mall-guest'. date('Y-m-d_His'). '@hmail.com';
+        }
+        $user = app(SignUpHandler::class)->handle($modified_data, true);
         if ( ! $user) {
             throw new ValidationException(
                 [trans('offline.mall::lang.components.quickCheckout.errors.signup_failed')]
@@ -243,19 +263,47 @@ class OrderController extends Controller
         return $user;
     }
 
-    public function createShippingAddress($data, User $user, Spot $spot, ShippingMethod $shippingMethod, Cart $cart) {
+    public function createShippingAddress($data, $user, Cart $cart, Spot $spot, ShippingMethod $shippingMethod) {
         $customer = $user->customer;
 
 
-        $billing = new Address();
+        if($shippingMethod->code === 'courier') {
 
-        $billing->name = $customer['firstname'] . ' ' . $customer['lastname'];
-        $billing->lines = $data['address'];
-        $billing->zip = $data['zip'];
-        $billing->city = $data['city'];
-        $billing->country_id = Country::where('code', 'UA')->first()->id;;
-        $billing->customer_id = $customer->id;
-        $billing->save();
+            if(!empty($data['address'])) {
+                // if user provided new address, we will save it
+                $billing = new Address();
+                $billing->name = $customer['firstname'] . ' ' . $customer['lastname'];
+                $billing->lines = $data['address'];
+
+                $billing->customer_id = $customer->id;
+                // below is hardcoded values, but I don't care about it because this website will be used only in one country
+                $billing->zip = '65125';
+                $billing->city = 'Одеса';
+                $billing->country_id = Country::where('code', 'UA')->first()->id;;
+
+                $billing->save();
+            }
+
+            if($this->shippingAddress) {
+                // if user provided selected address
+                $billing = $this->shippingAddress;
+            }
+        } else {
+            // if user selected 'takeaway' as shipping method, then we will create address at spot location
+            $billing = new Address();
+            $billing->name = $customer['firstname'] . ' ' . $customer['lastname'];
+            $billing->lines = $spot->address;
+
+            $billing->customer_id = $customer->id;
+            // below is hardcoded values, but I don't care about it because this website will be used only in one country
+            $billing->zip = '65125';
+            $billing->city = 'Одеса';
+            $billing->country_id = Country::where('code', 'UA')->first()->id;;
+
+            $billing->save();
+        }
+
+        $this->shippingAddress = $billing;
 
 
         $customer->default_billing_address_id = $billing->id;

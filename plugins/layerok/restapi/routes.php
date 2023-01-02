@@ -19,7 +19,6 @@ use Layerok\Restapi\Http\Controllers\RefreshController;
 
 Route::group([
     'middleware' => [
-        'api',
         ExceptionsMiddleware::class,
         CustomSession::class,
         \Fruitcake\Cors\HandleCors::class,
