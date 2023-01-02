@@ -82,7 +82,7 @@ class OrderController extends Controller
             // todo: use laravel 'required_if', 'required_unless' rules to validate this
             if(empty($data['address']) && empty($data['address_id'])) {
                 throw new ValidationException([
-                    'address' => 'Заповніть поле "Адреса доставки"'
+                    'address' => trans('layerok.restapi::validation.address_required')
                 ]);
             }
 
@@ -90,7 +90,7 @@ class OrderController extends Controller
                 $this->shippingAddress = Address::find($data['address_id']);
                 if(!$this->shippingAddress) {
                     throw new ValidationException([
-                        'address_id' => 'Не можемо знайти збереженний адрес. Спробуйте обрати інший'
+                        'address_id' => trans('layerok.restapi::validation.address_exists')
                     ]);
                 }
             }

@@ -3,6 +3,7 @@ declare(strict_types=1);
 namespace Layerok\Restapi\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use OFFLINE\Mall\Models\User;
 
 /**
  *
@@ -14,12 +15,13 @@ class RegistrationRequest extends FormRequest
      */
     public function rules(): array
     {
+        $minPasswordLength = User::getMinPasswordLength();
         return [
-            'name' => 'required|string',
+            'name' => 'required|string|min:2',
             'email' => 'unique:users,email|required|string',
-            'password' => 'sometimes|confirmed',
-            'password_confirmation' => 'required_with:password',
-            'surname' => 'required|string',
+            'password' => "required|between:$minPasswordLength,255|confirmed",
+            'password_confirmation' => "required_with:password|between:$minPasswordLength,255",
+            'surname' => 'required|string|min:2',
             'agree' => 'accepted'
         ];
     }
