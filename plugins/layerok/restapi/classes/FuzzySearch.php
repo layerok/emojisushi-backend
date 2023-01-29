@@ -77,7 +77,7 @@ class FuzzySearch {
         $this->suggestionDistance = $distance;
     }
 
-    public function setIgnoreWordsWithLengthLessThan($len) {
+    public function setIgnoreLength($len) {
         $this->ignoreWordLength = $len;
     }
 }

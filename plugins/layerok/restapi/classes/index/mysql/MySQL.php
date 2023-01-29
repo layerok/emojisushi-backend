@@ -233,7 +233,7 @@ class MySQL implements Index
         if($search && $trimmed_search) {
             $fuzzy = new FuzzySearch($trimmed_search, true);
             $fuzzy->setSuggestionDistance(2);
-            $fuzzy->setIgnoreWordsWithLengthLessThan(3);
+            $fuzzy->setIgnoreLength(3);
 
             foreach ($items as $key => $item) {
                 $sentence = $fuzzy->search($item->name);
