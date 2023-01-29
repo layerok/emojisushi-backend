@@ -8,6 +8,7 @@ use Illuminate\Support\Collection;
 use Layerok\PosterPos\Models\HideCategory;
 use Layerok\PosterPos\Models\HideProduct;
 use Layerok\PosterPos\Models\Wishlist;
+use Layerok\Restapi\Classes\FuzzySearch;
 use October\Rain\Database\Schema\Blueprint;
 use October\Rain\Support\Facades\Schema;
 use OFFLINE\Mall\Classes\CategoryFilter\Filter;
@@ -21,6 +22,7 @@ use OFFLINE\Mall\Classes\Index\IndexNotSupportedException;
 use Layerok\RestApi\Classes\Index\IndexResult;
 use OFFLINE\Mall\Classes\Index\MySQL\IndexEntry;
 use OFFLINE\Mall\Models\Currency;
+use OFFLINE\Mall\Models\Product;
 use Throwable;
 
 class MySQL implements Index
@@ -188,12 +190,12 @@ class MySQL implements Index
             $idCol . ' as id',
             $otherIdCol . ' as other_id',
             'is_ghost',
+            'name'
         ]);
 
         $db->where('index', $index)->where('published', true);
 
         $this->applyHidden($db, $spot_id);
-        $this->applySearch($db);
 
         $filters = $this->applySpecialFilters($filters, $db);
 
@@ -206,10 +208,13 @@ class MySQL implements Index
             $this->applyWishlist($ids_in_wishlist, $db);
         }
 
+        // $this->applySearch($db); simple search
 
         $this->handleOrder($order, $db);
 
         $items = $db->get()->toArray();
+
+        $items = $this->fuzzySearch($items);
 
         return [
             'items' => $items,
@@ -217,12 +222,48 @@ class MySQL implements Index
         ];
     }
 
+
+    protected function fuzzySearch($items) {
+        $search = input('search');
+
+        if($search) {
+            $trimmed_search = trim($search);
+        }
+
+        if($search && $trimmed_search) {
+            $fuzzy = new FuzzySearch($trimmed_search, true);
+            $fuzzy->setSuggestionDistance(2);
+            $fuzzy->setIgnoreWordsWithLengthLessThan(3);
+
+            foreach ($items as $key => $item) {
+                $sentence = $fuzzy->search($item->name);
+
+                $everyWordHasSuggestion = true;
+
+                foreach($sentence->words() as $word) {
+                    $suggestions = $word->getSuggestions();
+                    if(count($suggestions) < 1) {
+                        $everyWordHasSuggestion = false;
+                        break;
+                    }
+                }
+
+                if(!$everyWordHasSuggestion) {
+                    unset($items[$key]);
+                }
+            }
+        }
+
+        // todo: sort result by accuracy
+
+        return $items;
+    }
+
     protected function applySearch($db) {
         $search = input('search');
         if($search) {
             $db->where('name', 'like', '%'. $search .'%');
         }
-
     }
 
     protected function applyHidden($db, $spot_id) {
