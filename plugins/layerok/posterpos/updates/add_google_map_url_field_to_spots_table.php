@@ -14,9 +14,11 @@ class AddGoogleMapUrlFieldToSpotsTable extends Migration
     ///
     public function up()
     {
-        Schema::table('layerok_posterpos_spots', function (Blueprint $table) {
-            $table->string('google_map_url')->nullable();
-        });
+        if (!Schema::hasColumn('layerok_posterpos_spots', 'google_map_url')) {
+            Schema::table('layerok_posterpos_spots', function (Blueprint $table) {
+                $table->string('google_map_url')->nullable();
+            });
+        }
     }
 
     public function down()
