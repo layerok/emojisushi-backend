@@ -13,6 +13,8 @@ class Spot extends Model
 
     protected $table = 'layerok_posterpos_spots';
     protected $primaryKey = 'id';
+    public $implement = ['@RainLab.Translate.Behaviors.TranslatableModel'];
+    public $translatable = ['name', 'address'];
 
 
     public $timestamps = true;
