@@ -1,11 +1,14 @@
 <?php namespace RainLab\Translate\Classes;
 
 use App;
-use Config;
+use Cms;
+use Site;
+use Event;
 use Schema;
 use Session;
 use Request;
-use RainLab\Translate\Models\Locale;
+use Cms\Classes\Page as CmsPage;
+use RainLab\Translate\Classes\Locale;
 
 /**
  * Translator class
@@ -42,8 +45,17 @@ class Translator
      */
     public function init()
     {
-        $this->defaultLocale = $this->isConfigured() ? array_get(Locale::getDefault(), 'code', 'en') : 'en';
-        $this->activeLocale = $this->defaultLocale;
+        $this->defaultLocale = Locale::getDefaultSiteLocale();
+        $this->activeLocale = Locale::getSiteLocaleFromContext();
+
+        // Reset locale when active and edit sites change
+        Event::listen('system.site.setEditSite', function() {
+            $this->activeLocale = Locale::getSiteLocaleFromContext();
+        });
+
+        Event::listen('system.site.setActiveSite', function() {
+            $this->activeLocale = Locale::getSiteLocaleFromContext();
+        });
     }
 
     /**
@@ -122,54 +134,7 @@ class Translator
     //
 
     /**
-     * handleLocaleRoute will check if the route contains a translated locale prefix (/en/)
-     * and return that locale to be registered with the router.
-     * @return string
-     */
-    public function handleLocaleRoute()
-    {
-        if (Config::get('rainlab.translate::disableLocalePrefixRoutes', false)) {
-            return '';
-        }
-
-        if (App::runningInBackend()) {
-            return '';
-        }
-
-        if (!$this->isConfigured()) {
-            return '';
-        }
-
-        if (!$this->loadLocaleFromRequest()) {
-            return '';
-        }
-
-        $locale = $this->getLocale();
-        if (!$locale) {
-            return '';
-        }
-
-        return $locale;
-    }
-
-    /**
-     * Sets the locale based on the first URI segment.
-     * @return bool
-     */
-    public function loadLocaleFromRequest()
-    {
-        $locale = Request::segment(1);
-
-        if (!Locale::isValid($locale)) {
-            return false;
-        }
-
-        $this->setLocale($locale);
-        return true;
-    }
-
-    /**
-     * Returns the current path prefixed with language code.
+     * getCurrentPathInLocale returns the current path prefixed with language code.
      *
      * @param string $locale optional language code, default to the system default language
      * @return string
@@ -180,47 +145,61 @@ class Translator
     }
 
     /**
-     * Returns the path prefixed with language code.
+     * getPathInLocale returns the path prefixed with language code. The path to rewrite,
+     * can be already translated, with or without locale prefixed.
      *
-     * @param string $path Path to rewrite, already translate, with or without locale prefixed
-     * @param string $locale optional language code, default to the system default language
-     * @param boolean $prefixDefaultLocale should we prefix the path when the locale = default locale
-     * @return string
+     * @param string $path
+     * @param string $locale
+     * @return string|null
      */
-    public function getPathInLocale($path, $locale = null, $prefixDefaultLocale = null)
+    public function getPathInLocale($path, $locale = null)
     {
-        $prefixDefaultLocale = (is_null($prefixDefaultLocale))
-            ? Config::get('rainlab.translate::prefixDefaultLocale')
-            : $prefixDefaultLocale;
-
-        $segments = explode('/', $path);
-
-        $segments = array_values(array_filter($segments, function ($v) {
-            return $v != '';
-        }));
-
-        if (is_null($locale) || !Locale::isValid($locale)) {
+        if (!$locale || !Locale::isValid($locale)) {
             $locale = $this->defaultLocale;
         }
 
-        if (count($segments) == 0 || Locale::isValid($segments[0])) {
-            $segments[0] = $locale;
-        } else {
-            array_unshift($segments, $locale);
+        $site = Site::getSiteForLocale($locale);
+        if (!$site) {
+            return $path;
         }
 
-        // If we don't want te default locale to be prefixed
-        // and the first segment equals the default locale
-        if (
-            !$prefixDefaultLocale &&
-            isset($segments[0]) &&
-            $segments[0] == $this->defaultLocale
-        ) {
-            // Remove the default locale
-            array_shift($segments);
-        };
+        $newPath = $site->removeRoutePrefix($path);
+        $newPath = $site->attachRoutePrefix($newPath);
 
-        return htmlspecialchars(implode('/', $segments), ENT_QUOTES, 'UTF-8');
+        return $newPath;
+    }
+
+    /**
+     * getPageInLocale returns a page URL for a given locale
+     *
+     * @param string $path
+     * @param string $locale
+     * @param array $params
+     * @return string|null
+     */
+    public function getPageInLocale($name, $locale = null, $params = [])
+    {
+        $page = CmsPage::find($name);
+        if (!$name || !$page) {
+            return null;
+        }
+
+        if (!$locale || !Locale::isValid($locale)) {
+            $locale = $this->defaultLocale;
+        }
+
+        $site = Site::getSiteForLocale($locale);
+        if (!$site) {
+            return null;
+        }
+
+        $router = new \October\Rain\Router\Router;
+        $urlPattern = array_get($page->attributes, 'viewBag.localeUrl.'.$locale, $page->url);
+
+        $newPath = trim($router->urlFromPattern($urlPattern, $params), '/');
+        $newPath = $site->attachRoutePrefix($newPath);
+
+        return Cms::url($newPath);
     }
 
     //

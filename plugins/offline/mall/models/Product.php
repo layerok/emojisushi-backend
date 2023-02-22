@@ -22,7 +22,7 @@ use OFFLINE\Mall\Classes\Traits\PropertyValues;
 use OFFLINE\Mall\Classes\Traits\StockAndQuantity;
 use OFFLINE\Mall\Classes\Traits\UserSpecificPrice;
 use OFFLINE\Mall\Classes\Traits\PDFMaker;
-use RainLab\Translate\Models\Locale;
+use RainLab\Translate\Classes\Locale;
 use System\Models\File;
 
 
@@ -330,7 +330,7 @@ class Product extends Model
     {
         $locales = [];
         if (class_exists(Locale::class)) {
-            $locales = Locale::isEnabled()->get();
+            $locales = Locale::listLocales()->where('is_enabled', true)->all();
         }
 
         $formData = array_wrap(post('PropertyValues', []));
@@ -600,8 +600,12 @@ class Product extends Model
         // If less than properties are available (1 is the null property)
         // we can remove everything that has to do with variants.
         if (count($this->getGroupByPropertyIdOptions()) < 2) {
-            $fields->variants->path               = 'variants_unavailable';
-            $fields->group_by_property_id->hidden = true;
+            if ($fields->variants) {
+                $fields->variants->path               = 'variants_unavailable';
+            }
+            if ($fields->group_by_property_id) {
+                $fields->group_by_property_id->hidden = true;
+            }
         }
     }
 
