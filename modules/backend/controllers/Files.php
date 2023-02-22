@@ -20,12 +20,12 @@ use Exception;
 class Files extends Controller
 {
     /**
-     * Output file, or fall back on the 404 page
+     * get will output a file, or fall back on the 404 page
      */
     public function get($code = null)
     {
         try {
-            return $this->findFileObject($code)->output('inline', true);
+            return $this->findFileObject($code)->output();
         }
         catch (Exception $ex) {
         }
@@ -34,7 +34,7 @@ class Files extends Controller
     }
 
     /**
-     * Output thumbnail, or fall back on the 404 page
+     * thumb will output a thumbnail, or fall back on the 404 page
      */
     public function thumb($code = null, $width = 100, $height = 100, $mode = 'auto', $extension = 'auto')
     {
@@ -42,8 +42,7 @@ class Files extends Controller
             return $this->findFileObject($code)->outputThumb(
                 $width,
                 $height,
-                compact('mode', 'extension'),
-                true
+                compact('mode', 'extension')
             );
         }
         catch (Exception $ex) {
@@ -53,7 +52,8 @@ class Files extends Controller
     }
 
     /**
-     * Attempt to return a redirect to a temporary URL to the asset instead of streaming the asset - if supported
+     * getTemporaryUrl attempts to return a redirect to a temporary URL to the asset instead
+     * of streaming the asset - if supported
      *
      * @param System|Models\File $file
      * @param string|null $path Optional, defaults to the getDiskPath() of the file
@@ -65,11 +65,13 @@ class Files extends Controller
         $url = null;
         $disk = $file->getDisk();
         $adapter = $disk->getAdapter();
+
         if (class_exists('\League\Flysystem\Cached\CachedAdapter') && $adapter instanceof \League\Flysystem\Cached\CachedAdapter) {
             $adapter = $adapter->getAdapter();
         }
 
-        if ((class_exists('\League\Flysystem\AwsS3v3\AwsS3Adapter') && $adapter instanceof \League\Flysystem\AwsS3v3\AwsS3Adapter) ||
+        if (
+            (class_exists('\League\Flysystem\AwsS3v3\AwsS3Adapter') && $adapter instanceof \League\Flysystem\AwsS3v3\AwsS3Adapter) ||
             (class_exists('\League\Flysystem\Rackspace\RackspaceAdapter') && $adapter instanceof \League\Flysystem\Rackspace\RackspaceAdapter) ||
             method_exists($adapter, 'getTemporaryUrl')
         ) {
@@ -81,9 +83,10 @@ class Files extends Controller
             $pathKey = 'backend.file:' . $path;
             $url = Cache::get($pathKey);
 
-            // The AWS S3 storage drivers will return a valid temporary URL even if the file does not exist
-            if (is_null($url) && $disk->exists($path)) {
-                $expires = now()->addSeconds(Config::get('system.storage.uploads.ttl', 3600));
+            // The AWS S3 storage drivers will return a valid temporary URL
+            // even if the file does not exist
+            if (!$url && $disk->exists($path)) {
+                $expires = now()->addSeconds(Config::get('filesystems.disks.uploads.ttl', 3600));
                 $url = Cache::remember($pathKey, $expires, function () use ($disk, $path, $expires) {
                     return $disk->temporaryUrl($path, $expires);
                 });
@@ -94,19 +97,17 @@ class Files extends Controller
     }
 
     /**
-     * Returns the URL for downloading a system file.
+     * getDownloadUrl returns the URL for downloading a system file.
      * @param $file System\Models\File
      * @return string
      */
     public static function getDownloadUrl($file)
     {
-        $url = static::getTemporaryUrl($file);
-
-        if (!empty($url)) {
+        if ($url = static::getTemporaryUrl($file)) {
             return $url;
-        } else {
-            return Backend::url('backend/files/get/' . self::getUniqueCode($file));
         }
+
+        return Backend::url('backend/files/get/' . self::getUniqueCode($file));
     }
 
     /**
@@ -119,13 +120,11 @@ class Files extends Controller
      */
     public static function getThumbUrl($file, $width, $height, $options)
     {
-        $url = static::getTemporaryUrl($file, $file->getDiskPath($file->getThumbFilename($width, $height, $options)));
-
-        if (!empty($url)) {
+        if ($url = static::getTemporaryUrl($file, $file->getDiskPath($file->getThumbFilename($width, $height, $options)))) {
             return $url;
-        } else {
-            return Backend::url('backend/files/thumb/' . self::getUniqueCode($file)) . '/' . $width . '/' . $height . '/' . $options['mode'] . '/' . $options['extension'];
         }
+
+        return Backend::url('backend/files/thumb/' . self::getUniqueCode($file)) . '/' . $width . '/' . $height . '/' . $options['mode'] . '/' . $options['extension'];
     }
 
     /**
@@ -144,7 +143,7 @@ class Files extends Controller
     }
 
     /**
-     * Locates a file model based on the unique code.
+     * findFileObject locates a file model based on the unique code.
      * @param $code string
      * @return System\Models\File
      */
@@ -165,18 +164,14 @@ class Files extends Controller
             throw new ApplicationException('Unable to find file');
         }
 
-        /**
-         * Ensure that the file model utilized for this request is
-         * the one specified in the relationship configuration
-         */
+        // Ensure that the file model utilized for this request is
+        // the one specified in the relationship configuration
         if ($file->attachment) {
             $fileModel = $file->attachment->{$file->field}()->getRelated();
 
-            /**
-             * Only attempt to get file model through its assigned class
-             * when the assigned class differs from the default one that
-             * the file has already been loaded from
-             */
+            // Only attempt to get file model through its assigned class
+            // when the assigned class differs from the default one that
+            // the file has already been loaded from
             if (get_class($file) !== get_class($fileModel)) {
                 $file = $fileModel->find($file->id);
             }

@@ -1,20 +1,26 @@
 <?php namespace Backend\VueComponents\TreeView;
 
-use SystemException;
-
 /**
- * Treeview section list. 
- * Encapsulates a list of Treeview sections.
+ * SectionList encapsulates a list of Treeview sections.
  *
  * @package october\backend
  * @author Alexey Bobkov, Samuel Georges
  */
 class SectionList
 {
-    private $sections = [];
+    /**
+     * @var array sections
+     */
+    protected $sections = [];
 
-    private $childKeyPrefix;
+    /**
+     * @var mixed childKeyPrefix
+     */
+    protected $childKeyPrefix;
 
+    /**
+     * addSection
+     */
     public function addSection(string $label, string $key)
     {
         $section = new SectionDefinition($label, $key);
@@ -23,11 +29,17 @@ class SectionList
         return $this->sections[] = $section;
     }
 
+    /**
+     * getSections
+     */
     public function getSections()
     {
         return $this->sections;
     }
 
+    /**
+     * setChildKeyPrefix
+     */
     public function setChildKeyPrefix($prefix)
     {
         $this->childKeyPrefix = $prefix;
@@ -35,11 +47,13 @@ class SectionList
         return $this;
     }
 
+    /**
+     * toArray
+     */
     public function toArray()
     {
         $result = [];
-        foreach ($this->sections as $section)
-        {
+        foreach ($this->sections as $section) {
             $result[] = $section->toArray();
         }
 

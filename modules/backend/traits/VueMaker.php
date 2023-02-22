@@ -1,16 +1,13 @@
 <?php namespace Backend\Traits;
 
 use Str;
-use Backend;
 use SystemException;
 use Backend\Classes\VueComponentBase;
 
 /**
- * VueMaker Trait
- * Adds exception based methods to a class, goes well with `System\Traits\ViewMaker`.
+ * VueMaker Trait adds Vue based methods to a class
  *
- * To add a component call `registerVueComponent()` in a controller
- * action:
+ * To add a component call the `registerVueComponent` method:
  *
  *     $this->registerVueComponent('Plugin/VueComponents/MyComponent');
  *
@@ -24,23 +21,30 @@ use Backend\Classes\VueComponentBase;
 trait VueMaker
 {
     /**
-     * @var array A list of registered Vue component classes
+     * @var array vueComponents contains Vue component classes
      */
     protected $vueComponents = [];
 
     /**
-     * Registers a Vue component to be loaded when the action view renders.
-     * @param String $componentClassName
-     * @return void
+     * registerDefaultVueComponents
      */
-    public function registerVueComponent($componentClassName)
+    public function registerDefaultVueComponents()
     {
-        $component = $this->makeVueComponent($componentClassName);
+        $this->registerVueComponent(\Backend\VueComponents\Modal::class);
+    }
+
+    /**
+     * registerVueComponent to be loaded when the action view renders.
+     * @param string $className
+     */
+    public function registerVueComponent($className)
+    {
+        $component = $this->makeVueComponent($className);
         $this->vueComponents[] = $component;
 
         $requiredComponents = $component->getDependencies();
         if (!is_array($requiredComponents)) {
-            throw new SystemException(sprintf('getDependencies() must return an array: %s', $componentClassName));
+            throw new SystemException(sprintf('getDependencies() must return an array: %s', $className));
         }
 
         foreach ($requiredComponents as $className) {
@@ -50,6 +54,9 @@ trait VueMaker
         }
     }
 
+    /**
+     * outputVueComponentTemplates
+     */
     public function outputVueComponentTemplates()
     {
         $result = [];
@@ -72,6 +79,9 @@ trait VueMaker
         return implode(PHP_EOL, $result);
     }
 
+    /**
+     * makeVueComponent
+     */
     protected function makeVueComponent($className)
     {
         if (!class_exists($className)) {
@@ -88,10 +98,13 @@ trait VueMaker
         return $component;
     }
 
-    protected function isVueComponentRegistered($componentClassName)
+    /**
+     * isVueComponentRegistered
+     */
+    protected function isVueComponentRegistered($className)
     {
         foreach ($this->vueComponents as $component) {
-            if ($componentClassName == get_class($component)) {
+            if ($className == get_class($component)) {
                 return true;
             }
         }

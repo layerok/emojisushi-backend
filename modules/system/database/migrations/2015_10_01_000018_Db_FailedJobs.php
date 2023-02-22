@@ -3,7 +3,7 @@
 use October\Rain\Database\Schema\Blueprint;
 use October\Rain\Database\Updates\Migration;
 
-class DbFailedJobs extends Migration
+return new class extends Migration
 {
     public function up()
     {
@@ -26,4 +26,4 @@ class DbFailedJobs extends Migration
     {
         return Config::get('queue.failed.table', 'failed_jobs');
     }
-}
+};

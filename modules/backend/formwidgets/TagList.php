@@ -31,6 +31,11 @@ class TagList extends FormWidgetBase
     public $customTags = true;
 
     /**
+     * @deprecated above should be false
+     * public $customTags = false;
+     */
+
+    /**
      * @var mixed options settings. Set to true to get from model.
      */
     public $options;
@@ -60,6 +65,11 @@ class TagList extends FormWidgetBase
     //
 
     /**
+     * @var bool useOptions if they are supplied by the model or array
+     */
+    protected $useOptions = false;
+
+    /**
      * @inheritDoc
      */
     protected $defaultAlias = 'taglist';
@@ -80,6 +90,8 @@ class TagList extends FormWidgetBase
         ]);
 
         $this->processMode();
+
+        $this->useOptions = $this->formField->options !== null;
     }
 
     /**
@@ -165,14 +177,14 @@ class TagList extends FormWidgetBase
     }
 
     /**
-     * Returns defined field options, or from the relation if available.
+     * getFieldOptions returns defined field options, or from the relation if available.
      * @return array
      */
     public function getFieldOptions()
     {
         $options = [];
 
-        if ($this->formField->hasOptions()) {
+        if ($this->useOptions) {
             $options = $this->formField->options();
         }
         elseif ($this->mode === static::MODE_RELATION) {

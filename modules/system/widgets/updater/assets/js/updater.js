@@ -16,8 +16,13 @@
     Updater.prototype.init = function() {
         this.activeStep = null;
         this.updateSteps = null;
-        this.composerUrl = null;
         this.outputCount = 0;
+        this.waitLongerTimer = null;
+        this.hasTriedAgain = false;
+        this.unloadEventHandler = (event) => {
+            event.preventDefault();
+            return event.returnValue = $('#executeMessage').data('unload-warning');
+        };
     }
 
     Updater.prototype.check = function() {
@@ -69,8 +74,7 @@
         }
     }
 
-    Updater.prototype.execute = function(steps, composerUrl) {
-        this.composerUrl = composerUrl;
+    Updater.prototype.execute = function(steps) {
         this.updateSteps = steps;
         this.resetOutput();
         this.runUpdate();
@@ -78,18 +82,26 @@
 
     Updater.prototype.runUpdate = function(fromStep) {
         var self = this;
-        $.waterfall.apply(this, this.buildEventChain(this.updateSteps, fromStep))
+
+        $.waterfall
+            .apply(this, this.buildEventChain(this.updateSteps, fromStep))
             .fail(function(reason) {
-                var
-                    template = $('#executeFailed').html(),
-                    html = Mustache.to_html(template, { reason: reason });
+                if (reason.constructor !== {}.constructor) {
+                    reason = { reason: reason };
+                }
+
+                var template = $('#executeFailed').html(),
+                    html = Mustache.to_html(template, reason);
 
                 $('#executeActivity').hide();
                 $('#executeStatus').html(html);
+
+                if (self.shouldTryAgain(reason)) {
+                    self.retryUpdate();
+                }
             })
-            .always(function() {
-                // Avoid a memory leak
-                $(document).off('dblclick', '#executeActivity', self.showOutput);
+            .done(function() {
+                self.setUnloadWarning(false);
             });
     }
 
@@ -101,46 +113,12 @@
         this.runUpdate(this.activeStep);
     }
 
-    Updater.prototype.showOutput = function() {
-        $('#executeOutput').show();
-
-        // Trigger scrollbar
-        $(window).trigger('resize');
-    }
-
-    Updater.prototype.resetOutput = function() {
-        $(document)
-            .off('dblclick', '#executeActivity', this.showOutput)
-            .on('dblclick', '#executeActivity', this.showOutput);
-
-        $('#executeOutput').hide();
-        $('#executeOutput [data-output-items]:first').empty();
-        this.outputCount = 0;
-    }
-
-    Updater.prototype.outputMessage = function(message) {
-        this.outputCount++;
-
-        var $updateItem = $('<div />').addClass('update-item').append(
-            $('<dl />').append(
-                $('<dt />').html(this.outputCount)
-            ).append(
-                $('<dd />').html(message)
-            )
-        );
-
-        $('#executeOutput [data-output-items]:first').append($updateItem);
-
-        // Trigger scrollbar
-        $(window).trigger('resize');
-    }
-
     Updater.prototype.buildEventChain = function(steps, fromStep) {
         var self = this,
             eventChain = [],
             skipStep = fromStep ? true : false;
 
-        $.each(steps, function(index, step){
+        $.each(steps, function(index, step) {
             if (step == fromStep) {
                 skipStep = false;
             }
@@ -153,50 +131,41 @@
             eventChain.push(function() {
                 var deferred = $.Deferred();
 
-                self.resetOutput();
                 self.activeStep = step;
+                self.resetOutput();
                 self.setLoadingBar(true, step.label);
 
-                if (step.type == 'composer') {
-                    self.frameRequest('#executeFrame', {
-                        url: self.buildFrameUrl(step.code, step.name),
-                        success: function() {
-                            setTimeout(function() { deferred.resolve() }, 600);
-                            self.setLoadingBar(false);
-                        },
-                        error: function(reason) {
-                            self.showOutput();
-                            self.setLoadingBar(false);
-                            deferred.reject(reason);
-                        },
-                        update: function(message) {
-                            self.setLoadingBar(false);
-                            self.outputMessage(message);
-                            setTimeout(function() {
-                                self.setLoadingBar(true, message);
-                            }, 2)
-                        }
-                    });
-                }
-                else {
-                    $.request('onExecuteStep', {
-                        data: step,
-                        success: function(data) {
-                            setTimeout(function() { deferred.resolve() }, 600);
+                $.request('onExecuteStep', {
+                    data: step,
+                    progressBar: false,
+                    success: function(data) {
+                        setTimeout(function() { deferred.resolve() }, 600);
 
-                            if (step.type == 'final') {
-                                this.success(data);
-                            }
-                            else {
-                                self.setLoadingBar(false);
-                            }
-                        },
-                        error: function(data) {
-                            self.setLoadingBar(false);
-                            deferred.reject(data.responseText);
+                        if (step.type == 'final') {
+                            self.setUnloadWarning(false);
+                            this.success(data);
                         }
-                    });
-                }
+                        else {
+                            self.setLoadingBar(false);
+                        }
+                    },
+                    error: function(data, statusCode) {
+                        self.setLoadingBar(false);
+                        if (data && data.output) {
+                            self.showOutput(data.output);
+                        }
+
+                        if (statusCode == 504) {
+                            self.timeoutRejection(deferred);
+                        }
+                        else if (data) {
+                            deferred.reject(data.error || (data + ""));
+                        }
+                        else {
+                            deferred.reject('General Error. Status code: ' + statusCode);
+                        }
+                    }
+                });
 
                 return deferred;
             });
@@ -205,71 +174,45 @@
         return eventChain;
     }
 
-    Updater.prototype.buildFrameUrl = function(code, packages) {
-        var result = this.composerUrl + '?code=' + code;
+    Updater.prototype.timeoutRejection = function(deferred) {
+        var webserverHints = '';
+        [
+            ['Apache', 'https://httpd.apache.org/docs/2.4/mod/core.html#timeout'],
+            ['Nginx', 'http://nginx.org/en/docs/http/ngx_http_fastcgi_module.html#fastcgi_read_timeout']
+        ]
+        .forEach(function(webserver, index) {
+            webserverHints += (index !== 0 ? ', ' : '') + '<a target=\"_blank\" rel=\"noopener noreferrer\" href=\"'+ webserver[1] +'\">' + webserver[0] +'</a>';
+        });
 
-        if (packages) {
-            result += '&packages=' + packages;
-        }
-
-        return result;
+        var $lang = document.querySelector('#executePopup');
+        deferred.reject({
+            reason: $lang.getAttribute('data-lang-operation-timeout-comment'),
+            advice: $lang.getAttribute('data-lang-operation-timeout-hint').replace(':name', webserverHints)
+        });
     }
 
-    Updater.prototype.frameRequest = function(el, options) {
-        var
-            DEFAULTS = {
-                url: null,
-                success: function() {},
-                error: function() {},
-                update: function() {}
-            },
-            options = $.extend({}, DEFAULTS, options),
-            $element = $(el);
+    Updater.prototype.shouldTryAgain = function(reason) {
+        if (this.hasTriedAgain) {
+            return false;
+        }
+        this.hasTriedAgain = true;
 
-        var lastText = null,
-            isDone = false,
-            poller = setInterval(function() {
-                var progressBody = $element.get(0).contentWindow.document.body;
-                if (!progressBody) {
-                    return;
-                }
+        if (!reason || !reason.reason) {
+            return false;
+        }
+        var message = reason.reason;
 
-                var lastMsg = progressBody.lastElementChild;
-                if (!lastMsg) {
-                    return;
-                }
+        // Source Guardian protection from hot swapping classes
+        if (message.includes('SourceGuardian Loader')) {
+            return true;
+        }
 
-                if (lastMsg.tagName == 'LINE') {
-                    if (lastText != lastMsg.innerText) {
-                        options.update(lastMsg.innerText);
-                        lastText = lastMsg.innerText;
-                    }
-                }
+        // Composer self updated and nuked itself
+        if (message.includes('Composer') && message.includes('InstalledVersions.php')) {
+            return true;
+        }
 
-                if (lastMsg.tagName == 'EXIT') {
-                    isDone = true;
-                    clearInterval(poller);
-                    if (lastMsg.innerText === '0') {
-                        options.success();
-                    }
-                    else {
-                        options.error('Please check the output details below');
-                    }
-                }
-            }, 1);
-
-        $element.attr('src', options.url);
-
-        $element.one('load', function () {
-            clearInterval(poller);
-            setTimeout(function() {
-                $element.attr('src', 'about:blank');
-
-                if (!isDone) {
-                    options.error('Internal timeout');
-                }
-            }, 2000);
-        });
+        return false;
     }
 
     Updater.prototype.setLoadingBar = function(state, message) {
@@ -286,6 +229,77 @@
         if (message) {
             messageDiv.text(message);
         }
+
+        // Keep waiting message
+        clearTimeout(this.waitLongerTimer);
+        loadingBar.removeClass('fadeCycle');
+
+        if (state) {
+            this.waitLongerTimer = setTimeout(function() {
+                messageDiv.text(messageDiv.data('wait-longer'));
+                loadingBar.addClass('fadeCycle');
+            }, 80 * 1000);
+        }
+
+        // Unload warning
+        this.setUnloadWarning(state);
+    }
+
+    Updater.prototype.setUnloadWarning = function(state) {
+        if (state) {
+            addEventListener('beforeunload', this.unloadEventHandler, { capture: true });
+        }
+        else {
+            removeEventListener('beforeunload', this.unloadEventHandler, { capture: true });
+        }
+    }
+
+    Updater.prototype.showOutput = function(result) {
+        var self = this;
+
+        result.split(/\r?\n/).forEach(function(message) {
+            self.outputMessage(message);
+        });
+
+        $('#executeOutput').show();
+
+        // Scroll to bottom
+        var $scrollbar = $('#executeOutput .control-scrollbar:first');
+        $scrollbar.get(0).scrollTop = $scrollbar.get(0).scrollHeight;
+
+        // Trigger scrollbar
+        $(window).trigger('resize');
+    }
+
+    Updater.prototype.outputMessage = function(message) {
+        if (typeof message !== 'string') {
+            return;
+        }
+
+        if (message.trim().length === 0) {
+            return;
+        }
+
+        this.outputCount++;
+
+        var $updateItem = $('<div />').addClass('update-item').append(
+            $('<dl />').append(
+                $('<dt />').html(this.outputCount)
+            ).append(
+                $('<dd />').html(message)
+            )
+        );
+
+        $('#executeOutput [data-output-items]:first').append($updateItem);
+
+        // Trigger scrollbar
+        $(window).trigger('resize');
+    }
+
+    Updater.prototype.resetOutput = function() {
+        $('#executeOutput').hide();
+        $('#executeOutput [data-output-items]:first').empty();
+        this.outputCount = 0;
     }
 
     if ($.oc === undefined) {

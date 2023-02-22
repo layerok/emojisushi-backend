@@ -5,7 +5,7 @@ use ApplicationException;
 use October\Rain\Database\ModelBehavior as ModelBehaviorBase;
 
 /**
- * Base class for model behaviors.
+ * ModelBehavior base class.
  *
  * @package october\system
  * @author Alexey Bobkov, Samuel Georges
@@ -13,21 +13,19 @@ use October\Rain\Database\ModelBehavior as ModelBehaviorBase;
 class ModelBehavior extends ModelBehaviorBase
 {
     /**
-     * @var array Properties that must exist in the model using this behavior.
+     * @var array requiredProperties that must exist in the model using this behavior.
      */
     protected $requiredProperties = [];
 
     /**
-     * Constructor
+     * __construct
      * @param October\Rain\Database\Model $model The extended model.
      */
     public function __construct($model)
     {
         parent::__construct($model);
 
-        /*
-         * Validate model properties
-         */
+        // Validate model properties
         foreach ($this->requiredProperties as $property) {
             if (!isset($model->{$property})) {
                 throw new ApplicationException(Lang::get('system::lang.behavior.missing_property', [

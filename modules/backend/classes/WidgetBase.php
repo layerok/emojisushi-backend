@@ -21,22 +21,22 @@ abstract class WidgetBase extends Extendable
     use \Backend\Traits\SessionMaker;
 
     /**
-     * @var object Supplied configuration.
+     * @var object config supplied.
      */
     public $config;
 
     /**
-     * @var \Backend\Classes\Controller Backend controller object.
+     * @var \Backend\Classes\Controller controller for the backend.
      */
     protected $controller;
 
     /**
-     * @var string Defined alias used for this widget.
+     * @var string alias defined for this widget.
      */
     public $alias;
 
     /**
-     * @var string A unique alias to identify this widget.
+     * @var string defaultAlias to identify this widget.
      */
     protected $defaultAlias = 'widget';
 
@@ -51,38 +51,30 @@ abstract class WidgetBase extends Extendable
         $this->viewPath = $this->configPath = $this->guessViewPath('/partials');
         $this->assetPath = $this->guessViewPath('/assets', true);
 
-        /*
-         * Apply configuration values to a new config object, if a parent
-         * constructor hasn't done it already.
-         */
+        // Apply configuration values to a new config object, if a parent
+        // constructor hasn't done it already.
         if ($this->config === null) {
             $this->config = $this->makeConfig($configuration);
         }
 
-        /*
-         * If no alias is set by the configuration.
-         */
+        // If no alias is set by the configuration.
         if (!isset($this->alias)) {
             $this->alias = $this->config->alias ?? $this->defaultAlias;
         }
 
-        /*
-         * Prepare assets used by this widget.
-         */
+        // Prepare assets used by this widget.
         $this->loadAssets();
 
         parent::__construct();
 
-        /*
-         * Initialize the widget.
-         */
+        // Initialize the widget.
         if (!$this->getConfig('noInit', false)) {
             $this->init();
         }
     }
 
     /**
-     * Initialize the widget, called by the constructor and free from its parameters.
+     * init the widget, called by the constructor and free from its parameters.
      * @return void
      */
     public function init()
@@ -90,7 +82,7 @@ abstract class WidgetBase extends Extendable
     }
 
     /**
-     * Renders the widget's primary contents.
+     * render the widget's primary contents.
      * @return string HTML markup supplied by this widget.
      */
     public function render()
@@ -98,7 +90,7 @@ abstract class WidgetBase extends Extendable
     }
 
     /**
-     * Adds widget specific asset files. Use $this->addJs() and $this->addCss()
+     * loadAssets adds widget specific asset files. Use $this->addJs() and $this->addCss()
      * to register new assets to include on the page.
      * @return void
      */
@@ -107,7 +99,7 @@ abstract class WidgetBase extends Extendable
     }
 
     /**
-     * Binds a widget to the controller for safe use.
+     * bindToController binds a widget to the controller for safe use.
      * @return void
      */
     public function bindToController()
@@ -120,7 +112,7 @@ abstract class WidgetBase extends Extendable
     }
 
     /**
-     * Transfers config values stored inside the $config property directly
+     * fillFromConfig transfers config values stored inside the $config property directly
      * on to the root object properties. If no properties are defined
      * all config will be transferred if it finds a matching property.
      * @param array $properties
@@ -140,7 +132,7 @@ abstract class WidgetBase extends Extendable
     }
 
     /**
-     * Returns a unique ID for this widget. Useful in creating HTML markup.
+     * getId returns a unique ID for this widget. Useful in creating HTML markup.
      * @param string $suffix An extra string to append to the ID.
      * @return string A unique identifier.
      */
@@ -160,7 +152,7 @@ abstract class WidgetBase extends Extendable
     }
 
     /**
-     * Returns a fully qualified event handler name for this widget.
+     * getEventHandler returns a fully qualified event handler name for this widget.
      * @param string $name The ajax event handler name.
      * @return string
      */
@@ -185,7 +177,7 @@ abstract class WidgetBase extends Extendable
     }
 
     /**
-     * Returns the controller using this widget.
+     * getController returns the controller using this widget.
      */
     public function getController()
     {

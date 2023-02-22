@@ -96,7 +96,6 @@ nav.layout-sidenav {
 
                     .nav-icon {
                         opacity: 1;
-                        left: 22px;
 
                         i {
                             color: @text-color;
@@ -220,6 +219,18 @@ nav.layout-sidenav {
             top: 9px;
             right: 10px;
             transition-delay: .25s;
+        }
+    }
+
+    // PJAX support
+    html[data-turbo-preview] {
+        #layout-sidenav {
+            width: 70px;
+            box-shadow: none;
+        }
+        #layout-sidenav, #layout-sidenav > * {
+            transition: none;
+            transition-delay: 0;
         }
     }
 }

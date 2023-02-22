@@ -1,7 +1,7 @@
 /*
  * Vue splitter implementation
  */
-$.oc.module.register('backend.component.splitter', function () {
+oc.Module.register('backend.component.splitter', function () {
     Vue.component('backend-component-splitter', {
         props: {
             direction: {
@@ -88,6 +88,10 @@ $.oc.module.register('backend.component.splitter', function () {
                 }
                 else {
                     containerSize = $(this.$el).height();
+                }
+
+                if (!containerSize) {
+                    return;
                 }
 
                 this.size = Math.max(this.size, this.minSize);

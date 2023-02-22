@@ -18,7 +18,7 @@ class DropdownMenu extends VueComponentBase
      */
     protected function loadAssets()
     {
-        $this->addJsBundle('js/dropdownmenu-utils.js', 'core');
+        $this->addJsBundle('js/dropdownmenu-utils.js');
     }
 
     protected function registerSubcomponents()

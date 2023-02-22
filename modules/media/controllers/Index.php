@@ -15,7 +15,7 @@ class Index extends Controller
     /**
      * @var array requiredPermissions to view this page.
      */
-    public $requiredPermissions = ['media.*'];
+    public $requiredPermissions = ['media.library'];
 
     /**
      * __construct
@@ -34,7 +34,7 @@ class Index extends Controller
      */
     public function beforeDisplay()
     {
-        $manager = new MediaManager($this, 'manager');
+        $manager = new MediaManager($this, ['alias' => 'manager']);
         $manager->bindToController();
     }
 

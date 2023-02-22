@@ -1,0 +1,128 @@
+// Override Bootstrap's Sass default variables
+//
+// Nearly all variables in Bootstrap are written with the `!default` flag.
+// This allows you to override the default values of those variables before
+// you import Bootstrap's source Sass files.
+//
+// Overriding the default variable values is the best way to customize your
+// CSS without writing _new_ styles. For example, change you can either change
+// `$body-color` or write more CSS that override's Bootstrap's CSS like so:
+// `body { color: red; }`.
+
+$body-color: #333;
+$body-bg: #FAFBFD;
+$link-color: #3498db;
+$line-height-base: 1.428571429; // 20/14
+
+$link-decoration: none;
+$link-hover-decoration: underline;
+
+$border-radius: .3rem;
+$border-radius-sm: .25rem;
+$border-radius-lg: .35rem;
+
+$gray-100: #f0f4f8 !default;
+$gray-200: #e9ecef !default;
+$gray-300: #d7e1eA !default;
+$gray-400: #ced4da !default;
+$gray-500: #adb5bd !default;
+$gray-600: #72809d !default;
+$gray-700: #506880 !default;
+$gray-800: #35425b !default;
+$gray-900: #212529 !default;
+
+$blue:    #0090c0;
+$indigo:  #6a6cf7;
+$orange:  #e67e22;
+$red:     #ff3e1d;
+$green:   #86cB43;
+$cyan:    #5bc0de;
+$yellow:  #f0ad4e;
+$teal:    #6bc48d;
+
+$primary: $indigo;
+$warning: $orange;
+
+$input-bg: #ffffff;
+$input-color: #536061;
+$input-placeholder-color: lighten($input-color, 20%);
+$input-btn-focus-color: rgba(53, 66, 91, 0.1); // gray-800
+
+$input-padding-y: .525rem;
+$input-padding-x: 1rem;
+
+$btn-padding-y: .6rem;
+$btn-padding-x: 1.25rem;
+$btn-font-size: .95rem;
+
+$btn-padding-y-sm: .4rem;
+$btn-padding-x-sm: .85rem;
+$btn-font-size-sm: .875rem;
+
+$tooltip-bg: #536061;
+$form-label-margin-bottom: .385rem;
+
+$form-check-input-width: 1.143em;
+$form-switch-width: 2.2em;
+$form-switch-height: 1.4em;
+
+@import "bootstrap/scss/functions"; // Required
+@import "bootstrap/scss/variables"; // Required
+@import "bootstrap/scss/variables-dark"; // Required
+@import "bootstrap/scss/maps"; // Required
+@import "bootstrap/scss/mixins"; // Required
+@import "bootstrap/scss/utilities";
+
+@import "bootstrap/scss/root"; // Required
+@import "bootstrap/scss/reboot"; // Required
+@import "bootstrap/scss/type";
+@import "bootstrap/scss/images";
+@import "bootstrap/scss/containers";
+@import "bootstrap/scss/grid";
+@import "bootstrap/scss/tables";
+@import "bootstrap/scss/forms";
+@import "bootstrap/scss/buttons";
+@import "bootstrap/scss/transitions";
+@import "bootstrap/scss/dropdown";
+@import "bootstrap/scss/button-group";
+@import "bootstrap/scss/nav";
+// @import "bootstrap/scss/navbar"; // Requires nav
+@import "bootstrap/scss/card";
+@import "bootstrap/scss/accordion";
+@import "bootstrap/scss/breadcrumb";
+@import "bootstrap/scss/pagination";
+@import "bootstrap/scss/badge";
+@import "bootstrap/scss/alert";
+@import "bootstrap/scss/progress";
+@import "bootstrap/scss/list-group";
+@import "bootstrap/scss/close";
+@import "bootstrap/scss/toasts";
+@import "bootstrap/scss/modal"; // Requires transitions
+@import "bootstrap/scss/tooltip";
+@import "bootstrap/scss/popover";
+// @import "bootstrap/scss/carousel";
+@import "bootstrap/scss/spinners";
+@import "bootstrap/scss/offcanvas";
+@import "bootstrap/scss/placeholders";
+
+// Helpers
+@import "bootstrap/scss/helpers";
+
+// Utilities
+@import "bootstrap/scss/utilities/api";
+
+// Custom CSS
+.form-switch {
+    .form-check-label {
+        position: relative;
+        top: 1px;
+    }
+
+    .form-check-input {
+        height: $form-switch-height;
+    }
+}
+
+.btn-close {
+    border-radius: 20px;
+}

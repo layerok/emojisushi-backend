@@ -1,11 +1,9 @@
 <?php namespace Backend\VueComponents\DropdownMenu;
 
 use SystemException;
-use Backend\Classes\VueComponentBase;
 
 /**
- * Dropdown menu item definition.
- * Encapsulates Dropdown menu item information.
+ * ItemDefinition encapsulates Dropdown menu item information.
  *
  * @package october\backend
  * @author Alexey Bobkov, Samuel Georges
@@ -17,30 +15,69 @@ class ItemDefinition
     const TYPE_RADIOBUTTON = 'radiobutton';
     const TYPE_SEPARATOR = 'separator';
 
-    private $disabled = false;
+    /**
+     * @var bool disabled
+     */
+    protected $disabled = false;
 
-    private $type = ItemDefinition::TYPE_TEXT;
+    /**
+     * @var string type
+     */
+    protected $type = ItemDefinition::TYPE_TEXT;
 
-    private $label;
+    /**
+     * @var string label
+     */
+    protected $label;
 
-    private $linkHref;
+    /**
+     * @var string linkHref
+     */
+    protected $linkHref;
 
-    private $linkTarget;
+    /**
+     * @var string linkTarget
+     */
+    protected $linkTarget;
 
-    private $icon;
+    /**
+     * @var string icon
+     */
+    protected $icon;
 
-    private $command;
+    /**
+     * @var string command
+     */
+    protected $command;
 
-    private $items = [];
+    /**
+     * @var array items
+     */
+    protected $items = [];
 
-    private $checked = false;
+    /**
+     * @var bool checked
+     */
+    protected $checked = false;
 
-    private $userData = null;
+    /**
+     * @var array|null userData
+     */
+    protected $userData = null;
 
-    private $key = null;
+    /**
+     * @var string|null key
+     */
+    protected $key = null;
 
-    private $group;
+    /**
+     * @var string|null group
+     */
+    protected $group;
 
+    /**
+     * __construct
+     */
     public function __construct($type, string $label = null, string $command = null)
     {
         $this->type = $type;
@@ -65,27 +102,39 @@ class ItemDefinition
         $this->key = $value;
     }
 
+    /**
+     * setLinkHref
+     */
     public function setLinkHref(string $value)
     {
         $this->linkHref = $value;
 
-        return $this; 
+        return $this;
     }
 
+    /**
+     * setLinkTarget
+     */
     public function setLinkTarget(string $value)
     {
         $this->linkTarget = $value;
 
-        return $this; 
+        return $this;
     }
 
+    /**
+     * setDisabled
+     */
     public function setDisabled(bool $value)
     {
         $this->disabled = $value;
 
-        return $this; 
+        return $this;
     }
 
+    /**
+     * setIcon
+     */
     public function setIcon(string $value)
     {
         if (in_array($this->type, [self::TYPE_CHECKBOX, self::TYPE_RADIOBUTTON])) {
@@ -97,21 +146,33 @@ class ItemDefinition
         return $this;
     }
 
+    /**
+     * setChecked
+     */
     public function setChecked(bool $value)
     {
         $this->checked = $value;
     }
 
+    /**
+     * addItem
+     */
     public function addItem($type, string $label = null, string $command = null)
     {
         return $this->items[] = new ItemDefinition($type, $label, $command);
     }
 
+    /**
+     * addItemObject
+     */
     public function addItemObject(ItemDefinition $item)
     {
         return $this->items[] = $item;
     }
 
+    /**
+     * hasItems
+     */
     public function hasItems()
     {
         return count($this->items) > 0;
@@ -127,6 +188,9 @@ class ItemDefinition
         return $this;
     }
 
+    /**
+     * setGroup
+     */
     public function setGroup(string $group)
     {
         $this->group = $group;
@@ -134,6 +198,9 @@ class ItemDefinition
         return $this;
     }
 
+    /**
+     * toArray
+     */
     public function toArray()
     {
         $result = [

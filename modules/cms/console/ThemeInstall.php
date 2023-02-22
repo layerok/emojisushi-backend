@@ -1,12 +1,13 @@
 <?php namespace Cms\Console;
 
 use System;
-use Illuminate\Console\Command;
 use Cms\Classes\ThemeManager;
 use System\Classes\UpdateManager;
-use October\Rain\Process\Composer as ComposerProcess;
+use System\Helpers\Cache as CacheHelper;
+use October\Rain\Composer\Manager as ComposerManager;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputOption;
+use Illuminate\Console\Command;
 use Exception;
 
 /**
@@ -34,59 +35,54 @@ class ThemeInstall extends Command
      */
     public function handle()
     {
-        $this->output->writeln('<info>Installing Theme...</info>');
+        $this->line('Installing Theme...');
 
         $name = $this->argument('name');
 
         $this->assertCanInstallTheme();
 
         if ($src = $this->option('from')) {
-            $this->output->writeln("<info>Added Repo: {$src}</info>");
+            $this->info("Added Repo: {$src}");
             $composerCode = System::octoberToComposerCode(
                 $name,
                 'theme',
                 (bool) $this->option('oc')
             );
+            $composerVersion = '*';
 
             $this->addRepoFromSource($composerCode, $src);
         }
         else {
             $info = UpdateManager::instance()->requestThemeDetails($name);
             $composerCode = array_get($info, 'composer_code');
+            $composerVersion = '^'.array_get($info, 'composer_version');
         }
 
         // Splice in version
-        $requirePackage = $composerCode;
         if ($requireVersion = $this->option('want')) {
-            $requirePackage .= ':'.$requireVersion;
+            $composerVersion = $requireVersion;
         }
 
-        // Composer install
-        $this->comment("Executing: composer require {$requirePackage}");
-        $this->output->newLine();
+        // Composer require
+        $this->comment("Executing: composer require {$composerCode} {$composerVersion}");
+        $this->line('');
 
-        $composer = new ComposerProcess;
-        $composer->setCallback(function($message) { echo $message; });
-        $composer->require($requirePackage);
+        $composer = ComposerManager::instance();
+        $composer->setOutputCommand($this, $this->input);
+        $composer->require([$composerCode => $composerVersion]);
 
-        if ($composer->lastExitCode() !== 0) {
-            if ($src = $this->option('from')) {
-                $this->output->writeln("<info>Reverted repo change</info>");
-                $this->removeRepoFromSource($composerCode);
-            }
+        // Clear meta cache
+        CacheHelper::instance()->clearMeta();
 
-            $this->output->error('Install failed. Check output above');
-            exit(1);
-        }
-
+        // Lock theme
         if (!$this->option('no-lock')) {
             $this->performLockOnTheme();
         }
 
         // Check dependencies
-        passthru('php artisan plugin:check');
+        passthru(PHP_BINARY.' artisan plugin:check');
 
-        $this->output->success("Theme '${name}' installed");
+        $this->output->success("Theme '{$name}' installed");
     }
 
     /**
@@ -102,7 +98,7 @@ class ThemeInstall extends Command
 
         // Ensure a theme does not already exist
         if ($themeFolder && file_exists($themePath)) {
-            throw new Exception("A theme already exists at '${themeFolder}' please rename this folder and try again.");
+            throw new Exception("A theme already exists at '{$themeFolder}' please rename this folder and try again.");
         }
     }
 
@@ -150,8 +146,7 @@ class ThemeInstall extends Command
             $srcType = 'git';
         }
 
-        $composer = new ComposerProcess;
-        $composer->addRepository($composerCode, $srcType, $src);
+        ComposerManager::instance()->addRepository($composerCode, $srcType, $src);
     }
 
     /**
@@ -159,8 +154,7 @@ class ThemeInstall extends Command
      */
     protected function removeRepoFromSource($composerCode)
     {
-        $composer = new ComposerProcess;
-        $composer->removeRepository($composerCode);
+        ComposerManager::instance()->removeRepository($composerCode);
     }
 
     /**

@@ -599,7 +599,7 @@ class Product extends MallComponent
      */
     protected function getPublicCartAttributes(): array
     {
-        return ['products', 'discounts', 'shipping_method', 'customer', 'payment_method', 'shipping_address'];
+        return ['customer', 'payment_method', 'shipping_address'];
     }
 
     /**
@@ -702,7 +702,7 @@ class Product extends MallComponent
             ->with('translations')
             ->where('value', '<>', '')
             ->whereNotNull('value')
-            ->when($groupedValue > 0, function ($q) use ($groupedValue) {
+            ->when($groupedValue > 0 && $this->redirectOnPropertyChange, function ($q) use ($groupedValue) {
                 $q->where('value', '<>', $groupedValue);
             })
             ->get()

@@ -1,6 +1,8 @@
 <?php namespace System\Classes;
 
+use App;
 use Event;
+use System;
 use Backend;
 use BackendAuth;
 use SystemException;
@@ -67,55 +69,53 @@ class SettingsManager
      * @var array itemDefaults for settings
      */
     protected static $itemDefaults = [
-        'code'        => null,
-        'label'       => null,
-        'category'    => null,
-        'icon'        => null,
-        'iconSvg'     => null,
-        'url'         => null,
+        'code' => null,
+        'label' => null,
+        'category' => null,
+        'icon' => null,
+        'iconSvg' => null,
+        'url' => null,
         'permissions' => [],
-        'order'       => 500,
-        'context'     => 'system',
-        'keywords'    => null
+        'order' => 500,
+        'context' => 'system',
+        'keywords' => null,
+        'size' => 'large'
     ];
-
-    /**
-     * @var System\Classes\PluginManager
-     */
-    protected $pluginManager;
-
-    /**
-     * init initializes this singleton
-     */
-    protected function init()
-    {
-        $this->pluginManager = PluginManager::instance();
-    }
 
     /**
      * loadItems
      */
     protected function loadItems()
     {
-        /*
-         * Load module items
-         */
+        // Load external items
         foreach ($this->callbacks as $callback) {
             $callback($this);
         }
 
-        /*
-         * Load plugin items
-         */
-        $plugins = $this->pluginManager->getPlugins();
-
-        foreach ($plugins as $id => $plugin) {
-            $items = $plugin->registerSettings();
-            if (!is_array($items)) {
-                continue;
+        // Load module items
+        foreach (System::listModules() as $module) {
+            if ($provider = App::getProvider($module . '\\ServiceProvider')) {
+                $items = $provider->registerSettings();
+                if (is_array($items)) {
+                    $this->registerSettingItems('October.'.$module, $items);
+                }
             }
+        }
 
-            $this->registerSettingItems($id, $items);
+        // Load plugin items
+        foreach (PluginManager::instance()->getPlugins() as $id => $plugin) {
+            $items = $plugin->registerSettings();
+            if (is_array($items)) {
+                $this->registerSettingItems($id, $items);
+            }
+        }
+
+        // Load app items
+        if ($app = App::getProvider(\App\Provider::class)) {
+            $items = $app->registerSettings();
+            if (is_array($items)) {
+                $this->registerSettingItems('October.App', $items);
+            }
         }
 
         /**
@@ -132,22 +132,16 @@ class SettingsManager
          */
         Event::fire('system.settings.extendItems', [$this]);
 
-        /*
-         * Sort settings items
-         */
+        // Sort settings items
         usort($this->items, function ($a, $b) {
             return $a->order - $b->order;
         });
 
-        /*
-         * Filter items user lacks permission for
-         */
+        // Filter items user lacks permission for
         $user = BackendAuth::getUser();
         $this->items = $this->filterItemPermissions($user, $this->items);
 
-        /*
-         * Process each item in to a category array
-         */
+        // Process each item in to a category array
         $catItems = [];
         foreach ($this->items as $code => $item) {
             // For YAML, eg: CATEGORY_SYSTEM
@@ -168,7 +162,7 @@ class SettingsManager
     }
 
     /**
-     * Returns a collection of all settings by group, filtered by context
+     * listItems returns a collection of all settings by group, filtered by context
      * @param  string $context
      * @return array
      */
@@ -186,7 +180,7 @@ class SettingsManager
     }
 
     /**
-     * Filters a set of items by a given context.
+     * filterByContext filters a set of items by a given context.
      * @param  array $items
      * @param  string $context
      * @return array
@@ -212,7 +206,7 @@ class SettingsManager
     }
 
     /**
-     * Registers a callback function that defines setting items.
+     * registerCallback function that defines setting items.
      * The callback function should register setting items by calling the manager's
      * registerSettingItems() function. The manager instance is passed to the
      * callback function as an argument. Usage:
@@ -229,7 +223,7 @@ class SettingsManager
     }
 
     /**
-     * Registers the back-end setting items.
+     * registerSettingItems registers the backend setting items.
      * The argument is an array of the settings items. The array keys represent the
      * setting item codes, specific for the plugin/module. Each element in the
      * array should be an associative array with the following keys:
@@ -255,19 +249,21 @@ class SettingsManager
     }
 
     /**
-     * Dynamically add an array of setting items
+     * addSettingItems dynamically adds an array of setting items
      * @param string $owner
      * @param array  $definitions
      */
     public function addSettingItems($owner, array $definitions)
     {
         foreach ($definitions as $code => $definition) {
-            $this->addSettingItem($owner, $code, $definition);
+            if ($definition && is_array($definition)) {
+                $this->addSettingItem($owner, $code, $definition);
+            }
         }
     }
 
     /**
-     * Dynamically add a single setting item
+     * addSettingItem dynamically adds a single setting item
      * @param string $owner
      * @param string $code
      * @param array  $definitions
@@ -309,7 +305,9 @@ class SettingsManager
     }
 
     /**
-     * Removes a single setting item
+     * removeSettingItem using its owner and code
+     * @param string $owner
+     * @param string $code
      */
     public function removeSettingItem($owner, $code)
     {
@@ -330,9 +328,10 @@ class SettingsManager
     }
 
     /**
-     * setContext sets the navigation context
-     * @param string $owner Specifies the setting items owner plugin or module in the format Vendor.Module.
-     * @param string $code Specifies the settings item code.
+     * setContext sets the navigation context. The owner specifies the setting items owner
+     * plugin or module in the format Vendor.Module. The code specifies the settings item code.
+     * @param string $owner
+     * @param string $code
      */
     public static function setContext($owner, $code)
     {
@@ -344,10 +343,11 @@ class SettingsManager
     }
 
     /**
-     * Returns information about the current settings context.
-     * @return mixed Returns an object with the following fields:
+     * getContext returns information about the current settings context.
+     * Returns an object with the following fields:
      * - itemCode
      * - owner
+     * @return mixed
      */
     public function getContext()
     {
@@ -358,10 +358,11 @@ class SettingsManager
     }
 
     /**
-     * Locates a setting item object by it's owner and code
+     * findSettingItem locates a setting item object by its owner and code.
+     * Returns the item object or FALSE if nothing is found.
      * @param string $owner
      * @param string $code
-     * @return mixed The item object or FALSE if nothing is found
+     * @return mixed
      */
     public function findSettingItem($owner, $code)
     {
@@ -382,10 +383,11 @@ class SettingsManager
     }
 
     /**
-     * Removes settings items from an array if the supplied user lacks permission.
-     * @param User $user A user object
-     * @param array $items A collection of setting items
-     * @return array The filtered settings items
+     * filterItemPermissions removes settings items if the supplied user lacks permission.
+     * Returns the filtered settings items.
+     * @param User $user
+     * @param array $items
+     * @return array
      */
     protected function filterItemPermissions($user, array $items)
     {
@@ -405,7 +407,7 @@ class SettingsManager
     }
 
     /**
-     * Internal method to make a unique key for an item.
+     * makeItemKey is an internal method to make a unique key for an item.
      * @param  object $item
      * @return string
      */

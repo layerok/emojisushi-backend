@@ -43,9 +43,7 @@ trait HasPivotMode
 
         $foreignKeyName = $this->relationModel->getQualifiedKeyName();
 
-        /*
-         * Existing record
-         */
+        // Existing record
         if ($this->manageId) {
             $this->pivotModel = $this->relationObject->where($foreignKeyName, $this->manageId)->first();
 
@@ -59,9 +57,7 @@ trait HasPivotMode
                 ]));
             }
         }
-        /*
-         * New record
-         */
+        // New record
         else {
             if ($this->foreignId) {
                 $foreignModel = $this->relationModel
@@ -107,9 +103,7 @@ trait HasPivotMode
     {
         $this->beforeAjax();
 
-        /*
-         * If the pivot model fails for some reason, abort the sync
-         */
+        // If the pivot model fails for some reason, abort the sync
         Db::transaction(function () {
             // Add the checked IDs to the pivot table
             $foreignIds = (array) $this->foreignId;

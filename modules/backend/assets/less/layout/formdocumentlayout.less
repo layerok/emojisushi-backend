@@ -63,11 +63,11 @@
 
     .form-tabless-fields {
         .form-group.primary-title-field {
-            label {
+            .form-label, .form-translatable {
                 display: none;
             }
 
-            input {
+            .form-control {
                 display: block;
                 font-size: 24px;
                 width: 100%;
@@ -80,7 +80,11 @@
                 &:not([disabled]):hover,
                 &:not([disabled]):focus {
                     border: 1px solid @color-grey-3;
+                    box-shadow: none;
                 }
+            }
+            span.form-control {
+                opacity: .5;
             }
         }
     }
@@ -101,7 +105,7 @@
         margin-left: -@padding-standard;
         margin-right: -@padding-standard;
 
-        > label {
+        > .form-label, > .form-translatable {
             display: none;
         }
     }
@@ -109,6 +113,7 @@
     .record-management-controls {
         font-size: 0;
         padding-left: 20px;
+        padding-bottom: 20px;
 
         > div {
             display: inline-block;
@@ -143,7 +148,7 @@
 
             &[disabled] {
                 cursor: default;
-        
+
                 > i,
                 > span,
                 &:after {

@@ -270,7 +270,7 @@ class Account extends ComponentBase
             $user = Auth::authenticate($credentials, $this->useRememberLogin());
             if ($user->isBanned()) {
                 Auth::logout();
-                throw new AuthException(/*Sorry, this user is currently not activated. Please contact us for further assistance.*/'rainlab.user::lang.account.banned');
+                throw new AuthException(Lang::get(/*Sorry, this user is currently not activated. Please contact us for further assistance.*/'rainlab.user::lang.account.banned'));
             }
 
             /*
@@ -468,8 +468,13 @@ class Account extends ComponentBase
          * Password has changed, reauthenticate the user
          */
         if (array_key_exists('password', $data) && strlen($data['password'])) {
-            Auth::login($user->reload(), true);
+            Auth::login($user->reload(), $this->useRememberLogin());
         }
+
+        /*
+         * Update Event to hook into the plugins function
+         */
+        Event::fire('rainlab.user.update', [$user, $data]);
 
         Flash::success(post('flash', Lang::get(/*Settings successfully saved!*/'rainlab.user::lang.account.success_saved')));
 

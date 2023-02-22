@@ -3,99 +3,97 @@
         BaseProto = Base.prototype
 
     var MarkdownEditor = function (element, options) {
-        this.$el = $(element)
-        this.options = options || {}
-        this.$textarea = $('textarea:first', this.$el)
-        this.$toolbar  = $('.editor-toolbar:first', this.$el)
-        this.$write    = $('.editor-write:first', this.$el)
-        this.$preview  = $('.editor-preview:first', this.$el)
-        this.$code     = null
-        this.editor    = null
-        this.$form     = null
-        this.$buttons  = null
-        this.$fixedButtons = null
-        this.$indicator = null
-        this.editorPadding = 15
-        this.updatesPaused = false
+        this.$el = $(element);
+        this.options = options || {};
+        this.$textarea = $('textarea:first', this.$el);
+        this.$toolbar  = $('.editor-toolbar:first', this.$el);
+        this.$write    = $('.editor-write:first', this.$el);
+        this.$preview  = $('.editor-preview:first', this.$el);
+        this.$code     = null;
+        this.editor    = null;
+        this.$form     = null;
+        this.$buttons  = null;
+        this.$fixedButtons = null;
+        this.$indicator = null;
+        this.editorPadding = 15;
+        this.updatesPaused = false;
 
-        $.oc.foundation.controlUtils.markDisposable(element)
-        Base.call(this)
-        this.init()
+        $.oc.foundation.controlUtils.markDisposable(element);
+        Base.call(this);
+        this.init();
     }
 
-    MarkdownEditor.prototype = Object.create(BaseProto)
-    MarkdownEditor.prototype.constructor = MarkdownEditor
+    MarkdownEditor.prototype = Object.create(BaseProto);
+    MarkdownEditor.prototype.constructor = MarkdownEditor;
 
     MarkdownEditor.prototype.init = function() {
-        this.$el.one('dispose-control', this.proxy(this.dispose))
+        this.$el.one('dispose-control', this.proxy(this.dispose));
 
-        /*
-         * Control must have an identifier
-         */
+        // Control must have an identifier
         if (!this.$el.attr('id')) {
-            this.$el.attr('id', 'element-' + Math.random().toString(36).substring(7))
+            this.$el.attr('id', 'element-' + Math.random().toString(36).substring(7));
         }
 
-        this.$form = this.$el.closest('form')
+        this.$form = this.$el.closest('form');
 
         if (!this.options.legacyMode) {
             this.initVueConnector();
             return;
         }
 
-        this.createCodeContainer()
-        this.createToolbar()
-        this.createIndicator()
-        this.setViewMode(this.options.viewMode)
+        this.createCodeContainer();
+        this.createToolbar();
+        this.createIndicator();
+        this.setViewMode(this.options.viewMode);
 
-        this.$toolbar.on('click', '.btn, .md-dropdown-button', this.proxy(this.onClickToolbarButton))
-        this.$form.on('oc.beforeRequest', this.proxy(this.onBeforeRequest))
-        this.editor.on('change', this.proxy(this.onEditorChange))
-        this.editor.getSession().on('changeScrollTop', this.proxy(this.onEditorScrollTop))
+        this.$toolbar.on('click', '.btn, .md-dropdown-button', this.proxy(this.onClickToolbarButton));
+        this.$form.on('oc.beforeRequest', this.proxy(this.onBeforeRequest));
+        this.editor.on('change', this.proxy(this.onEditorChange));
+        this.editor.getSession().on('changeScrollTop', this.proxy(this.onEditorScrollTop));
 
-        $('[data-control="tooltip"]', this.$toolbar).tooltip()
-        $('[data-toggle="dropdown"]', this.$toolbar).dropdown()
+        $('[data-control="tooltip"]', this.$toolbar).tooltip();
+        $('[data-toggle="dropdown"]', this.$toolbar).dropdown();
     }
 
     MarkdownEditor.prototype.dispose = function() {
-        this.$el.off('dispose-control', this.proxy(this.dispose))
+        this.$el.off('dispose-control', this.proxy(this.dispose));
 
         if (this.options.legacyMode) {
-            this.$toolbar.off('click', '.btn, .md-dropdown-button', this.proxy(this.onClickToolbarButton))
-            this.$form.off('oc.beforeRequest', this.proxy(this.onBeforeRequest))
-            this.editor.off('change', this.proxy(this.onEditorChange))
-            $(window).off('resize', this.proxy(this.updateFullscreen))
+            this.$toolbar.off('click', '.btn, .md-dropdown-button', this.proxy(this.onClickToolbarButton));
+            this.$form.off('oc.beforeRequest', this.proxy(this.onBeforeRequest));
+            this.editor.off('change', this.proxy(this.onEditorChange));
+            $(window).off('resize', this.proxy(this.updateFullscreen));
         }
 
-        this.$el.removeData('oc.markdownEditor')
+        this.$el.removeData('oc.markdownEditor');
 
         if (this.vueWidget) {
             this.vueWidget.remove();
             this.vueWidget = null;
         }
 
-        this.$el = null
-        this.$textarea = null
-        this.$toolbar = null
-        this.$write = null
-        this.$preview = null
-        this.$code = null
-        this.editor = null
-        this.$form = null
-        this.$buttons = null
-        this.$fixedButtons = null
-        this.$indicator = null
-        this.editorPadding = null
-        this.updatesPaused = null
+        this.$el = null;
+        this.$textarea = null;
+        this.$toolbar = null;
+        this.$write = null;
+        this.$preview = null;
+        this.$code = null;
+        this.editor = null;
+        this.$form = null;
+        this.$buttons = null;
+        this.$fixedButtons = null;
+        this.$indicator = null;
+        this.editorPadding = null;
+        this.updatesPaused = null;
 
-        this.isSplitMode = null
-        this.isPreview = null
-        this.isFullscreen = null
-        this.dataTrackInputTimer = null
+        this.isSplitMode = null;
+        this.isPreview = null;
+        this.isFullscreen = null;
+        this.dataTrackInputTimer = null;
 
-        this.options = null
+        this.options = null;
 
-        BaseProto.dispose.call(this)
+        BaseProto.dispose.call(this);
     }
 
     //
@@ -106,77 +104,78 @@
         var $target = $(ev.target),
             $button = $target.is('a') ? $target : $target.closest('.btn'),
             action = $button.data('button-action'),
-            template = $button.data('button-template')
+            template = $button.data('button-template');
 
-        $button.blur()
+        $button.blur();
 
-        this.pauseUpdates()
+        this.pauseUpdates();
 
         if (template) {
-            this[action](template)
+            this[action](template);
         }
-        else {
-            this[action]()
+        else if (action) {
+            this[action]();
         }
 
-        this.resumeUpdates()
-        this.handleChange()
+        this.resumeUpdates();
+        this.handleChange();
     }
 
     MarkdownEditor.prototype.onEditorScrollTop = function(scroll) {
-        if (!this.isSplitMode) return
+        if (!this.isSplitMode) {
+            return;
+        }
 
         var canvasHeight = this.$preview.height(),
             editorHeight,
             previewHeight,
-            scrollRatio
+            scrollRatio;
 
         if (canvasHeight != this.$el.data('markdowneditor-canvas-height')) {
-
             editorHeight =
                 (this.editor.getSession().getScreenLength() *
                 this.editor.renderer.lineHeight) -
-                canvasHeight
+                canvasHeight;
 
-            previewHeight = this.$preview.get(0).scrollHeight - canvasHeight
+            previewHeight = this.$preview.get(0).scrollHeight - canvasHeight;
 
-            scrollRatio = previewHeight / editorHeight
+            scrollRatio = previewHeight / editorHeight;
 
-            this.$el.data('markdowneditor-canvas-height', canvasHeight)
-            this.$el.data('markdowneditor-scroll-ratio', scrollRatio)
+            this.$el.data('markdowneditor-canvas-height', canvasHeight);
+            this.$el.data('markdowneditor-scroll-ratio', scrollRatio);
         }
         else {
-            scrollRatio = this.$el.data('markdowneditor-scroll-ratio')
+            scrollRatio = this.$el.data('markdowneditor-scroll-ratio');
         }
 
-        scroll += this.editorPadding
-        this.$preview.scrollTop(scroll * scrollRatio)
+        scroll += this.editorPadding;
+        this.$preview.scrollTop(scroll * scrollRatio);
     }
 
     MarkdownEditor.prototype.onEditorChange = function() {
-        var html = this.editor.getSession().getValue()
+        var html = this.editor.getSession().getValue();
 
-        this.$form.trigger('change')
+        this.$form.trigger('change');
 
-        this.$textarea.trigger('changeContent.oc.markdowneditor', [this, html])
+        this.$textarea.trigger('changeContent.oc.markdowneditor', [this, html]);
 
-        this.handleChange()
+        this.handleChange();
     }
 
     MarkdownEditor.prototype.onBeforeRequest = function() {
-        this.$textarea.val(this.editor.getSession().getValue())
+        this.$textarea.val(this.editor.getSession().getValue());
     }
 
     MarkdownEditor.prototype.onResize = function() {
-        this.editor.resize()
+        this.editor.resize();
     }
 
     MarkdownEditor.prototype.onBlur = function() {
-        this.$el.removeClass('editor-focus')
+        this.$el.removeClass('editor-focus');
     }
 
     MarkdownEditor.prototype.onFocus = function() {
-        this.$el.addClass('editor-focus')
+        this.$el.addClass('editor-focus');
     }
 
     //
@@ -187,37 +186,37 @@
         var self = this,
             $button,
             $buttons = $('<div class="toolbar-item toolbar-primary" />'),
-            $fixedButtons = $('<div class="toolbar-item" data-calculate-width />')
+            $fixedButtons = $('<div class="toolbar-item" data-calculate-width />');
 
         $.each($.oc.markdownEditorButtons, function(code, button) {
-            $button = self.makeToolbarButton(code, button)
+            $button = self.makeToolbarButton(code, button);
 
             if (button.fixed) {
-                $fixedButtons.append($button)
+                $fixedButtons.append($button);
             }
             else {
-                $buttons.append($button)
+                $buttons.append($button);
             }
 
             if (button.dropdown) {
-                $button.attr('data-toggle', 'dropdown')
-                self.createToolbarDropdown(button, $button)
+                $button.attr('data-toggle', 'dropdown');
+                self.createToolbarDropdown(button, $button);
             }
         })
 
-        $buttons.wrapInner('<div data-control="toolbar" />')
-        this.$toolbar.append($buttons)
-        this.$toolbar.append($fixedButtons)
+        $buttons.wrapInner('<div data-control="toolbar" />');
+        this.$toolbar.append($buttons);
+        this.$toolbar.append($fixedButtons);
 
-        this.$fixedButtons = $fixedButtons
-        this.$buttons = $buttons
+        this.$fixedButtons = $fixedButtons;
+        this.$buttons = $buttons;
     }
 
     MarkdownEditor.prototype.createToolbarDropdown = function(button, $el) {
         var $dropdown = $('<ul class="dropdown-menu" />'),
-            $childButton
+            $childButton;
 
-        $dropdown.attr('data-dropdown-title', $.oc.lang.get(button.label))
+        $dropdown.attr('data-dropdown-title', $.oc.lang.get(button.label));
         $.each(button.dropdown, function(code, childButton) {
             $childButton = $('<a />').attr({
                 'href': 'javascript:;',
@@ -225,87 +224,99 @@
                 'tabindex': '-1',
                 'data-button-code': code,
                 'data-button-action': childButton.action
-            })
+            });
 
             if (childButton.template) {
-                $childButton.attr('data-button-template', childButton.template)
+                $childButton.attr('data-button-template', childButton.template);
             }
 
             if (childButton.cssClass) {
-                $childButton.addClass(childButton.cssClass)
+                $childButton.addClass(childButton.cssClass);
             }
 
-            $childButton.text($.oc.lang.get(childButton.label))
+            $childButton.text($.oc.lang.get(childButton.label));
 
-            $dropdown.append($childButton)
-            $childButton.wrap('<li />')
+            $dropdown.append($childButton);
+            $childButton.wrap('<li />');
         })
 
-        $el.wrap('<div class="dropdown dropdown-fixed" />')
-        $el.after($dropdown)
+        $el.wrap('<div class="dropdown dropdown-fixed" />');
+        $el.after($dropdown);
     }
 
     MarkdownEditor.prototype.makeToolbarButton = function(code, button) {
         if (!this.options.useMediaManager && (code == 'medialink' || code == 'mediaimage')) {
-            return
+            return;
         }
 
         var $button = $('<button />').attr({
             'type': "button",
             'class': 'btn',
+            'data-button-code': code,
+            'data-bs-display': "static",
+        }).css({
+            position: 'relative'
+        });
+
+        var $buttonTooltip = $('<span />').attr({
             'title': $.oc.lang.get(button.label),
             'data-control': "tooltip",
-            'data-placement': "bottom",
-            'data-container': "body",
-            'data-button-code': code
-        })
+            'data-bs-placement': "bottom",
+            'data-bs-container': "body"
+        }).css({
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0
+        });
+
+        $button.append($buttonTooltip);
 
         if (button.action) {
-            $button.attr('data-button-action', button.action)
+            $button.attr('data-button-action', button.action);
         }
 
         if (button.template) {
-            $button.attr('data-button-template', button.template)
+            $button.attr('data-button-template', button.template);
         }
 
         if (button.cssClass) {
-            $button.addClass(button.cssClass)
+            $button.addClass(button.cssClass);
         }
         else {
-            $button.append('<i class="icon-' + button.icon + '"></i>')
+            $buttonTooltip.append('<i class="icon-' + button.icon + '"></i>');
         }
 
-        return $button
+        return $button;
     }
 
     MarkdownEditor.prototype.addToolbarButton = function(code, button) {
-
-        var $button = this.makeToolbarButton(code, button)
-
-        var appendCode = button.insertBefore || button.insertAfter
+        var $button = this.makeToolbarButton(code, button);
+        var appendCode = button.insertBefore || button.insertAfter;
         if (appendCode) {
             var appendButton = this.findToolbarButton(appendCode)
             if (!!appendButton.length && button.insertBefore) {
-                appendButton.before($button)
+                appendButton.before($button);
             }
             else if (!!appendButton.length && button.insertAfter) {
-                appendButton.after($button)
+                appendButton.after($button);
             }
         }
         else {
             if (button.fixed) {
-                this.$fixedButtons.append($button)
+                this.$fixedButtons.append($button);
             }
             else {
-                $('[data-control="toolbar"]', this.$buttons).append($button)
+                $('[data-control="toolbar"]', this.$buttons).append($button);
             }
         }
 
-        return $button
+        return $button;
     }
 
     MarkdownEditor.prototype.findToolbarButton = function(code) {
-        return $('[data-button-code='+code+']', this.$toolbar)
+        return $('[data-button-code='+code+']', this.$toolbar);
     }
 
     //
@@ -326,71 +337,72 @@
                 bottom: 0,
                 left: 0
             })
-            .appendTo(this.$write)
+            .appendTo(this.$write);
 
         /*
          * Initialize ACE editor
          */
-        var editor = this.editor = ace.edit(this.$code.attr('id'))
+        var editor = this.editor = ace.edit(this.$code.attr('id'));
 
         // Fixes a weird notice about scrolling
-        editor.$blockScrolling = Infinity
+        editor.$blockScrolling = Infinity;
 
-        editor.getSession().setValue(this.$textarea.val())
+        editor.getSession().setValue(this.$textarea.val());
 
         /*
          * Set theme, anticipated languages should be preloaded
          */
-        assetManager.load({
+        oc.AssetManager.load({
             js:[
                 this.options.vendorPath + '/theme-github.js'
             ]
         }, function(){
             editor.setTheme('ace/theme/github')
-        })
+        });
 
-        editor.getSession().setMode({ path: 'ace/mode/markdown' })
-        editor.setHighlightActiveLine(false)
-        editor.renderer.setShowGutter(false)
-        editor.renderer.setShowPrintMargin(false)
-        editor.getSession().setUseWrapMode(true)
-        editor.setFontSize(14)
-        editor.on('blur', this.proxy(this.onBlur))
-        editor.on('focus', this.proxy(this.onFocus))
+        editor.getSession().setMode({ path: 'ace/mode/markdown' });
+        editor.setHighlightActiveLine(false);
+        editor.renderer.setShowGutter(false);
+        editor.renderer.setShowPrintMargin(false);
+        editor.getSession().setUseWrapMode(true);
+        editor.setFontSize(14);
+        editor.on('blur', this.proxy(this.onBlur));
+        editor.on('focus', this.proxy(this.onFocus));
 
         // Set the vendor path for Ace's require path
-        ace.require('ace/config').set('basePath', this.options.vendorPath)
+        ace.require('ace/config').set('basePath', this.options.vendorPath);
 
-        editor.renderer.setPadding(this.editorPadding)
-        editor.renderer.setScrollMargin(this.editorPadding, this.editorPadding, 0, 0)
+        editor.renderer.setPadding(this.editorPadding);
+        editor.renderer.setScrollMargin(this.editorPadding, this.editorPadding, 0, 0);
 
         setTimeout(function() {
-            editor.resize()
-        }, 100)
+            editor.resize();
+        }, 100);
     }
 
     MarkdownEditor.prototype.handleChange = function() {
-        if (this.updatesPaused)
-            return
+        if (this.updatesPaused) {
+            return;
+        }
 
-        var self = this
-
-        if (!this.isSplitMode) return
+        var self = this;
+        if (!this.isSplitMode) {
+            return;
+        }
 
         if (this.loading) {
             if (this.dataTrackInputTimer === undefined) {
                 this.dataTrackInputTimer = window.setInterval(function(){
-                    self.handleChange()
-                }, 100)
+                    self.handleChange();
+                }, 100);
             }
-
-            return
+            return;
         }
 
-        window.clearTimeout(this.dataTrackInputTimer)
-        this.dataTrackInputTimer = undefined
+        window.clearTimeout(this.dataTrackInputTimer);
+        this.dataTrackInputTimer = undefined;
 
-        self.updatePreview()
+        self.updatePreview();
     }
 
     MarkdownEditor.prototype.getEditorObject = function() {
@@ -691,12 +703,12 @@
     //
 
     MarkdownEditor.prototype.initVueConnector = function () {
-        var Widget = $.oc.module.import('backend.vuecomponents.documentmarkdowneditor.formwidget'),
-            that = this
+        var Widget = oc.Module.import('backend.vuecomponents.documentmarkdowneditor.formwidget'),
+            that = this;
 
         this.vueWidget = new Widget(this.$textarea.get(0), this.options, function () {
-            that.$form.trigger('change')
-        })
+            that.$form.trigger('change');
+        });
     }
 
     MarkdownEditor.DEFAULTS = {
@@ -704,6 +716,7 @@
         refreshHandler: null,
         buttons: ['formatting', 'bold', 'italic', 'unorderedlist', 'orderedlist', 'link', 'horizontalrule'],
         viewMode: 'tab',
+        sideBySide: true,
         useMediaManager: false
     }
 

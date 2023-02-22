@@ -32,7 +32,7 @@
                 $classes[] = 'nolink';
             }
 
-            $isLastWithSetup = $showSetup && $index === $total;
+            $isLastWithSetup = $expandLastColumn && $showSetup && $index === $total;
 
             $styles = '';
             $isTreeCell = $index === 1 && $useStructure;
@@ -59,6 +59,9 @@
             <?php endif ?>
         </td>
     <?php endforeach ?>
+    <?php if (!$expandLastColumn && $showSetup): ?>
+        <td></td>
+    <?php endif ?>
 </tr>
 
 <?php if ($showTree && $expanded): ?>

@@ -20,7 +20,7 @@ $isComplex = is_array(array_first($selectedValues));
             <?php else: ?>
                 <i class="<?= $selectedValue[1] ?>"></i>
             <?php endif ?>
-            <?= e(trans($selectedValue[0])) ?>
+            <?= e(__($selectedValue[0])) ?>
         </span>
     <?php endforeach ?>
 <?php else: ?>

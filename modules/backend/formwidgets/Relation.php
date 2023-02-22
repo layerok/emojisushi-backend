@@ -4,6 +4,7 @@ use Db;
 use DbDongle;
 use Backend\Classes\FormField;
 use Backend\Classes\FormWidgetBase;
+use SystemException;
 
 /**
  * Relation renders a field prepopulated with a belongsTo and belongsToHasMany relation
@@ -45,9 +46,14 @@ class Relation extends FormWidgetBase
     public $scope;
 
     /**
-     * @var string order of the list query.
+     * @var string conditions filters the relation using a raw where query statement.
      */
-    public $order;
+    public $conditions;
+
+    /**
+     * @var mixed defaultSort column to look for.
+     */
+    public $defaultSort;
 
     //
     // Object properties
@@ -71,16 +77,16 @@ class Relation extends FormWidgetBase
         $this->fillFromConfig([
             'nameFrom',
             'emptyOption',
+            'defaultSort',
             'scope',
-            'order',
+            'conditions',
         ]);
 
         if (isset($this->config->select)) {
             $this->sqlSelect = $this->config->select;
         }
 
-        // @deprecated the default value should be true
-        $this->useController = $this->evalUseController($this->config->useController ?? false);
+        $this->useController = $this->evalUseController($this->config->useController ?? true);
     }
 
     /**
@@ -142,24 +148,41 @@ class Relation extends FormWidgetBase
         if (in_array($relationType, ['belongsToMany', 'morphToMany', 'morphedByMany', 'hasMany'])) {
             $field->type = 'checkboxlist';
         }
-        elseif (in_array($relationType, ['belongsTo', 'hasOne'])) {
+        elseif (in_array($relationType, ['belongsTo', 'hasOne', 'morphOne'])) {
             $field->type = 'dropdown';
         }
+        else {
+            throw new SystemException("Could not translate relation type '{$relationType}' to a valid field type");
+        }
 
-        // Order query by the configured option.
-        if ($this->order) {
-            // Using "raw" to allow authors to use a string to define the order clause.
-            $query->orderByRaw($this->order);
+        // Sort the query using configuration
+        if ($this->defaultSort) {
+            $this->applyDefaultSortToQuery($query);
         }
 
         // It is safe to assume that if the model and related model are of
         // the exact same class, then it cannot be related to itself
-        if ($model->exists && (get_class($model) == get_class($relationModel))) {
+        if ($model->exists && ($relationModel->getTable() === $model->getTable())) {
             $query->where($relationModel->getKeyName(), '<>', $model->getKey());
         }
 
-        if ($scopeMethod = $this->scope) {
-            $query->$scopeMethod($model);
+        if ($sqlConditions = $this->conditions) {
+            $query->whereRaw($sqlConditions);
+        }
+        elseif ($scopeMethod = $this->scope) {
+            if (
+                is_string($scopeMethod) &&
+                count($staticMethod = explode('::', $scopeMethod)) === 2 &&
+                is_callable($staticMethod)
+            ) {
+                $staticMethod($query, $model);
+            }
+            elseif (is_string($scopeMethod)) {
+                $query->$scopeMethod($model);
+            }
+            else {
+                $scopeMethod($query, $model);
+            }
         }
         else {
             $relationObject->addDefinedConstraintsToQuery($query);
@@ -182,17 +205,36 @@ class Relation extends FormWidgetBase
             $result = $query->get();
         }
 
-        // Some simpler relations can specify a custom local or foreign "other" key,
+        // Relations can specify a custom local or foreign "other" key,
         // which can be detected and implemented here automagically.
-        $primaryKeyName = in_array($relationType, ['hasMany', 'belongsTo', 'hasOne'])
-            ? $relationObject->getOtherKey()
-            : $relationModel->getKeyName();
+        if (in_array($relationType, ['hasMany', 'belongsTo', 'hasOne'])) {
+            $primaryKeyName = $relationObject->getOtherKey();
+        }
+        elseif ($relationType === 'belongsToMany') {
+            $primaryKeyName = $relationObject->getRelatedKeyName();
+        }
+        else {
+            $primaryKeyName = $relationModel->getKeyName();
+        }
 
         $field->options = $usesTree
             ? $result->listsNested($nameFrom, $primaryKeyName)
             : $result->pluck($nameFrom, $primaryKeyName)->all();
 
         return $this->renderFormField = $field;
+    }
+
+    /**
+     * applyDefaultSortToQuery
+     */
+    protected function applyDefaultSortToQuery($query)
+    {
+        if (is_string($this->defaultSort)) {
+            $query->orderBy($this->defaultSort, 'desc');
+        }
+        elseif (is_array($this->defaultSort) && isset($this->defaultSort['column'])) {
+            $query->orderBy($this->defaultSort['column'], $this->defaultSort['direction'] ?? 'desc');
+        }
     }
 
     /**

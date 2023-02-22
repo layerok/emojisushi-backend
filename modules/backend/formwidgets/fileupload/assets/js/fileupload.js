@@ -24,7 +24,7 @@
     // FILEUPLOAD CLASS DEFINITION
     // ============================
 
-    var FileUpload = function (element, options) {
+    var FileUpload = function(element, options) {
         this.$el = $(element);
         this.options = options || {};
 
@@ -37,6 +37,9 @@
     FileUpload.prototype.constructor = FileUpload;
 
     FileUpload.prototype.init = function() {
+        this.isLoaded = false;
+        this.pendingCount = 0;
+
         if (this.options.isMulti === null) {
             this.options.isMulti = this.$el.hasClass('is-multi');
         }
@@ -72,6 +75,7 @@
         }
 
         this.extendExternalToolbar();
+        this.isLoaded = true;
     }
 
     FileUpload.prototype.dispose = function() {
@@ -95,6 +99,7 @@
         this.uploaderOptions = null;
         this.toolbarExtensionPoint = null;
         this.externalToolbarEventBusObj = null;
+        this.isLoaded = null;
 
         // In some cases options could contain callbacks,
         // so it's better to clean them up too.
@@ -107,7 +112,7 @@
     // External toolbar
     //
 
-    FileUpload.prototype.initToolbarExtensionPoint = function () {
+    FileUpload.prototype.initToolbarExtensionPoint = function() {
         if (!this.options.externalToolbarAppState) {
             return;
         }
@@ -118,7 +123,7 @@
             throw new Error('Invalid externalToolbarAppState format. Expected format: module.name::stateElementName');
         }
 
-        const app = $.oc.module.import(parts[0]);
+        const app = oc.Module.import(parts[0]);
         this.toolbarExtensionPoint = app.state[parts[1]];
     }
 
@@ -133,7 +138,7 @@
             throw new Error('Invalid externalToolbarEventBus format. Expected format: module.name::stateElementName');
         }
 
-        const module = $.oc.module.import(parts[0]);
+        const module = oc.Module.import(parts[0]);
         this.externalToolbarEventBusObj = module.state[parts[1]];
     }
 
@@ -155,7 +160,7 @@
         this.externalToolbarEventBusObj.$off('extendapptoolbar', this.proxy(this.extendExternalToolbar));
     }
 
-    FileUpload.prototype.onToolbarExternalCommand = function (ev) {
+    FileUpload.prototype.onToolbarExternalCommand = function(ev) {
         var cmdPrefix = 'fileupload-toolbar-';
 
         if (ev.command.substring(0, cmdPrefix.length) != cmdPrefix) {
@@ -169,7 +174,7 @@
         $button.get(0).click(ev.ev);
     }
 
-    FileUpload.prototype.extendExternalToolbar = function () {
+    FileUpload.prototype.extendExternalToolbar = function() {
         if (!this.$el.is(":visible") || !this.toolbarExtensionPoint) {
             return;
         }
@@ -183,7 +188,7 @@
         var that = this,
             $buttons = this.$el.find('.uploader-control-toolbar .backend-toolbar-button');
 
-        $buttons.each(function () {
+        $buttons.each(function() {
             var $button = $(this),
                 $icon = $button.find('i[class^=octo-icon]');
 
@@ -260,6 +265,7 @@
         this.dropzone.on('sending', this.proxy(this.onUploadSending));
         this.dropzone.on('success', this.proxy(this.onUploadSuccess));
         this.dropzone.on('error', this.proxy(this.onUploadError));
+        this.dropzone.on('complete', this.proxy(this.onUploadComplete));
 
         this.dropzone.on('dragenter', this.proxy(this.onDragEnter));
         this.dropzone.on('dragover', this.proxy(this.onDragEnter));
@@ -273,20 +279,20 @@
         this.loadExistingFiles();
     }
 
-    // FileUpload.prototype.removeEventListeners = function () {
+    // FileUpload.prototype.removeEventListeners = function() {
     //     this.dropzone.removeEventListeners();
     // }
 
-    // FileUpload.prototype.setupEventListeners = function () {
+    // FileUpload.prototype.setupEventListeners = function() {
     //     if (this.dropzone.files.length < this.dropzone.options.maxFiles) {
     //         this.dropzone.setupEventListeners();
     //     }
     // }
 
-    FileUpload.prototype.loadExistingFiles = function () {
+    FileUpload.prototype.loadExistingFiles = function() {
         var self = this;
 
-        $('.server-file', this.$el).each(function () {
+        $('.server-file', this.$el).each(function() {
             var file = $(this).data();
 
             self.dropzone.files.push(file);
@@ -335,7 +341,8 @@
         return info;
     }
 
-    FileUpload.prototype.onUploadAddedFile = function (file) {
+    FileUpload.prototype.onUploadAddedFile = function(file) {
+        this.pendingCount++;
         this.$uploadButton.blur();
 
         var $object = $(file.previewElement).data('dzFileObject', file),
@@ -349,7 +356,7 @@
             this.removeFileFromElement($object.siblings());
         }
 
-        if (this.options.isMulti) {
+        if (this.options.isMulti && this.isLoaded) {
             file.previewElement.scrollIntoView();
         }
 
@@ -383,7 +390,15 @@
         $preview.addClass('is-error');
     }
 
-    FileUpload.prototype.onSelectionChanged = function (ev) {
+    FileUpload.prototype.onUploadComplete = function(file) {
+        this.pendingCount--;
+
+        if (this.pendingCount === 0) {
+            this.onSortAttachments();
+        }
+    }
+
+    FileUpload.prototype.onSelectionChanged = function(ev) {
         var $object = $(ev.target).closest('.upload-object');
 
         $object.toggleClass('selected', ev.target.checked);
@@ -401,14 +416,14 @@
 
     FileUpload.prototype.addExtraFormData = function(formData) {
         if (this.options.extraData) {
-            $.each(this.options.extraData, function (name, value) {
+            $.each(this.options.extraData, function(name, value) {
                 formData.append(name, value)
             });
         }
 
         var $form = this.$el.closest('form');
         if ($form.length > 0) {
-            $.each($form.serializeArray(), function (index, field) {
+            $.each($form.serializeArray(), function(index, field) {
                 formData.append(field.name, field.value)
             });
         }
@@ -442,9 +457,8 @@
             animation: 150,
             draggable: 'div.upload-object.is-success',
             handle: '.drag-handle',
-            onStart: $.proxy(this.onDragStart, this),
-            onChange: this.proxy(this.onSortAttachments),
-            onEnd: $.proxy(this.onDragStop, this)
+            onStart: this.proxy(this.onDragStart),
+            onEnd: this.proxy(this.onDragStop)
         });
     }
 
@@ -454,31 +468,34 @@
 
     FileUpload.prototype.onDragStop = function(evt) {
         this.dragging = false;
+
+        this.onSortAttachments();
     }
 
     FileUpload.prototype.onSortAttachments = function() {
-        if (this.options.sortHandler) {
-
-            // Build an object of ID:ORDER
-            var orderData = {}
-
-            this.$el.find('.upload-object.is-success')
-                .each(function(index){
-                    var id = $(this).data('id')
-                    orderData[id] = index + 1
-                });
-
-            this.$el.request(this.options.sortHandler, {
-                data: { sortOrder: orderData }
-            });
+        if (!this.options.sortHandler) {
+            return;
         }
+
+        // Build an object of ID:ORDER
+        var orderData = {}
+
+        this.$el.find('.upload-object.is-success')
+            .each(function(index){
+                var id = $(this).data('id')
+                orderData[id] = index + 1
+            });
+
+        this.$el.request(this.options.sortHandler, {
+            data: { sortOrder: orderData }
+        });
     }
 
     //
     // User interaction
     //
 
-    FileUpload.prototype.onClearFileClick = function (ev) {
+    FileUpload.prototype.onClearFileClick = function(ev) {
         var self = this,
             $form = $(ev.target).closest('form'),
             $button = $(ev.target).closest('.toolbar-clear-file'),
@@ -506,16 +523,16 @@
         ev.preventDefault();
     }
 
-    FileUpload.prototype.onDeleteSelectedClick = function (ev) {
+    FileUpload.prototype.onDeleteSelectedClick = function(ev) {
         var self = this,
             $form = $(ev.target).closest('form'),
             $button = $(ev.target).closest('.toolbar-delete-selected'),
             $currentObjects = $('.upload-object:has(input[data-record-selector]:checked)', this.$filesContainer);
 
-        $.oc.confirm($button.attr('data-request-confirm'), function () {
+        $.oc.confirm($button.attr('data-request-confirm'), function() {
             $currentObjects.addClass('is-loading');
 
-            $currentObjects.each(function () {
+            $currentObjects.each(function() {
                 var $currentObject = $(this)
 
                 $form.request($button.attr('data-request'), {
@@ -528,7 +545,7 @@
                     self.updateDeleteSelectedState();
                     self.extendExternalToolbar();
                     self.triggerChange();
-                }).always(function () {
+                }).always(function() {
                     $currentObject.removeClass('is-loading');
                 });
             });
@@ -540,7 +557,7 @@
 
     FileUpload.prototype.onClickSuccessObject = function(ev) {
         if ($(ev.target).closest('.meta').length) return;
-        if ($(ev.target).closest('.custom-checkbox-v2').length) return;
+        if ($(ev.target).closest('.form-check').length) return;
 
         var $target = $(ev.target).closest('.upload-object');
 
@@ -619,7 +636,7 @@
         }
     }
 
-    FileUpload.prototype.updateDeleteSelectedState = function () {
+    FileUpload.prototype.updateDeleteSelectedState = function() {
         var enabled = false,
             selectedCount = this.$el.find('input[data-record-selector]:checked').length;
 
@@ -648,7 +665,7 @@
         this.$el.addClass('file-drag-over');
     }
 
-    FileUpload.prototype.onDragEnd = function () {
+    FileUpload.prototype.onDragEnd = function() {
         if (this.dragging) {
             return;
         }
@@ -660,7 +677,7 @@
      * Replicates the formatting of October\Rain\Filesystem\Filesystem::sizeToString(). This method will return
      * an object with the file size amount and the unit used as `size` and `units` respectively.
      */
-    FileUpload.prototype.getFilesize = function (file) {
+    FileUpload.prototype.getFilesize = function(file) {
         var formatter = new Intl.NumberFormat('en', {
                 style: 'decimal',
                 minimumFractionDigits: 2,
@@ -721,8 +738,8 @@
 
     var old = $.fn.fileUploader;
 
-    $.fn.fileUploader = function (option) {
-        return this.each(function () {
+    $.fn.fileUploader = function(option) {
+        return this.each(function() {
             var $this   = $(this)
             var data    = $this.data('oc.fileUpload')
             var options = $.extend({}, FileUpload.DEFAULTS, $this.data(), typeof option == 'object' && option)
@@ -736,14 +753,14 @@
     // FILEUPLOAD NO CONFLICT
     // =================
 
-    $.fn.fileUploader.noConflict = function () {
+    $.fn.fileUploader.noConflict = function() {
         $.fn.fileUpload = old
         return this
     }
 
     // FILEUPLOAD DATA-API
     // ===============
-    $(document).render(function () {
+    $(document).render(function() {
         $('[data-control="fileupload"]').fileUploader();
     });
 

@@ -24,7 +24,7 @@ class RichEditor extends VueComponentBase
     {
         $configuration = [
             'editorLang' => $this->getValidEditorLang(),
-            'useMediaManager' => BackendAuth::userHasAccess('media.manage_media'),
+            'useMediaManager' => BackendAuth::userHasAccess('media.library'),
             'iframeStylesFile' => Url::asset('/modules/backend/vuecomponents/richeditor/assets/css/iframestyles.css'),
 
             'globalToolbarButtons' => $this->getGlobalButtons(),
@@ -56,12 +56,12 @@ class RichEditor extends VueComponentBase
     {
         // This Vue component uses Froala dependencies from the rich editor form widget
         //
-        $this->addJs('/modules/backend/formwidgets/richeditor/assets/js/build-min.js', 'core');
-        $this->addJs('/modules/backend/formwidgets/richeditor/assets/js/build-plugins-min.js', 'core');
-        $this->addCss('/modules/backend/formwidgets/richeditor/assets/css/richeditor.css', 'core');
+        $this->addJs('/modules/backend/formwidgets/richeditor/assets/js/build-min.js');
+        $this->addJs('/modules/backend/formwidgets/richeditor/assets/js/richeditor.js');
+        $this->addCss('/modules/backend/formwidgets/richeditor/assets/css/richeditor.css');
 
         if ($lang = $this->getValidEditorLang()) {
-            $this->addJs('/modules/backend/formwidgets/richeditor/assets/vendor/froala/js/languages/'.$lang.'.js', 'core');
+            $this->addJs('/modules/backend/formwidgets/richeditor/assets/vendor/froala/js/languages/'.$lang.'.js');
         }
     }
 

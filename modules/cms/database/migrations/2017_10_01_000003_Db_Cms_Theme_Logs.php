@@ -3,7 +3,7 @@
 use October\Rain\Database\Schema\Blueprint;
 use October\Rain\Database\Updates\Migration;
 
-class DbCmsThemeLogs extends Migration
+return new class extends Migration
 {
     public function up()
     {
@@ -24,4 +24,4 @@ class DbCmsThemeLogs extends Migration
     {
         Schema::dropIfExists('cms_theme_logs');
     }
-}
+};

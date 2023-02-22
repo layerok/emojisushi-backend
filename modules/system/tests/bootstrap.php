@@ -3,12 +3,11 @@
 /*
  * Common classes
  */
-require 'concerns/InteractsWithAuthentication.php';
 require 'TestCase.php';
 require 'PluginTestCase.php';
 
 /*
- * October autoloader
+ * October CMS autoloader
  */
 require __DIR__ . '/../../../bootstrap/autoload.php';
 
@@ -22,6 +21,9 @@ $loader = new October\Rain\Support\ClassLoader(
 );
 
 $loader->register();
+
+$loader->addNamespace('App\\', '');
+
 $loader->addDirectories([
     'modules',
     'plugins'

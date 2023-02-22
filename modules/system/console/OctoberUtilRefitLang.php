@@ -1,6 +1,7 @@
 <?php namespace System\Console;
 
 use File;
+use System;
 use Exception;
 
 /**
@@ -12,6 +13,47 @@ use Exception;
 trait OctoberUtilRefitLang
 {
     /**
+     * @var string refitFinalMessage
+     */
+    protected $refitFinalMessage;
+
+    /**
+     * utilLangWipeJson
+     */
+    protected function utilWipeLangJson()
+    {
+        $input = $this->option('value');
+        if (!$input) {
+            $this->comment('Missing language key.');
+            $input = $this->ask('Enter language key');
+        }
+
+        $modules = System::listModules();
+        $locales = $this->refitLangFindLocales();
+
+        foreach ($modules as $module) {
+            $fileDir = base_path('modules/'.strtolower($module));
+            foreach ($locales as $locale) {
+                $this->refitLangJsonDelete($fileDir, $locale, $input);
+            }
+        }
+    }
+
+    /**
+     * utilLangWipe
+     */
+    protected function utilWipeLang()
+    {
+        $input = $this->option('value');
+        if (!$input) {
+            $this->comment('Missing language key.');
+            $input = $this->ask('Enter language key');
+        }
+
+        $this->refitLangInternal($input, false);
+    }
+
+    /**
      * utilRefitLang
      */
     protected function utilRefitLang()
@@ -22,6 +64,14 @@ trait OctoberUtilRefitLang
             $input = $this->ask('Enter language key');
         }
 
+        $this->refitLangInternal($input);
+    }
+
+    /**
+     * refitLangInternal
+     */
+    protected function refitLangInternal($input, $rewrite = true)
+    {
         // Ex[author.plugin::lang.some.key]
         $parts = explode('::', $input);
 
@@ -52,18 +102,22 @@ trait OctoberUtilRefitLang
         }, File::directories($fileDir . '/lang'));
 
         // Rewrite the language key for each lang
-        foreach ($dirs as $lang) {
-            $this->refitLangKeyRewrite($fileDir, $lang, $arrPath);
+        if ($rewrite) {
+            foreach ($dirs as $lang) {
+                $this->refitLangKeyRewrite($fileDir, $lang, $arrPath);
+            }
         }
 
         // Delete the language key for each lang
         foreach ($dirs as $lang) {
-            $this->refitLangKeyDelete($fileDir, $lang, $arrPath);
+            $this->refitLangPhpDelete($fileDir, $lang, $arrPath);
         }
+
+        $this->comment($this->refitFinalMessage);
     }
 
     /**
-     * refitLangKey
+     * refitLangKeyRewrite will add the php lang to the json lang
      */
     protected function refitLangKeyRewrite(string $basePath, string $lang, string $key, string $fileName = null)
     {
@@ -86,36 +140,53 @@ trait OctoberUtilRefitLang
 
         $english = array_get($englishArr, $key);
         if (!$english) {
-            throw new Exception("Missing key for english [{$key}] in [{$englishPath}]");
+            throw new Exception("[!!] Missing key for english [{$key}] in [{$englishPath}]");
         }
 
         $translated = array_get($legacyArr, $key);
         if (!$translated) {
-            $this->comment("Missing key for english [{$key}] in [{$legacyPath}]");
+            $this->comment("[{$lang}] Missing key [{$key}] in [{$legacyPath}]");
             return;
         }
 
         $newArr[$english] = $translated;
 
-        File::put($newPath, json_encode($newArr, JSON_PRETTY_PRINT|JSON_UNESCAPED_UNICODE));
+        File::put($newPath, $this->refitLangJsonEncode($newArr));
 
         $this->comment("[{$lang}] → {$english}:{$translated}");
 
         if ($lang === 'en') {
             $this->comment(PHP_EOL);
             if (strpos($english, "'") !== false) {
-                $this->comment("<?= e(__(\"{$english}\")) ?>");
+                $this->refitFinalMessage = "<?= __(\"{$english}\") ?>";
             }
             else {
-                $this->comment("<?= e(__('{$english}')) ?>");
+                $this->refitFinalMessage = "<?= __('{$english}') ?>";
             }
         }
     }
 
     /**
-     * refitLangKeyDelete
+     * refitLangJsonDelete will delete the JSON lang key and rewrite the file
      */
-    protected function refitLangKeyDelete(string $basePath, string $lang, string $key, string $fileName = null)
+    protected function refitLangJsonDelete(string $basePath, string $lang, string $key)
+    {
+        $jsonPath = "{$basePath}/lang/{$lang}.json";
+
+        if (file_exists($jsonPath)) {
+            $newArr = json_decode(file_get_contents($jsonPath), true);
+            if (isset($newArr[$key])) {
+                unset($newArr[$key]);
+                File::put($jsonPath, $this->refitLangJsonEncode($newArr));
+                $this->comment("[{$lang}] → {$key} (deleted)");
+            }
+        }
+    }
+
+    /**
+     * refitLangPhpDelete will delete the php lang key and rewrite the file
+     */
+    protected function refitLangPhpDelete(string $basePath, string $lang, string $key, string $fileName = null)
     {
         if (!$fileName) {
             $fileName = 'lang.php';
@@ -123,11 +194,14 @@ trait OctoberUtilRefitLang
 
         $legacyPath = "{$basePath}/lang/{$lang}/{$fileName}";
 
-        $legacyArr = include($legacyPath);
-
-        array_forget($legacyArr, $key);
-
-        File::put($legacyPath, '<?php return '.$this->refitVarExportShort($legacyArr, true).';');
+        if (file_exists($legacyPath)) {
+            $legacyArr = include($legacyPath);
+            if (array_get($legacyArr, $key)) {
+                array_forget($legacyArr, $key);
+                File::put($legacyPath, '<?php return '.$this->refitVarExportShort($legacyArr, true).';'.PHP_EOL);
+                $this->comment("[{$lang}] → {$key} (deleted)");
+            }
+        }
     }
 
     /**
@@ -156,7 +230,7 @@ trait OctoberUtilRefitLang
         }
 
         // 2 char to 4 char indent
-        $dump = str_replace('  ', '    ', $dump);
+        // $dump = str_replace('  ', '    ', $dump);
 
         if ($return === true) {
             return $dump;
@@ -164,5 +238,71 @@ trait OctoberUtilRefitLang
         else {
             echo $dump;
         }
+    }
+
+    /**
+     * refitLangJsonEncode
+     */
+    protected function refitLangJsonEncode($newArr)
+    {
+        $indentFour = json_encode($newArr, JSON_UNESCAPED_SLASHES|JSON_PRETTY_PRINT|JSON_UNESCAPED_UNICODE);
+        $indentTwo = preg_replace('/^(  +?)\\1(?=[^ ])/m', '$1', $indentFour);
+        return $indentTwo;
+    }
+
+    /**
+     * refitLangFindLocales
+     */
+    protected function refitLangFindLocales()
+    {
+        return [
+            'ar',
+            'be',
+            'bg',
+            'ca',
+            'cs',
+            'da',
+            'de',
+            'el',
+            'en',
+            'en-au',
+            'en-ca',
+            'en-gb',
+            'es',
+            'es-ar',
+            'et',
+            'fa',
+            'fi',
+            'fr',
+            'fr-ca',
+            'hu',
+            'id',
+            'it',
+            'ja',
+            'kr',
+            'lt',
+            'lv',
+            'nb-no',
+            'nn-no',
+            'nl',
+            'pl',
+            'pt-br',
+            'pt-pt',
+            'ro',
+            'ru',
+            'sk',
+            'sl',
+            'sv',
+            'th',
+            'tr',
+            'uk',
+            'vn',
+            'zh-cn',
+            'zh-tw',
+
+            // Alternatives
+            'zh-CN',
+            'zh-TW',
+        ];
     }
 }

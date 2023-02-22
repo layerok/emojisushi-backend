@@ -31,18 +31,44 @@ class PartialTokenParser extends TwigTokenParser
         $name = $this->parser->getExpressionParser()->parseExpression();
         $paramNames = [];
         $nodes = [$name];
-        $hasBody = false;
+        $hasBody = $hasOnly = $hasLazy = false;
         $body = null;
+
+        $isAjax = $this->getTag() === 'ajaxPartial';
 
         $end = false;
         while (!$end) {
             $current = $stream->next();
 
             if (
+                $current->test(TwigToken::NAME_TYPE, 'lazy') &&
+                !$stream->test(TwigToken::OPERATOR_TYPE, '=')
+            ) {
+                if (!$isAjax) {
+                    throw new TwigErrorSyntax(
+                        'Cannot use lazy mode with partial tag. Did you mean ajaxPartial?',
+                        $stream->getCurrent()->getLine(),
+                        $stream->getSourceContext()
+                    );
+                }
+
+                $hasLazy = true;
+                $current = $stream->next();
+            }
+
+            if (
                 $current->test(TwigToken::NAME_TYPE, 'body') &&
                 !$stream->test(TwigToken::OPERATOR_TYPE, '=')
             ) {
                 $hasBody = true;
+                $current = $stream->next();
+            }
+
+            if (
+                $current->test(TwigToken::NAME_TYPE, 'only') &&
+                !$stream->test(TwigToken::OPERATOR_TYPE, '=')
+            ) {
+                $hasOnly = true;
                 $current = $stream->next();
             }
 
@@ -72,7 +98,14 @@ class PartialTokenParser extends TwigTokenParser
             $stream->expect(TwigToken::BLOCK_END_TYPE);
         }
 
-        return new PartialNode(new TwigNode($nodes), $paramNames, $body, $token->getLine(), $this->getTag());
+        $options = [
+            'paramNames' => $paramNames,
+            'hasOnly' => $hasOnly,
+            'hasLazy' => $hasLazy,
+            'isAjax' => $isAjax
+        ];
+
+        return new PartialNode(new TwigNode($nodes), $body, $options, $token->getLine(), $this->getTag());
     }
 
     /**

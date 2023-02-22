@@ -12,7 +12,7 @@ class HasOneModelTest extends PluginTestCase
         include_once base_path() . '/modules/system/tests/fixtures/plugins/database/tester/models/Author.php';
         include_once base_path() . '/modules/system/tests/fixtures/plugins/database/tester/models/Phone.php';
 
-        $this->runPluginRefreshCommand('Database.Tester');
+        $this->migratePlugin('Database.Tester');
     }
 
     public function testSetRelationValue()

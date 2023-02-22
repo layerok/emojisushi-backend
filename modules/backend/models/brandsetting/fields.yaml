@@ -61,6 +61,12 @@ tabs:
         #     tab: backend::lang.branding.colors
         #     availableColors: ['#6a6cf7', '#16a085', '#27ae60', '#6bc48d', '#3498db', '#9b59b6', '#34495e', '#f1c40f', '#e67e22', '#e74c3c', '#ecf0f1', '#95a5a6']
 
+        login_prompt:
+            label: backend::lang.branding.login_prompt
+            commentAbove: backend::lang.branding.login_prompt_description
+            tab: backend::lang.branding.login_page
+            span: full
+
         login_background_type:
             label: backend::lang.branding.login_background_type
             tab: backend::lang.branding.login_page
@@ -76,7 +82,7 @@ tabs:
             tab: backend::lang.branding.login_page
             type: colorpicker
             availableColors: ['#6a6cf7', '#16a085', '#27ae60', '#6bc48d', '#3498db', '#9b59b6', '#34495e', '#f1c40f', '#e67e22', '#e74c3c', '#ecf0f1', '#95a5a6']
-            span: left
+            span: full
             trigger:
                 action: show
                 field: login_background_type
@@ -87,7 +93,7 @@ tabs:
             type: fileupload
             mode: image
             tab: backend::lang.branding.login_page
-            span: left
+            span: right
             fileTypes: jpg,jpeg,png
             trigger:
                 action: show
@@ -98,7 +104,7 @@ tabs:
             label: backend::lang.branding.background_wallpaper_image_size
             tab: backend::lang.branding.login_page
             span: left
-            type: dropdown
+            type: radio
             default: auto
             trigger:
                 action: show
@@ -107,7 +113,6 @@ tabs:
             options:
                 auto: backend::lang.branding.background_wallpaper_size_auto
                 cover: backend::lang.branding.background_wallpaper_size_cover
-
 
         login_image_type:
             label: backend::lang.branding.login_image
@@ -123,7 +128,7 @@ tabs:
             type: fileupload
             mode: image
             tab: backend::lang.branding.login_page
-            span: left
+            span: right
             fileTypes: jpg,jpeg,png
             trigger:
                 action: show
@@ -134,7 +139,7 @@ tabs:
             label: backend::lang.branding.menu_mode
             tab: backend::lang.branding.navigation
             type: partial
-            path: ~/modules/backend/models/brandsetting/_menu_mode.htm
+            path: ~/modules/backend/models/brandsetting/_menu_mode.php
 
         custom_css:
             label: backend::lang.branding.custom_stylesheet

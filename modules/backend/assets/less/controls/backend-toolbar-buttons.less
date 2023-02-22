@@ -1,9 +1,20 @@
-@import "backend-toolbar-buttons-mixin.less";
-
 .backend-toolbar-button-focus() {
     &:focus:not([disabled]) {
         background: @background-color-focus;
     }
+}
+
+.backend-toolbar-button .badge {
+    display: block;
+    z-index: 9;
+    width: 8px;
+    height: 8px;
+    position: absolute;
+    top: 5px;
+    right: -3px;
+    border-radius: 50%;
+    background-color: #dd1100;
+    padding: 0;
 }
 
 button,

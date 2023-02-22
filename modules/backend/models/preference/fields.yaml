@@ -88,6 +88,12 @@ tabs:
                 basic: backend::lang.editor.basic_autocompletion
                 live: backend::lang.editor.live_autocompletion
 
+        editor_use_emmet:
+            label: Use Emmet abbreviations
+            tab: backend::lang.backend_preferences.code_editor
+            type: checkbox
+            span: auto
+
         editor_show_gutter:
             label: backend::lang.editor.show_gutter
             tab: backend::lang.backend_preferences.code_editor
@@ -126,12 +132,6 @@ tabs:
 
         editor_show_print_margin:
             label: backend::lang.editor.show_print_margin
-            tab: backend::lang.backend_preferences.code_editor
-            type: checkbox
-            span: auto
-
-        editor_enable_snippets:
-            label: backend::lang.editor.enable_snippets
             tab: backend::lang.backend_preferences.code_editor
             type: checkbox
             span: auto

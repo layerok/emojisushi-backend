@@ -31,14 +31,15 @@ class OctoberUpdate extends Command
     {
         $composerBin = env('COMPOSER_BIN', 'composer');
 
-        $this->output->writeln('<info>Updating October CMS...</info>');
+        $this->line('Updating October CMS...');
 
         $this->comment("Executing: {$composerBin} update");
-        $this->output->newLine();
+        $this->newLine();
 
         // Composer update
         $errCode = null;
         passthru("$composerBin update", $errCode);
+        $this->newLine();
 
         if ($errCode !== 0) {
             $this->output->error('Update failed. Check output above');
@@ -47,10 +48,11 @@ class OctoberUpdate extends Command
 
         // Migrate database
         $this->comment("Executing: php artisan october:migrate");
-        $this->output->newLine();
+        $this->newLine();
 
         $errCode = null;
-        passthru('php artisan october:migrate', $errCode);
+        static::passthruArtisan('october:migrate', $errCode);
+        $this->newLine();
 
         if ($errCode !== 0) {
             $this->output->error('Migration failed. Check output above');
@@ -63,5 +65,13 @@ class OctoberUpdate extends Command
         catch (Exception $ex) {
             // ...
         }
+    }
+
+    /**
+     * passthruArtisan
+     */
+    protected static function passthruArtisan($command, &$errCode = null)
+    {
+        passthru('"'.PHP_BINARY.'" artisan ' .$command, $errCode);
     }
 }

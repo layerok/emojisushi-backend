@@ -2,7 +2,7 @@
  * Template Diff plugin
  *
  * Data attributes:
- * - data-plugin="template-diff" - enables the plugin on an element
+ * - data-control="template-diff" - enables the plugin on an element
  *
  * JavaScript API:
  * $('pre').templateDiff({ option: 'value' })
@@ -21,7 +21,7 @@
         this.$el       = $(element)
 
         // Init
-        this.init()
+        this.init();
     }
 
     TemplateDiff.DEFAULTS = {
@@ -32,21 +32,21 @@
     }
 
     TemplateDiff.prototype.init = function() {
-        var
-            oldValue = $('[data-field-name="'+this.options.oldFieldName+'"] .form-control '+this.options.contentTag).html(),
-            newValue = $('[data-field-name="'+this.options.newFieldName+'"] .form-control '+this.options.contentTag).html()
+        var oldValue = $('[data-field-name="'+this.options.oldFieldName+'"] .form-control '+this.options.contentTag).html(),
+            newValue = $('[data-field-name="'+this.options.newFieldName+'"] .form-control '+this.options.contentTag).html();
 
-        oldValue = $('<div />').html(oldValue).text()
-        newValue = $('<div />').html(newValue).text()
+        oldValue = $('<div />').html(oldValue).text();
+        newValue = $('<div />').html(newValue).text();
 
-        this.diffStrings(oldValue, newValue)
+        this.diffStrings(oldValue, newValue);
     }
 
     TemplateDiff.prototype.diffStrings = function(oldValue, newValue) {
-        var result = this.$el.get(0)
-        var diffType = 'diff' + this.options.diffType[0].toUpperCase() + this.options.diffType.slice(1)
-        var diff = JsDiff[diffType](oldValue, newValue)
-        var fragment = document.createDocumentFragment();
+        var result = this.$el.get(0),
+            diffType = 'diff' + this.options.diffType[0].toUpperCase() + this.options.diffType.slice(1),
+            diff = JsDiff[diffType](oldValue, newValue),
+            fragment = document.createDocumentFragment();
+
         for (var i=0; i < diff.length; i++) {
 
             if (diff[i].added && diff[i + 1] && diff[i + 1].removed) {
@@ -89,7 +89,7 @@
             if (typeof option == 'string') result = data[option].apply(data, args)
             if (typeof result != 'undefined') return false
         })
-        
+
         return result ? result : this
     }
 
@@ -107,7 +107,9 @@
     // ===============
 
     $(document).render(function () {
-        $('[data-plugin="template-diff"]').templateDiff()
+        if (typeof JsDiff !== 'undefined') {
+            $('[data-control="template-diff"]').templateDiff();
+        }
     });
 
 }(window.jQuery);

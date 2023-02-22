@@ -3,7 +3,7 @@
 use Yaml;
 
 /**
- * The CMS meta file class, used for interacting with YAML files within the Halycon datasources
+ * Meta is used for interacting with YAML files
  *
  * @package october\cms
  * @author Alexey Bobkov, Samuel Georges, Luke Towers
@@ -11,27 +11,27 @@ use Yaml;
 class Meta extends CmsObject
 {
     /**
-     * @var string The container name associated with the model, eg: pages.
+     * @var string dirName associated with the model, eg: pages.
      */
     protected $dirName = 'meta';
 
     /**
-     * @var array Cache store used by parseContent method.
+     * @var array contentDataCache store used by parseContent method.
      */
     protected $contentDataCache;
 
     /**
-     * @var array Allowable file extensions.
+     * @var array allowedExtensions as file extensions.
      */
     protected $allowedExtensions = ['yaml'];
 
     /**
-     * @var string Default file extension.
+     * @var string defaultExtension as file extension.
      */
     protected $defaultExtension = 'yaml';
 
     /**
-     * {inheritDoc}
+     * {@inheritDoc}
      */
     public function __construct()
     {
@@ -41,13 +41,14 @@ class Meta extends CmsObject
         $this->bindEvent('model.beforeSave', function () {
             $this->content = $this->renderContent();
         });
+
         $this->bindEvent('model.afterFetch', function () {
-            $this->attributes = array_merge($this->attributes, $this->parseContent());
+            $this->setRawAttributes(array_merge($this->attributes, $this->parseContent()), true);
         });
     }
 
     /**
-     * Processes the content attribute to an array of menu data.
+     * parseContent processes the content attribute to an array of menu data.
      * @return array|null
      */
     protected function parseContent()
@@ -66,7 +67,7 @@ class Meta extends CmsObject
     }
 
     /**
-     * Renders the meta data as a content string in YAML format.
+     * renderContent (meta data) as a content string in YAML format.
      * @return string
      */
     protected function renderContent()
@@ -75,7 +76,7 @@ class Meta extends CmsObject
     }
 
     /**
-     * Compile the content for this CMS object, used by the theme logger.
+     * toCompiled the content for this CMS object, used by the theme logger.
      * @return string
      */
     public function toCompiled()

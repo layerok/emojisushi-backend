@@ -6,9 +6,12 @@ use Flash;
 use Event;
 use Redirect;
 use Backend;
+use BackendAuth;
+use Backend\Classes\FormField;
 use Backend\Classes\ControllerBehavior;
 use October\Rain\Router\Helper as RouterHelper;
 use ApplicationException;
+use ForbiddenException;
 use SystemException;
 use Exception;
 
@@ -40,21 +43,7 @@ use Exception;
 class FormController extends ControllerBehavior
 {
     use \Backend\Traits\FormModelSaver;
-
-    /**
-     * @var string CONTEXT_UPDATE for "create" pages.
-     */
-    const CONTEXT_CREATE = 'create';
-
-    /**
-     * @var string CONTEXT_UPDATE for "update" pages.
-     */
-    const CONTEXT_UPDATE = 'update';
-
-    /**
-     * @var string CONTEXT_PREVIEW for "preview" pages.
-     */
-    const CONTEXT_PREVIEW = 'preview';
+    use \Backend\Behaviors\FormController\HasMultisite;
 
     /**
      * @var \Backend\Classes\Controller|FormController controller reference
@@ -109,9 +98,7 @@ class FormController extends ControllerBehavior
     {
         parent::__construct($controller);
 
-        /*
-         * Build configuration
-         */
+        // Build configuration
         $this->setConfig($controller->formConfig, $this->requiredConfig);
     }
 
@@ -202,15 +189,19 @@ class FormController extends ControllerBehavior
     //
 
     /**
-     * Controller "create" action used for creating new model records.
+     * create controller action used for creating new model records.
      *
      * @param string $context Form context
      * @return void
      */
     public function create($context = null)
     {
+        if (!$this->checkHasPermission('modelCreate')) {
+            throw new ForbiddenException;
+        }
+
         try {
-            $this->context = strlen($context) ? $context : $this->getConfig('create[context]', self::CONTEXT_CREATE);
+            $this->context = strlen($context) ? $context : $this->getConfig('create[context]', FormField::CONTEXT_CREATE);
             $this->controller->pageTitle = $this->controller->pageTitle
                 ?: $this->getLang('create[title]', 'backend::lang.form.create_title');
 
@@ -225,7 +216,7 @@ class FormController extends ControllerBehavior
     }
 
     /**
-     * AJAX handler "onSave" called from the create action and
+     * create_onSave AJAX handler called from the create action and
      * primarily used for creating new records.
      *
      * This handler will invoke the unique controller overrides
@@ -236,7 +227,11 @@ class FormController extends ControllerBehavior
      */
     public function create_onSave($context = null)
     {
-        $this->context = strlen($context) ? $context : $this->getConfig('create[context]', self::CONTEXT_CREATE);
+        if (!$this->checkHasPermission('modelCreate')) {
+            throw new ForbiddenException;
+        }
+
+        $this->context = strlen($context) ? $context : $this->getConfig('create[context]', FormField::CONTEXT_CREATE);
 
         $model = $this->controller->formCreateModelObject();
         $model = $this->controller->formExtendModel($model) ?: $model;
@@ -246,7 +241,11 @@ class FormController extends ControllerBehavior
         $this->controller->formBeforeSave($model);
         $this->controller->formBeforeCreate($model);
 
-        $this->performSaveOnModel($model, $this->formWidget->getSaveData(), $this->formWidget->getSessionKey());
+        $this->performSaveOnModel(
+            $model,
+            $this->formWidget->getSaveData(),
+            ['sessionKey' => $this->formWidget->getSessionKey(), 'propagate' => true]
+        );
 
         $this->controller->formAfterSave($model);
         $this->controller->formAfterCreate($model);
@@ -263,7 +262,7 @@ class FormController extends ControllerBehavior
     //
 
     /**
-     * Controller "update" action used for updating existing model records.
+     * update controller action used for updating existing model records.
      * This action takes a record identifier (primary key of the model)
      * to locate the record used for sourcing the existing form values.
      *
@@ -273,12 +272,26 @@ class FormController extends ControllerBehavior
      */
     public function update($recordId = null, $context = null)
     {
+        if (!$this->checkHasPermission('modelUpdate')) {
+            throw new ForbiddenException;
+        }
+
         try {
-            $this->context = strlen($context) ? $context : $this->getConfig('update[context]', self::CONTEXT_UPDATE);
+            $this->context = strlen($context) ? $context : $this->getConfig('update[context]', FormField::CONTEXT_UPDATE);
             $this->controller->pageTitle = $this->controller->pageTitle
                 ?: $this->getLang('update[title]', 'backend::lang.form.update_title');
 
             $model = $this->controller->formFindModelObject($recordId);
+
+            // Multisite
+            if ($this->controller->formHasMultisite($model)) {
+                if ($redirect = $this->makeMultisiteRedirect('create', $model)) {
+                    return $redirect;
+                }
+
+                $this->addHandlerToSiteSwitcher();
+            }
+
             $this->initForm($model);
         }
         catch (Exception $ex) {
@@ -287,7 +300,7 @@ class FormController extends ControllerBehavior
     }
 
     /**
-     * AJAX handler "onSave" called from the update action and
+     * update_onSave AJAX handler called from the update action and
      * primarily used for updating existing records.
      *
      * This handler will invoke the unique controller overrides
@@ -299,14 +312,22 @@ class FormController extends ControllerBehavior
      */
     public function update_onSave($recordId = null, $context = null)
     {
-        $this->context = strlen($context) ? $context : $this->getConfig('update[context]', self::CONTEXT_UPDATE);
+        if (!$this->checkHasPermission('modelUpdate')) {
+            throw new ForbiddenException;
+        }
+
+        $this->context = strlen($context) ? $context : $this->getConfig('update[context]', FormField::CONTEXT_UPDATE);
         $model = $this->controller->formFindModelObject($recordId);
         $this->initForm($model);
 
         $this->controller->formBeforeSave($model);
         $this->controller->formBeforeUpdate($model);
 
-        $this->performSaveOnModel($model, $this->formWidget->getSaveData(), $this->formWidget->getSessionKey());
+        $this->performSaveOnModel(
+            $model,
+            $this->formWidget->getSaveData(),
+            ['sessionKey' => $this->formWidget->getSessionKey(), 'propagate' => true]
+        );
 
         $this->controller->formAfterSave($model);
         $this->controller->formAfterUpdate($model);
@@ -319,7 +340,7 @@ class FormController extends ControllerBehavior
     }
 
     /**
-     * AJAX handler "onDelete" called from the update action and
+     * update_onDelete AJAX handler called from the update action and
      * used for deleting existing records.
      *
      * This handler will invoke the unique controller override
@@ -330,7 +351,11 @@ class FormController extends ControllerBehavior
      */
     public function update_onDelete($recordId = null)
     {
-        $this->context = $this->getConfig('update[context]', self::CONTEXT_UPDATE);
+        if (!$this->checkHasPermission('modelDelete')) {
+            throw new ForbiddenException;
+        }
+
+        $this->context = $this->getConfig('update[context]', FormField::CONTEXT_UPDATE);
         $model = $this->controller->formFindModelObject($recordId);
         $this->initForm($model);
 
@@ -350,7 +375,7 @@ class FormController extends ControllerBehavior
     //
 
     /**
-     * Controller "preview" action used for viewing existing model records.
+     * preview controller action used for viewing existing model records.
      * This action takes a record identifier (primary key of the model)
      * to locate the record used for sourcing the existing preview data.
      *
@@ -360,8 +385,12 @@ class FormController extends ControllerBehavior
      */
     public function preview($recordId = null, $context = null)
     {
+        if (!$this->checkHasPermission('modelPreview')) {
+            throw new ForbiddenException;
+        }
+
         try {
-            $this->context = strlen($context) ? $context : $this->getConfig('preview[context]', self::CONTEXT_PREVIEW);
+            $this->context = strlen($context) ? $context : $this->getConfig('preview[context]', FormField::CONTEXT_PREVIEW);
             $this->controller->pageTitle = $this->controller->pageTitle
                 ?: $this->getLang('preview[title]', 'backend::lang.form.preview_title');
 
@@ -426,7 +455,7 @@ class FormController extends ControllerBehavior
     }
 
     /**
-     * Internal method used to prepare the form model object.
+     * createModel internal method used to prepare the form model object.
      *
      * @return October\Rain\Database\Model
      */
@@ -437,14 +466,14 @@ class FormController extends ControllerBehavior
     }
 
     /**
-     * Returns a Redirect object based on supplied context and parses
+     * makeRedirect returns a Redirect object based on supplied context and parses
      * the model primary key.
      *
      * @param string $context Redirect context, eg: create, update, delete
      * @param Model $model The active model to parse in it's ID and attributes.
      * @return Redirect
      */
-    public function makeRedirect($context = null, $model = null)
+    public function makeRedirect($context = null, $model = null, $queryParams = [])
     {
         $redirectUrl = null;
         if (post('close') && !ends_with($context, '-close')) {
@@ -472,6 +501,10 @@ class FormController extends ControllerBehavior
             return null;
         }
 
+        if ($queryParams) {
+            $redirectUrl .= '?' . http_build_query($queryParams);
+        }
+
         if (starts_with($redirectUrl, ['//', 'http://', 'https://'])) {
             $redirect = Redirect::to($redirectUrl);
         }
@@ -483,8 +516,8 @@ class FormController extends ControllerBehavior
     }
 
     /**
-     * Internal method that returns a redirect URL from the config based on
-     * supplied context. Otherwise the default redirect is used.
+     * getRedirectUrl is an internal method that returns a redirect URL from the config
+     * based on supplied context. Otherwise the default redirect is used.
      *
      * @param string $context Redirect context, eg: create, update, delete.
      * @return string
@@ -532,15 +565,15 @@ class FormController extends ControllerBehavior
      */
     protected function getCustomLang(string $name, string $default = null, array $extras = []): string
     {
-        $foundKey = $this->getConfig("{$this->context}[customMessages][${name}]");
+        $foundKey = $this->getConfig("{$this->context}[customMessages][{$name}]");
 
         // @deprecated messages can be local to the config
         if ($foundKey === null) {
-            $foundKey = $this->getConfig("{$this->context}[${name}]");
+            $foundKey = $this->getConfig("{$this->context}[{$name}]");
         }
 
         if ($foundKey === null) {
-            $foundKey = $this->getConfig("customMessages[${name}]");
+            $foundKey = $this->getConfig("customMessages[{$name}]");
         }
 
         // @deprecated flashSave overrides flashCreate and flashUpdate
@@ -563,6 +596,16 @@ class FormController extends ControllerBehavior
         return Lang::get($foundKey, $vars);
     }
 
+    /**
+     * checkHasPermission checks if a custom permission has been specified
+     */
+    protected function checkHasPermission(string $name)
+    {
+        $foundKey = $this->getConfig("permissions[{$name}]");
+
+        return $foundKey ? BackendAuth::userHasAccess($foundKey) : true;
+    }
+
     //
     // Pass-through Helpers
     //
@@ -582,14 +625,11 @@ class FormController extends ControllerBehavior
     }
 
     /**
-     * formRefreshField
+     * formRefreshField is a view helper to render a field from AJAX based on their field names.
+     * @param array|string $names
      */
     public function formRefreshFields($names): array
     {
-        if (!$this->formWidget) {
-            $this->controller->pageAction();
-        }
-
         $result = [];
 
         foreach ((array) $names as $name) {
@@ -751,6 +791,15 @@ class FormController extends ControllerBehavior
         return $config;
     }
 
+    /**
+     * formSetSaveValue will override the save values passed to the form. Set the value
+     * to null to omit the field from the dataset.
+     */
+    public function formSetSaveValue($key, $value)
+    {
+        $this->formWidget->setSaveDataOverride($key, $value);
+    }
+
     //
     // Overrides
     //
@@ -836,10 +885,14 @@ class FormController extends ControllerBehavior
 
         $model = $this->controller->formCreateModelObject();
 
-        /*
-         * Prepare query and find model record
-         */
+        // Prepare query and find model record
         $query = $model->newQuery();
+
+        // Remove multisite restriction
+        if ($this->controller->formHasMultisite($model)) {
+            $query->withSites();
+        }
+
         $this->controller->formExtendQuery($query);
         $result = $query->find($recordId);
 

@@ -30,8 +30,12 @@ return [
         'image' => 'Image',
         'link' => 'Link',
         'horizontalrule' => 'Insert Horizontal Rule',
-        'fullscreen' => 'Full screen',
+        'fullscreen' => 'Full Screen',
         'preview' => 'Preview',
+        'strikethrough' => 'Strikethrough',
+        'cleanblock' => 'Clean Block',
+        'table' => 'Table',
+        'sidebyside' => 'Side by Side'
     ],
     'mediamanager' => [
         'insert_link' => 'Insert Media Link',
@@ -94,7 +98,7 @@ return [
             'raw' => 'Raw',
         ],
         'editor' => [
-            'title' => 'Source code editor',
+            'title' => 'Source Code Editor',
             'description' => 'Your operating system should be configured to listen to one of these URL schemes.',
             'openWith' => 'Open with',
             'remember_choice' => 'Remember selected option for this session',
@@ -108,5 +112,14 @@ return [
         'file_too_big' => 'File is too big ({{filesize}}MB). Max filesize: {{maxFilesize}}MB.',
         'response_error' => 'Server responded with {{statusCode}} code.',
         'remove_file' => 'Remove file',
+    ],
+    'inspector' => [
+        'add' => 'Add',
+        'remove' => 'Remove',
+        'key' => 'Key',
+        'value' => 'Value',
+        'ok' => 'OK',
+        'cancel' => 'Cancel',
+        'items' => 'Items',
     ],
 ];

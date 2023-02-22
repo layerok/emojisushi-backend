@@ -38,6 +38,12 @@ class ListStructure extends Lists
     public $includeSortOrders = false;
 
     /**
+     * @var bool includeReferencePool should be used when sorting within subset of records.
+     * For example, sorting with pagination.
+     */
+    public $includeReferencePool = false;
+
+    /**
      * @var int|null maxDepth defines the maximum levels allowed for reordering.
      */
     public $maxDepth = null;
@@ -66,6 +72,12 @@ class ListStructure extends Lists
      */
     public function init()
     {
+        // Defaults
+        $this->useStructure = true;
+        $this->showReorder = true;
+        $this->showPagination = false;
+        $this->showTree = true;
+
         $this->fillFromConfig([
             'maxDepth',
             'dragRow',
@@ -77,8 +89,10 @@ class ListStructure extends Lists
 
         parent::init();
 
-        $this->showSorting = false;
-        $this->showPagination = false;
+        // Hide tree when sorting
+        if ($this->isUserSorting()) {
+            $this->disableStructure();
+        }
 
         if ($this->showTree) {
             $this->validateTree();
@@ -93,8 +107,8 @@ class ListStructure extends Lists
      */
     protected function loadAssets()
     {
-        $this->addJs('js/october.liststructure.js', 'core');
-        $this->addJs('/modules/backend/widgets/lists/assets/js/october.list.js', 'core');
+        $this->addJs('js/october.liststructure.js');
+        $this->addJs('/modules/backend/widgets/lists/assets/js/october.list.js');
     }
 
     /**
@@ -118,6 +132,57 @@ class ListStructure extends Lists
     }
 
     /**
+     * disableStructure toggles the settings to completely disable the structure
+     */
+    protected function disableStructure()
+    {
+        $this->useStructure = false;
+        $this->showReorder = false;
+        $this->showPagination = true;
+        $this->showTree = false;
+    }
+
+    /**
+     * enableStructure reverts disableStructure
+     */
+    protected function enableStructure()
+    {
+        $this->sortColumn = null;
+        $this->putSession('sort', null);
+        $this->init();
+    }
+
+    /**
+     * onSort AJAX handler for sorting the list.
+     */
+    public function onSort()
+    {
+        $column = post('sortColumn');
+        if (!$column) {
+            return;
+        }
+
+        // Spool up cache
+        $this->getSortColumn();
+
+        // Detect third click
+        $isSameColumn = $column === $this->getSortColumn();
+        $isFinalStep = $this->getSortStep() >= 2;
+        $isSearchEmpty = empty($this->searchTerm);
+
+        // Reset the list state and cache
+        if ($isSameColumn && $isFinalStep && $isSearchEmpty) {
+            $this->enableStructure();
+            return $this->onRefresh();
+        }
+
+        // Diable structure when sorting
+        $this->disableStructure();
+
+        return parent::onSort();
+    }
+
+    /**
      * useSorting
      */
     protected function useSorting(): bool
@@ -126,14 +191,20 @@ class ListStructure extends Lists
     }
 
     /**
-     * setSearchTerm
+     * setSearchTerm will disable the structure if a value is supplied.
      */
-    public function setSearchTerm($term, $resetPagination = false)
+    public function setSearchTerm($term, $resetState = false)
     {
-        // Hide tree when searching
-        $this->useStructure = empty($term);
+        if ($resetState) {
+            if (!empty($term)) {
+                $this->disableStructure();
+            }
+            else {
+                $this->enableStructure();
+            }
+        }
 
-        parent::setSearchTerm($term, $resetPagination);
+        parent::setSearchTerm($term, $resetState);
     }
 
     /**
@@ -165,11 +236,11 @@ class ListStructure extends Lists
     {
         $total = parent::getTotalColumns();
 
-        if (!$this->useStructure) {
-            return $total;
+        if ($this->showReorder) {
+            $total++;
         }
 
-        return $total++;
+        return $total;
     }
 
     /**
@@ -268,7 +339,7 @@ class ListStructure extends Lists
      */
     protected function reorderForSortable($item)
     {
-        $item->setSortableOrder(post('sort_orders'), array_keys((array) post('sort_orders')));
+        $item->setSortableOrder(post('sort_orders'), $this->includeReferencePool ? null : true);
     }
 
     /**

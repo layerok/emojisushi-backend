@@ -1,7 +1,7 @@
 /*
  * Vue Inspector dictionary control implementation
  */
-$.oc.module.register('backend.component.inspector.control.dictionary', function () {
+oc.Module.register('backend.component.inspector.control.dictionary', function () {
     Vue.component('backend-component-inspector-control-dictionary', {
         extends: $.oc.vueComponentHelpers.inspector.controlBase,
         props: {
@@ -77,13 +77,13 @@ $.oc.module.register('backend.component.inspector.control.dictionary', function 
                 }
 
                 var storedValue = {};
-            
+
                 if ($.isArray(value.tableData)) {
                     value.tableData.forEach(function (tableItem) {
                         if (typeof tableItem.key === 'string') {
                             var key = tableItem.key.trim(),
                                 value = tableItem.value;
-                        
+
                             if (typeof value !== 'string') {
                                 value = '';
                             }

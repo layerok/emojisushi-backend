@@ -1,7 +1,7 @@
 /*
  * Vue Inspector object control implementation
  */
-$.oc.module.register('backend.component.inspector.control.object', function () {
+oc.Module.register('backend.component.inspector.control.object', function () {
     Vue.component('backend-component-inspector-control-object', {
         extends: $.oc.vueComponentHelpers.inspector.controlBase,
         props: {
@@ -31,14 +31,14 @@ $.oc.module.register('backend.component.inspector.control.object', function () {
         },
         data: function () {
             return {
-                // We manipulate this object directly. It's 
-                // a model of the Inspector's target object 
+                // We manipulate this object directly. It's
+                // a model of the Inspector's target object
                 // which copy is created when the component
                 // instantiates.
                 //
                 // The Inspector's target object is updated
                 // when editedObject is changed. This way we
-                // intentionally break a two-way binding 
+                // intentionally break a two-way binding
                 // between object properties and inputs. This
                 // is needed because when ignoreIfPropertyEmpty
                 // is in use and object evaluates to an empty

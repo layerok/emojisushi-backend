@@ -46,7 +46,8 @@ class DependencyResolver
                 );
             }
         }
-        catch (ReflectionException $ex) { }
+        catch (ReflectionException $ex) {
+        }
 
         return $parameters;
     }

@@ -6,7 +6,6 @@ use Illuminate\Console\Command;
 use System\Classes\UpdateManager;
 use System\Classes\PluginManager;
 use System\Helpers\Cache as CacheHelper;
-use October\Rain\Process\Composer as ComposerProcess;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Input\InputArgument;
 
@@ -38,7 +37,7 @@ class PluginRemove extends Command
      */
     public function handle()
     {
-        $this->output->writeln('<info>Removing Plugin...</info>');
+        $this->line('Removing Plugin...');
 
         if ($this->handleComposer() === true) {
             return;
@@ -49,7 +48,7 @@ class PluginRemove extends Command
 
         // Lookup
         if (!$manager->hasPlugin($name)) {
-            return $this->output->error("Unable to find plugin '${name}'");
+            return $this->output->error("Unable to find plugin '{$name}'");
         }
 
         if (!$this->confirmToProceed(sprintf('This will DELETE plugin "%s" from the filesystem and database.', $name))) {
@@ -58,25 +57,19 @@ class PluginRemove extends Command
 
         // Remove via composer
         if ($composerCode = $manager->getComposerCode($name)) {
-            UpdateManager::instance()->setNotesOutput($this->output)->rollbackPlugin($name);
-
-            // Composer remove
             $this->comment("Executing: composer remove {$composerCode}");
-            $this->output->newLine();
-
-            $composer = new ComposerProcess;
-            $composer->setCallback(function($message) { echo $message; });
-            $composer->remove($composerCode);
-
-            if ($composer->lastExitCode() !== 0) {
-                $this->output->error('Remove failed. Check output above');
-                exit(1);
-            }
+            $this->newLine();
+            UpdateManager::instance()->uninstallPlugin($name);
+        }
+        // Remove via filesystem
+        else {
+            $manager->deletePlugin($name);
         }
 
-        $manager->deletePlugin($name);
+        // Clear meta cache
+        CacheHelper::instance()->clearMeta();
 
-        $this->output->success("Plugin '${name}' removed");
+        $this->output->success("Plugin '{$name}' removed");
     }
 
     /**
@@ -107,7 +100,7 @@ class PluginRemove extends Command
         }
 
         // Rollback plugin
-        UpdateManager::instance()->setNotesOutput($this->output)->rollbackPlugin($name);
+        UpdateManager::instance()->setNotesCommand($this)->rollbackPlugin($name);
 
         return true;
     }

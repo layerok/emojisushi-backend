@@ -58,7 +58,7 @@ class OctoberFresh extends Command
     protected function getOptions()
     {
         return [
-            ['force', null, InputOption::VALUE_NONE, 'Force the operation to run.'],
+            ['force', 'f', InputOption::VALUE_NONE, 'Force the operation to run.'],
         ];
     }
 }

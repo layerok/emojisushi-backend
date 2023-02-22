@@ -1,7 +1,7 @@
 <?php namespace Cms\Classes;
 
 /**
- * Manager class for stacking nested partials and keeping track
+ * PartialStack manager for stacking nested partials and keeping track
  * of their components. Partial "objects" store the components
  * used by that partial for deferred retrieval.
  *
@@ -11,17 +11,17 @@
 class PartialStack
 {
     /**
-     * @var array The current partial "object" being rendered.
+     * @var array activePartial object being rendered.
      */
-    public $activePartial;
+    protected $activePartial;
 
     /**
-     * @var array Collection of previously rendered partial "objects".
+     * @var array partialStack of previously rendered partial objects.
      */
     protected $partialStack = [];
 
     /**
-     * Partial entry point, appends a new partial to the stack.
+     * stackPartial is the partial entry point, appends a new partial to the stack.
      */
     public function stackPartial()
     {
@@ -30,12 +30,13 @@ class PartialStack
         }
 
         $this->activePartial = [
-            'components' => []
+            'components' => [],
+            'obj' => null
         ];
     }
 
     /**
-     * Partial exit point, removes the active partial from the stack.
+     * unstackPartial is the partial exit point, removes the active partial from the stack.
      */
     public function unstackPartial()
     {
@@ -43,7 +44,40 @@ class PartialStack
     }
 
     /**
-     * Adds a component to the active partial stack.
+     * addPartialObj
+     */
+    public function addPartialObj($partialObj)
+    {
+        $this->activePartial['obj'] = $partialObj;
+    }
+
+
+    /**
+     * findHandlerFromStack
+     */
+    public function findPartialByHandler($handler)
+    {
+        if (!$this->activePartial) {
+            return null;
+        }
+
+        $partialObj = $this->activePartial['obj'] ?? null;
+        if (method_exists($partialObj, $handler)) {
+            return $partialObj;
+        }
+
+        foreach ($this->partialStack as $stack) {
+            $partialObj = $stack['obj'] ?? null;
+            if (method_exists($partialObj, $handler)) {
+                return $partialObj;
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * addComponent to the active partial stack.
      */
     public function addComponent($alias, $componentObj)
     {
@@ -54,7 +88,7 @@ class PartialStack
     }
 
     /**
-     * Returns a component by its alias from the partial stack.
+     * getComponent returns a component by its alias from the partial stack.
      */
     public function getComponent($name)
     {
@@ -78,7 +112,7 @@ class PartialStack
     }
 
     /**
-     * Locates a component by its alias from the supplied stack.
+     * findComponentFromStack locates a component by its alias from the supplied stack.
      */
     protected function findComponentFromStack($name, $stack)
     {

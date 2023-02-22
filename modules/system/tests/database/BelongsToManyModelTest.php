@@ -18,7 +18,7 @@ class BelongsToManyModelTest extends PluginTestCase
         include_once base_path() . '/modules/system/tests/fixtures/plugins/database/tester/models/Post.php';
         include_once base_path() . '/modules/system/tests/fixtures/plugins/database/tester/models/Product.php';
 
-        $this->runPluginRefreshCommand('Database.Tester');
+        $this->migratePlugin('Database.Tester');
     }
 
     public function testSetRelationValue()

@@ -3,13 +3,14 @@
 use App;
 use Str;
 use Model;
+use Event;
 use Cache;
 use Less_Parser;
 use Exception;
 use File as FileHelper;
 
 /**
- * Mail brand settings
+ * MailBrandSetting
  *
  * @package october\system
  * @author Alexey Bobkov, Samuel Georges
@@ -20,24 +21,24 @@ class MailBrandSetting extends Model
     use \October\Rain\Database\Traits\Validation;
 
     /**
-     * @var array Behaviors implemented by this model.
+     * @var array implement behaviors
      */
     public $implement = [
         \System\Behaviors\SettingsModel::class
     ];
 
     /**
-     * @var string Unique code
+     * @var string settingsCode
      */
     public $settingsCode = 'system_mail_brand_settings';
 
     /**
-     * @var mixed Settings form field defitions
+     * @var mixed settingsFields defitions
      */
     public $settingsFields = 'fields.yaml';
-    
+
     /**
-     * @var string The key to store rendered CSS in the cache under
+     * @var string cacheKey to store rendered CSS in the cache under
      */
     public $cacheKey = 'system::mailbrand.custom_css';
 
@@ -55,13 +56,13 @@ class MailBrandSetting extends Model
     const PROMOTION_BORDER_COLOR = '#9ba2ab';
 
     /**
-     * Validation rules
+     * @var array rules for validation
      */
     public $rules = [
     ];
 
     /**
-     * Initialize the seed data for this model. This only executes when the
+     * initSettingsData for this model. This only executes when the
      * model is first created or reset to default.
      * @return void
      */
@@ -76,16 +77,25 @@ class MailBrandSetting extends Model
         }
     }
 
+    /**
+     * afterSave
+     */
     public function afterSave()
     {
         $this->resetCache();
     }
 
+    /**
+     * resetCache
+     */
     public function resetCache()
     {
         Cache::forget(self::instance()->cacheKey);
     }
 
+    /**
+     * renderCss
+     */
     public static function renderCss()
     {
         $cacheKey = self::instance()->cacheKey;
@@ -104,6 +114,9 @@ class MailBrandSetting extends Model
         return $customCss;
     }
 
+    /**
+     * getCssVars
+     */
     protected static function getCssVars()
     {
         $vars = [

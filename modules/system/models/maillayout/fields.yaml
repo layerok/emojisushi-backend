@@ -45,3 +45,9 @@ secondaryTabs:
             type: checkbox
             tab: system::lang.mail_templates.options
             default: false
+
+        options[disable_brand_css]:
+            label: Disable mail branding CSS
+            type: checkbox
+            tab: system::lang.mail_templates.options
+            default: false

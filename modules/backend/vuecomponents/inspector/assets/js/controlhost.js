@@ -1,7 +1,7 @@
 /*
  * Vue Inspector control host implementation
  */
-$.oc.module.register('backend.component.inspector.controlhost', function () {
+oc.Module.register('backend.component.inspector.controlhost', function () {
     Vue.component('backend-component-inspector-controlhost', {
         props: {
             controls: {

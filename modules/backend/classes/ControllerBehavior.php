@@ -50,9 +50,7 @@ class ControllerBehavior extends ExtensionBase
         $this->viewPath = $this->configPath = $this->guessViewPath('/partials');
         $this->assetPath = $this->guessViewPath('/assets', true);
 
-        /*
-         * Validate controller properties
-         */
+        // Validate controller properties
         foreach ($this->requiredProperties as $property) {
             if (!isset($controller->{$property})) {
                 throw new ApplicationException(Lang::get('system::lang.behavior.missing_property', [
@@ -63,16 +61,12 @@ class ControllerBehavior extends ExtensionBase
             }
         }
 
-        /*
-         * Hide all methods that aren't explicitly listed as actions
-         */
+        // Hide all methods that aren't explicitly listed as actions
         if (is_array($this->actions)) {
             $this->hideAction(array_diff(get_class_methods(get_class($this)), $this->actions));
         }
 
-        /**
-         * Constructor logic that is protected by authentication
-         */
+        // Constructor logic that is protected by authentication
         $controller->bindEvent('page.beforeDisplay', function() {
             $this->beforeDisplay();
         });

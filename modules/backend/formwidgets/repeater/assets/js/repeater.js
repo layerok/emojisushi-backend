@@ -66,11 +66,11 @@
         // Items
         var headSelect = this.selectorHeader;
         this.$el.on('change', headSelect + ' input[type=checkbox]', this.proxy(this.clickItemCheckbox));
-        this.$el.on('click', headSelect + ' .repeater-item-menu', this.proxy(this.clickItemMenu));
         this.$el.on('click', headSelect + ' [data-repeater-move-up]', this.proxy(this.clickMoveItemUp));
         this.$el.on('click', headSelect + ' [data-repeater-move-down]', this.proxy(this.clickMoveItemDown));
         this.$el.on('click', headSelect + ' [data-repeater-remove]', this.proxy(this.clickRemoveItem));
         this.$el.on('click', headSelect + ' [data-repeater-duplicate]', this.proxy(this.clickDuplicateItem));
+        this.$el.on('show.bs.dropdown', headSelect + ' .repeater-item-dropdown', this.proxy(this.showItemMenu));
 
         // Toolbar
         this.$toolbar = $(this.selectorToolbar, this.$el);
@@ -105,11 +105,11 @@
         // Items
         var headSelect = this.selectorHeader;
         this.$el.off('change', headSelect + ' input[type=checkbox]', this.proxy(this.clickItemCheckbox));
-        this.$el.off('click', headSelect + ' .repeater-item-menu', this.proxy(this.clickItemMenu));
         this.$el.off('click', headSelect + ' [data-repeater-move-up]', this.proxy(this.clickMoveItemUp));
         this.$el.off('click', headSelect + ' [data-repeater-move-down]', this.proxy(this.clickMoveItemDown));
         this.$el.off('click', headSelect + ' [data-repeater-remove]', this.proxy(this.clickRemoveItem));
         this.$el.off('click', headSelect + ' [data-repeater-duplicate]', this.proxy(this.clickDuplicateItem));
+        this.$el.off('show.bs.dropdown', headSelect + ' .repeater-item-dropdown', this.proxy(this.showItemMenu));
 
         // Toolbar
         this.$toolbar.off('click', '> [data-repeater-cmd=add-group]', this.proxy(this.clickAddGroupButton));
@@ -126,11 +126,6 @@
         this.options = null;
 
         BaseProto.dispose.call(this);
-    }
-
-    // @deprecated
-    Repeater.prototype.unbind = function() {
-        this.dispose();
     }
 
     Repeater.prototype.bindSorting = function() {
@@ -165,7 +160,7 @@
         }
     }
 
-    Repeater.prototype.clickItemMenu = function(ev) {
+    Repeater.prototype.showItemMenu = function(ev) {
         var templateHtml = $('> [data-item-menu-template]', this.$el).html(),
             $target = $(ev.target),
             $item = $target.closest('li'),
@@ -224,6 +219,7 @@
     }
 
     Repeater.prototype.clickDuplicateItem = function(ev) {
+        this.eventOnAddItem && this.eventOnAddItem();
         this.onDuplicateItem(this.findItemFromTarget(ev.target));
     }
 
@@ -238,7 +234,12 @@
         $item.request(this.options.duplicateHandler, {
             data: itemData,
             afterUpdate: function(data) {
-                self.onDuplicateItemSuccess($item, data.result.duplicateIndex);
+                if (data.result) {
+                    self.onDuplicateItemSuccess($item, data.result.duplicateIndex);
+                }
+                else {
+                    self.eventOnAddItemError && self.eventOnAddItemError();
+                }
             }
         });
     }
@@ -288,13 +289,18 @@
         var $container = $target.data('oc.popover').$container;
 
         // Initialize the scrollpad control in the popup
-        $container.trigger('render');
+        oc.Events.dispatch('render');
 
         $container
             .on('click', 'a', function (ev) {
-                setTimeout(function() { $(ev.target).trigger('close.oc.popover') }, 1)
+                // Defer 2 ticks for framework which is deferred 1 tick
+                setTimeout(function() {
+                    $(ev.target).trigger('close.oc.popover');
+                }, 2);
             })
-            .on('ajaxPromise', '[data-repeater-add]', function(ev, context) {
+            .on('ajaxSetup', '[data-repeater-add]', function(ev, context) {
+                context.options.form = $form.get(0);
+
                 $target.addClass('oc-loading');
 
                 $form.one('ajaxComplete', function() {
@@ -306,8 +312,6 @@
                 // Event
                 self.eventOnAddItem && self.eventOnAddItem();
             });
-
-        $('[data-repeater-add]', $container).data('request-form', $form);
     }
 
     Repeater.prototype.onAddItemSuccess = function(ev) {
@@ -338,30 +342,41 @@
     }
 
     Repeater.prototype.getCollapseTitle = function($item) {
-        var $target,
+        var $target = $item,
+            titleFromAttr = this.getTitleFromAttribute($item),
             defaultText = this.$el.data('default-title'),
-            explicitText = $item.data('item-title');
+            explicitText = $item.data('item-title'),
+            foundTitleFrom = false;
 
-        if (explicitText) {
+        // Group mode supplies explicit text
+        if (explicitText && !titleFromAttr) {
             return explicitText;
         }
 
-        if (this.options.titleFrom) {
-            $target = $('[data-field-name="'+this.options.titleFrom+'"]', $item);
-            if (!$target.length) {
-                $target = $item;
+        // A specific title from attribute was provided
+        if (titleFromAttr) {
+            var $titleFrom = $('[data-field-name="'+titleFromAttr+'"]', $item);
+            if ($titleFrom.length) {
+                $target = $titleFrom;
+                foundTitleFrom = true;
             }
         }
-        else {
-            $target = $item;
+
+        // The title from attribute was not found
+        if (explicitText && !foundTitleFrom) {
+            return explicitText;
         }
 
+        // Find anything within the target
         var result = '',
-            $textInput = $('input[type=text]:first, select:first', $target).first();
+            $textInput = $('input[type=text]:first, select:first, textarea:first', $target).first();
 
         if ($textInput.length) {
             if ($textInput.is('select')) {
                 result = $textInput.find('option:selected').text();
+            }
+            else if ($textInput.is('textarea')) {
+                result = $('<div />').html($textInput.val()).text().substring(0, 255);
             }
             else {
                 result = $textInput.val();
@@ -377,6 +392,19 @@
         return result ? result : defaultText;
     }
 
+    Repeater.prototype.getTitleFromAttribute = function($item) {
+        if (this.options.titleFrom) {
+            return this.options.titleFrom;
+        }
+
+        var itemTitleFrom = $item.data('title-from');
+        if (itemTitleFrom) {
+            return itemTitleFrom;
+        }
+
+        return null;
+    }
+
     Repeater.prototype.findItemFromIndex = function(itemIndex) {
         return $('> li[data-repeater-index='+itemIndex+']:first', this.$itemContainer);
     }
@@ -386,7 +414,7 @@
     }
 
     Repeater.prototype.diposeItem = function($item) {
-        $('[data-disposable]', $item).each(function () {
+        $('[data-disposable]', $item).each(function() {
             var $el = $(this),
                 control = $el.data('control'),
                 widget = $el.data('oc.' + control);
@@ -438,7 +466,7 @@
             throw new Error('Invalid externalToolbarAppState format. Expected format: module.name::stateElementName');
         }
 
-        const app = $.oc.module.import(parts[0]);
+        const app = oc.Module.import(parts[0]);
         this.toolbarExtensionPoint = app.state[parts[1]];
     }
 
@@ -453,7 +481,7 @@
             throw new Error('Invalid externalToolbarEventBus format. Expected format: module.name::stateElementName');
         }
 
-        const module = $.oc.module.import(parts[0]);
+        const module = oc.Module.import(parts[0]);
         this.externalToolbarEventBusObj = module.state[parts[1]];
     }
 
@@ -500,7 +528,7 @@
             return;
         }
 
-        var requestData = ocJSON('{' + parts[3] + '}'),
+        var requestData = oc.parseJSON('{' + parts[3] + '}'),
             that = this;
 
         this.externalToolbarEventBusObj.$emit('documentloadingstart');

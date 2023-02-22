@@ -1,4 +1,4 @@
-$.oc.module.register('backend.component.inspector.control.base', function () {
+oc.Module.register('backend.component.inspector.control.base', function () {
     'use strict';
     var ControlBase = {
         props: {
@@ -102,7 +102,7 @@ $.oc.module.register('backend.component.inspector.control.base', function () {
             },
 
             focusControl: function focusControl() { },
-            
+
             inspectorGetTab: function inspectorGetTab() {
                 return this.control.tab;
             },

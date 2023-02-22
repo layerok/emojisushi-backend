@@ -14,15 +14,14 @@
         this.simpleSortOrders = []
 
         this.initSorting = function (mode) {
-            this.sortMode = mode
+            this.sortMode = mode;
 
             if (mode == 'simple') {
-                this.initSortingSimple()
+                this.initSortingSimple();
             }
 
-            $('#reorderTreeList').on('move.oc.treelist', $.proxy(this.processReorder, this))
+            $('#reorderTreeList').on('move.oc.treelist', $.proxy(this.processReorder, this));
         }
-
 
         this.processReorder = function(ev, sortData){
             var postData
@@ -67,15 +66,14 @@
         }
 
         this.initSortingSimple = function () {
-            var sortOrders = []
+            var sortOrders = [];
 
             $('#reorderTreeList li').each(function(){
-                sortOrders.push($(this).data('recordSortOrder'))
-            })
+                sortOrders.push($(this).data('recordSortOrder'));
+            });
 
-            this.simpleSortOrders = sortOrders
+            this.simpleSortOrders = sortOrders;
         }
-
     }
 
     $.oc.reorderBehavior = new ReorderBehavior;

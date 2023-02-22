@@ -5,36 +5,39 @@
     margin-bottom: @line-height-computed;
     margin-left: 20px;
     margin-right: 20px;
+    border-radius: 4px;
 
     .update-item {
-        border-bottom: 1px solid #ccc;
-
         dl {
-            padding: 10px;
             margin-bottom: 0;
             .clearfix;
 
             dt, dd {
                 float: left;
                 padding: 5px 0;
+                margin: 0;
+                font-size: 12px;
                 line-height: 20px;
-                &.text-muted {
-                    color: #999 !important;
-                }
             }
 
             dt {
-                width: 7%;
+                width: 8%;
                 clear: left;
-                font-size: 14px;
                 font-weight: 400;
-                color: #2b3e50;
+                color: #999;
+                text-align: right;
+                padding-right: 1rem;
+                font-family: monospace;
             }
+
             dd {
-                width: 93%;
-                font-size: 12px;
+                width: 92%;
                 color: #455152;
             }
+        }
+
+        &:nth-child(odd) {
+            background-color: #f2f2f2;
         }
 
         &:last-child {

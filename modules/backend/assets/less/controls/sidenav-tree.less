@@ -10,25 +10,20 @@ html .sidenav-tree {
     //     display: none !important;
     // }
 
-    .control-toolbar {
-        padding: 0;
+    .settings-search-toolbar-item  {
+        display: block;
+        background: white;
+        position: relative;
 
-        .toolbar-item {
+        &:before {
             display: block;
-            background: white;
-            position: relative;
-
-            &:before {
-                display: block;
-                width: 15px;
-                height: 15px;
-                position: absolute;
-                background-position: -238px 0;
-                top: 19px;
-                right: 11px;
-                left: auto!important;
-                font-size: 0;
-            }
+            width: 15px;
+            height: 15px;
+            position: absolute;
+            background-position: -238px 0;
+            top: 13px;
+            right: 15px;
+            font-size: 0;
         }
 
         input.form-control {
@@ -38,7 +33,7 @@ html .sidenav-tree {
             border-bottom: 1px solid @color-grey-3;
             height: 40px;
             background: transparent;
-            .border-radius(0);
+            border-radius: 0;
 
             &.search {
                 background-position: right -78px;
@@ -142,13 +137,12 @@ html .sidenav-tree {
 
                         &.header {
                             color: @color-sidebarnav-tree-inactive-header;
-                            font-size: @font-size-base;
                             margin-bottom: 3px;
                         }
 
                         &.description {
                             color: @color-sidebarnav-tree-inactive-desc;
-                            font-size: @font-size-base;
+                            font-size: .875em;
                         }
                     }
                 }
@@ -294,7 +288,6 @@ body.sidenav-tree-expanded {
         }
 
         ul.top-level > li > ul {
-            font-size: 0;
             display: flex;
             flex-direction: row;
             flex-wrap: wrap;
@@ -305,7 +298,7 @@ body.sidenav-tree-expanded {
             > li {
                 display: inline-block;
                 padding: 10px;
-                width: 300px;
+                width: 350px;
 
                 a {
                     background: white;
@@ -313,6 +306,7 @@ body.sidenav-tree-expanded {
                     padding-top: 10px;
                     padding-right: 10px;
                     padding-bottom: 10px;
+                    padding-left: 54px;
                     min-height: 100px;
                     height: 100%;
                     overflow: hidden;
@@ -324,6 +318,7 @@ body.sidenav-tree-expanded {
 
                     i {
                         top: 12px;
+                        font-size: 28px;
                     }
                 }
             }
@@ -332,13 +327,14 @@ body.sidenav-tree-expanded {
 
     .settings-search-toolbar-item {
         margin: 0px 10px 10px 10px;
-        .border-radius(20px)!important;
+        border-radius: 20px !important;
 
         input.form-control {
             border: 1px solid @color-grey-3;
-            .border-radius(20px)!important;
+            border-radius: 20px !important;
             padding-left: 15px;
             line-height: 40px;
+            height: 40px;
 
             &:focus {
                 border-color: @color-form-field-border-focus;
@@ -386,5 +382,16 @@ body:not(.sidenav-tree-expanded) .sidenav-tree {
         .is-inactive-group {
             display: block;
         }
+    }
+}
+
+//
+// PJAX support
+//
+
+html[data-turbo-preview] {
+    body.sidenav-tree-expanded .settings-search-toolbar-item input.form-control {
+        box-shadow: none;
+        border: 1px solid #d7e1eA;
     }
 }

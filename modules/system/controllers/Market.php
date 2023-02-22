@@ -27,7 +27,7 @@ class Market extends Controller
     /**
      * @var array Permissions required to view this page.
      */
-    public $requiredPermissions = ['system.manage_updates'];
+    public $requiredPermissions = ['general.backend.perform_updates'];
 
     /**
      * @var System\Widgets\Changelog
@@ -38,6 +38,11 @@ class Market extends Controller
      * @var System\Widgets\Updater
      */
     protected $updaterWidget;
+
+    /**
+     * @var bool turboVisitControl
+     */
+    public $turboVisitControl = 'disable';
 
     /**
      * __construct
@@ -56,11 +61,6 @@ class Market extends Controller
         $this->updaterWidget->bindToController();
     }
 
-    public function composer()
-    {
-        return $this->updaterWidget->handleComposerAction();
-    }
-
     /**
      * index shows marketplace information
      */
@@ -72,10 +72,10 @@ class Market extends Controller
 
         try {
             // $this->bodyClass = 'compact-container';
-            $this->pageTitle = 'system::lang.market.menu_label';
+            $this->pageTitle = 'Marketplace';
 
-            $this->addJs('/modules/system/assets/js/market/market.js', 'core');
-            $this->addCss('/modules/system/assets/css/market/market.css', 'core');
+            $this->addJs('/modules/system/assets/js/market/market.js');
+            $this->addCss('/modules/system/assets/css/market/market.css');
 
             $projectDetails = UpdateManager::instance()->getProjectDetails();
             $defaultTab = $projectDetails ? 'project' : 'plugins';
@@ -92,8 +92,8 @@ class Market extends Controller
     {
         try {
             $this->pageTitle = 'system::lang.updates.details_title_plugin';
-            $this->addJs('/modules/system/assets/js/market/details.js', 'core');
-            $this->addCss('/modules/system/assets/css/market/details.css', 'core');
+            $this->addJs('/modules/system/assets/js/market/details.js');
+            $this->addCss('/modules/system/assets/css/market/details.css');
 
             $code = $this->slugToCode($urlCode);
             $product = new ProductDetail($code);
@@ -122,8 +122,8 @@ class Market extends Controller
     {
         try {
             $this->pageTitle = 'system::lang.updates.details_title_theme';
-            $this->addJs('/modules/system/assets/js/market/details.js', 'core');
-            $this->addCss('/modules/system/assets/css/market/details.css', 'core');
+            $this->addJs('/modules/system/assets/js/market/details.js');
+            $this->addCss('/modules/system/assets/css/market/details.css');
 
             $code = $this->slugToCode($urlCode);
             $product = new ProductDetail($code, true);
@@ -158,6 +158,7 @@ class Market extends Controller
             $plugin['slug'] = $slug;
             $plugin['detailUrl'] = $this->actionUrl('plugin') . '/' . $slug;
             $plugin['installed'] = $installed;
+            $plugin['version'] = $plugin['composer_version'] ?? '*';
             $plugin['handler'] = $installed
                 ? $this->updaterWidget->getEventHandler('onRemovePlugin')
                 : $this->updaterWidget->getEventHandler('onInstallPlugin');
@@ -173,6 +174,7 @@ class Market extends Controller
             $theme['slug'] = $slug;
             $theme['detailUrl'] = $this->actionUrl('theme') . '/' . $slug;
             $theme['installed'] = $installed;
+            $theme['version'] = $theme['composer_version'] ?? '*';
             $theme['handler'] = $installed
                 ? $this->updaterWidget->getEventHandler('onRemoveTheme')
                 : $this->updaterWidget->getEventHandler('onInstallTheme');

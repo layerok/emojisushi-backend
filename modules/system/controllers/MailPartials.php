@@ -27,10 +27,10 @@ class MailPartials extends Controller
     /**
      * @var array Permissions required to view this page.
      */
-    public $requiredPermissions = ['system.manage_mail_templates'];
+    public $requiredPermissions = ['mail.templates'];
 
     /**
-     * Constructor.
+     * __construct
      */
     public function __construct()
     {
@@ -40,6 +40,9 @@ class MailPartials extends Controller
         SettingsManager::setContext('October.System', 'mail_templates');
     }
 
+    /**
+     * formBeforeSave event
+     */
     public function formBeforeSave($model)
     {
         $model->is_custom = 1;

@@ -3,7 +3,7 @@
 # ===================================
 
 # Manage Updates
-title: system::lang.updates.title
+title: Manage Updates
 
 list: ~/modules/system/models/pluginversion/columns.yaml
 

@@ -1,20 +1,31 @@
 <?php
 
+require 'concerns/InteractsWithAuthentication.php';
+require 'concerns/PerformsMigrations.php';
+require 'concerns/PerformsRegistrations.php';
+
 use Backend\Classes\AuthManager;
 use System\Classes\UpdateManager;
 use System\Classes\PluginManager;
+use System\Classes\VersionManager;
 use October\Rain\Database\Model as ActiveRecord;
-use October\Tests\Concerns\InteractsWithAuthentication;
 
 abstract class PluginTestCase extends TestCase
 {
-    use InteractsWithAuthentication;
+    use \October\Tests\Concerns\InteractsWithAuthentication;
+    use \October\Tests\Concerns\PerformsMigrations;
+    use \October\Tests\Concerns\PerformsRegistrations;
 
     /**
-     * @var array Cache for storing which plugins have been loaded
-     * and refreshed.
+     * @var bool autoMigrate performs database migrations upon setup,
+     * for the core and the current plugin and it's dependencies.
      */
-    protected $pluginTestCaseLoadedPlugins = [];
+    protected $autoMigrate = true;
+
+    /**
+     * @var bool autoRegister performs plugin boot and registration.
+     */
+    protected $autoRegister = true;
 
     /**
      * Creates the application.
@@ -25,9 +36,9 @@ abstract class PluginTestCase extends TestCase
         $app = require __DIR__.'/../../../bootstrap/app.php';
         $app->make(\Illuminate\Contracts\Console\Kernel::class)->bootstrap();
 
+        // Register auth provider
         $app->singleton('auth', function ($app) {
             $app['auth.loaded'] = true;
-
             return AuthManager::instance();
         });
 
@@ -35,46 +46,39 @@ abstract class PluginTestCase extends TestCase
     }
 
     /**
-     * Perform test case set up.
-     * @return void
+     * setUp test case
      */
     public function setUp(): void
     {
-        /*
-         * Force reload of October singletons
-         */
+        // Force reload of October CMS singletons
         PluginManager::forgetInstance();
         UpdateManager::forgetInstance();
+        VersionManager::forgetInstance();
 
-        /*
-         * Create application instance
-         */
+        // Reset locals
+        $this->pluginTestCaseMigratedPlugins = [];
+        $this->pluginTestCaseLoadedPlugins = [];
+
+        // Create application instance
         parent::setUp();
 
-        /*
-         * Ensure system is up to date
-         */
-        $this->runOctoberMigrateCommand();
-
-        /*
-         * Detect plugin from test and autoload it
-         */
-        $this->pluginTestCaseLoadedPlugins = [];
-        $pluginCode = $this->guessPluginCodeFromTest();
-
-        if ($pluginCode !== false) {
-            $this->runPluginRefreshCommand($pluginCode, false);
+        // Register and boot the current plugin
+        if ($this->autoRegister === true) {
+            $this->loadCurrentPlugin();
         }
 
-        /*
-         * Disable mailer
-         */
+        // Migrate core and current plugin
+        if ($this->autoMigrate === true) {
+            $this->migrateModules();
+            $this->migrateCurrentPlugin();
+        }
+
+        // Disable mailer
         Mail::pretend();
     }
 
     /**
-     * Flush event listeners and collect garbage.
-     * @return void
+     * tearDown test case will flush event listeners and collect garbage.
      */
     public function tearDown(): void
     {
@@ -84,86 +88,9 @@ abstract class PluginTestCase extends TestCase
     }
 
     /**
-     * runOctoberMigrateCommand migrates database using october:migrate command
-     */
-    protected function runOctoberMigrateCommand()
-    {
-        Artisan::call('october:migrate');
-    }
-
-    /**
-     * Since the test environment has loaded all the test plugins
-     * natively, this method will ensure the desired plugin is
-     * loaded in the system before proceeding to migrate it.
-     * @return void
-     */
-    protected function runPluginRefreshCommand($code, $throwException = true)
-    {
-        if (!preg_match('/^[\w+]*\.[\w+]*$/', $code)) {
-            if (!$throwException) {
-                return;
-            }
-            throw new Exception(sprintf('Invalid plugin code: "%s"', $code));
-        }
-
-        $manager = PluginManager::instance();
-        $plugin = $manager->findByIdentifier($code);
-
-        /*
-         * First time seeing this plugin, load it up
-         */
-        if (!$plugin) {
-            $namespace = '\\'.str_replace('.', '\\', strtolower($code));
-            $path = array_get($manager->getPluginNamespaces(), $namespace);
-
-            if (!$path) {
-                if (!$throwException) {
-                    return;
-                }
-                throw new Exception(sprintf('Unable to find plugin with code: "%s"', $code));
-            }
-
-            $plugin = $manager->loadPlugin($namespace, $path);
-        }
-
-        /*
-         * Spin over dependencies and refresh them too
-         */
-        $this->pluginTestCaseLoadedPlugins[$code] = $plugin;
-
-        if (!empty($plugin->require)) {
-            foreach ((array) $plugin->require as $dependency) {
-                if (isset($this->pluginTestCaseLoadedPlugins[$dependency])) {
-                    continue;
-                }
-
-                $this->runPluginRefreshCommand($dependency);
-            }
-        }
-
-        /*
-         * Execute the command
-         */
-        Artisan::call('plugin:refresh', ['name' => $code, '--force' => true]);
-    }
-
-    /**
-     * Returns a plugin object from its code, useful for registering events, etc.
-     * @return PluginBase
-     */
-    protected function getPluginObject($code = null)
-    {
-        if ($code === null) {
-            $code = $this->guessPluginCodeFromTest();
-        }
-
-        return $this->pluginTestCaseLoadedPlugins[$code] ?? null;
-    }
-
-    /**
-     * The models in October use a static property to store their events, these
-     * will need to be targeted and reset ready for a new test cycle.
-     * Pivot models are an exception since they are internally managed.
+     * flushModelEventListeners for the models, which in October CMS use a static property
+     * to store their events, these will need to be targeted and reset ready for a new test
+     * cycle. Pivot models are an exception since they are internally managed.
      * @return void
      */
     protected function flushModelEventListeners()
@@ -189,7 +116,7 @@ abstract class PluginTestCase extends TestCase
     }
 
     /**
-     * Locates the plugin code based on the test file location.
+     * guessPluginCodeFromTest locates the plugin code based on the test file location.
      * @return string|bool
      */
     protected function guessPluginCodeFromTest()

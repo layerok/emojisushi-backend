@@ -1,7 +1,7 @@
 /*
  * Vue modal host implementation
  */
-$.oc.module.register('backend.component.inspector.host.modal', function () {
+oc.Module.register('backend.component.inspector.host.modal', function () {
     Vue.component('backend-component-inspector-host-modal', {
         props: {
             title: {

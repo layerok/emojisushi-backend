@@ -4,7 +4,9 @@ use File;
 use Twig\Error\Error as TwigError;
 use October\Rain\Exception\ApplicationException;
 use October\Rain\Halcyon\Processors\SectionParser;
-use Exception;
+use ErrorException;
+use CompileError;
+use Throwable;
 
 /**
  * CmsException handles CMS related errors. Allows the masking of other exception types which
@@ -16,9 +18,9 @@ use Exception;
 class CmsException extends ApplicationException
 {
     /**
-     * @var \Cms\Classes\CmsCompoundObject compoundObject used for masking errors.
+     * @var \Cms\Contracts\CmsObject compoundObject used for masking errors.
      */
-    protected $compoundObject;
+    protected $cmsObject;
 
     /**
      * @var array errorCodes for each error distinction.
@@ -39,12 +41,12 @@ class CmsException extends ApplicationException
      * Error 200: Mask the exception as INI content.
      * Error 300: Mask the exception as PHP content.
      * Error 400: Mask the exception as Twig content.
-     * @param \Exception $previous Previous exception.
+     * @param Throwable $previous Previous exception.
      */
-    public function __construct($message = null, $code = 100, Exception $previous = null)
+    public function __construct($message = null, $code = 100, Throwable  $previous = null)
     {
-        if ($message instanceof CmsCompoundObject || $message instanceof ComponentPartial) {
-            $this->compoundObject = $message;
+        if ($message instanceof \Cms\Contracts\CmsObject) {
+            $this->cmsObject = $message;
             $message = '';
         }
 
@@ -61,10 +63,10 @@ class CmsException extends ApplicationException
      * has occurred in external code, the function will return false. Otherwise return
      * true and modify the exception by overriding it's content, line and message values
      * to be accurate against a CMS object properties.
-     * @param \Exception $exception The exception to modify.
+     * @param Throwable $exception The exception to modify.
      * @return bool
      */
-    public function processCompoundObject(Exception $exception)
+    public function processCompoundObject(Throwable $exception)
     {
         switch ($this->code) {
             case 200:
@@ -80,7 +82,7 @@ class CmsException extends ApplicationException
                 break;
         }
         if ($result !== false) {
-            $this->file = $this->compoundObject->getFilePath();
+            $this->file = $this->cmsObject->getFilePath();
 
             if (File::isFile($this->file) && is_readable($this->file)) {
                 $this->fileContent = @file($this->file);
@@ -93,16 +95,14 @@ class CmsException extends ApplicationException
     /**
      * processIni overrides properties of an exception specific to the INI section
      * of a CMS object.
-     * @param \Exception $exception The exception to modify.
+     * @param Throwable $exception The exception to modify.
      * @return bool
      */
-    protected function processIni(Exception $exception)
+    protected function processIni(Throwable $exception)
     {
         $message = $exception->getMessage();
 
-        /*
-         * Expecting: syntax error, unexpected '!' in Unknown on line 4
-         */
+        // Expecting: syntax error, unexpected '!' in Unknown on line 4
         if (!starts_with($message, 'syntax error')) {
             return false;
         }
@@ -113,16 +113,14 @@ class CmsException extends ApplicationException
             return false;
         }
 
-        /*
-         * Line number from parse_ini_string() error.
-         * The last word should contain the line number.
-         */
+        // Line number from parse_ini_string() error.
+        // The last word should contain the line number.
         $parts = explode(' ', $message);
         $line = array_pop($parts);
         $this->line = (int) $line;
 
         // Find where the ini settings section begins
-        $offsetArray = SectionParser::parseOffset($this->compoundObject->getContent());
+        $offsetArray = SectionParser::parseOffset($this->cmsObject->getContent());
         $this->line += $offsetArray['settings'];
 
         $this->message = $message;
@@ -136,16 +134,18 @@ class CmsException extends ApplicationException
     /**
      * processPhp override properties of an exception specific to the PHP section
      * of a CMS object.
-     * @param \Exception $exception The exception to modify.
+     * @param Throwable $exception The exception to modify.
      * @return bool
      */
-    protected function processPhp(Exception $exception)
+    protected function processPhp(Throwable $exception)
     {
-        /*
-         * Fatal Error
-         */
-        if ($exception instanceof \ErrorException) {
+        // Default offset for the php namespace and bracket tag
+        $lineOffset = -2;
+
+        // Fatal or Compiler Error
+        if ($exception instanceof ErrorException || $exception instanceof CompileError) {
             $check = false;
+            $lineOffset++;
 
             // Expected: */modules/cms/classes/CodeParser.php(165) : eval()'d code line 7
             if (strpos($exception->getFile(), 'CodeParser.php')) {
@@ -153,7 +153,7 @@ class CmsException extends ApplicationException
             }
 
             // Expected: */storage/cms/cache/39/05/home.htm.php
-            if (strpos($exception->getFile(), $this->compoundObject->getFileName() . '.php')) {
+            if (strpos($exception->getFile(), $this->cmsObject->getFileName() . '.php')) {
                 $check = true;
             }
 
@@ -161,26 +161,22 @@ class CmsException extends ApplicationException
                 return false;
             }
         }
-        /*
-         * Errors occurring the PHP code base class (Cms\Classes\CodeBase)
-         */
+        // Errors occurring the PHP code base class (Cms\Classes\CodeBase)
         else {
             $trace = $exception->getTrace();
-            if (isset($trace[0]['class'])) {
-                $class = $trace[0]['class'];
+            if ($class = $trace[0]['class'] ?? null) {
                 if (!is_subclass_of($class, CodeBase::class)) {
                     return false;
                 }
             }
         }
 
+        // Fetch message and calculate line number
         $this->message = $exception->getMessage();
-
-        // Offset the php, namespace and bracket tags from the generated class.
-        $this->line = $exception->getLine() - 3;
+        $this->line = $exception->getLine() + $lineOffset;
 
         // Find where the php code section begins
-        $offsetArray = SectionParser::parseOffset($this->compoundObject->getContent());
+        $offsetArray = SectionParser::parseOffset($this->cmsObject->getContent());
         $this->line += $offsetArray['code'];
 
         // Account for line 0
@@ -192,10 +188,10 @@ class CmsException extends ApplicationException
     /**
      * processTwig overrides properties of an exception specific to the Twig section
      * of a CMS object.
-     * @param \Exception $exception The exception to modify.
+     * @param Throwable $exception The exception to modify.
      * @return bool
      */
-    protected function processTwig(Exception $exception)
+    protected function processTwig(Throwable $exception)
     {
         // Must be a Twig related exception
         if (!$exception instanceof TwigError) {
@@ -206,7 +202,7 @@ class CmsException extends ApplicationException
         $this->line = $exception->getTemplateLine();
 
         // Find where the twig markup section begins
-        $offsetArray = SectionParser::parseOffset($this->compoundObject->getContent());
+        $offsetArray = SectionParser::parseOffset($this->cmsObject->getContent());
         $this->line += $offsetArray['markup'];
 
         // Account for line 0
@@ -222,10 +218,10 @@ class CmsException extends ApplicationException
      * Error 200: Mask the exception as INI content.
      * Error 300: Mask the exception as PHP content.
      * Error 400: Mask the exception as Twig content.
-     * @param \Exception $exception The exception to modify.
+     * @param Throwable $exception The exception to modify.
      * @return void
      */
-    public function applyMask(Exception $exception)
+    public function applyMask(Throwable $exception)
     {
         if ($this->code === 100 || $this->processCompoundObject($exception) === false) {
             parent::applyMask($exception);

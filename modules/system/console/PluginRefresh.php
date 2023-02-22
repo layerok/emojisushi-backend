@@ -17,6 +17,8 @@ use Symfony\Component\Console\Input\InputOption;
  */
 class PluginRefresh extends Command
 {
+    use \Illuminate\Console\ConfirmableTrait;
+
     /**
      * @var string name of console command
      */
@@ -36,10 +38,15 @@ class PluginRefresh extends Command
         $name = $manager->normalizeIdentifier($this->argument('name'));
 
         if (!$manager->hasPlugin($name)) {
-            return $this->output->error("Unable to find plugin '${name}'");
+            return $this->output->error("Unable to find plugin [{$name}]");
         }
 
-        if ($this->userAbortedFromWarning($name)) {
+        $message = "This will DESTROY database tables for plugin [{$name}].";
+        if ($toVersion = $this->option('rollback')) {
+            $message = "This will DESTROY database tables for plugin [{$name}] up to version [{$toVersion}].";
+        }
+
+        if (!$this->confirmToProceed($message)) {
             return;
         }
 
@@ -57,11 +64,11 @@ class PluginRefresh extends Command
     protected function handleRefresh($name)
     {
         // Rollback plugin migration
-        $manager = UpdateManager::instance()->setNotesOutput($this->output);
+        $manager = UpdateManager::instance()->setNotesCommand($this);
         $manager->rollbackPlugin($name);
 
         // Rerun migration
-        $this->output->writeln('<info>Reinstalling plugin...</info>');
+        $this->line('Reinstalling plugin...');
         $manager->updatePlugin($name);
     }
 
@@ -71,7 +78,7 @@ class PluginRefresh extends Command
     protected function handleRollback($name)
     {
         // Rollback plugin migration
-        $manager = UpdateManager::instance()->setNotesOutput($this->output);
+        $manager = UpdateManager::instance()->setNotesCommand($this);
 
         if ($toVersion = $this->option('rollback')) {
             $manager->rollbackPluginToVersion($name, $toVersion);
@@ -79,31 +86,6 @@ class PluginRefresh extends Command
         else {
             $manager->rollbackPlugin($name);
         }
-    }
-
-    /**
-     * userAbortedFromWarning
-     */
-    protected function userAbortedFromWarning($name): bool
-    {
-        // Bypass from force
-        if ($this->option('force', false)) {
-            return false;
-        }
-
-        // Warn user
-        if ($toVersion = $this->option('rollback')) {
-            if (!$this->confirm("This will DESTROY database tables for plugin '${name}' up to version '${toVersion}'.")) {
-                return true;
-            }
-        }
-        else {
-            if (!$this->confirm("This will DESTROY database tables for plugin '${name}'.")) {
-                return true;
-            }
-        }
-
-        return false;
     }
 
     /**
@@ -125,5 +107,15 @@ class PluginRefresh extends Command
             ['force', 'f', InputOption::VALUE_NONE, 'Force the operation to run.'],
             ['rollback', 'r', InputOption::VALUE_OPTIONAL, 'Specify a version to rollback to, otherwise rollback to the beginning.', false],
         ];
+    }
+
+    /**
+     * getDefaultConfirmCallback specifies the default confirmation callback
+     */
+    protected function getDefaultConfirmCallback()
+    {
+        return function () {
+            return true;
+        };
     }
 }

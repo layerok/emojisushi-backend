@@ -1,13 +1,12 @@
 <?php namespace System\Console;
 
+use App;
 use Lang;
 use File;
 use Config;
 use System;
-use System\Classes\UpdateManager;
 use System\Classes\CombineAssets;
 use System\Models\File as FileModel;
-use Exception;
 
 /**
  * OctoberUtilCommands is a dedicated class for utility commands
@@ -22,29 +21,16 @@ trait OctoberUtilCommands
      */
     protected function utilSetBuild()
     {
-        $this->output->newLine();
-
-        /*
-         * Skip setting the build number if no database is detected to set it within
-         */
+        // Cannot set without a database.
         if (!System::hasDatabase()) {
-            $this->comment('No database detected - skipping setting the build number.');
             return;
         }
 
-        try {
-            if ($build = $this->option('value')) {
-                UpdateManager::instance()->setBuild((int) $build);
-            }
-            else {
-                $build = UpdateManager::instance()->setBuildNumberManually();
-            }
+        $seeder = App::make(\System\Database\Seeds\SeedSetBuildNumber::class);
 
-            $this->comment('* You are using October CMS version: v' . System::VERSION . '.' . $build);
-        }
-        catch (Exception $ex) {
-            $this->comment('*** Unable to set build: [' . $ex->getMessage() . ']');
-        }
+        $seeder->setCommand($this);
+
+        $seeder->run($this->option('value'));
     }
 
     /**
@@ -123,9 +109,7 @@ trait OctoberUtilCommands
         $stub = base_path() . '/modules/system/assets/js/lang/lang.stub';
 
         foreach ($locales as $locale) {
-            /*
-             * Generate messages
-             */
+            // Generate messages
             $fallbackPath = base_path() . '/modules/system/lang/en/client.php';
             $srcPath = base_path() . '/modules/system/lang/'.$locale.'/client.php';
 
@@ -134,17 +118,13 @@ trait OctoberUtilCommands
                 $messages = array_replace_recursive($messages, require $srcPath);
             }
 
-            /*
-             * Load possible replacements from /lang
-             */
+            // Load possible replacements from /lang
             $overridePath = base_path() . '/lang/'.$locale.'/system/client.php';
             if (File::isFile($overridePath)) {
                 $messages = array_replace_recursive($messages, require $overridePath);
             }
 
-            /*
-             * Compile from stub and save file
-             */
+            // Compile from stub and save file
             $destPath = base_path() . '/modules/system/assets/js/lang/lang.'.$locale.'.js';
 
             $contents = str_replace(
@@ -153,31 +133,41 @@ trait OctoberUtilCommands
                 File::get($stub)
             ).PHP_EOL;
 
-            /*
-             * Include the moment localization data
-             */
-            $momentPath = base_path() . '/modules/system/assets/ui/vendor/moment/locale/'.$locale.'.js';
+            // Include the moment localization data
+            $momentPath = base_path() . '/modules/backend/assets/vendor/moment/locale/'.$locale.'.js';
             if (File::exists($momentPath)) {
                 $contents .= PHP_EOL.File::get($momentPath).PHP_EOL;
             }
 
-            /*
-             * Include the select localization data
-             */
-            $selectPath = base_path() . '/modules/system/assets/ui/vendor/select2/js/i18n/'.$locale.'.js';
+            // Include the select localization data
+            $selectPath = base_path() . '/modules/backend/assets/vendor/select2/js/i18n/'.$locale.'.js';
             if (File::exists($selectPath)) {
                 $contents .= PHP_EOL.File::get($selectPath).PHP_EOL;
             }
 
             File::put($destPath, $contents);
 
-            /*
-             * Output notes
-             */
+            // Output notes
             $publicDest = File::localToPublic(realpath(dirname($destPath))) . '/' . basename($destPath);
 
             $this->comment($locale.'/'.basename($srcPath));
             $this->comment(sprintf(' -> %s', $publicDest));
+        }
+    }
+
+    /**
+     * utilPurgeResizer deletes all resizer files in the resources directory
+     */
+    protected function utilPurgeResizer()
+    {
+        if (!$this->confirmToProceed('This will PERMANENTLY DELETE all thumbs in the resizer directory.')) {
+            return;
+        }
+
+        $path = base_path('storage/app/resources/resize');
+
+        if (File::isDirectory($path)) {
+            File::cleanDirectory($path);
         }
     }
 
@@ -229,11 +219,11 @@ trait OctoberUtilCommands
      */
     protected function utilPurgeUploads()
     {
-        if (!$this->confirm('This will PERMANENTLY DELETE files in the uploads directory that do not exist in the "system_files" table.')) {
+        if (!$this->confirmToProceed('This will PERMANENTLY DELETE files in the uploads directory that do not exist in the "system_files" table.')) {
             return;
         }
 
-        $uploadsDisk = Config::get('system.storage.uploads.disk', 'local');
+        $uploadsDisk = Config::get('filesystems.disks.uploads.driver', 'local');
         if ($uploadsDisk !== 'local') {
             $this->error('Purging uploads is only supported on the local disk');
             return;
@@ -261,9 +251,8 @@ trait OctoberUtilCommands
             return $filesToDelete;
         };
 
-        $localPath = Config::get('filesystems.disks.local.root', storage_path('app'))
-            . '/'
-            . Config::get('system.storage.uploads.folder');
+        // Local path on disk
+        $localPath = Config::get('filesystems.disks.uploads.root', storage_path('app/uploads'));
 
         // Protected directory
         $this->comment('Scanning directory: '.$localPath.'/protected');
@@ -272,7 +261,7 @@ trait OctoberUtilCommands
         if (count($filesToDelete)) {
             $this->comment('Found the following files to delete');
             $this->comment(implode(', ', array_keys($filesToDelete)));
-            if ($this->confirm('Please confirm file destruction.')) {
+            if ($this->confirmToProceed('Please confirm file destruction.')) {
                 foreach ($filesToDelete as $path) {
                     File::delete($path);
                 }
@@ -289,7 +278,7 @@ trait OctoberUtilCommands
         if (count($filesToDelete)) {
             $this->comment('Found the following files to delete');
             $this->comment(implode(', ', array_keys($filesToDelete)));
-            if ($this->confirm('Please confirm file destruction.')) {
+            if ($this->confirmToProceed('Please confirm file destruction.')) {
                 foreach ($filesToDelete as $path) {
                     File::delete($path);
                 }

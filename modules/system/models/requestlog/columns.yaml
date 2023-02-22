@@ -5,12 +5,12 @@
 columns:
     status_code:
         label: system::lang.request_log.status_code
-        searchable: yes
+        searchable: true
         width: 100px
 
     url:
         label: system::lang.request_log.url
-        searchable: yes
+        searchable: true
         cssClass: column-break-word
 
     count:

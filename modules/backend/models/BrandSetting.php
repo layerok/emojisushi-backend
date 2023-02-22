@@ -74,6 +74,7 @@ class BrandSetting extends Model
     public $rules = [
         'app_name' => 'required',
         'app_tagline' => 'required',
+        'login_prompt' => 'required'
     ];
 
     /**
@@ -84,6 +85,7 @@ class BrandSetting extends Model
     {
         $this->app_name = self::getBaseConfig('app_name', Lang::get('system::lang.app.name'));
         $this->app_tagline = self::getBaseConfig('tagline', Lang::get('system::lang.app.tagline'));
+        $this->login_prompt = self::getBaseConfig('login_prompt', Lang::get('backend::lang.account.login_prompt'));
         $this->primary_color = self::getBaseConfig('primary_color', self::PRIMARY_COLOR);
         $this->secondary_color = self::getBaseConfig('secondary_color', self::SECONDARY_COLOR);
         $this->accent_color = self::getBaseConfig('accent_color', self::ACCENT_COLOR);

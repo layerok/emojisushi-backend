@@ -1,13 +1,15 @@
 <!DOCTYPE html>
 <html lang="en">
     <head>
-        <meta charset="utf-8">
         <title>Exception</title>
-        <link href="<?= Url::asset('/modules/system/assets/css/styles.css') ?>" rel="stylesheet">
-        <script src="<?= Url::asset('/modules/system/assets/vendor/syntaxhighlighter/scripts/shCore.js') ?>"></script>
-        <script src="<?= Url::asset('/modules/system/assets/vendor/syntaxhighlighter/scripts/shBrushPhp.js') ?>"></script>
-        <script src="<?= Url::asset('/modules/system/assets/vendor/syntaxhighlighter/scripts/shBrushXml.js') ?>"></script>
-        <link href="<?= Url::asset('/modules/system/assets/vendor/syntaxhighlighter/styles/shCore.css') ?>">
+        <script src="<?= Url::asset('modules/system/assets/vendor/syntaxhighlighter/scripts/shCore.js') ?>"></script>
+        <script src="<?= Url::asset('modules/system/assets/vendor/syntaxhighlighter/scripts/shBrushPhp.js') ?>"></script>
+        <script src="<?= Url::asset('modules/system/assets/vendor/syntaxhighlighter/scripts/shBrushXml.js') ?>"></script>
+        <link href="<?= Url::asset('modules/system/assets/css/styles.css') ?>" rel="stylesheet" />
+        <link href="<?= Url::asset('modules/system/assets/vendor/syntaxhighlighter/styles/shCore.css') ?>" />
+        <script src="<?= Url::asset('modules/system/assets/js/framework-bundle.min.js') ?>"></script>
+        <meta name="turbo-visit-control" content="disable" />
+        <meta charset="utf-8" />
     </head>
     <body>
         <div class="container">
@@ -34,7 +36,7 @@
 
             <pre class="brush: php"><?php foreach ($exception->getHighlightLines() as $line): ?><?= $line ?><?php endforeach ?></pre>
 
-            <h3><i class="icon-code-fork warning"></i> Stack trace</h3>
+            <h3><i class="icon-code-fork warning"></i> Stack Trace</h3>
 
             <table class="data-table">
                 <thead>
@@ -52,7 +54,7 @@
                             <td>
                                 <?= $stackItem->code ?>(<?php if ($stackItem->args): ?><abbr title="<?= $stackItem->args ?>">&hellip;</abbr><?php endif ?>)
                             </td>
-                            <td><?= $stackItem->file ?></td>
+                            <td class="file-column"><?= $stackItem->file ?></td>
                             <td class="right"><?= $stackItem->line ?></td>
                         </tr>
                     <?php endforeach ?>
@@ -61,12 +63,35 @@
         </div>
 
         <script>
-            SyntaxHighlighter.defaults['toolbar'] = false;
-            SyntaxHighlighter.defaults['quick-code'] = false;
-            SyntaxHighlighter.defaults['html-script'] = true;
-            SyntaxHighlighter.defaults['first-line'] = <?= $exception->getHighlight()->startLine+1 ?>;
-            SyntaxHighlighter.defaults['highlight'] = <?= $exception->getLine() ?>;
-            SyntaxHighlighter.all()
+            function hotloadHighlightSnippet() {
+                var allScripts = document.querySelectorAll('script[src]')
+                    currentCount = allScripts.length;
+
+                allScripts.forEach(function(script) {
+                    script.addEventListener('load', function() {
+                        if (--currentCount === 0) {
+                            highlightSnippet();
+                        }
+                    });
+                });
+            }
+
+            var highlighted = false;
+            function highlightSnippet() {
+                if (typeof SyntaxHighlighter !== 'undefined' || highlighted) {
+                    SyntaxHighlighter.defaults['toolbar'] = false;
+                    SyntaxHighlighter.defaults['quick-code'] = false;
+                    SyntaxHighlighter.defaults['html-script'] = true;
+                    SyntaxHighlighter.defaults['first-line'] = <?= $exception->getHighlight()->startLine+1 ?>;
+                    SyntaxHighlighter.defaults['highlight'] = <?= $exception->getLine() ?>;
+                    SyntaxHighlighter.highlight();
+                    highlighted = true;
+                }
+            }
+
+            delete require;
+            window.addEventListener('load', highlightSnippet);
+            hotloadHighlightSnippet();
         </script>
     </body>
 </html>

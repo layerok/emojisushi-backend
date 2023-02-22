@@ -22,20 +22,19 @@ class File extends FileBase
     /**
      * {@inheritDoc}
      */
-    public function getThumb($width, $height, $options = [])
+    public function getThumbUrl($width, $height, $options = [])
     {
         if (!$this->isPublic() && class_exists(Files::class)) {
-
             $options = $this->getDefaultThumbOptions($options);
 
             // Ensure that the thumb exists first
-            parent::getThumb($width, $height, $options);
+            parent::getThumbUrl($width, $height, $options);
 
             // Return the Files controller handler for the URL
             return Files::getThumbUrl($this, $width, $height, $options);
         }
 
-        return parent::getThumb($width, $height, $options);
+        return parent::getThumbUrl($width, $height, $options);
     }
 
     /**
@@ -55,7 +54,7 @@ class File extends FileBase
      */
     protected function getLocalRootPath()
     {
-        return Config::get('filesystems.disks.local.root', storage_path('app'));
+        return Config::get('filesystems.disks.uploads.root', storage_path('app/uploads'));
     }
 
     /**
@@ -63,7 +62,7 @@ class File extends FileBase
      */
     public function getPublicPath()
     {
-        $uploadsPath = Config::get('system.storage.uploads.path', '/storage/app/uploads');
+        $uploadsPath = Config::get('filesystems.disks.uploads.url', '/storage/app/uploads');
 
         if ($this->isPublic()) {
             $uploadsPath .= '/public';
@@ -73,28 +72,11 @@ class File extends FileBase
         }
 
         // Relative links
-        if (
-            $this->isLocalStorage() &&
-            Config::get('system.relative_links') === true
-        ) {
-            return $uploadsPath . '/';
+        if ($this->isLocalStorage() && Config::get('system.relative_links') === true) {
+            return Url::toRelative($uploadsPath) . '/';
         }
 
         return Url::asset($uploadsPath) . '/';
-    }
-
-    /**
-     * getStorageDirectory returns the internal storage path
-     */
-    public function getStorageDirectory()
-    {
-        $uploadsFolder = Config::get('system.storage.uploads.folder');
-
-        if ($this->isPublic()) {
-            return $uploadsFolder . '/public/';
-        }
-
-        return $uploadsFolder . '/protected/';
     }
 
     /**
@@ -103,7 +85,7 @@ class File extends FileBase
      */
     protected function isLocalStorage()
     {
-        return Config::get('system.storage.uploads.disk') == 'local';
+        return Config::get('filesystems.disks.uploads.driver') == 'local';
     }
 
     /**
@@ -112,6 +94,6 @@ class File extends FileBase
      */
     public function getDisk()
     {
-        return Storage::disk(Config::get('system.storage.uploads.disk'));
+        return Storage::disk('uploads');
     }
 }

@@ -41,6 +41,10 @@
             this.options.isImage = this.$el.hasClass('is-image');
         }
 
+        if (this.options.isFolder === null) {
+            this.options.isFolder = this.$el.hasClass('is-folder');
+        }
+
         if (this.options.isSortable === null) {
             this.options.isSortable = this.$el.hasClass('is-sortable');
         }
@@ -114,7 +118,7 @@
             throw new Error('Invalid externalToolbarAppState format. Expected format: module.name::stateElementName');
         }
 
-        const app = $.oc.module.import(parts[0]);
+        const app = oc.Module.import(parts[0]);
         this.toolbarExtensionPoint = app.state[parts[1]];
     }
 
@@ -129,7 +133,7 @@
             throw new Error('Invalid externalToolbarEventBus format. Expected format: module.name::stateElementName');
         }
 
-        const module = $.oc.module.import(parts[0]);
+        const module = oc.Module.import(parts[0]);
         this.externalToolbarEventBusObj = module.state[parts[1]];
     }
 
@@ -259,9 +263,9 @@
     MediaFinder.prototype.makeFilePreview = function(options) {
         var $preview = $(this.previewTemplate);
 
-        // $preview.data('oc.MediaFinderData', options);
         $preview.attr('data-path', options.path);
         $('[data-public-url]', $preview).attr('src', options.publicUrl);
+        $('[data-thumb-url]', $preview).attr('src', options.thumbUrl);
         $('[data-title]', $preview).text(options.title);
 
         return $preview;
@@ -357,6 +361,23 @@
                     return;
                 }
 
+                var isHalted = false;
+                items.forEach(function(item) {
+                    if (!isHalted && self.options.isFolder && item.itemType !== 'folder') {
+                        alert('Please select a folder only.');
+                        isHalted = true;
+                    }
+
+                    if (!isHalted && !self.options.isFolder && item.itemType === 'folder') {
+                        alert('Cannot select a folder. Please select an item instead.');
+                        isHalted = true;
+                    }
+                });
+
+                if (isHalted) {
+                    return;
+                }
+
                 self.addItems(items);
                 self.setValue();
                 self.evalIsPopulated();
@@ -406,7 +427,7 @@
             animation: 150,
             draggable: 'div.item-object',
             handle: '.drag-handle',
-            onChange: this.proxy(this.onSortAttachments)
+            onEnd: this.proxy(this.onSortAttachments)
         });
     }
 
@@ -419,6 +440,7 @@
         isPreview: null,
         isImage: null,
         isSortable: null,
+        isFolder: null,
         maxItems: null,
         template: null,
         inputName: null

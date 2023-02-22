@@ -29,8 +29,8 @@ class Changelog extends WidgetBase
      */
     protected function loadAssets()
     {
-        $this->addCss('css/changelog.css', 'core');
-        // $this->addJs('js/changelog.js', 'core');
+        $this->addCss('css/changelog.css');
+        // $this->addJs('js/changelog.js');
     }
 
     /**

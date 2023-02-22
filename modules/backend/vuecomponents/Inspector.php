@@ -27,18 +27,18 @@ class Inspector extends VueComponentBase
      */
     protected function loadAssets()
     {
-        $this->addJs('vendor/ajv/ajv.min.js', 'core');
-        $this->addJsBundle('js/dataschema.js', 'core');
-        $this->addJsBundle('js/utils.js', 'core');
-        $this->addJsBundle('js/host.js', 'core');
-        $this->addJsBundle('js/control.base.js', 'core');
-        $this->addJsBundle('js/control.table.base.js', 'core');
-        $this->addJsBundle('js/validatorset.js', 'core');
-        $this->addJsBundle('js/validator.base.js', 'core');
-        $this->addJsBundle('js/validator.number.base.js', 'core');
-        $this->addJsBundle('js/validator.regex.js', 'core');
-        $this->addJsBundle('js/validator.integer.js', 'core');
-        $this->addJsBundle('js/validator.required.js', 'core');
+        $this->addJs('vendor/ajv/ajv.min.js');
+        $this->addJsBundle('js/dataschema.js');
+        $this->addJsBundle('js/utils.js');
+        $this->addJsBundle('js/host.js');
+        $this->addJsBundle('js/control.base.js');
+        $this->addJsBundle('js/control.table.base.js');
+        $this->addJsBundle('js/validatorset.js');
+        $this->addJsBundle('js/validator.base.js');
+        $this->addJsBundle('js/validator.number.base.js');
+        $this->addJsBundle('js/validator.regex.js');
+        $this->addJsBundle('js/validator.integer.js');
+        $this->addJsBundle('js/validator.required.js');
     }
 
     protected function registerSubcomponents()

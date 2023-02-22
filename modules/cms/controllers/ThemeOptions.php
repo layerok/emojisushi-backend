@@ -33,7 +33,7 @@ class ThemeOptions extends Controller
     /**
      * @var array requiredPermissions to view this page
      */
-    public $requiredPermissions = ['cms.manage_themes', 'cms.manage_theme_options'];
+    public $requiredPermissions = ['cms.theme_customize'];
 
     /**
      * __construct
@@ -42,7 +42,7 @@ class ThemeOptions extends Controller
     {
         parent::__construct();
 
-        $this->pageTitle = 'cms::lang.theme.settings_menu';
+        $this->pageTitle = 'Frontend Theme';
 
         BackendMenu::setContext('October.System', 'system', 'settings');
         SettingsManager::setContext('October.Cms', 'theme');
@@ -85,7 +85,7 @@ class ThemeOptions extends Controller
 
         // Redirect close requests to the settings index when user doesn't have access
         // to go back to the theme selection page
-        if (!$this->user->hasAccess('cms.manage_themes') && input('close')) {
+        if (!$this->user->hasAccess('cms.themes') && input('close')) {
             $result = Backend::redirect('system/settings');
         }
 
@@ -123,10 +123,8 @@ class ThemeOptions extends Controller
      */
     protected function getDirName($dirName = null)
     {
-        /*
-         * Only the active theme can be managed without this permission
-         */
-        if ($dirName && !$this->user->hasAccess('cms.manage_themes')) {
+        // Only the active theme can be managed without this permission
+        if ($dirName && !$this->user->hasAccess('cms.themes')) {
             $dirName = null;
         }
 
@@ -165,7 +163,7 @@ class ThemeOptions extends Controller
         }
 
         if (!$name || (!$theme = CmsTheme::load($name))) {
-            throw new ApplicationException(trans('cms::lang.theme.not_found_name', ['name' => $name]));
+            throw new ApplicationException(__("The theme ':name' is not found.", ['name' => $name]));
         }
 
         return $theme;

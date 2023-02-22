@@ -1,9 +1,8 @@
 <?php namespace Backend\Classes;
 
-use Log;
+use App;
 use Event;
 use System;
-use Validator;
 use BackendAuth;
 use System\Classes\PluginManager;
 use SystemException;
@@ -58,44 +57,41 @@ class NavigationManager
     protected static $menuDisplayTree;
 
     /**
-     * @var System\Classes\PluginManager pluginManager
-     */
-    protected $pluginManager;
-
-    /**
-     * init this singleton.
-     */
-    protected function init()
-    {
-        $this->pluginManager = PluginManager::instance();
-    }
-
-    /**
      * loadItems from modules and plugins
      */
     protected function loadItems()
     {
         $this->items = [];
 
-        /*
-         * Load module items
-         */
+        // Load external items
         foreach ($this->callbacks as $callback) {
             $callback($this);
         }
 
-        /*
-         * Load plugin items
-         */
-        $plugins = $this->pluginManager->getPlugins();
-
-        foreach ($plugins as $id => $plugin) {
-            $items = $plugin->registerNavigation();
-            if (!is_array($items)) {
-                continue;
+        // Load module items
+        foreach (System::listModules() as $module) {
+            if ($provider = App::getProvider($module . '\\ServiceProvider')) {
+                $items = $provider->registerNavigation();
+                if (is_array($items)) {
+                    $this->registerMenuItems('October.'.$module, $items);
+                }
             }
+        }
 
-            $this->registerMenuItems($id, $items);
+        // Load plugin items
+        foreach (PluginManager::instance()->getPlugins() as $id => $plugin) {
+            $items = $plugin->registerNavigation();
+            if (is_array($items)) {
+                $this->registerMenuItems($id, $items);
+            }
+        }
+
+        // Load app items
+        if ($app = App::getProvider(\App\Provider::class)) {
+            $items = $app->registerNavigation();
+            if (is_array($items)) {
+                $this->registerMenuItems('October.App', $items);
+            }
         }
 
         /**
@@ -113,46 +109,37 @@ class NavigationManager
          */
         Event::fire('backend.menu.extendItems', [$this]);
 
-        /*
-         * Sort menu items
-         */
+        // Sort menu items
         uasort($this->items, static function ($a, $b) {
-            return $a->order - $b->order;
+            return (int) $a->order - (int) $b->order;
         });
 
-        /*
-         * Filter items user lacks permission for
-         */
+        // Filter items user lacks permission for
         $user = BackendAuth::getUser();
         $this->items = $this->filterItemPermissions($user, $this->items);
 
         foreach ($this->items as $item) {
-            if (!$item->sideMenu || !count($item->sideMenu)) {
+            $sideMenu = $item->sideMenu;
+            if (!$sideMenu || !count($sideMenu)) {
                 continue;
             }
 
-            /*
-             * Apply incremental default orders
-             */
+            // Apply incremental default orders
             $orderCount = 0;
-            foreach ($item->sideMenu as $sideMenuItem) {
+            foreach ($sideMenu as $sideMenuItem) {
                 if ($sideMenuItem->order !== -1) {
                     continue;
                 }
                 $sideMenuItem->order = ($orderCount += 100);
             }
 
-            /*
-             * Sort side menu items
-             */
-            uasort($item->sideMenu, static function ($a, $b) {
+            // Sort side menu items
+            uasort($sideMenu, static function ($a, $b) {
                 return $a->order - $b->order;
             });
 
-            /*
-             * Filter items user lacks permission for
-             */
-            $item->sideMenu = $this->filterItemPermissions($user, $item->sideMenu);
+            // Filter items user lacks permission for
+            $item->sideMenu($this->filterItemPermissions($user, $sideMenu));
         }
     }
 
@@ -207,24 +194,6 @@ class NavigationManager
             $this->items = [];
         }
 
-        $validator = Validator::make($definitions, [
-            '*.label' => 'required',
-            '*.icon' => 'required_without:*.iconSvg',
-            '*.url' => 'required',
-            '*.sideMenu.*.label' => 'nullable|required',
-            '*.sideMenu.*.icon' => 'nullable|required_without:*.sideMenu.*.iconSvg',
-            '*.sideMenu.*.url' => 'nullable|required',
-        ]);
-
-        if ($validator->fails()) {
-            $errorMessage = 'Invalid menu item in ' . $owner . ': ' . $validator->errors()->first();
-            if (System::checkDebugMode()) {
-                throw new SystemException($errorMessage);
-            }
-
-            Log::error($errorMessage);
-        }
-
         $this->addMainMenuItems($owner, $definitions);
     }
 
@@ -251,7 +220,10 @@ class NavigationManager
         $itemKey = $this->makeItemKey($owner, $code);
 
         if (isset($this->items[$itemKey])) {
-            $definition = array_merge((array) $this->items[$itemKey], $definition);
+            $definition = array_merge(
+                $this->items[$itemKey]->toArray(),
+                $definition
+            );
         }
 
         $item = array_merge($definition, [
@@ -259,10 +231,12 @@ class NavigationManager
             'owner' => $owner
         ]);
 
+        $sideMenu = array_pull($item, 'sideMenu');
+
         $this->items[$itemKey] = $this->defineMainMenuItem($item);
 
-        if (array_key_exists('sideMenu', $item)) {
-            $this->addSideMenuItems($owner, $code, $item['sideMenu']);
+        if (is_array($sideMenu)) {
+            $this->addSideMenuItems($owner, $code, $sideMenu);
         }
     }
 
@@ -276,20 +250,12 @@ class NavigationManager
 
     /**
      * getMainMenuItem returns a main menu item
-     * @param string $owner
-     * @param string $code
-     * @return MainMenuItem
-     * @throws SystemException
      */
-    public function getMainMenuItem(string $owner, string $code)
+    public function getMainMenuItem(string $owner, string $code): ?MainMenuItem
     {
         $itemKey = $this->makeItemKey($owner, $code);
 
-        if (!array_key_exists($itemKey, $this->items)) {
-            throw new SystemException('No main menu item found with key ' . $itemKey);
-        }
-
-        return $this->items[$itemKey];
+        return $this->items[$itemKey] ?? null;
     }
 
     /**
@@ -312,7 +278,9 @@ class NavigationManager
     public function addSideMenuItems($owner, $code, array $definitions)
     {
         foreach ($definitions as $sideCode => $definition) {
-            $this->addSideMenuItem($owner, $code, $sideCode, (array) $definition);
+            if (is_array($definition)) {
+                $this->addSideMenuItem($owner, $code, $sideCode, $definition);
+            }
         }
     }
 
@@ -340,7 +308,10 @@ class NavigationManager
         ]);
 
         if (isset($mainItem->sideMenu[$sideCode])) {
-            $definition = array_merge((array) $mainItem->sideMenu[$sideCode], $definition);
+            $definition = array_merge(
+                $mainItem->sideMenu[$sideCode]->toArray(),
+                $definition
+            );
         }
 
         $item = $this->defineSideMenuItem($definition);
@@ -356,6 +327,14 @@ class NavigationManager
     protected function defineSideMenuItem(array $config): SideMenuItem
     {
         return (new SideMenuItem)->useConfig($config);
+    }
+
+    /**
+     * getSideMenuItem returns a side menu item
+     */
+    public function getSideMenuItem(string $owner, string $code, string $sideCode): ?SideMenuItem
+    {
+        return $this->getMainMenuItem($owner, $code)?->getSideMenuItem($sideCode);
     }
 
     /**
@@ -406,21 +385,20 @@ class NavigationManager
                 continue;
             }
 
-            if ($item->counter !== null && is_callable($item->counter)) {
-                $item->counter = call_user_func($item->counter, $item);
-            }
-            elseif (!empty($item->counter)) {
-                $item->counter = (int) $item->counter;
-            }
-            elseif (!empty($sideItems = $this->listSideMenuItems($item->owner, $item->code))) {
-                $item->counter = 0;
-                foreach ($sideItems as $sideItem) {
-                    $item->counter += $sideItem->counter;
-                }
-            }
+            // Counter specified
+            $item->counter = $this->getCallableCounterValue($item);
 
-            if (empty($item->counter)) {
-                $item->counter = null;
+            // Guess counter from sub items
+            if ($item->counter === null && ($sideItems = $this->listSideMenuItems($item->owner, $item->code))) {
+                $subCount = 0;
+                foreach ($sideItems as $sideItem) {
+                    if ($sideItem->counter !== null) {
+                        $subCount += $sideItem->counter;
+                    }
+                }
+                if ($subCount > 0) {
+                    $item->counter = $subCount;
+                }
             }
         }
 
@@ -457,13 +435,9 @@ class NavigationManager
 
         $items = $activeItem->sideMenu;
 
+        // Process counters
         foreach ($items as $item) {
-            if ($item->counter !== null && is_callable($item->counter)) {
-                $item->counter = call_user_func($item->counter, $item);
-                if (empty($item->counter)) {
-                    $item->counter = null;
-                }
-            }
+            $item->counter = $this->getCallableCounterValue($item);
         }
 
         return $items;
@@ -485,16 +459,10 @@ class NavigationManager
         foreach ($mainMenuItems as $mainMenuItem) {
             $subMenuItems = $this->listSideMenuItems($mainMenuItem->owner, $mainMenuItem->code);
 
-            $hasHttpSubItems = false;
-            foreach ($subMenuItems as $subMenuItem) {
-                $subMenuItem->nonHttpItem = !preg_match('/^https?:\/\//', $subMenuItem->url);
-                $hasHttpSubItems = $hasHttpSubItems || !$subMenuItem->nonHttpItem;
-            }
-
             self::$menuDisplayTree[] = (object)[
                 'mainMenuItem' => $mainMenuItem,
                 'subMenuItems' => $subMenuItems,
-                'hasHttpSubItems' => $hasHttpSubItems
+                'subMenuHasDropdown' => $mainMenuItem->useDropdown && count($subMenuItems)
             ];
         }
 
@@ -641,6 +609,38 @@ class NavigationManager
         $key = $owner.$mainMenuItemCode;
 
         return $this->contextSidenavPartials[$key] ?? null;
+    }
+
+    /**
+     * getCallableCounterValue returns the counter value for a menu item
+     */
+    protected function getCallableCounterValue($item)
+    {
+        $counterValue = $item->counter;
+
+        if (empty($counterValue)) {
+            return null;
+        }
+
+        if (is_int($counterValue)) {
+            return $counterValue;
+        }
+
+        if (
+            is_string($counterValue) &&
+            strpos($counterValue, '::') !== false &&
+            ($staticMethod = explode('::', $counterValue)) &&
+            count($staticMethod) === 2 &&
+            is_callable($staticMethod)
+        ) {
+            return $staticMethod($item);
+        }
+
+        if (is_callable($counterValue)) {
+            return $counterValue($item);
+        }
+
+        return (int) $item->counter;
     }
 
     /**

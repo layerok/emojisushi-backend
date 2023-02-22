@@ -93,7 +93,7 @@ class ReorderController extends ControllerBehavior
 
     public function reorder()
     {
-        $this->addJs('js/october.reorder.js', 'core');
+        $this->addJs('js/october.reorder.js');
 
         $this->controller->pageTitle = $this->controller->pageTitle
             ?: Lang::get($this->getConfig('title', 'backend::lang.reorder.default_title'));
@@ -200,8 +200,7 @@ class ReorderController extends ControllerBehavior
     }
 
     /**
-     * Validate the supplied form model.
-     * @return void
+     * validateModel validates the supplied form model.
      */
     protected function validateModel()
     {

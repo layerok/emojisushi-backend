@@ -1,4 +1,4 @@
-$.oc.module.register('backend.component.inspector.utils', function () {
+oc.Module.register('backend.component.inspector.utils', function () {
     var InspectorUtils = function() {
         var validator = null;
 
@@ -129,7 +129,7 @@ $.oc.module.register('backend.component.inspector.utils', function () {
                     if (parent.expandInspectorControl) {
                         parent.expandInspectorControl();
                     }
-    
+
                     parent = parent.$parent;
                 }
 

@@ -26,9 +26,9 @@ class DocumentMarkdownEditor extends VueComponentBase
      */
     protected function loadAssets()
     {
-        $this->addJs('/modules/backend/vuecomponents/documentmarkdowneditor/assets/vendor/easymde@2.12.0/easymde.min.js', 'core');
-        $this->addCss('/modules/backend/vuecomponents/documentmarkdowneditor/assets/vendor/easymde@2.12.0/easymde.min.css', 'core');
-        $this->addJsBundle('js/formwidget.js', 'core');
+        $this->addJs('/modules/backend/vuecomponents/documentmarkdowneditor/assets/vendor/easymde@2.12.0/easymde.min.js');
+        $this->addCss('/modules/backend/vuecomponents/documentmarkdowneditor/assets/vendor/easymde@2.12.0/easymde.min.css');
+        $this->addJsBundle('js/formwidget.js');
     }
 
     /**
@@ -40,10 +40,10 @@ class DocumentMarkdownEditor extends VueComponentBase
      */
     protected function loadDependencyAssets()
     {
-        $this->addJsBundle('js/utils.js', 'core');
-        $this->addJsBundle('js/octobercommands.js', 'core');
-        $this->addJs('vendor/marked@1.2.0/marked.min.js', 'core');
-        $this->addJs('vendor/dompurify@2.1.1/purify.min.js', 'core');
+        $this->addJsBundle('js/utils.js');
+        $this->addJsBundle('js/octobercommands.js');
+        $this->addJs('vendor/marked@1.2.0/marked.min.js');
+        $this->addJs('vendor/dompurify@2.1.1/purify.min.js');
     }
 
     /**

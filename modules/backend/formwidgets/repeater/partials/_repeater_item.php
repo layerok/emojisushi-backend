@@ -2,44 +2,39 @@
     $groupCode = $useGroups ? $this->getGroupCodeFromIndex($indexValue) : '';
     $itemTitle = $useGroups ? $this->getGroupItemConfig($groupCode, 'name') : '';
     $itemIcon = $useGroups ? $this->getGroupItemConfig($groupCode, 'icon') : 'icon-sticky-note-o';
+    $titleFrom = $useGroups ? $this->getGroupItemConfig($groupCode, 'titleFrom') : '';
     $itemDescription = $useGroups ? $this->getGroupItemConfig($groupCode, 'description') : '';
+    $useTabs = $useGroups ? $this->getGroupItemConfig($groupCode, 'useTabs') : $this->useTabs;
 ?>
 <li
-    <?= $itemTitle ? 'data-item-title="'.e(trans($itemTitle)).'"' : '' ?>
+    <?= $itemTitle ? 'data-item-title="'.e(__($itemTitle)).'"' : '' ?>
     <?= $itemIcon ? 'data-item-icon="'.e($itemIcon).'"' : '' ?>
-    <?= $itemDescription ? 'data-item-description="'.e(trans($itemDescription)).'"' : '' ?>
+    <?= $itemDescription ? 'data-item-description="'.e(__($itemDescription)).'"' : '' ?>
+    <?= $titleFrom ? 'data-title-from="'.$titleFrom.'"' : '' ?>
     class="field-repeater-item"
     data-repeater-index="<?= $indexValue ?>"
     data-repeater-group="<?= $groupCode ?>"
 >
     <div class="repeater-header">
         <div class="repeater-item-title">
-            <?= $itemTitle ? e(trans($itemTitle)) : '' ?>
+            <?= $itemTitle ? e(__($itemTitle)) : '' ?>
         </div>
         <?php if (!$this->previewMode): ?>
             <div class="repeater-item-checkbox">
-                <div class="checkbox custom-checkbox nolabel">
-                    <input
-                        type="checkbox"
-                        name="checked[]"
-                        id="<?= $this->getId('item'.$indexValue) ?>"
-                        value=""
-                    />
-                    <label
-                        class="storm-icon-pseudo"
-                        for="<?= $this->getId('item'.$indexValue) ?>"
-                    ><?= e(trans('backend::lang.list.check')) ?></label>
-                </div>
+                <input
+                    class="form-check-input"
+                    type="checkbox"
+                    name="checked[]"
+                    id="<?= $this->getId('item'.$indexValue) ?>"
+                    value=""
+                    title="<?= e(trans('backend::lang.list.check')) ?>"
+                />
             </div>
             <div class="repeater-item-dropdown dropdown">
-                <a href="javascript:;" class="repeater-item-menu" data-toggle="dropdown">
+                <a href="javascript:;" class="repeater-item-menu" data-bs-toggle="dropdown">
                     <i class="octo-icon-cog"></i>
                 </a>
-                <ul
-                    class="dropdown-menu dropdown-menu-right"
-                    role="menu"
-                    data-dropdown-title="<?= __("Manage Item") ?>"
-                ></ul>
+                <ul class="dropdown-menu dropdown-menu-right" role="menu"></ul>
             </div>
             <?php if ($showReorder): ?>
                 <div class="repeater-item-reorder">
@@ -48,6 +43,15 @@
                     </a>
                 </div>
             <?php endif ?>
+        <?php else: ?>
+            <div class="repeater-item-collapse">
+                <a href="javascript:;" class="repeater-item-menu is-closed" data-repeater-expand>
+                    <i class="octo-icon-angle-down"></i>
+                </a>
+                <a href="javascript:;" class="repeater-item-menu is-open" data-repeater-collapse>
+                    <i class="octo-icon-angle-up"></i>
+                </a>
+            </div>
         <?php endif ?>
     </div>
     <div class="repeater-content"
@@ -55,7 +59,11 @@
         data-refresh-handler="<?= $this->getEventHandler('onRefresh') ?>"
         data-refresh-data="'_repeater_index': '<?= $indexValue ?>', '_repeater_group': '<?= $groupCode ?>'"
     >
-        <?= $widget->renderFields($widget->getFields()) ?>
+        <?php if ($useTabs): ?>
+            <?= $widget->renderTabSection($widget->getTab('secondary')) ?>
+        <?php else: ?>
+            <?= $widget->renderFields($widget->getFields()) ?>
+        <?php endif ?>
         <input type="hidden" name="<?= $widget->arrayName ?>[_index]" value="<?= $indexValue ?>" />
         <?php if ($useGroups): ?>
             <input type="hidden" name="<?= $widget->arrayName ?>[<?= $groupKeyFrom ?>]" value="<?= $groupCode ?>" />

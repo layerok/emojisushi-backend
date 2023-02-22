@@ -1,7 +1,7 @@
 /*
  * Vue Inspector table control implementation
  */
-$.oc.module.register('backend.component.inspector.control.table.row', function () {
+oc.Module.register('backend.component.inspector.control.table.row', function () {
     Vue.component('backend-component-inspector-control-table-row', {
         props: {
             columns: Array,
@@ -25,7 +25,7 @@ $.oc.module.register('backend.component.inspector.control.table.row', function (
                     this.$children[0].focusControl();
                 }
             },
-        
+
             onCellFocus: function onCellFocus() {
                 this.focused = true;
             },

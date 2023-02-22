@@ -3,7 +3,6 @@
 use App;
 use Lang;
 use Event;
-use Config;
 use October\Rain\Halcyon\Model as HalcyonModel;
 use Cms\Contracts\CmsObject as CmsObjectContract;
 use ValidationException;
@@ -53,7 +52,7 @@ class CmsObject extends HalcyonModel implements CmsObjectContract
     protected $themeCache;
 
     /**
-     * The "booting" method of the model.
+     * boot the model.
      * @return void
      */
     protected static function boot()
@@ -63,7 +62,7 @@ class CmsObject extends HalcyonModel implements CmsObjectContract
     }
 
     /**
-     * Boot all of the bootable traits on the model.
+     * bootDefaultTheme and all of the bootable traits on the model.
      * @return void
      */
     protected static function bootDefaultTheme()
@@ -83,7 +82,7 @@ class CmsObject extends HalcyonModel implements CmsObjectContract
     }
 
     /**
-     * Loads the object from a file.
+     * load the object from a file.
      * This method is used in the CMS back-end. It doesn't use any caching.
      * @param mixed $theme Specifies the theme the object belongs to.
      * @param string $fileName Specifies the file name, with the extension.
@@ -118,7 +117,7 @@ class CmsObject extends HalcyonModel implements CmsObjectContract
     }
 
     /**
-     * Returns the list of objects in the specified theme.
+     * listInTheme returns the list of objects in the specified theme.
      * This method is used internally by the system.
      * @param \Cms\Classes\Theme $theme Specifies a parent theme.
      * @param boolean $skipCache Indicates if objects should be reloaded from the disk bypassing the cache.
@@ -178,7 +177,7 @@ class CmsObject extends HalcyonModel implements CmsObjectContract
     }
 
     /**
-     * Prepares the theme datasource for the model.
+     * inTheme prepares the theme datasource for the model.
      * @param \Cms\Classes\Theme $theme Specifies a parent theme.
      * @return $this
      */
@@ -192,8 +191,7 @@ class CmsObject extends HalcyonModel implements CmsObjectContract
     }
 
     /**
-     * Save the object to the theme.
-     *
+     * save the object to the theme.
      * @param  array  $options
      * @return bool
      */

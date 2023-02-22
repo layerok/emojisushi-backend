@@ -28,7 +28,7 @@ class RichEditorDocumentConnector extends VueComponentBase
      */
     protected function loadAssets()
     {
-        $this->addJsBundle('js/formwidget.js', 'core');
+        $this->addJsBundle('js/formwidget.js');
     }
 
     /**
@@ -40,8 +40,8 @@ class RichEditorDocumentConnector extends VueComponentBase
      */
     protected function loadDependencyAssets()
     {
-        $this->addJsBundle('js/utils.js', 'core');
-        $this->addJsBundle('js/octobercommands.js', 'core');
+        $this->addJsBundle('js/utils.js');
+        $this->addJsBundle('js/octobercommands.js');
     }
 
     /**

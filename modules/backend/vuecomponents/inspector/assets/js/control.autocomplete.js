@@ -1,7 +1,7 @@
 /*
  * Vue Inspector autocomplete control implementation
  */
-$.oc.module.register('backend.component.inspector.control.autocomplete', function () {
+oc.Module.register('backend.component.inspector.control.autocomplete', function () {
     Vue.component('backend-component-inspector-control-autocomplete', {
         extends: $.oc.vueComponentHelpers.inspector.controlBase,
         props: {},
@@ -56,7 +56,7 @@ $.oc.module.register('backend.component.inspector.control.autocomplete', functio
 
             prepareItems: function prepareItems(items) {
                 var result = {}
-        
+
                 if ($.isArray(items)) {
                     for (var i = 0, len = items.length; i < len; i++) {
                         result[items[i]] = items[i];
@@ -65,7 +65,7 @@ $.oc.module.register('backend.component.inspector.control.autocomplete', functio
                 else {
                     result = items;
                 }
-        
+
                 return result;
             },
 

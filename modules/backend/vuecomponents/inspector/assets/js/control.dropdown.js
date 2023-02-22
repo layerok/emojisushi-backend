@@ -1,7 +1,7 @@
 /*
  * Vue Inspector dropdown control implementation
  */
-$.oc.module.register('backend.component.inspector.control.dropdown', function () {
+oc.Module.register('backend.component.inspector.control.dropdown', function () {
     Vue.component('backend-component-inspector-control-dropdown', {
         extends: $.oc.vueComponentHelpers.inspector.controlBase,
         props: {},

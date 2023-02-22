@@ -10,27 +10,27 @@
 @color-richeditor-toolbar-btn-bg-active: #404040;
 @color-richeditor-toolbar-btn-color-hover: #ffffff;
 
-@import "../vendor/froala_drm/less/froala.less";
+@import "../vendor/froala/less/froala.less";
 
 // Buttons
-@import "../vendor/froala_drm/less/plugins/fullscreen.less";
-@import "../vendor/froala_drm/less/plugins/code_view.less";
-@import "../vendor/froala_drm/less/plugins/file.less";
-@import "../vendor/froala_drm/less/plugins/image.less";
-@import "../vendor/froala_drm/less/plugins/table.less";
-@import "../vendor/froala_drm/less/plugins/video.less";
-@import "../vendor/froala_drm/less/plugins/colors.less";
-@import "../vendor/froala_drm/less/plugins/emoticons.less";
+@import "../vendor/froala/less/plugins/fullscreen.less";
+@import "../vendor/froala/less/plugins/code_view.less";
+@import "../vendor/froala/less/plugins/file.less";
+@import "../vendor/froala/less/plugins/image.less";
+@import "../vendor/froala/less/plugins/table.less";
+@import "../vendor/froala/less/plugins/video.less";
+@import "../vendor/froala/less/plugins/colors.less";
+@import "../vendor/froala/less/plugins/emoticons.less";
 
 // Functional
-@import "../vendor/froala_drm/less/plugins/line_breaker.less";
-@import "../vendor/froala_drm/less/plugins/draggable.less";
+@import "../vendor/froala/less/plugins/line_breaker.less";
+@import "../vendor/froala/less/plugins/draggable.less";
 
 // More testing needed
-//import "../vendor/froala_drm/less/plugins/quick_insert.less";
+//import "../vendor/froala/less/plugins/quick_insert.less";
 
 // Base styles
-@import "_base_styles.less";
+@import "../vendor/froala/less/style.less";
 
 .fr-view {
     @import "../../../../models/editorsetting/default_styles.less";
@@ -49,7 +49,8 @@
 @ui-border-top: 1px solid @ui-border-color;
 @editor-padding: 20px;
 @btn-hover-bg: #ddd;
-@btn-text: fade(@btn-secondary-color, 80%);
+@btn-text: @color-text-grey-1;
+@btn-hover-text: @color-text-grey-1;
 @btn-font-size: 14;
 @btn-active-text: #000;
 @input-label-color: @color-label;
@@ -89,9 +90,9 @@
 
 .field-richeditor {
     border: 1px solid @input-border;
-    .box-shadow(@input-box-shadow);
-    .border-radius(@input-border-radius);
-    .transition(@input-transition);
+    box-shadow: @input-box-shadow;
+    border-radius: @input-border-radius;
+    transition: @input-transition;
 
     // Prevents an ugly flash during the time the editor loads
     > textarea {

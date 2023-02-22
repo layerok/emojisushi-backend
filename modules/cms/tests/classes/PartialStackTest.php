@@ -2,16 +2,16 @@
 
 use Cms\Classes\PartialStack;
 
+/**
+ * PartialStackTest
+ */
 class PartialStackTest extends TestCase
 {
-
     public function testStackPartials()
     {
         $stack = new PartialStack;
 
-        /*
-         * Stack em up
-         */
+        // Stack em up
         $stack->stackPartial();
             $stack->addComponent('override1', 'October\Tester\Components\MainMenu');
             $stack->addComponent('override2', 'October\Tester\Components\ContentBlock');
@@ -23,9 +23,7 @@ class PartialStackTest extends TestCase
                 $stack->stackPartial();
                     $stack->addComponent('mainMenu', 'October\Tester\Components\MainMenu');
 
-        /*
-         * Knock em down
-         */
+        // Knock em down
         $this->assertEquals('October\Tester\Components\MainMenu', $stack->getComponent('mainMenu'));
         $this->assertEquals('October\Tester\Components\MainMenu', $stack->getComponent('override1'));
 

@@ -2,9 +2,10 @@
 
 use File;
 use Markdown;
+use Cms\Classes\PageLookup;
 
 /**
- * The CMS content file class.
+ * Content file class.
  *
  * @package october\cms
  * @author Alexey Bobkov, Samuel Georges
@@ -12,24 +13,24 @@ use Markdown;
 class Content extends CmsCompoundObject
 {
     /**
-     * @var string The container name associated with the model, eg: pages.
+     * @var string dirName associated with the model, eg: pages.
      */
     protected $dirName = 'content';
 
     /**
-     * @var array Allowable file extensions.
+     * @var array allowedExtensions
      */
-    protected $allowedExtensions = ['htm', 'txt', 'md'];
+    protected $allowedExtensions = ['htm', 'html', 'txt', 'md'];
 
     /**
-     * @var array List of attribute names which are not considered "settings".
+     * @var array purgeable attribute names which are not considered "settings".
      */
     protected $purgeable = ['parsedMarkup'];
 
     /**
-     * Initializes the object properties from the cached data. The extra data
-     * set here becomes available as attributes set on the model after fetch.
-     * @param array $item The cached data array.
+     * initCacheItem initializes the object properties from the cached data. The extra
+     * data set here becomes available as attributes set on the model after fetch.
+     * @param array $item
      */
     public static function initCacheItem(&$item)
     {
@@ -37,7 +38,7 @@ class Content extends CmsCompoundObject
     }
 
     /**
-     * Returns a default value for parsedMarkup attribute.
+     * getParsedMarkupAttribute returns a default value for parsedMarkup attribute.
      * @return string
      */
     public function getParsedMarkupAttribute()
@@ -50,22 +51,25 @@ class Content extends CmsCompoundObject
     }
 
     /**
-     * Parses the content markup according to the file type.
+     * parseMarkup according to the file type.
      * @return string
      */
     public function parseMarkup()
     {
         $extension = strtolower(File::extension($this->fileName));
+        $result = $this->markup;
 
         switch ($extension) {
-            case 'txt':
-                $result = htmlspecialchars($this->markup);
+            case 'html':
+                $result = PageLookup::processMarkup($result);
                 break;
             case 'md':
-                $result = Markdown::parse((string) $this->markup);
+                $result = Markdown::parse((string) $result);
+                $result = PageLookup::processMarkup($result);
                 break;
-            default:
-                $result = $this->markup;
+            case 'txt':
+                $result = htmlspecialchars($result);
+                break;
         }
 
         return $result;

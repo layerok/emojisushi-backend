@@ -41,8 +41,8 @@
      * Fetches records from the underlying data source and
      * passes them to the onSuccess callback function.
      * The onSuccess callback parameters: records, totalCount.
-     * Each record contains the key field which uniquely identifies 
-     * the record. The name of the key field is defined with the table 
+     * Each record contains the key field which uniquely identifies
+     * the record. The name of the key field is defined with the table
      * widget options.
      */
     Server.prototype.getRecords = function(offset, count, onSuccess) {
@@ -76,7 +76,7 @@
     /*
      * Creates a record with the passed data and returns the updated page records
      * to the onSuccess callback function.
-     * 
+     *
      * - recordData - the record fields
      * - placement - "bottom" (the end of the data set), "above", "below"
      * - relativeToKey - a row key, required if the placement is not "bottom"
@@ -97,8 +97,8 @@
                 count: count
             }
         }).done(function(data) {
-            onSuccess(data.records, data.count)
-        })
+            onSuccess(data.records, data.count);
+        });
     }
 
     /*

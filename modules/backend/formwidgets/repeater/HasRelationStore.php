@@ -1,6 +1,9 @@
 <?php namespace Backend\FormWidgets\Repeater;
 
+use Backend\Classes\FormField;
 use October\Rain\Database\Model;
+use October\Rain\Exception\ValidationException;
+use October\Rain\Html\Helper as HtmlHelper;
 
 /**
  * HasRelationStore contains logic for related repeater items
@@ -36,9 +39,14 @@ trait HasRelationStore
             return $this->relatedRecords;
         }
 
+        // @deprecated This could be refactored to always use deferred binding
+        // and make sure the array keys match the model keys and drop the _id
         if ($this->isLoaded) {
             $value = $this->getLoadedValueFromPost();
-            $ids = is_array($value) ? array_map(function($v) { return $v['_id'] ?? null; }, $value) : [];
+            $ids = is_array($value) ? array_map(function($v) {
+                return $v['_id'] ?? null;
+            }, $value) : [];
+
             $records = $this->getRelationQuery()->find($ids);
 
             if ($records) {
@@ -85,9 +93,27 @@ trait HasRelationStore
             $this->setGroupCodeOnRelation($model, $groupCode);
         }
 
-        $model->save();
+        $model->save(['force' => true]);
 
-        $this->getRelationObject()->add($model, $this->sessionKey);
+        $this->getRelationObject()->add($model, $this->getSessionKey());
+
+        $this->relatedRecords[$index] = $model;
+    }
+
+    /**
+     * duplicateRelationAtIndex
+     */
+    protected function duplicateRelationAtIndex(int $fromIndex, int $index, string $groupCode = null)
+    {
+        $model = $this->getModelFromIndex($fromIndex)->replicateWithRelations();
+
+        if ($this->useGroups) {
+            $this->setGroupCodeOnRelation($model, $groupCode);
+        }
+
+        $model->save(['force' => true]);
+
+        $this->getRelationObject()->add($model, $this->getSessionKey());
 
         $this->relatedRecords[$index] = $model;
     }
@@ -102,7 +128,7 @@ trait HasRelationStore
             return;
         }
 
-        $this->getRelationObject()->remove($model, $this->sessionKey);
+        $this->getRelationObject()->remove($model, $this->getSessionKey());
     }
 
     /**
@@ -110,7 +136,6 @@ trait HasRelationStore
      */
     protected function processSaveForRelation($value)
     {
-        $keys = [];
         $sortCount = 0;
 
         foreach ($value as $index => $data) {
@@ -135,14 +160,22 @@ trait HasRelationStore
                 $this->processSortOrderForSortable($model, ++$sortCount);
             }
 
-            foreach ($modelsToSave as $modelToSave) {
-                $modelToSave->save(null, $widget->getSessionKeyWithSuffix());
+            foreach ($modelsToSave as $attrChain => $modelToSave) {
+                try {
+                    $modelToSave->save(null, $widget->getSessionKeyWithSuffix());
+                }
+                catch (ValidationException $ve) {
+                    $ve->setFieldPrefix(array_merge(
+                        HtmlHelper::nameToArray($this->valueFrom),
+                        [$index],
+                        $attrChain ? explode('.', $attrChain) : []
+                    ));
+                    throw $ve;
+                }
             }
-
-            $keys[] = $model->getKey();
         }
 
-        return $keys;
+        return FormField::NO_SAVE_DATA;
     }
 
     /**

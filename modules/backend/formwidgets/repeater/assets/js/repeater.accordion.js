@@ -146,6 +146,8 @@
 
     RepeaterAccordion.prototype.expand = function($item) {
         $item.removeClass('collapsed');
+
+        $(window).trigger('oc.updateUi');
     }
 
 }(window.jQuery);

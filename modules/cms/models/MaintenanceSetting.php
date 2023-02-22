@@ -55,7 +55,27 @@ class MaintenanceSetting extends Model
      */
     public static function isEnabled(): bool
     {
-        if (!System::hasDatabase() || BackendAuth::getUser()) {
+        if (!System::hasDatabase()) {
+            return false;
+        }
+
+        if (BackendAuth::userHasAccess('general.view_offline')) {
+            return false;
+        }
+
+        return self::get('is_enabled', false);
+    }
+
+    /**
+     * isEnabledForBackend
+     */
+    public static function isEnabledForBackend(): bool
+    {
+        if (!System::hasDatabase()) {
+            return false;
+        }
+
+        if (BackendAuth::userHasAccess('general.backend.view_offline')) {
             return false;
         }
 
@@ -72,7 +92,7 @@ class MaintenanceSetting extends Model
         }
 
         return array_map(function($code) use ($theme) {
-            return "{$theme->getDirName()}/${code}";
+            return "{$theme->getDirName()}/{$code}";
         }, Page::listInTheme($theme)->lists('fileName', 'fileName'));
     }
 
@@ -91,8 +111,7 @@ class MaintenanceSetting extends Model
     }
 
     /**
-     * afterFetch restores the CMS page found in the mapping array, or disable the
-     * maintenance mode.
+     * afterFetch restores the CMS page found in the mapping array.
      */
     public function afterFetch()
     {
@@ -102,9 +121,6 @@ class MaintenanceSetting extends Model
             && ($cmsPage = array_get($themeMap, $theme->getDirName()))
         ) {
             $this->cms_page = $cmsPage;
-        }
-        else {
-            $this->is_enabled = false;
         }
     }
 

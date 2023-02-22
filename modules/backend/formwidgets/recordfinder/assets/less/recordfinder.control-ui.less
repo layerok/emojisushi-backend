@@ -1,0 +1,35 @@
+.field-recordfinder {
+    .recordfinder-control-container {
+        border-radius: 4px;
+        border: 1px solid @input-border;
+        background: white;
+    }
+
+    .recordfinder-control-toolbar {
+        padding: 3px;
+        font-size: 0;
+        white-space: nowrap;
+
+        .backend-toolbar-button {
+            &.populated-only {
+                display: none;
+            }
+        }
+    }
+
+    .recordfinder-record-container {
+        position: relative;
+    }
+
+    &.is-populated.is-multi {
+        .recordfinder-control-toolbar {
+            border-bottom: 1px solid @color-grey-3;
+        }
+    }
+
+    &.is-preview {
+        .recordfinder-control-container {
+            background-color: @color-form-field-preview-bg;
+        }
+    }
+}

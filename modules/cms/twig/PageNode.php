@@ -26,7 +26,7 @@ class PageNode extends TwigNode
     {
         $compiler
             ->addDebugInfo($this)
-            ->write("echo \$this->env->getExtension(\Cms\Twig\Extension::class)->pageFunction();\n")
+            ->write("echo \$this->env->getExtension(\Cms\Twig\Extension::class)->pageFunction(\$context);\n")
         ;
     }
 }

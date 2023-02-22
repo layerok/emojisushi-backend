@@ -29,7 +29,6 @@ class CmsObjectCache
 
         $result = $instance
             ->remember(Config::get('cms.template_cache_ttl', 1440))
-            ->cacheDriver(Config::get('cms.template_cache_driver', 'file'))
             ->find($fileName)
         ;
 

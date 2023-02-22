@@ -1,6 +1,7 @@
 <?php namespace System\Classes;
 
 use Url;
+use Log;
 use App;
 use File;
 use Lang;
@@ -10,6 +11,7 @@ use Cache;
 use Config;
 use Storage;
 use Redirect;
+use Exception;
 use October\Rain\Database\Attach\File as FileModel;
 use ApplicationException;
 use Resizer;
@@ -32,10 +34,21 @@ class ResizeImages
     protected $availableSources = [];
 
     /**
+     * @var string storageFolder is the name of the folder in the resources disk
+     */
+    protected $storageFolder = 'resize';
+
+    /**
+     * @var string storageUrl relative or absolute URL of the Library root folder.
+     */
+    protected $storageUrl;
+
+    /**
      * init is a singleton constructor
      */
     public function init()
     {
+        $this->storageUrl = rtrim(Config::get('filesystems.disks.resources.url', '/storage/app/resources'), '/');
     }
 
     /**
@@ -62,39 +75,74 @@ class ResizeImages
         $options = (array) @json_decode(@base64_decode($cacheInfo['options']), true);
         $filename = $this->getResizeFilename($cacheKey, $width, $height, $options);
 
-        // Get raw cached file path
-        $rawPath = $cacheInfo['path'];
-        $tempRawPath = null;
-
-        // If path is external, copy to local filesystem
-        $isExternal = strpos($rawPath, 'http') === 0;
-        if ($isExternal) {
-            $tempRawPath = $this->getTempPath() . '/raw_' . $filename;
-            $contents = file_get_contents($rawPath);
-            file_put_contents($tempRawPath, $contents);
-        }
-
-        // Create temp path for resized file in local filesystem
-        $tempPath = $this->getTempPath() . '/' . $filename;
+        // Set local paths for resizer
+        $tempTargetPath = $this->getTempPath() . '/' . $filename;
+        $tempSourcePath = $this->getTempPath() . '/raw_' . $filename;
+        $sourcePath = $this->getSourcePathForResize($cacheInfo['path'], $tempSourcePath);
 
         // Perform resize
-        Resizer::open($isExternal ? $tempRawPath : $rawPath)
+        Resizer::open($sourcePath)
             ->resize($width, $height, $options)
-            ->save($tempPath);
+            ->save($tempTargetPath);
 
         // Save resized file to disk
-        $disk = Storage::disk(Config::get('system.storage.resources.disk'));
-        $resourcesFolder = Config::get('system.storage.resources.folder') . '/resize';
-        $disk->put($resourcesFolder . '/' . $filename, file_get_contents($tempPath));
+        $disk = Storage::disk('resources');
+        $filePath = $this->storageFolder . '/' . $filename;
+        $success = $disk->putFileAs(
+            dirname($filePath),
+            $tempTargetPath,
+            basename($filePath)
+        );
 
-        // Cleanup
-        File::delete($tempPath);
+        // Clean up
+        File::delete($tempTargetPath);
 
-        if ($tempRawPath && file_exists($tempRawPath)) {
-            File::delete($tempRawPath);
+        if (file_exists($tempSourcePath)) {
+            File::delete($tempSourcePath);
+        }
+
+        // Eagerly cache remote exists call
+        if ($success && !$this->isLocalStorage()) {
+            Cache::forever($this->getExistsCacheKey($filePath), true);
         }
 
         return Redirect::to($this->getPublicPath() . '/' . $filename);
+    }
+
+    /**
+     * getSourcePathForResize creates a temp copy of external files in the local filesystem
+     */
+    protected function getSourcePathForResize($realSourcePath, $tempSourcePath)
+    {
+        $isExternal = strpos($realSourcePath, 'http') === 0;
+        $sourcePath = $isExternal ? $tempSourcePath : $realSourcePath;
+
+        if ($isExternal) {
+            try {
+                $contents = file_get_contents($realSourcePath);
+                file_put_contents($tempSourcePath, $contents);
+            }
+            catch (Exception $ex) {
+                Log::warning('Unable to fetch external image ' . $realSourcePath . ' ['.$ex->getMessage().']');
+            }
+        }
+
+        if (!file_exists($sourcePath)) {
+            /**
+             * @event system.resizer.handleMissingImage
+             * Provides an opportunity to configure a custom image when the resizer couldn't find the original file
+             *
+             * Example usage:
+             *
+             *     Event::listen('system.resizer.handleMissingImage', function(&$sourcePath) {
+             *         $sourcePath = plugins_path('vendor/plugin/assets/broken-image.jpg');
+             *     });
+             *
+             */
+            Event::fire('system.resizer.handleMissingImage', [&$sourcePath]);
+        }
+
+        return $sourcePath;
     }
 
     /**
@@ -104,6 +152,11 @@ class ResizeImages
     {
         $imageInfo = $this->processImage($image);
         $options = $this->getDefaultResizeOptions($options);
+
+        // SVGs are sent back raw
+        if (strtolower($imageInfo['extension']) === 'svg') {
+            return $imageInfo['url'];
+        }
 
         // Use the same extension as source image
         if ($options['extension'] === 'auto') {
@@ -116,11 +169,8 @@ class ResizeImages
         // Check is resized
         $cacheKey = $this->getCacheKey([$imageInfo, $width, $height, $options]);
         $filename = $this->getResizeFilename($cacheKey, $width, $height, $options);
-        $disk = Storage::disk(Config::get('system.storage.resources.disk'));
-        $resourcesFolder = Config::get('system.storage.resources.folder');
-        $resourcesFolder .= '/resize';
 
-        if ($disk->exists($resourcesFolder . '/' . $filename)) {
+        if ($this->hasFile($this->storageFolder . '/' . $filename)) {
             return $this->getPublicPath() . '/' . $filename;
         }
 
@@ -147,6 +197,24 @@ class ResizeImages
     }
 
     /**
+     * hasFile checks file exists on storage device
+     */
+    protected function hasFile($filePath = null): bool
+    {
+        $disk = Storage::disk('resources');
+        if ($this->isLocalStorage()) {
+            return $disk->exists($filePath);
+        }
+
+        // Cache remote storage results for performance increase
+        $result = Cache::rememberForever($this->getExistsCacheKey($filePath), function() use ($disk, $filePath) {
+            return $disk->exists($filePath);
+        });
+
+        return $result;
+    }
+
+    /**
      * getResizedUrl
      */
     protected function getResizedUrl($outputFilename = 'undefined.css')
@@ -167,6 +235,7 @@ class ResizeImages
     protected function processImage($image)
     {
         $result = [
+            'url' => null,
             'path' => null,
             'extension' => null,
             'source' => null
@@ -178,6 +247,7 @@ class ResizeImages
             $path = $image->getDiskPath();
 
             if (File::extension($path) && $disk->exists($path)) {
+                $result['url'] = $image->getPath();
                 $result['path'] = $image->getLocalPath();
                 $result['extension'] = $image->getExtension();
                 $result['source'] = 'model';
@@ -188,13 +258,18 @@ class ResizeImages
 
             // Local path
             if ($path !== null) {
+                $url = Config::get('system.relative_links') === true
+                    ? Url::toRelative(File::localToPublic($path))
+                    : Url::asset(File::localToPublic($path));
+
+                $result['url'] = $url;
                 $result['path'] = $path;
                 $result['extension'] = File::extension($path);
                 $result['source'] = 'local';
             }
             // URL
             elseif (strpos($image, '://') !== false) {
-                $result['path'] = $image;
+                $result['url'] = $result['path'] = $image;
                 $result['extension'] = explode('?', File::extension($image))[0];
                 $result['source'] = 'url';
             }
@@ -204,7 +279,7 @@ class ResizeImages
     }
 
     /**
-     * Parse the file name to get a relative path for the file
+     * parseFileName to get a relative path for the file
      * @return string
      */
     protected function parseFileName($filePath): ?string
@@ -218,17 +293,25 @@ class ResizeImages
         $path = urldecode(parse_url($filePath, PHP_URL_PATH));
 
         foreach ($this->getAvailableSources() as $source) {
-            if ($source['disk'] !== 'local')  {
+            if ($source['disk'] !== 'local') {
                 continue;
             }
 
-            $folder = $source['path'];
-            if (strpos($path, $folder) !== false) {
-                $pathParts = explode($folder, $path, 2);
-                $finalPath = base_path($folder . end($pathParts));
-                if (file_exists($finalPath)) {
-                    return $finalPath;
-                }
+            $rootPath = $source['root'] ?? '';
+            $relativeUrl = Url::toRelative($source['url'] ?? '');
+
+            if (!$rootPath || !$relativeUrl) {
+                continue;
+            }
+
+            if (strpos($path, $relativeUrl) === false) {
+                continue;
+            }
+
+            $pathParts = explode($relativeUrl, $path, 2);
+            $finalPath = $rootPath . end($pathParts);
+            if (file_exists($finalPath)) {
+                return $finalPath;
             }
         }
 
@@ -247,35 +330,35 @@ class ResizeImages
         $config = App::make('config');
 
         $sources = [
-            'resources' => [
-                'disk' => $config->get('system.storage.resources.disk', 'local'),
-                'folder' => $config->get('system.storage.resources.folder', 'resized'),
-                'path' => $config->get('system.storage.resources.path', '/storage/app/resources'),
-            ],
             'media' => [
-                'disk' => $config->get('system.storage.media.disk', 'local'),
-                'folder' => $config->get('system.storage.media.folder', 'media'),
-                'path' => $config->get('system.storage.media.path', '/storage/app/media'),
+                'disk' => $config->get('filesystems.disks.media.driver', 'local'),
+                'root' => $config->get('filesystems.disks.media.root', storage_path('app/media')),
+                'url' => $config->get('filesystems.disks.media.url', '/storage/app/media')
             ],
             'uploads' => [
-                'disk' => $config->get('system.storage.uploads.disk', 'local'),
-                'folder' => $config->get('system.storage.uploads.folder', 'uploads'),
-                'path' => $config->get('system.storage.uploads.path', '/storage/app/uploads'),
+                'disk' => $config->get('filesystems.disks.uploads.driver', 'local'),
+                'root' => $config->get('filesystems.disks.uploads.root', storage_path('app/uploads')),
+                'url' => $config->get('filesystems.disks.uploads.url', '/storage/app/uploads')
+            ],
+            'app' => [
+                'disk' => 'local',
+                'root' => base_path('app'),
+                'url' => '/app'
             ],
             'modules' => [
                 'disk' => 'local',
-                'folder' => base_path('modules'),
-                'path' => '/modules',
+                'root' => base_path('modules'),
+                'url' => '/modules'
             ],
             'plugins' => [
                 'disk' => 'local',
-                'folder' => base_path('plugins'),
-                'path' => '/plugins',
+                'root' => base_path('plugins'),
+                'url' => '/plugins'
             ],
             'themes' => [
                 'disk' => 'local',
-                'folder' => base_path('themes'),
-                'path' => '/themes',
+                'root' => base_path('themes'),
+                'url' => '/themes'
             ],
         ];
 
@@ -285,11 +368,11 @@ class ResizeImages
          *
          * Example usage:
          *
-         *     Event::listen('system.resizer.getAvailableSources', function ((array) &$sources)) {
+         *     Event::listen('system.resizer.getAvailableSources', function((array) &$sources)) {
          *         $sources['custom'] = [
          *              'disk' => 'custom',
-         *              'folder' => 'relative/path/on/disk',
-         *              'path' => 'publicly/accessible/path',
+         *              'root' => 'relative/path/on/disk',
+         *              'url' => 'publicly/accessible/path',
          *         ];
          *     });
          *
@@ -310,7 +393,7 @@ class ResizeImages
         $mode = $options['mode'];
         $extension = $options['extension'];
 
-        return "img_${id}_${width}_${height}_${offsetA}_${offsetB}_${mode}.${extension}";
+        return "img_{$id}_{$width}_{$height}_{$offsetA}_{$offsetB}_{$mode}.{$extension}";
     }
 
     /**
@@ -347,18 +430,13 @@ class ResizeImages
      */
     public function getPublicPath()
     {
-        $disk = Storage::disk(Config::get('system.storage.resources.disk'));
-        $resourcesFolder = Config::get('system.storage.resources.folder');
-        $resourcesFolder .= '/resize';
+        $publicPath = $this->storageUrl . '/resize';
 
-        if (
-            Config::get('system.storage.resources.disk') === 'local' &&
-            Config::get('system.relative_links') === true
-        ) {
-            return $resourcesFolder;
+        if ($this->isLocalStorage() && Config::get('system.relative_links') === true) {
+            return Url::toRelative($publicPath);
         }
 
-        return $disk->url($resourcesFolder);
+        return Url::asset($publicPath);
     }
 
     /**
@@ -366,13 +444,11 @@ class ResizeImages
      */
     public function getOutputPath()
     {
-        $path = rtrim(Config::get('system.storage.resources.path', '/storage/app/resources'), '/');
-        $path .= '/resize';
-
-        $path = base_path($path);
+        $path = rtrim(Config::get('filesystems.disks.resources.root', storage_path('app/resources')), '/');
+        $path .= '/'. $this->storageFolder;
 
         if (!File::isDirectory($path)) {
-            File::makeDirectory($path, 0777, true, true);
+            File::makeDirectory($path, 0755, true, true);
         }
 
         return $path;
@@ -383,13 +459,21 @@ class ResizeImages
      */
     public function getTempPath()
     {
-        $path = temp_path() . '/resize';
+        $path = temp_path('resize');
 
         if (!File::isDirectory($path)) {
-            File::makeDirectory($path, 0777, true, true);
+            File::makeDirectory($path, 0755, true, true);
         }
 
         return $path;
+    }
+
+    /**
+     * isLocalStorage returns true if the storage engine is local
+     */
+    protected function isLocalStorage()
+    {
+        return Config::get('filesystems.disks.resources.driver') === 'local';
     }
 
     //
@@ -447,7 +531,7 @@ class ResizeImages
          *
          * Example usage:
          *
-         *     Event::listen('cms.resizer.getCacheKey', function ((\System\Classes\ResizeImages) $assetCombiner, (stdClass) $dataHolder) {
+         *     Event::listen('cms.resizer.getCacheKey', function((\System\Classes\ResizeImages) $assetCombiner, (stdClass) $dataHolder) {
          *         $dataHolder->key = rand();
          *     });
          *
@@ -457,6 +541,14 @@ class ResizeImages
         $cacheKey = $dataHolder->key;
 
         return md5($cacheKey);
+    }
+
+    /**
+     * getExistsCacheKey builds a key for caching the exists check
+     */
+    protected function getExistsCacheKey(string $filePath): string
+    {
+        return $this->getCacheKey(['type' => 'resizer-file', 'path' => $filePath]);
     }
 
     /**

@@ -1,7 +1,5 @@
 <?php
 
-use System\Classes\PluginManager;
-
 class CoreLangTest extends TestCase
 {
     public function testValidationTranslator()
@@ -41,6 +39,12 @@ class CoreLangTest extends TestCase
                     $messages = require $srcPath;
                     $this->assertNotEmpty($messages);
                     $this->assertNotCount(0, $messages);
+                }
+
+                $jsonPath = base_path() . '/modules/'.$module.'/lang/'.$locale.'.json';
+                if (file_exists($jsonPath)) {
+                    $jsonOut = json_decode(file_get_contents($jsonPath));
+                    $this->assertNotEmpty($jsonOut, "Invalid JSON found in [{$locale}.json] for module [{$module}].");
                 }
             }
         }

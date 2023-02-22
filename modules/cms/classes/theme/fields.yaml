@@ -3,66 +3,66 @@
 # ===================================
 
 tabs:
-    defaultTab: cms::lang.theme.default_tab
+    defaultTab: Properties
     fields:
 
         name:
-            label: cms::lang.theme.name_label
-            placeholder: cms::lang.theme.name_create_placeholder
+            label: Name
+            placeholder: New theme name
             span: auto
             required: true
             attributes:
                 default-focus: 1
 
         dir_name@create:
-            label: cms::lang.theme.dir_name_label
-            placeholder: cms::lang.theme.dir_name_create_label
+            label: Directory Name
+            placeholder: The destination theme directory
             span: auto
             preset: name
             required: true
 
         dir_name@update:
-            label: cms::lang.theme.dir_name_label
+            label: Directory Name
             disabled: true
             span: auto
 
         description:
-            label: cms::lang.theme.description_label
-            placeholder: cms::lang.theme.description_placeholder
+            label: Description
+            placeholder: Theme description
             type: textarea
             size: tiny
 
         author:
-            label: cms::lang.theme.author_label
-            placeholder: cms::lang.theme.author_placeholder
+            label: Author Name
+            placeholder: Person or company name
             span: auto
-            tab: cms::lang.theme.publish_tab
+            tab: Publish
 
         homepage:
-            label: cms::lang.theme.homepage_label
-            placeholder: cms::lang.theme.homepage_placeholder
+            label: Homepage
+            placeholder: Website URL
             span: auto
-            tab: cms::lang.theme.publish_tab
+            tab: Publish
 
         authorCode:
-            label: cms::lang.theme.author_code_label
-            placeholder: cms::lang.theme.author_code_placeholder
+            label: Author Code
+            placeholder: A unique code for the author used for distribution
             span: auto
-            tab: cms::lang.theme.publish_tab
+            tab: Publish
 
         code:
-            label: cms::lang.theme.code_label
-            placeholder: cms::lang.theme.code_placeholder
+            label: Theme Code
+            placeholder: A unique code for this theme used for distribution
             span: auto
-            tab: cms::lang.theme.publish_tab
+            tab: Publish
 
         parent:
-            label: cms::lang.theme.parent_label
+            label: Parent Theme
             type: dropdown
-            tab: cms::lang.theme.advanced_tab
+            tab: Advanced
 
         database:
-            label: cms::lang.theme.database_templates_label
-            comment: cms::lang.theme.database_templates_description
+            label: Database Mode
+            comment: Save changes to this theme in the database instead of the filesystem
             type: checkbox
-            tab: cms::lang.theme.advanced_tab
+            tab: Advanced

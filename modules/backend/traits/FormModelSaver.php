@@ -25,13 +25,17 @@ trait FormModelSaver
      * performSaveOnModel saves complex data against a model inside
      * a database transaction.
      */
-    protected function performSaveOnModel($model, $data, $sessionKey = null)
+    protected function performSaveOnModel($model, $data, $options = null)
     {
+        if (is_string($options)) {
+            $options = ['sessionKey' => $options];
+        }
+
         $modelsToSave = $this->prepareModelsToSave($model, $data);
-        Db::transaction(function () use ($modelsToSave, $sessionKey) {
+        Db::transaction(function () use ($modelsToSave, $options) {
             foreach ($modelsToSave as $attrChain => $modelToSave) {
                 try {
-                    $modelToSave->save(null, $sessionKey);
+                    $modelToSave->save($options);
                 }
                 catch (ValidationException $ve) {
                     $ve->setFieldPrefix(explode('.', $attrChain));
@@ -84,19 +88,15 @@ trait FormModelSaver
         }
 
         if (!$model instanceof DatabaseModel) {
-            $model->fill($saveData);
+            if (method_exists($model, 'fill')) {
+                $model->fill($saveData);
+            }
             return;
         }
 
         $attributesToPurge = [];
-        $singularTypes = ['belongsTo', 'hasOne', 'morphTo', 'morphOne'];
-
         foreach ($saveData as $attribute => $value) {
-            $isNested = $attribute === 'pivot' || (
-                $model->hasRelation($attribute) &&
-                in_array($model->getRelationType($attribute), $singularTypes)
-            );
-
+            $isNested = $attribute === 'pivot' || $model->isRelationTypeSingular($attribute);
             if ($isNested && is_array($value)) {
                 $attrChain = $attrName !== '' ? $attrName . '.' . $attribute : $attribute;
                 $this->setModelAttributes($model->{$attribute}, $value, $attrChain);

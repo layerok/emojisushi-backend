@@ -1,16 +1,16 @@
 <?php namespace Cms\Components;
 
-use Cms\Classes\ComponentBase;
+use Cms\Classes\ComponentModuleBase;
 
-class UnknownComponent extends ComponentBase
+class UnknownComponent extends ComponentModuleBase
 {
     /**
-     * @var string Error message that is shown with this error component.
+     * @var string errorMessage that is shown with this error component.
      */
     protected $errorMessage;
 
     /**
-     * @inheritDoc
+     * __construct
      */
     public function __construct($cmsObject, $properties, $errorMessage)
     {
@@ -22,12 +22,13 @@ class UnknownComponent extends ComponentBase
     }
 
     /**
+     * componentDetails
      * @return array
      */
     public function componentDetails()
     {
         return [
-            'name'        => 'Unknown component',
+            'name' => 'Unknown component',
             'description' => $this->errorMessage
         ];
     }

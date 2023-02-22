@@ -270,7 +270,7 @@ class Plugin extends PluginBase
         });
 
         Variant::extend(function($model){
-            $model->fillable[] = 'poster_id';
+            $model->addFillable('poster_id');
         });
 
         Property::extend(function($model){

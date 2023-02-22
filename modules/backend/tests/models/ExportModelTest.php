@@ -6,32 +6,8 @@ if (!class_exists('Model')) {
     class_alias('October\Rain\Database\Model', 'Model');
 }
 
-class ExampleExportModel extends ExportModel
-{
-    public function exportData($columns, $sessionKey = null)
-    {
-        return [
-            [
-                'foo' => 'bar',
-                'bar' => 'foo',
-                'foobar' => 'Hello World!',
-            ],
-            [
-                'foo' => 'bar2',
-                'bar' => 'foo2',
-                'foobar' => 'Hello World2!',
-            ],
-        ];
-    }
-}
-
 class ExportModelTest extends TestCase
 {
-
-    //
-    // Tests
-    //
-
     public function testEncodeArrayValue()
     {
         $model = new ExampleExportModel;
@@ -48,39 +24,59 @@ class ExportModelTest extends TestCase
         $this->assertEquals('art direction-roman empire-sci\-fi', $result);
     }
 
-    public function testDownload()
+    public function testDownloadCsv()
     {
         $model = new ExampleExportModel;
+        $csvName = 'myexport.csv';
 
-        $csvName = $model->export(['foo' => 'title', 'bar' => 'title2'], []);
+        $response = $model->exportDownload($csvName, [
+            'columns' => [
+                'foo' => 'title',
+                'bar' => 'title2'
+            ],
+            'file_format' => 'csv'
+        ]);
 
-        $response = $model->download($csvName);
-
-        $request = new Illuminate\Http\Request();
-
+        $request = new Illuminate\Http\Request;
         $response->prepare($request);
 
         $this->assertTrue($response->headers->has('Content-Type'), "Response is missing the Content-Type header!");
         $this->assertTrue(
-            $response->headers->contains('Content-Type', 'text/csv'),
-            "Content-Type should be either text/csv"
+            $response->headers->contains('Content-Type', 'text/csv; charset=UTF-8'),
+            "Content-Type should be either text/csv. Found: " . $response->headers->get('Content-Type')
         );
 
         ob_start();
         $response->send();
         $output = ob_get_clean();
 
-        $utf8BOM = chr(239).chr(187).chr(191);
+        $this->assertEquals("title,title2\nbar,foo\nbar2,foo2\n", $output, "CSV is not right!");
 
-        $this->assertEquals($utf8BOM."title,title2\nbar,foo\nbar2,foo2\n", $output, "CSV is not right!");
-
-        $filePath = temp_path($csvName);
-
+        // Check file was deleted
+        $filePath = temp_path('export/'.$csvName);
         $fileGotDeleted = !is_file($filePath);
-
         $this->assertTrue($fileGotDeleted, "Export-CSV doesn't get deleted.");
         if (!$fileGotDeleted) {
             unlink($filePath);
         }
+    }
+}
+
+class ExampleExportModel extends ExportModel
+{
+    public function exportData($columns, $sessionKey = null)
+    {
+        return [
+            [
+                'foo' => 'bar',
+                'bar' => 'foo',
+                'foobar' => 'Hello World!',
+            ],
+            [
+                'foo' => 'bar2',
+                'bar' => 'foo2',
+                'foobar' => 'Hello World2!',
+            ],
+        ];
     }
 }

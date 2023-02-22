@@ -7,11 +7,11 @@ fields:
     hint:
         type: hint
         mode: tip
-        label: cms::lang.maintenance.hint
+        label: Maintenance mode will display the maintenance page to visitors who are not signed in to the back-end area.
 
     is_enabled:
-        label: cms::lang.maintenance.is_enabled
-        comment: cms::lang.maintenance.is_enabled_comment
+        label: Enable maintenance mode
+        comment: Select the page to show when maintenance mode is activated.
         type: checkbox
 
     cms_page:

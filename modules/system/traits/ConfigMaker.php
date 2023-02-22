@@ -18,12 +18,12 @@ use October\Rain\Html\Helper as HtmlHelper;
 trait ConfigMaker
 {
     /**
-     * @var string Specifies a path to the config directory.
+     * @var string configPath specifies a path to the config directory.
      */
     protected $configPath;
 
     /**
-     * Reads the contents of the supplied file and applies it to this object.
+     * makeConfig reads the contents of the supplied file and applies it to this object.
      * @param mixed $configFile
      * @param array $requiredConfig
      * @return object
@@ -34,21 +34,15 @@ trait ConfigMaker
             $configFile = [];
         }
 
-        /*
-         * Config already made
-         */
+        // Config already made
         if (is_object($configFile)) {
             $config = $configFile;
         }
-        /*
-         * Embedded config
-         */
+        // Embedded config
         elseif (is_array($configFile)) {
             $config = $this->makeConfigFromArray($configFile);
         }
-        /*
-         * Process config from file contents
-         */
+        // Process config from file contents
         else {
             if (isset($this->controller) && method_exists($this->controller, 'getConfigPath')) {
                 $configFile = $this->controller->getConfigPath($configFile);
@@ -93,9 +87,7 @@ trait ConfigMaker
             $config = $this->makeConfigFromArray($config);
         }
 
-        /*
-         * Validate required configuration
-         */
+        // Validate required configuration
         foreach ($requiredConfig as $property) {
             if (!property_exists($config, $property)) {
                 throw new SystemException(Lang::get(
@@ -109,7 +101,8 @@ trait ConfigMaker
     }
 
     /**
-     * Makes a config object from an array, making the first level keys properties of a new object.
+     * makeConfigFromArray makes a config object from an array, making the first
+     * level keys properties of a new object.
      *
      * @param array $configArray Config array.
      * @return stdClass The config object
@@ -168,7 +161,7 @@ trait ConfigMaker
     }
 
     /**
-     * Guess the package path for the called class.
+     * guessConfigPath guesses the package path for the called class.
      * @param string $suffix An extra path to attach to the end
      * @return string
      */
@@ -179,7 +172,7 @@ trait ConfigMaker
     }
 
     /**
-     * Guess the package path from a specified class.
+     * guessConfigPathFrom guesses the package path from a specified class.
      * @param string $class Class to guess path from.
      * @param string $suffix An extra path to attach to the end
      * @return string
@@ -192,7 +185,7 @@ trait ConfigMaker
     }
 
     /**
-     * Merges two configuration sources, either prepared or not, and returns
+     * mergeConfig merges two configuration sources, either prepared or not, and returns
      * them as a single configuration object.
      * @param mixed $configA
      * @param mixed $configB
@@ -212,21 +205,15 @@ trait ConfigMaker
      */
     protected function getConfigValueFrom(object $configObj, string $name = null, $default = null)
     {
-        /*
-         * Return all config
-         */
+        // Return all config
         if ($name === null) {
             return $configObj;
         }
 
-        /*
-         * Array field name, eg: field[key][key2][key3]
-         */
+        // Array field name, eg: field[key][key2][key3]
         $keyParts = HtmlHelper::nameToArray($name);
 
-        /*
-         * First part will be the field name, pop it off
-         */
+        // First part will be the field name, pop it off
         $fieldName = array_shift($keyParts);
         if (!isset($configObj->{$fieldName})) {
             return $default;
@@ -234,9 +221,7 @@ trait ConfigMaker
 
         $result = $configObj->{$fieldName};
 
-        /*
-         * Loop the remaining key parts and build a result
-         */
+        // Loop the remaining key parts and build a result
         foreach ($keyParts as $key) {
             if (!is_array($result) || !array_key_exists($key, $result)) {
                 return $default;

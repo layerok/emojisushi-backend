@@ -1,4 +1,4 @@
-$.oc.module.register('backend.component.inspector.inspectorhost', function () {
+oc.Module.register('backend.component.inspector.inspectorhost', function () {
     var InspectorHost = function () {
         this.showModal = function showModal(title, obj, dataSchema, uniqueId, options) {
             if (typeof title !== 'string' || !title.length) {

@@ -1,7 +1,7 @@
 /*
  * Vue treeview node
  */
-$.oc.module.register('backend.component.treeview.quickaccess', function () {
+oc.Module.register('backend.component.treeview.quickaccess', function () {
     Vue.component('backend-component-treeview-quickaccess', {
         props: {
             uniqueKey: String,

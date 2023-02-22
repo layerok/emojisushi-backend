@@ -63,9 +63,7 @@
 
         this.$el.one('dispose-control', this.proxy(this.dispose));
 
-        /*
-         * Textarea must have an identifier
-         */
+        // Textarea must have an identifier
         if (!this.$textarea.attr('id')) {
             this.$textarea.attr('id', 'element-' + Math.random().toString(36).substring(7));
         }
@@ -75,9 +73,7 @@
             return;
         }
 
-        /*
-         * Initialize Froala editor
-         */
+        // Initialize Froala editor
         this.initFroala();
     };
 
@@ -86,7 +82,6 @@
             editorClass: 'control-richeditor',
             language: this.options.editorLang,
             fullPage: this.options.fullpage,
-            pageLinksHandler: this.options.linksHandler,
             aceEditorVendorPath: this.options.aceVendorPath,
             toolbarSticky: false
         };
@@ -150,8 +145,8 @@
         froalaOptions.toolbarButtonsSM = froalaOptions.toolbarButtons;
         froalaOptions.toolbarButtonsXS = froalaOptions.toolbarButtons;
 
-        if (this.options.htmlAllowedEmptyTags) {
-            froalaOptions.allowEmptyTags = this.options.htmlAllowedEmptyTags.split(/[\s,]+/);
+        if (this.options.allowEmptyTags) {
+            froalaOptions.htmlAllowedEmptyTags = this.options.allowEmptyTags.split(/[\s,]+/);
         }
 
         if (this.options.allowTags) {
@@ -162,9 +157,9 @@
             froalaOptions.htmlAllowedAttrs = $.extend($.FroalaEditor.DEFAULTS.htmlAllowedAttrs, this.options.allowAttrs.split(/[\s,]+/));
         }
 
-        froalaOptions.htmlDoNotWrapTags = this.options.noWrapTags
-            ? this.options.noWrapTags.split(/[\s,]+/)
-            : ['figure', 'script', 'style'];
+        if (this.options.noWrapTags) {
+            froalaOptions.htmlDoNotWrapTags = this.options.noWrapTags.split(/[\s,]+/);
+        }
 
         if (this.options.removeTags) {
             froalaOptions.htmlRemoveTags = this.options.removeTags.split(/[\s,]+/);
@@ -192,12 +187,6 @@
         if (!this.options.useMediaManager) {
             delete $.FroalaEditor.PLUGINS.mediaManager;
         }
-
-        $.FroalaEditor.ICON_TEMPLATES = {
-            font_awesome: '<i class="icon-[NAME]"></i>',
-            text: '<span style="text-align: center;">[NAME]</span>',
-            image: '<img src=[SRC] alt=[ALT] />'
-        };
 
         this.$textarea.on('froalaEditor.initialized', this.proxy(this.build));
         this.$textarea.on('froalaEditor.contentChanged', this.proxy(this.onChange));
@@ -414,7 +403,7 @@
     //
 
     RichEditor.prototype.initVueConnector = function() {
-        var Widget = $.oc.module.import('backend.vuecomponents.richeditordocumentconnector.formwidget'),
+        var Widget = oc.Module.import('backend.vuecomponents.richeditordocumentconnector.formwidget'),
             that = this;
 
         this.vueWidget = new Widget(this.$textarea.get(0), this.options, function() {
@@ -473,7 +462,7 @@
         'formatOL',
         'formatUL',
         'insertTable',
-        'insertLink',
+        'insertPageLink',
         'insertImage',
         'insertVideo',
         'insertAudio',

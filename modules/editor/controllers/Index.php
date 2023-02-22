@@ -19,14 +19,25 @@ class Index extends Controller
 {
     use \Backend\Traits\InspectableContainer;
 
-    public $requiredPermissions = ['editor.access_editor'];
+    /**
+     * @var array requiredPermissions
+     */
+    public $requiredPermissions = ['editor'];
 
+    /**
+     * @var array implement
+     */
     public $implement = [
         \Editor\Behaviors\StateManager::class
     ];
 
     /**
-     * Constructor.
+     * @var bool turboVisitControl
+     */
+    public $turboVisitControl = 'disable';
+
+    /**
+     * __construct
      */
     public function __construct()
     {
@@ -38,20 +49,24 @@ class Index extends Controller
         $this->pageTitle = 'editor::lang.plugin.name';
     }
 
+    /**
+     * index
+     */
     public function index()
     {
-        $this->addCss('/modules/editor/assets/css/editor.css', 'core');
+        $this->addCss('/modules/editor/assets/css/editor.css');
 
-        $this->addJsBundle('/modules/editor/assets/js/editor.timeoutpromise.js', 'core');
-        $this->addJsBundle('/modules/editor/assets/js/editor.command.js', 'core');
-        $this->addJsBundle('/modules/editor/assets/js/editor.documenturi.js', 'core');
-        $this->addJsBundle('/modules/editor/assets/js/editor.store.tabmanager.js', 'core');
-        $this->addJsBundle('/modules/editor/assets/js/editor.store.js', 'core');
-        $this->addJsBundle('/modules/editor/assets/js/editor.page.js', 'core');
-        $this->addJsBundle('/modules/editor/assets/js/editor.extension.base.js', 'core');
-        $this->addJsBundle('/modules/editor/assets/js/editor.extension.documentcontroller.base.js', 'core');
+        $this->addJsBundle('/modules/editor/assets/js/editor.timeoutpromise.js');
+        $this->addJsBundle('/modules/editor/assets/js/editor.command.js');
+        $this->addJsBundle('/modules/editor/assets/js/editor.documenturi.js');
+        $this->addJsBundle('/modules/editor/assets/js/editor.store.tabmanager.js');
+        $this->addJsBundle('/modules/editor/assets/js/editor.store.js');
+        $this->addJsBundle('/modules/editor/assets/js/editor.page.js');
+        $this->addJsBundle('/modules/editor/assets/js/editor.extension.base.js');
+        $this->addJsBundle('/modules/editor/assets/js/editor.extension.documentcontroller.base.js');
+        $this->addJsBundle('/modules/editor/assets/js/editor.extension.filesystemfunctions.js');
 
-        $this->addJsBundle('/modules/editor/assets/js/editor.extension.documentcomponent.base.js', 'core');
+        $this->addJsBundle('/modules/editor/assets/js/editor.extension.documentcomponent.base.js');
 
         $this->registerVueComponent(\Backend\VueComponents\Document::class);
         $this->registerVueComponent(\Backend\VueComponents\Tabs::class);
@@ -66,8 +81,8 @@ class Index extends Controller
 
         $extensionManager = ExtensionManager::instance();
         $jsFiles = $extensionManager->listJsFiles();
-        foreach ($jsFiles as $jsFile => $attributes) {
-            $this->addJsBundle($jsFile, $attributes);
+        foreach ($jsFiles as $jsFile) {
+            $this->addJsBundle($jsFile);
         }
 
         $componentClasses = $extensionManager->listVueComponents();
@@ -83,10 +98,14 @@ class Index extends Controller
         $this->vars['customLogo'] = BrandSetting::getLogo();
 
         $this->vars['initialState'] = $this->makeInitialState([
-            'directModeDocument' => $directEditDocument
+            'directModeDocument' => $directEditDocument,
+            'openDocument' => Request::query('open')
         ]);
     }
 
+    /**
+     * index_onCommand
+     */
     public function index_onCommand()
     {
         $extension = post('extension');
@@ -100,7 +119,7 @@ class Index extends Controller
         }
 
         try {
-            return ExtensionManager::instance()->runCommand($extension, $command);
+            return ExtensionManager::instance()->runCommand($extension, $command, $this);
         }
         catch (ValidationException $ex) {
             $messages = $ex->getErrors()->getMessages();
@@ -113,6 +132,9 @@ class Index extends Controller
         }
     }
 
+    /**
+     * onListExtensionNavigatorSections
+     */
     public function onListExtensionNavigatorSections()
     {
         $namespace = post('extension');

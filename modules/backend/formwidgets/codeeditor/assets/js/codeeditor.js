@@ -34,21 +34,17 @@
         this.$form     = null
 
         // Toolbar links
-        this.isFullscreen = false
-        this.$fullscreenEnable = this.$toolbar.find('li.fullscreen-enable')
-        this.$fullscreenDisable = this.$toolbar.find('li.fullscreen-disable')
-        this.isSearchbox = false
-        this.$searchboxEnable = this.$toolbar.find('li.searchbox-enable')
-        this.$searchboxDisable = this.$toolbar.find('li.searchbox-disable')
-        this.isReplacebox = false
-        this.$replaceboxEnable = this.$toolbar.find('li.replacebox-enable')
-        this.$replaceboxDisable = this.$toolbar.find('li.replacebox-disable')
+        this.isFullscreen = false;
+        this.$fullscreenEnable = this.$toolbar.find('li.fullscreen-enable');
+        this.$fullscreenDisable = this.$toolbar.find('li.fullscreen-disable');
+        this.$searchboxEnable = this.$toolbar.find('li.searchbox-enable');
+        this.$replaceboxEnable = this.$toolbar.find('li.replacebox-enable');
 
-        $.oc.foundation.controlUtils.markDisposable(element)
+        $.oc.foundation.controlUtils.markDisposable(element);
 
         this.init();
 
-        this.$el.trigger('oc.codeEditorReady')
+        this.$el.trigger('oc.codeEditorReady');
     }
 
     CodeEditor.prototype = Object.create(BaseProto)
@@ -77,19 +73,12 @@
     }
 
     CodeEditor.prototype.init = function (){
-
-        var self = this;
-
-        /*
-         * Control must have an identifier
-         */
+        // Control must have an identifier
         if (!this.$el.attr('id')) {
             this.$el.attr('id', 'element-' + Math.random().toString(36).substring(7))
         }
 
-        /*
-         * Create code container
-         */
+        // Create code container
         this.$code = $('<div />')
             .addClass('editor-code')
             .attr('id', this.$el.attr('id') + '-code')
@@ -102,9 +91,7 @@
             })
             .appendTo(this.$el)
 
-        /*
-         * Initialize ACE editor
-         */
+        // Initialize ACE editor
         var editor = this.editor = ace.edit(this.$code.attr('id')),
             options = this.options,
             $form = this.$el.closest('form');
@@ -123,57 +110,51 @@
         $(window).on('oc.updateUi', this.proxy(this.onResize))
         this.$el.one('dispose-control', this.proxy(this.dispose))
 
-        /*
-         * Set theme, anticipated languages should be preloaded
-         */
-        assetManager.load({
+        // Set theme, anticipated languages should be preloaded
+        oc.AssetManager.load({
             js:[
-                // options.vendorPath + '/mode-' + options.language + '.js',
                 options.vendorPath + '/theme-' + options.theme + '.js'
             ]
-        }, function(){
-            editor.setTheme('ace/theme/' + options.theme)
-            var inline = options.language === 'php'
-            editor.getSession().setMode({ path: 'ace/mode/'+options.language, inline: inline })
-        })
+        }, function() {
+            if (editor) {
+                editor.setTheme('ace/theme/' + options.theme);
+                var inline = options.language === 'php';
+                editor.getSession().setMode({ path: 'ace/mode/'+options.language, inline: inline });
+            }
+        });
 
-        /*
-         * Config editor
-         */
-        editor.wrapper = this
-        editor.setShowInvisibles(options.showInvisibles)
-        editor.setBehavioursEnabled(options.autoCloseTags)
-        editor.setHighlightActiveLine(options.highlightActiveLine)
-        editor.renderer.setShowGutter(options.showGutter)
-        editor.renderer.setShowPrintMargin(options.showPrintMargin)
-        editor.setHighlightSelectedWord(options.highlightSelectedWord)
-        editor.renderer.setHScrollBarAlwaysVisible(options.hScrollBarAlwaysVisible)
-        editor.setDisplayIndentGuides(options.displayIndentGuides)
-        editor.getSession().setUseSoftTabs(options.useSoftTabs)
-        editor.getSession().setTabSize(options.tabSize)
-        editor.setReadOnly(options.readOnly)
-        editor.getSession().setFoldStyle(options.codeFolding)
-        editor.setFontSize(options.fontSize)
-        editor.on('blur', this.proxy(this.onBlur))
-        editor.on('focus', this.proxy(this.onFocus))
-        this.setWordWrap(options.wordWrap)
+        // Config editor
+        editor.wrapper = this;
+        editor.setShowInvisibles(options.showInvisibles);
+        editor.setBehavioursEnabled(options.autoCloseTags);
+        editor.setHighlightActiveLine(options.highlightActiveLine);
+        editor.renderer.setShowGutter(options.showGutter);
+        editor.renderer.setShowPrintMargin(options.showPrintMargin);
+        editor.setHighlightSelectedWord(options.highlightSelectedWord);
+        editor.renderer.setHScrollBarAlwaysVisible(options.hScrollBarAlwaysVisible);
+        editor.setDisplayIndentGuides(options.displayIndentGuides);
+        editor.getSession().setUseSoftTabs(options.useSoftTabs);
+        editor.getSession().setTabSize(options.tabSize);
+        editor.setReadOnly(options.readOnly);
+        editor.getSession().setFoldStyle(options.codeFolding);
+        editor.setFontSize(options.fontSize);
+        editor.on('blur', this.proxy(this.onBlur));
+        editor.on('focus', this.proxy(this.onFocus));
+        this.setWordWrap(options.wordWrap);
 
         // Set the vendor path for Ace's require path
-        ace.require('ace/config').set('basePath', this.options.vendorPath)
+        ace.require('ace/config').set('basePath', this.options.vendorPath);
 
         editor.setOptions({
             enableEmmet: options.enableEmmet,
             enableBasicAutocompletion: options.autocompletion === 'basic',
             enableLiveAutocompletion: options.autocompletion === 'live'
-        })
+        });
 
-        editor.renderer.setScrollMargin(options.margin, options.margin, 0, 0)
-        editor.renderer.setPadding(options.margin)
+        editor.renderer.setScrollMargin(options.margin, options.margin, 0, 0);
+        editor.renderer.setPadding(options.margin);
 
-        /*
-         * Toolbar
-         */
-
+        // Toolbar
         this.$toolbar.find('>ul>li>a')
             .each(function(){
                 var abbr = $(this).find('>abbr'),
@@ -193,85 +174,78 @@
         this.$fullscreenDisable.hide()
         this.$fullscreenEnable.on('click.codeeditor', '>a', $.proxy(this.toggleFullscreen, this))
         this.$fullscreenDisable.on('click.codeeditor', '>a', $.proxy(this.toggleFullscreen, this))
+        this.$searchboxEnable.on('click.codeeditor', '>a', $.proxy(this.showSearchbox, this))
+        this.$replaceboxEnable.on('click.codeeditor', '>a', $.proxy(this.showReplacebox, this))
 
-        this.$searchboxDisable.hide()
-        this.$searchboxEnable.on('click.codeeditor', '>a', $.proxy(this.toggleSearchbox, this))
-        this.$searchboxDisable.on('click.codeeditor', '>a', $.proxy(this.toggleSearchbox, this))
-
-        this.$replaceboxDisable.hide()
-        this.$replaceboxEnable.on('click.codeeditor', '>a', $.proxy(this.toggleReplacebox, this))
-        this.$replaceboxDisable.on('click.codeeditor', '>a', $.proxy(this.toggleReplacebox, this))
-
-        /*
-         * Hotkeys
-         */
+        // Hotkeys
         this.$el.hotKey({
             hotkey: 'esc',
             callback: this.proxy(this.onEscape)
-        })
+        });
 
         editor.commands.addCommand({
             name: 'toggleFullscreen',
             bindKey: { win: 'Ctrl+Shift+F', mac: 'Ctrl+Shift+F' },
             exec: $.proxy(this.toggleFullscreen, this),
             readOnly: true
-        })
+        });
     }
 
     CodeEditor.prototype.dispose = function() {
-        if (this.$el === null)
-            return
+        if (this.$el === null) {
+            return;
+        }
 
-        this.unregisterHandlers()
-        this.disposeAttachedControls()
+        this.unregisterHandlers();
+        this.disposeAttachedControls();
 
-        this.$el = null
-        this.$textarea = null
-        this.$toolbar = null
-        this.$code = null
-        this.$fullscreenEnable = null
-        this.$fullscreenDisable = null
-        this.$searchboxEnable = null
-        this.$searchboxDisable = null
-        this.$replaceboxEnable = null
-        this.$replaceboxDisable = null
-        this.$form = null
-        this.options = null
+        this.$el = null;
+        this.$textarea = null;
+        this.$toolbar = null;
+        this.$code = null;
+        this.$fullscreenEnable = null;
+        this.$fullscreenDisable = null;
+        this.$searchboxEnable = null;
+        this.$replaceboxEnable = null;
+        this.$form = null;
+        this.options = null;
 
-        BaseProto.dispose.call(this)
+        BaseProto.dispose.call(this);
     }
 
     CodeEditor.prototype.disposeAttachedControls = function() {
-        this.editor.destroy()
+        this.editor.destroy();
 
-        var keys = Object.keys(this.editor.renderer)
-        for (var i=0, len=keys.length; i<len; i++)
-            this.editor.renderer[keys[i]] = null
+        var keys = Object.keys(this.editor.renderer);
+        for (var i=0, len=keys.length; i<len; i++) {
+            this.editor.renderer[keys[i]] = null;
+        }
 
-        keys = Object.keys(this.editor)
-        for (var i=0, len=keys.length; i<len; i++)
-            this.editor[keys[i]] = null
+        keys = Object.keys(this.editor);
+        for (var i=0, len=keys.length; i<len; i++) {
+            this.editor[keys[i]] = null;
+        }
 
-        this.editor = null
+        this.editor = null;
 
-        this.$toolbar.find('>ul>li>a').tooltip('destroy')
-        this.$el.removeData('oc.codeEditor')
-        this.$el.hotKey('dispose')
+        this.$toolbar.find('>ul>li>a').tooltip('dispose');
+        this.$el.removeData('oc.codeEditor');
+        this.$el.hotKey('dispose');
     }
 
     CodeEditor.prototype.unregisterHandlers = function() {
-        this.editor.off('change', this.proxy(this.onChange))
-        this.editor.off('blur', this.proxy(this.onBlur))
-        this.editor.off('focus', this.proxy(this.onFocus))
+        this.editor.off('change', this.proxy(this.onChange));
+        this.editor.off('blur', this.proxy(this.onBlur));
+        this.editor.off('focus', this.proxy(this.onFocus));
 
-        this.$fullscreenEnable.off('.codeeditor')
-        this.$fullscreenDisable.off('.codeeditor')
-        this.$form.off('oc.beforeRequest', this.proxy(this.onBeforeRequest))
+        this.$fullscreenEnable.off('.codeeditor');
+        this.$fullscreenDisable.off('.codeeditor');
+        this.$form.off('oc.beforeRequest', this.proxy(this.onBeforeRequest));
 
-        this.$el.off('dispose-control', this.proxy(this.dispose))
+        this.$el.off('dispose-control', this.proxy(this.dispose));
 
-        $(window).off('resize', this.proxy(this.onResize))
-        $(window).off('oc.updateUi', this.proxy(this.onResize))
+        $(window).off('resize', this.proxy(this.onResize));
+        $(window).off('oc.updateUi', this.proxy(this.onResize));
     }
 
     CodeEditor.prototype.onBeforeRequest = function() {
@@ -305,91 +279,83 @@
 
         switch (mode + '') {
             default:
-            case "off":
-                session.setUseWrapMode(false)
-                renderer.setPrintMarginColumn(80)
+            case 'off':
+                session.setUseWrapMode(false);
+                renderer.setPrintMarginColumn(80);
             break
-            case "40":
-                session.setUseWrapMode(true)
-                session.setWrapLimitRange(40, 40)
-                renderer.setPrintMarginColumn(40)
+            case '40':
+                session.setUseWrapMode(true);
+                session.setWrapLimitRange(40, 40);
+                renderer.setPrintMarginColumn(40);
             break
-            case "80":
-                session.setUseWrapMode(true)
-                session.setWrapLimitRange(80, 80)
-                renderer.setPrintMarginColumn(80)
+            case '80':
+                session.setUseWrapMode(true);
+                session.setWrapLimitRange(80, 80);
+                renderer.setPrintMarginColumn(80);
             break
-            case "fluid":
-                session.setUseWrapMode(true)
-                session.setWrapLimitRange(null, null)
-                renderer.setPrintMarginColumn(80)
+            case 'fluid':
+                session.setUseWrapMode(true);
+                session.setWrapLimitRange(null, null);
+                renderer.setPrintMarginColumn(80);
             break
         }
     }
 
     CodeEditor.prototype.setTheme = function(theme) {
-        var self = this
-        assetManager.load({
+        var self = this;
+        oc.AssetManager.load({
             js:[
                 this.options.vendorPath + '/theme-' + theme + '.js'
             ]
         }, function(){
             self.editor.setTheme('ace/theme/' + theme)
-        })
+        });
     }
 
     CodeEditor.prototype.getContent = function() {
-        return this.editor.getSession().getValue()
+        return this.editor.getSession().getValue();
     }
 
     CodeEditor.prototype.setContent = function(html) {
-        this.editor.getSession().setValue(html)
+        this.editor.getSession().setValue(html);
     }
 
     CodeEditor.prototype.getEditorObject = function() {
-        return this.editor
+        return this.editor;
     }
 
     CodeEditor.prototype.getToolbar = function() {
-        return this.$toolbar
+        return this.$toolbar;
     }
 
     CodeEditor.prototype.toggleFullscreen = function() {
-        this.$el.toggleClass('editor-fullscreen')
-        this.$fullscreenEnable.toggle()
-        this.$fullscreenDisable.toggle()
+        this.$el.toggleClass('editor-fullscreen');
+        this.$fullscreenEnable.toggle();
+        this.$fullscreenDisable.toggle();
 
-        this.isFullscreen = this.$el.hasClass('editor-fullscreen')
+        this.isFullscreen = this.$el.hasClass('editor-fullscreen');
 
         if (this.isFullscreen) {
-            $('body').css({ overflow: 'hidden' })
+            $('body').css({ overflow: 'hidden' });
         }
         else {
-            $('body').css({ overflow: 'inherit' })
+            $('body').css({ overflow: 'inherit' });
         }
 
-        this.editor.resize()
-        this.editor.focus()
+        this.editor.resize();
+        this.editor.focus();
     }
 
-    CodeEditor.prototype.toggleSearchbox = function() {
-        this.$searchboxEnable.toggle()
-        this.$searchboxDisable.toggle()
-
-        this.editor.execCommand("find")
-
-        this.editor.resize()
-        this.editor.focus()
+    CodeEditor.prototype.showSearchbox = function() {
+        this.editor.execCommand('find');
+        this.editor.resize();
+        this.editor.focus();
     }
 
-    CodeEditor.prototype.toggleReplacebox = function() {
-        this.$replaceboxEnable.toggle()
-        this.$replaceboxDisable.toggle()
-
-        this.editor.execCommand("replace")
-
-        this.editor.resize()
-        this.editor.focus()
+    CodeEditor.prototype.showReplacebox = function() {
+        this.editor.execCommand('replace');
+        this.editor.resize();
+        this.editor.focus();
     }
 
     // CODEEDITOR PLUGIN DEFINITION

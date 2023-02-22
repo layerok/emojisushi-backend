@@ -1,7 +1,7 @@
 /*
  * Vue Inspector media finder control implementation
  */
-$.oc.module.register('backend.component.inspector.control.mediafinder', function () {
+oc.Module.register('backend.component.inspector.control.mediafinder', function () {
     Vue.component('backend-component-inspector-control-mediafinder', {
         extends: $.oc.vueComponentHelpers.inspector.controlBase,
         props: {

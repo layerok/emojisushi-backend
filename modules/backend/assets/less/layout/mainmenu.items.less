@@ -11,7 +11,7 @@ ul.mainmenu-items {
 }
 
 .mainmenu-item {
-    display: block;
+    display: inline-block;
     position: relative;
     vertical-align: top;
     user-select: none;
@@ -42,7 +42,7 @@ ul.mainmenu-items {
     }
 
     .nav-icon {
-        opacity: 0.5;
+        opacity: .5;
         position: absolute; // Don't let icon fonts height affect the layout
         top: 0;
 
@@ -119,6 +119,10 @@ ul.mainmenu-items {
         .nav-label, .nav-icon, > a:after {
             opacity: 1;
         }
+    }
+
+    &.has-solidicon .nav-icon {
+        opacity: 1;
     }
 }
 

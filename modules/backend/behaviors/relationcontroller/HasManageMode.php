@@ -130,7 +130,7 @@ trait HasManageMode
 
                 // Reset any orders that may have come from the definition
                 // because it has a tendency to break things
-                $query->getQuery()->orders = [];
+                $query->getQuery()->reorder();
             });
         }
 
@@ -303,9 +303,7 @@ trait HasManageMode
     {
         $this->beforeAjax();
 
-        /*
-         * Multiple (has many, belongs to many)
-         */
+        // Multiple (has many, belongs to many)
         if ($this->viewMode === 'multi') {
             if (($checkedIds = post('checked')) && is_array($checkedIds)) {
                 foreach ($checkedIds as $relationId) {
@@ -317,9 +315,7 @@ trait HasManageMode
                 }
             }
         }
-        /*
-         * Single (belongs to, has one)
-         */
+        // Single (belongs to, has one)
         elseif ($this->viewMode === 'single') {
             $relatedModel = $this->viewModel;
             if ($relatedModel->exists) {
@@ -345,16 +341,12 @@ trait HasManageMode
         $recordId = post('record_id');
         $sessionKey = $this->deferredBinding ? $this->relationGetSessionKey() : null;
 
-        /*
-         * Add
-         */
+        // Add
         if ($this->viewMode === 'multi') {
             $checkedIds = $recordId ? [$recordId] : post('checked');
 
             if (is_array($checkedIds)) {
-                /*
-                 * Remove existing relations from the array
-                 */
+                // Remove existing relations from the array
                 $existingIds = $this->findExistingRelationIds($checkedIds);
                 $checkedIds = array_diff($checkedIds, $existingIds);
                 $foreignKeyName = $this->relationModel->getKeyName();
@@ -367,9 +359,7 @@ trait HasManageMode
 
             $this->showFlashMessage('flashAdd');
         }
-        /*
-         * Link
-         */
+        // Link
         elseif ($this->viewMode === 'single') {
             if ($recordId && ($model = $this->relationModel->find($recordId))) {
                 $this->relationObject->add($model, $sessionKey);
@@ -401,9 +391,7 @@ trait HasManageMode
         $sessionKey = $this->deferredBinding ? $this->relationGetSessionKey() : null;
         $relatedModel = $this->relationModel;
 
-        /*
-         * Remove
-         */
+        // Remove
         if ($this->viewMode === 'multi') {
             $checkedIds = $recordId ? [$recordId] : post('checked');
 
@@ -418,9 +406,7 @@ trait HasManageMode
 
             $this->showFlashMessage('flashRemove');
         }
-        /*
-         * Unlink
-         */
+        // Unlink
         elseif ($this->viewMode === 'single') {
             if ($this->relationType === 'belongsTo') {
                 $this->relationObject->dissociate();

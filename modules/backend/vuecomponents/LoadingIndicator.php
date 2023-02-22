@@ -3,7 +3,7 @@
 use Backend\Classes\VueComponentBase;
 
 /**
- * Loading indicator Vue component.
+ * LoadingIndicator Vue component.
  *
  * @package october\backend
  * @author Alexey Bobkov, Samuel Georges

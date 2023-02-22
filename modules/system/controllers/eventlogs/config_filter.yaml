@@ -5,6 +5,6 @@
 scopes:
 
     created_at:
-        label: backend::lang.access_log.created_at
+        label: Date & Time
         type: daterange
         conditions: created_at >= ':after' AND created_at <= ':before'

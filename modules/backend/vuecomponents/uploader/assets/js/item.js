@@ -1,7 +1,7 @@
 /*
  *  Universal file uploader item implementation
  */
-$.oc.module.register('backend.component.uploader.item', function () {
+oc.Module.register('backend.component.uploader.item', function () {
     Vue.component('backend-component-uploader-item', {
         props: {
             errorMessage: String,
@@ -9,7 +9,7 @@ $.oc.module.register('backend.component.uploader.item', function () {
             progress: Number,
             status: String
         },
-        data: function data() {
+        data: function () {
             return {};
         },
         computed: {

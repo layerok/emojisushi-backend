@@ -1,8 +1,8 @@
-$.oc.module.register('backend.component.richeditor', function () {
+oc.Module.register('backend.component.richeditor', function () {
     function initFroala(component) {
-        var options = JSON.parse(component.$el.getAttribute('data-configuration'));
-        var $textarea = $(component.$refs.textarea);
-        var froalaOptions = {
+        const options = JSON.parse(component.$el.getAttribute('data-configuration'));
+        const $textarea = $(component.$refs.textarea);
+        let froalaOptions = {
             editorClass: 'control-richeditor',
             language: options.editorLang,
             toolbarSticky: false
@@ -10,56 +10,70 @@ $.oc.module.register('backend.component.richeditor', function () {
 
         if (Array.isArray(component.toolbarButtons) && component.toolbarButtons.length > 0) {
             froalaOptions.toolbarButtons = component.toolbarButtons;
-        } else {
+        }
+        else {
             if (options.globalToolbarButtons) {
                 froalaOptions.toolbarButtons = options.globalToolbarButtons;
-            } else {
+            }
+            else {
                 froalaOptions.toolbarButtons = component.defaultButtons;
             }
         }
 
-        froalaOptions.imageStyles = options.imageStyles ? options.imageStyles : {
-            'oc-img-rounded': 'Rounded',
-            'oc-img-bordered': 'Bordered'
-        };
+        froalaOptions.imageStyles = options.imageStyles
+            ? options.imageStyles
+            : {
+                  'oc-img-rounded': 'Rounded',
+                  'oc-img-bordered': 'Bordered'
+              };
 
-        froalaOptions.linkStyles = options.linkStyles ? options.linkStyles : {
-            'oc-link-green': 'Green',
-            'oc-link-strong': 'Thick'
-        };
+        froalaOptions.linkStyles = options.linkStyles
+            ? options.linkStyles
+            : {
+                  'oc-link-green': 'Green',
+                  'oc-link-strong': 'Thick'
+              };
 
-        froalaOptions.paragraphStyles = options.paragraphStyles ? options.paragraphStyles : {
-            'oc-text-gray': 'Gray',
-            'oc-text-bordered': 'Bordered',
-            'oc-text-spaced': 'Spaced',
-            'oc-text-uppercase': 'Uppercase'
-        };
+        froalaOptions.paragraphStyles = options.paragraphStyles
+            ? options.paragraphStyles
+            : {
+                  'oc-text-gray': 'Gray',
+                  'oc-text-bordered': 'Bordered',
+                  'oc-text-spaced': 'Spaced',
+                  'oc-text-uppercase': 'Uppercase'
+              };
 
-        froalaOptions.paragraphFormat = options.paragraphFormat ? options.paragraphFormat : {
-            'N': 'Normal',
-            'H1': 'Heading 1',
-            'H2': 'Heading 2',
-            'H3': 'Heading 3',
-            'H4': 'Heading 4',
-            'PRE': 'Code'
-        };
+        froalaOptions.paragraphFormat = options.paragraphFormat
+            ? options.paragraphFormat
+            : {
+              'N': 'Normal',
+              'H1': 'Heading 1',
+              'H2': 'Heading 2',
+              'H3': 'Heading 3',
+              'H4': 'Heading 4',
+              'PRE': 'Code'
+            }
 
-        froalaOptions.tableStyles = options.tableStyles ? options.tableStyles : {
-            'oc-dashed-borders': 'Dashed Borders',
-            'oc-alternate-rows': 'Alternate Rows'
-        };
+        froalaOptions.tableStyles = options.tableStyles
+            ? options.tableStyles
+            : {
+                  'oc-dashed-borders': 'Dashed Borders',
+                  'oc-alternate-rows': 'Alternate Rows'
+              };
 
-        froalaOptions.tableCellStyles = options.tableCellStyles ? options.tableCellStyles : {
-            'oc-cell-highlighted': 'Highlighted',
-            'oc-cell-thick-border': 'Thick'
-        };
+        froalaOptions.tableCellStyles = options.tableCellStyles
+            ? options.tableCellStyles
+            : {
+                  'oc-cell-highlighted': 'Highlighted',
+                  'oc-cell-thick-border': 'Thick'
+              };
 
         froalaOptions.toolbarButtonsMD = froalaOptions.toolbarButtons;
         froalaOptions.toolbarButtonsSM = froalaOptions.toolbarButtons;
         froalaOptions.toolbarButtonsXS = froalaOptions.toolbarButtons;
 
-        if (options.htmlAllowedEmptyTags) {
-            froalaOptions.allowEmptyTags = options.htmlAllowedEmptyTags.split(/[\s,]+/);
+        if (options.allowEmptyTags) {
+            froalaOptions.htmlAllowedEmptyTags = options.allowEmptyTags.split(/[\s,]+/);
         }
 
         if (options.allowTags) {
@@ -70,13 +84,17 @@ $.oc.module.register('backend.component.richeditor', function () {
             froalaOptions.htmlAllowedAttrs = $.FroalaEditor.DEFAULTS.htmlAllowedAttrs.concat(options.allowAttrs.split(/[\s,]+/));
         }
 
-        froalaOptions.htmlDoNotWrapTags = options.noWrapTags ? options.noWrapTags.split(/[\s,]+/) : ['figure', 'script', 'style'];
+        if (options.noWrapTags) {
+            froalaOptions.htmlDoNotWrapTags = options.noWrapTags.split(/[\s,]+/);
+        }
 
         if (options.removeTags) {
             froalaOptions.htmlRemoveTags = options.removeTags.split(/[\s,]+/);
         }
 
-        froalaOptions.lineBreakerTags = options.lineBreakerTags ? options.lineBreakerTags.split(/[\s,]+/) : ['figure, table, hr, iframe, form, dl'];
+        froalaOptions.lineBreakerTags = options.lineBreakerTags
+            ? options.lineBreakerTags.split(/[\s,]+/)
+            : ['figure, table, hr, iframe, form, dl'];
 
         froalaOptions.shortcutsEnabled = ['show', 'bold', 'italic', 'underline', 'indent', 'outdent', 'undo', 'redo'];
 
@@ -102,15 +120,9 @@ $.oc.module.register('backend.component.richeditor', function () {
             delete $.FroalaEditor.PLUGINS.mediaManager;
         }
 
-        if (!component.usePageLinks) {
+        if (!oc.pageLookup) {
             delete $.FroalaEditor.PLUGINS.pageLinks;
         }
-
-        $.FroalaEditor.ICON_TEMPLATES = {
-            font_awesome: '<i class="icon-[NAME]"></i>',
-            text: '<span style="text-align: center;">[NAME]</span>',
-            image: '<img src=[SRC] alt=[ALT] />'
-        };
 
         // $textarea.on('froalaEditor.initialized.richeditor', component.initialized);
         $textarea.on('froalaEditor.contentChanged.richeditor', component.onChange);
@@ -151,10 +163,25 @@ $.oc.module.register('backend.component.richeditor', function () {
             value: String,
             placeholder: String
         },
-        data: function data() {
+        data: function() {
             return {
                 editorId: $.oc.domIdManager.generate('richeditor'),
-                defaultButtons: ['paragraphFormat', 'align', 'bold', 'italic', 'underline', '-', 'formatOL', 'formatUL', '-', 'insertTable', 'insertLink', 'insertImage', 'insertHR', 'html'],
+                defaultButtons: [
+                    'paragraphFormat',
+                    'align',
+                    'bold',
+                    'italic',
+                    'underline',
+                    '-',
+                    'formatOL',
+                    'formatUL',
+                    '-',
+                    'insertTable',
+                    'insertPageLink',
+                    'insertImage',
+                    'insertHR',
+                    'html'
+                ],
                 editor: null,
                 lastCachedValue: this.value
             };
@@ -191,7 +218,7 @@ $.oc.module.register('backend.component.richeditor', function () {
             },
 
             onFormBeforeRequest: function onFormBeforeRequest() {
-                var $textarea = $(this.$refs.textarea).closest('div.field-richeditor.vue-mode').find('[data-richeditor-textarea]');
+                const $textarea = $(this.$refs.textarea).closest('div.field-richeditor.vue-mode').find('[data-richeditor-textarea]');
                 $textarea.val(this.editor.html.get());
             },
 
@@ -200,15 +227,13 @@ $.oc.module.register('backend.component.richeditor', function () {
             }
         },
         mounted: function onMounted() {
-            var _this = this;
-
-            Vue.nextTick(function () {
-                initFroala(_this);
-                _this.editor.html.set(_this.value);
+            Vue.nextTick(() => {
+                initFroala(this);
+                this.editor.html.set(this.value);
             });
         },
         beforeDestroy: function beforeDestroy() {
-            var $textarea = $(this.$refs.textarea);
+            const $textarea = $(this.$refs.textarea);
 
             $textarea.off('.richeditor');
             $textarea.froalaEditor('destroy');

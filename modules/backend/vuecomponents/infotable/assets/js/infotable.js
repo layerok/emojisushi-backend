@@ -1,7 +1,7 @@
 /*
  *  Read-only information table implementation
  */
-$.oc.module.register('backend.component.infotable', function () {
+oc.Module.register('backend.component.infotable', function () {
     Vue.component('backend-component-infotable', {
         props: {
             items: {
@@ -9,7 +9,7 @@ $.oc.module.register('backend.component.infotable', function () {
                 required: true
             }
         },
-        data: function data() {
+        data: function () {
             return {};
         },
         computed: {},

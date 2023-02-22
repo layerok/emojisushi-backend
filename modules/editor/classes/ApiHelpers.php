@@ -3,13 +3,16 @@
 use SystemException;
 
 /**
- * Basic API helper functions for the Editor
+ * ApiHelpers basic functions for the Editor
  *
  * @package october\editor
  * @author Alexey Bobkov, Samuel Georges
  */
 class ApiHelpers
 {
+    /**
+     * assertGetKey
+     */
     public static function assertGetKey($array, $key)
     {
         if (!array_key_exists($key, $array)) {
@@ -19,6 +22,9 @@ class ApiHelpers
         return $array[$key];
     }
 
+    /**
+     * assertIsArray
+     */
     public static function assertIsArray($value)
     {
         if (!is_array($value)) {

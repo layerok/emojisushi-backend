@@ -16,6 +16,8 @@ use Symfony\Component\Console\Input\InputArgument;
  */
 class ThemeCopy extends Command
 {
+    use \Illuminate\Console\ConfirmableTrait;
+
     /**
      * @var string name of console command
      */
@@ -42,7 +44,7 @@ class ThemeCopy extends Command
         $targetDir = $this->argument('new-name');
 
         if (!CmsTheme::exists($sourceDir)) {
-            $this->output->error("Theme '${sourceDir}' could not be found");
+            $this->output->error("Theme '{$sourceDir}' could not be found");
             exit(1);
         }
 
@@ -64,7 +66,7 @@ class ThemeCopy extends Command
      */
     protected function handleDuplicateTheme($sourceDir, $targetDir)
     {
-        $this->info("Duplicating Theme [${sourceDir}] to [${targetDir}]...");
+        $this->info("Duplicating Theme [{$sourceDir}] to [{$targetDir}]...");
 
         if ($this->option('child')) {
             $result = $this->themeManager->createChildTheme($sourceDir, $targetDir);
@@ -74,10 +76,10 @@ class ThemeCopy extends Command
         }
 
         if ($result) {
-            $this->output->success("Theme '${targetDir}' duplicated");
+            $this->output->success("Theme '{$targetDir}' duplicated");
         }
         else {
-            $this->output->error("Theme '${targetDir}' already exists");
+            $this->output->error("Theme '{$targetDir}' already exists");
             exit(1);
         }
     }
@@ -89,7 +91,7 @@ class ThemeCopy extends Command
     {
         $dirName = $targetDir ?: $sourceDir;
 
-        $this->info("Importing database contents from '${sourceDir}' to '${dirName}'");
+        $this->info("Importing database contents from '{$sourceDir}' to '{$dirName}'");
 
         $this->themeManager->importDatabaseTemplates($dirName, $sourceDir);
     }
@@ -106,14 +108,11 @@ class ThemeCopy extends Command
 
         $dirName = $targetDir ?: $sourceDir;
 
-        if (
-            !$this->option('force', false) &&
-            !$this->confirm("This will DESTROY database templates for theme '${dirName}'.")
-        ) {
+        if (!$this->confirmToProceed("This will DESTROY database templates for theme '{$dirName}'.")) {
             return;
         }
 
-        $this->info("Deleting database contents from '${dirName}'");
+        $this->info("Deleting database contents from '{$dirName}'");
 
         $this->themeManager->purgeDatabaseTemplates($dirName);
     }
@@ -140,5 +139,15 @@ class ThemeCopy extends Command
             ['import-db', null, InputOption::VALUE_NONE, 'Includes the database templates in the copy.'],
             ['purge-db', null, InputOption::VALUE_NONE, 'Deletes all templates from the database.'],
         ];
+    }
+
+    /**
+     * getDefaultConfirmCallback specifies the default confirmation callback
+     */
+    protected function getDefaultConfirmCallback()
+    {
+        return function () {
+            return true;
+        };
     }
 }

@@ -17,7 +17,7 @@
         <div class="mediafinder-control-toolbar">
             <a href="javascript:;" class="backend-toolbar-button control-button toolbar-find-button">
                 <i class="octo-icon-common-file-star"></i>
-                <span class="button-label"><?= e(trans('backend::lang.mediafinder.select')) ?></span>
+                <span class="button-label"><?= __("Select") ?></span>
             </a>
 
             <button
@@ -34,7 +34,7 @@
             <?php foreach ($fileList as $file): ?>
                 <div class="server-file"
                     data-public-url="<?= e($file->publicUrl ?? '') ?>"
-                    data-path="<?= e($file->spawnPath ?? '') ?>"
+                    data-path="<?= e($file->path ?? '') ?>"
                     data-title="<?= e($file->title ?? '') ?>"
                 ></div>
             <?php endforeach ?>
@@ -47,7 +47,7 @@
             <input
                 type="hidden"
                 name="<?= $field->getName() ?>[]"
-                value="<?= e($file->spawnPath) ?>"
+                value="<?= e($file->path) ?>"
                 />
         <?php endforeach ?>
     </div>

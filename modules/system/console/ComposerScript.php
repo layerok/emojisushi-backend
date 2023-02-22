@@ -16,7 +16,9 @@ class ComposerScript
      */
     public static function postAutoloadDump(Event $event)
     {
-        passthru('php artisan package:discover');
+        self::clearMeta();
+
+        static::passthruArtisan('package:discover');
     }
 
     /**
@@ -25,9 +27,9 @@ class ComposerScript
      */
     public static function postUpdateCmd(Event $event)
     {
-        passthru('php artisan october:util set build');
+        static::passthruArtisan('october:util set build');
 
-        passthru('php artisan october:mirror --composer');
+        static::passthruArtisan('october:mirror --composer');
     }
 
     /**
@@ -38,12 +40,7 @@ class ComposerScript
         $package = $event->getOperation()->getPackage();
 
         if (self::isOfType($package, 'plugin')) {
-            passthru("php artisan plugin:remove ${package} --composer");
-        }
-
-        // Purge discovered package cache to prevent errors
-        if (file_exists($packagesMeta = __DIR__ . '/../../../storage/framework/packages.php')) {
-            @unlink($packagesMeta);
+            static::passthruArtisan("plugin:remove {$package} --composer");
         }
     }
 
@@ -63,5 +60,32 @@ class ComposerScript
         }
 
         return false;
+    }
+
+    /**
+     * clearMeta purges meta files (discovered package cache, etc) to prevent errors
+     */
+    protected static function clearMeta()
+    {
+        $metaFiles = [
+            'storage/framework/packages.php',
+            'storage/framework/classes.php',
+            'storage/framework/services.php',
+            'storage/cms/manifest.php'
+        ];
+
+        foreach ($metaFiles as $filePath) {
+            if (file_exists($packagesMeta = __DIR__ . '/../../../'.$filePath)) {
+                @unlink($packagesMeta);
+            }
+        }
+    }
+
+    /**
+     * passthruArtisan
+     */
+    protected static function passthruArtisan($command, &$errCode = null)
+    {
+        passthru('"'.PHP_BINARY.'" artisan ' .$command);
     }
 }

@@ -25,5 +25,7 @@
 <?= Form::close() ?>
 
 <script>
-    $.oc.reorderBehavior.initSorting('<?= $reorderSortMode ?>');
+    addEventListener('render', function() {
+        $.oc.reorderBehavior.initSorting('<?= $reorderSortMode ?>');
+    });
 </script>

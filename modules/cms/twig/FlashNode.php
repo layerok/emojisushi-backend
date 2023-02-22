@@ -34,7 +34,7 @@ class FlashNode extends TwigNode
         if ($attrib == 'all') {
             $compiler
                 ->addDebugInfo($this)
-                ->write('foreach (Flash::getMessages() as $type => $messages) {'.PHP_EOL)
+                ->write('foreach (Flash::messages() as $type => $messages) {'.PHP_EOL)
                 ->indent()
                     ->write('foreach ($messages as $message) {'.PHP_EOL)
                     ->indent()

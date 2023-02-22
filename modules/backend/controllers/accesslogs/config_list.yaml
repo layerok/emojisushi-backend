@@ -2,7 +2,7 @@
 #  List Behavior Config
 # ===================================
 
-title: backend::lang.access_log.menu_label
+title: Access Log
 list: ~/modules/backend/models/accesslog/columns.yaml
 modelClass: Backend\Models\AccessLog
 noRecordsMessage: backend::lang.list.no_records

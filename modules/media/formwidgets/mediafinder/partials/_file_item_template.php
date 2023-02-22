@@ -2,24 +2,25 @@
 <script type="text/template" id="<?= $this->getId('template') ?>">
     <div class="item-object item-object-file <?= isset($modeMulti) ? 'mode-multi' : '' ?>">
         <?php if (isset($modeMulti)): ?>
-            <div class="custom-checkbox-v2">
-                <label>
-                    <input
-                        data-record-selector
-                        type="checkbox"
-                        value=""
-                    />
-                    <span class="storm-icon-pseudo"></span>
-                </label>
+            <div class="form-check">
+                <input
+                    class="form-check-input"
+                    data-record-selector
+                    type="checkbox"
+                    value=""
+                />
             </div>
-
             <a href="javascript:;" class="drag-handle"><i class="octo-icon-list-reorder"></i></a>
         <?php endif ?>
 
         <div class="file-data-container">
             <div class="file-data-container-inner">
                 <div class="icon-container">
-                    <i class="octo-icon-attachment"></i>
+                    <?php if (isset($modeFolder)): ?>
+                        <i class="octo-icon-folder"></i>
+                    <?php else: ?>
+                        <i class="octo-icon-attachment"></i>
+                    <?php endif ?>
                 </div>
 
                 <div class="info">

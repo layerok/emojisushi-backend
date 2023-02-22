@@ -3,7 +3,7 @@
 use October\Rain\Database\Schema\Blueprint;
 use October\Rain\Database\Updates\Migration;
 
-class DbSystemMailPartials extends Migration
+return new class extends Migration
 {
     public function up()
     {
@@ -22,4 +22,4 @@ class DbSystemMailPartials extends Migration
     {
         Schema::dropIfExists('system_mail_partials');
     }
-}
+};

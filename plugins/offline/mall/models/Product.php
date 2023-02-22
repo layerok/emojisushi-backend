@@ -21,8 +21,10 @@ use OFFLINE\Mall\Classes\Traits\ProductPriceAccessors;
 use OFFLINE\Mall\Classes\Traits\PropertyValues;
 use OFFLINE\Mall\Classes\Traits\StockAndQuantity;
 use OFFLINE\Mall\Classes\Traits\UserSpecificPrice;
+use OFFLINE\Mall\Classes\Traits\PDFMaker;
 use RainLab\Translate\Models\Locale;
 use System\Models\File;
+
 
 /**
  * @SuppressWarnings(PHPMD.TooManyFields)
@@ -42,6 +44,7 @@ class Product extends Model
     use ProductPriceAccessors;
     use StockAndQuantity;
     use FilteredTaxes;
+    use PDFMaker;
 
     const MORPH_KEY = 'mall.product';
 
@@ -609,7 +612,11 @@ class Product extends Model
      */
     protected function hideField($fields, string $field)
     {
-        if (property_exists($fields, $field)) {
+        $isElementHolder = $fields instanceof \October\Rain\Element\ElementHolder;
+
+        if ($isElementHolder && array_key_exists($field, $fields->config)) {
+            $fields->config[$field]->hidden = true;
+        } elseif (property_exists($fields, $field)) {
             $fields->$field->hidden = true;
         }
     }

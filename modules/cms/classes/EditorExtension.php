@@ -15,21 +15,21 @@ use Exception;
  */
 class EditorExtension extends ExtensionBase
 {
+    use \Cms\Classes\EditorExtension\HasExtensionState;
+    use \Cms\Classes\EditorExtension\HasExtensionAssetsState;
+    use \Cms\Classes\EditorExtension\HasComponentListLoader;
+    use \Cms\Classes\EditorExtension\HasExtensionCrud;
+    use \Cms\Classes\EditorExtension\HasExtensionAssetsCrud;
+    use \Cms\Classes\EditorExtension\HasIntellisense;
+    use \Cms\Classes\EditorExtension\HasExtensionThemesState;
+    use \Cms\Classes\EditorExtension\HasExtensionThemeCrud;
+    use \Cms\Classes\EditorExtension\HasExtensionExtensibility;
+
     const DOCUMENT_TYPE_PAGE = 'cms-page';
     const DOCUMENT_TYPE_LAYOUT = 'cms-layout';
     const DOCUMENT_TYPE_PARTIAL = 'cms-partial';
     const DOCUMENT_TYPE_CONTENT = 'cms-content';
     const DOCUMENT_TYPE_ASSET = 'cms-asset';
-
-    use \Cms\Traits\EditorExtensionState;
-    use \Cms\Traits\EditorExtensionAssetsState;
-    use \Cms\Traits\EditorComponentListLoader;
-    use \Cms\Traits\EditorExtensionCrud;
-    use \Cms\Traits\EditorExtensionAssetsCrud;
-    use \Cms\Traits\EditorIntellisense;
-    use \Cms\Traits\EditorExtensionThemesState;
-    use \Cms\Traits\EditorExtensionThemeCrud;
-    use \Cms\Traits\EditorExtensionExtensibility;
 
     const ICON_COLOR_PAGE = '#6A6CF7';
     const ICON_COLOR_PARTIAL = '#9ACD43';
@@ -38,14 +38,17 @@ class EditorExtension extends ExtensionBase
     const ICON_COLOR_ASSET = '#E75252';
 
     const DOCUMENT_TYPE_PERMISSIONS = [
-        EditorExtension::DOCUMENT_TYPE_PAGE => ['cms.manage_pages'],
-        EditorExtension::DOCUMENT_TYPE_PARTIAL => ['cms.manage_partials'],
-        EditorExtension::DOCUMENT_TYPE_LAYOUT => ['cms.manage_layouts'],
-        EditorExtension::DOCUMENT_TYPE_CONTENT => ['cms.manage_content'],
-        EditorExtension::DOCUMENT_TYPE_ASSET => ['cms.manage_assets']
+        EditorExtension::DOCUMENT_TYPE_PAGE => ['editor.cms_pages'],
+        EditorExtension::DOCUMENT_TYPE_PARTIAL => ['editor.cms_partials'],
+        EditorExtension::DOCUMENT_TYPE_LAYOUT => ['editor.cms_layouts'],
+        EditorExtension::DOCUMENT_TYPE_CONTENT => ['editor.cms_content'],
+        EditorExtension::DOCUMENT_TYPE_ASSET => ['editor.cms_assets']
     ];
 
-    private $cachedEditTheme = false;
+    /**
+     * @var bool cachedEditTheme
+     */
+    protected $cachedEditTheme = false;
 
     /**
      * getNamespace returns unique extension namespace
@@ -62,30 +65,30 @@ class EditorExtension extends ExtensionBase
     public function listJsFiles()
     {
         return [
-            '/modules/cms/assets/js/cms.editor.extension.js' => 'core',
-            '/modules/cms/assets/js/cms.editor.extension.documentcomponent.base.js' => 'core',
-            '/modules/cms/assets/js/cms.editor.extension.documentcontroller.page.js' => 'core',
-            '/modules/cms/assets/js/cms.editor.extension.documentcontroller.layout.js' => 'core',
-            '/modules/cms/assets/js/cms.editor.extension.documentcontroller.partial.js' => 'core',
-            '/modules/cms/assets/js/cms.editor.extension.documentcontroller.content.js' => 'core',
-            '/modules/cms/assets/js/cms.editor.extension.documentcontroller.asset.js' => 'core',
-            '/modules/cms/assets/js/cms.editor.intellisense.utils.js' => 'core',
-            '/modules/cms/assets/js/cms.editor.intellisense.clickhandler.base.js' => 'core',
-            '/modules/cms/assets/js/cms.editor.intellisense.clickhandler.template.js' => 'core',
-            '/modules/cms/assets/js/cms.editor.intellisense.clickhandler.cssimports.js' => 'core',
-            '/modules/cms/assets/js/cms.editor.intellisense.completer.base.js' => 'core',
-            '/modules/cms/assets/js/cms.editor.intellisense.completer.partials.js' => 'core',
-            '/modules/cms/assets/js/cms.editor.intellisense.completer.content.js' => 'core',
-            '/modules/cms/assets/js/cms.editor.intellisense.completer.assets.js' => 'core',
-            '/modules/cms/assets/js/cms.editor.intellisense.completer.pages.js' => 'core',
-            '/modules/cms/assets/js/cms.editor.intellisense.completer.twigfilters.js' => 'core',
-            '/modules/cms/assets/js/cms.editor.intellisense.completer.octobertags.js' => 'core',
-            '/modules/cms/assets/js/cms.editor.intellisense.hoverprovider.base.js' => 'core',
-            '/modules/cms/assets/js/cms.editor.intellisense.hoverprovider.octobertags.js' => 'core',
-            '/modules/cms/assets/js/cms.editor.intellisense.hoverprovider.twigfilters.js' => 'core',
-            '/modules/cms/assets/js/cms.editor.intellisense.actionhandler.base.js' => 'core',
-            '/modules/cms/assets/js/cms.editor.intellisense.actionhandler.expandcomponent.js' => 'core',
-            '/modules/cms/assets/js/cms.editor.intellisense.js' => 'core'
+            '/modules/cms/assets/js/cms.editor.extension.js',
+            '/modules/cms/assets/js/cms.editor.extension.documentcomponent.base.js',
+            '/modules/cms/assets/js/cms.editor.extension.documentcontroller.page.js',
+            '/modules/cms/assets/js/cms.editor.extension.documentcontroller.layout.js',
+            '/modules/cms/assets/js/cms.editor.extension.documentcontroller.partial.js',
+            '/modules/cms/assets/js/cms.editor.extension.documentcontroller.content.js',
+            '/modules/cms/assets/js/cms.editor.extension.documentcontroller.asset.js',
+            '/modules/cms/assets/js/cms.editor.intellisense.utils.js',
+            '/modules/cms/assets/js/cms.editor.intellisense.clickhandler.base.js',
+            '/modules/cms/assets/js/cms.editor.intellisense.clickhandler.template.js',
+            '/modules/cms/assets/js/cms.editor.intellisense.clickhandler.cssimports.js',
+            '/modules/cms/assets/js/cms.editor.intellisense.completer.base.js',
+            '/modules/cms/assets/js/cms.editor.intellisense.completer.partials.js',
+            '/modules/cms/assets/js/cms.editor.intellisense.completer.content.js',
+            '/modules/cms/assets/js/cms.editor.intellisense.completer.assets.js',
+            '/modules/cms/assets/js/cms.editor.intellisense.completer.pages.js',
+            '/modules/cms/assets/js/cms.editor.intellisense.completer.twigfilters.js',
+            '/modules/cms/assets/js/cms.editor.intellisense.completer.octobertags.js',
+            '/modules/cms/assets/js/cms.editor.intellisense.hoverprovider.base.js',
+            '/modules/cms/assets/js/cms.editor.intellisense.hoverprovider.octobertags.js',
+            '/modules/cms/assets/js/cms.editor.intellisense.hoverprovider.twigfilters.js',
+            '/modules/cms/assets/js/cms.editor.intellisense.actionhandler.base.js',
+            '/modules/cms/assets/js/cms.editor.intellisense.actionhandler.expandcomponent.js',
+            '/modules/cms/assets/js/cms.editor.intellisense.js'
         ];
     }
 
@@ -102,6 +105,7 @@ class EditorExtension extends ExtensionBase
             'cms::lang.template.reloaded',
             'cms::lang.template.deleted',
             'cms::lang.editor.preview',
+            'cms::lang.editor.layout',
             'cms::lang.editor.page',
             'cms::lang.editor.partial',
             'cms::lang.editor.asset',
@@ -124,8 +128,6 @@ class EditorExtension extends ExtensionBase
             'cms::lang.asset.rename',
             'cms::lang.asset.delete',
             'cms::lang.asset.new',
-            'cms::lang.asset.delete_confirm',
-            'cms::lang.asset.delete_confirm_single',
             'cms::lang.asset.moving',
             'cms::lang.asset.moved',
             'cms::lang.asset.saved',
@@ -178,7 +180,7 @@ class EditorExtension extends ExtensionBase
             $sectionTitle .= ' - '.$editTheme->getConfigValue('name', $editTheme->getDirName());
         }
         else {
-            $sectionTitle .= ' - '.Lang::get('cms::lang.theme.no_themes_found');
+            $sectionTitle .= ' - '.__('No themes found');
         }
 
         $cmsSection = $sectionList->addSection($sectionTitle, 'cms');
@@ -215,11 +217,6 @@ class EditorExtension extends ExtensionBase
         }
     }
 
-    public function listInspectorConfigurations()
-    {
-        return $this->loadAndLocalizeJsonFile(__DIR__.'/editorextension/inspector-configs.json');
-    }
-
     /**
      * getCustomData returns custom state data required for the extension client-side controller
      */
@@ -235,10 +232,10 @@ class EditorExtension extends ExtensionBase
             'pages' => $this->loadPagesForUiLists($theme, $user),
             'content' => $this->loadContentForUiLists($theme, $user),
             'components' => $this->loadComponentsForUiLists(),
-            'canManagePartials' => $user->hasAnyAccess(['cms.manage_partials']),
-            'canManagePages' => $user->hasAnyAccess(['cms.manage_pages']),
-            'canManageAssets' => $user->hasAnyAccess(['cms.manage_assets']),
-            'canManageContent' => $user->hasAnyAccess(['cms.manage_content']),
+            'canManagePages' => $user->hasAnyAccess(['editor.cms_pages']),
+            'canManagePartials' => $user->hasAnyAccess(['editor.cms_partials']),
+            'canManageContent' => $user->hasAnyAccess(['editor.cms_content']),
+            'canManageAssets' => $user->hasAnyAccess(['editor.cms_assets']),
             'editableAssetExtensions' => Asset::getEditableExtensions(),
             'databaseTemplatesEnabled' => $theme ? $theme->secondLayerEnabled() : false,
             'assetExtensionList' => $this->getAssetExtensionListInitialState(),
@@ -295,7 +292,8 @@ class EditorExtension extends ExtensionBase
                 return $this->cachedEditTheme = $editTheme;
             }
         }
-        catch (Exception $ex) {}
+        catch (Exception $ex) {
+        }
 
         // Locate active theme
         try {
@@ -303,7 +301,8 @@ class EditorExtension extends ExtensionBase
                 return $this->cachedEditTheme = $activeTheme;
             }
         }
-        catch (Exception $ex) {}
+        catch (Exception $ex) {
+        }
 
         // Use first theme
         $themes = Theme::all();
@@ -319,33 +318,35 @@ class EditorExtension extends ExtensionBase
     {
         $user = BackendAuth::getUser();
 
-        $section->addMenuItem(ItemDefinition::TYPE_TEXT, Lang::get('cms::lang.editor.refresh'), 'cms:refresh-navigator');
+        $section->addMenuItem(ItemDefinition::TYPE_TEXT, Lang::get('cms::lang.editor.refresh'), 'cms:refresh-navigator')
+            ->setIcon('octo-icon-refresh');
 
         $createMenuItem = new ItemDefinition(ItemDefinition::TYPE_TEXT, Lang::get('cms::lang.editor.create'), 'cms:create');
+        $createMenuItem->setIcon('octo-icon-create');
         $menuConfiguration = [
-            'cms.manage_pages' => [
+            'editor.cms_pages' => [
                 'label' => 'cms::lang.editor.page',
                 'document' => EditorExtension::DOCUMENT_TYPE_PAGE
             ],
-            'cms.manage_partials' => [
+            'editor.cms_partials' => [
                 'label' => 'cms::lang.editor.partial',
                 'document' => EditorExtension::DOCUMENT_TYPE_PARTIAL
             ],
-            'cms.manage_layouts' => [
+            'editor.cms_layouts' => [
                 'label' => 'cms::lang.editor.layout',
                 'document' => EditorExtension::DOCUMENT_TYPE_LAYOUT
             ],
-            'cms.manage_content' => [
+            'editor.cms_content' => [
                 'label' => 'cms::lang.editor.content',
                 'document' => EditorExtension::DOCUMENT_TYPE_CONTENT
             ],
-            'cms.manage_assets' => [
+            'editor.cms_assets' => [
                 'label' => 'cms::lang.editor.asset',
                 'document' => EditorExtension::DOCUMENT_TYPE_ASSET
             ]
         ];
 
-        foreach ($menuConfiguration as $permission=>$itemConfig) {
+        foreach ($menuConfiguration as $permission => $itemConfig) {
             if (!$user->hasAnyAccess([$permission])) {
                 continue;
             }

@@ -1,22 +1,32 @@
 /*
- * Update List page
+ * UpdateList page
  */
+'use strict';
 
-+function ($) { "use strict";
+class UpdateList extends oc.FoundationPlugin
+{
+    constructor(element, config) {
+        super(element, config);
 
-    var UpdateList = function () {
-        this.init();
+        oc.Events.on(this.element, 'click', '[data-updatelist-check]', this.proxy(this.checkForUpdates));
+        this.checkForUpdates(true);
+        this.markDisposable();
     }
 
-    UpdateList.prototype.init = function() {
-        var self = this;
-
-        $(document).ready(function() {
-            self.checkForUpdates(true);
-        });
+    dispose() {
+        oc.Events.off(this.element, 'click', '[data-updatelist-check]', this.proxy(this.checkForUpdates));
+        super.dispose();
     }
 
-    UpdateList.prototype.checkForUpdates = function(useCache) {
+    static get DATANAME() {
+        return 'ocUpdateList';
+    }
+
+    static get DEFAULTS() {
+        return {}
+    }
+
+    checkForUpdates(useCache) {
         var self = this;
 
         $('[data-plugin-latest-code], [data-core-latest-version]')
@@ -26,7 +36,7 @@
             .removeClass('positive important')
         ;
 
-        $.request('onCompareVersions', {
+        oc.ajax('onCompareVersions', {
             data: {
                 force: useCache ? 0 : 1
             }
@@ -36,7 +46,7 @@
         });
     }
 
-    UpdateList.prototype.updatePluginVersions = function(data) {
+    updatePluginVersions(data) {
         $('[data-plugin-current-code]').each(function() {
             var pluginCode = $(this).data('plugin-current-code'),
                 $current = $(this),
@@ -66,7 +76,7 @@
         })
     }
 
-    UpdateList.prototype.updateCoreVersion = function(data) {
+    updateCoreVersion(data) {
         var $current = $('[data-core-current-version]:first'),
             $latest = $('[data-core-latest-version]:first');
 
@@ -86,17 +96,15 @@
         if (hasUpdates) {
             $('[data-core-has-updates]:first').show();
             $('[data-core-no-updates]:first').hide();
-            $('[data-update-message]:first').show();
         }
     }
+}
 
-    if ($.oc === undefined) {
-        $.oc = {};
-    }
-
-    $.oc.updateList = new UpdateList;
-
-}(window.jQuery);
+addEventListener('render', function() {
+    document.querySelectorAll('[data-control=updatelist]').forEach(function(el) {
+        UpdateList.getOrCreateInstance(el);
+    });
+});
 
 // Port of PHP version_compare
 function version_compare(a, b) {

@@ -18,7 +18,7 @@
                 $classes[] = 'nolink';
             }
 
-            $isLastWithSetup = $showSetup && $index === $total;
+            $isLastWithSetup = $expandLastColumn && $showSetup && $index === $total;
         ?>
         <td class="<?= implode(' ', $classes) ?>" <?= $isLastWithSetup ? 'colspan="2"' : '' ?>>
             <?php if ($column->clickable && !$action && ($action = $this->getRecordAction($record))): ?>
@@ -30,4 +30,7 @@
             <?php endif ?>
         </td>
     <?php endforeach ?>
+    <?php if (!$expandLastColumn && $showSetup): ?>
+        <td></td>
+    <?php endif ?>
 </tr>

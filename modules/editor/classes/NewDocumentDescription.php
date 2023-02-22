@@ -1,23 +1,45 @@
 <?php namespace Editor\Classes;
 
 /**
- * Contains information required for creating new documents in Editor.
+ * NewDocumentDescription contains information required for creating new documents in Editor.
  *
  * @package october\editor
  * @author Alexey Bobkov, Samuel Georges
  */
 class NewDocumentDescription
 {
-    private $label;
-    private $icon;
-    private $metadata;
-    private $documentData;
+    /**
+     * @var string label
+     */
+    protected $label;
 
-    public function __construct(string $label, array $metadata) {
+    /**
+     * @var string icon
+     */
+    protected $icon;
+
+    /**
+     * @var mixed metadata
+     */
+    protected $metadata;
+
+    /**
+     * @var mixed documentData
+     */
+    protected $documentData;
+
+    /**
+     * __construct
+     */
+    public function __construct(string $label, array $metadata)
+    {
         $this->label = $label;
         $this->metadata = $metadata;
     }
 
+    /**
+     * setIcon
+     */
     public function setIcon(string $backgroundColor, string $iconClassName)
     {
         $this->icon = [
@@ -28,10 +50,17 @@ class NewDocumentDescription
         return $this;
     }
 
-    public function setInitialDocumentData($documentData) {
+    /**
+     * setInitialDocumentData
+     */
+    public function setInitialDocumentData($documentData)
+    {
         $this->documentData = $documentData;
     }
 
+    /**
+     * toArray
+     */
     public function toArray()
     {
         $result = [

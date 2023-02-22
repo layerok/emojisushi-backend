@@ -21,7 +21,7 @@ columns:
         invisible: true
 
     login:
-        label: backend::lang.user.login
+        label: Username
         searchable: true
         width: 15%
 

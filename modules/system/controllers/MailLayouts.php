@@ -30,10 +30,10 @@ class MailLayouts extends Controller
     /**
      * @var array Permissions required to view this page.
      */
-    public $requiredPermissions = ['system.manage_mail_templates'];
+    public $requiredPermissions = ['mail.templates'];
 
     /**
-     * Constructor.
+     * __construct
      */
     public function __construct()
     {
@@ -43,6 +43,9 @@ class MailLayouts extends Controller
         SettingsManager::setContext('October.System', 'mail_templates');
     }
 
+    /**
+     * update_onResetDefault handler
+     */
     public function update_onResetDefault($recordId)
     {
         $model = $this->formFindModelObject($recordId);

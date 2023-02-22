@@ -8,19 +8,19 @@ use View as ViewFacade;
  *
  * You can register these global variables with `View::share`.
  *
- *     View::share('siteName', 'OctoberCMS');
+ *     View::share('siteName', 'October CMS');
  *
  * Then available globally for use in the front-end and mail templates.
  */
 class View
 {
     /**
-     * @var array Cache for global variables.
+     * @var array globalVarCache for global variables.
      */
     protected static $globalVarCache;
 
     /**
-     * Returns shared view variables, this should be used for simple rendering cycles.
+     * getGlobalVars returns shared view variables, this should be used for simple rendering cycles.
      * Such as content blocks and mail templates.
      *
      * @return array

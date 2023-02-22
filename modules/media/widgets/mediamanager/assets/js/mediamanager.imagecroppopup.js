@@ -130,7 +130,7 @@
         if ($cropToolRoot.height() > height)
             height = $(window).height()
 
-        $cropToolRoot.find('.ruler-container').removeClass('hide')
+        $cropToolRoot.find('.ruler-container').removeClass('oc-hide')
 
         $cropToolRoot.addClass('has-rulers')
 
@@ -164,7 +164,7 @@
     }
 
     MediaManagerImageCropPopup.prototype.initJCrop = function() {
-        this.jCrop = $.Jcrop($(this.imageArea).find('img').get(0), {
+        this.jCrop = $.Jcrop(this.getImageElement().get(0), {
             shade: true,
             onChange: this.proxy(this.onSelectionChanged)
         })
@@ -188,6 +188,10 @@
 
     MediaManagerImageCropPopup.prototype.getHeightInput = function() {
         return this.$popupElement.find('[data-control="crop-height-input"]')
+    }
+
+    MediaManagerImageCropPopup.prototype.getImageElement = function() {
+        return $(this.imageArea).find('img');
     }
 
     MediaManagerImageCropPopup.prototype.applySelectionMode = function() {
@@ -230,11 +234,11 @@
 
     MediaManagerImageCropPopup.prototype.cropAndInsert = function() {
         var data = {
-            img: $(this.imageArea).find('img').attr('src'),
+            img: this.getImageElement().attr('src'),
             selection: this.jCrop.tellSelect()
         }
 
-        $.oc.stripeLoadIndicator.show()
+        $.oc.stripeLoadIndicator.show();
 
         this.$popupElement
             .find('form')
@@ -244,7 +248,7 @@
             .always(function() {
                 $.oc.stripeLoadIndicator.hide()
             })
-            .done(this.proxy(this.onImageCropped))
+            .done(this.proxy(this.onImageCropped));
     }
 
     MediaManagerImageCropPopup.prototype.onImageCropped = function(response) {
@@ -364,13 +368,13 @@
 
     MediaManagerImageCropPopup.prototype.updateSelectionSizeLabel = function(width, height) {
         if (width == 0 && height == 0) {
-            this.selectionSizeLabel.setAttribute('class', 'hide')
-            return
+            this.selectionSizeLabel.setAttribute('class', 'oc-hide');
+            return;
         }
 
-        this.selectionSizeLabel.setAttribute('class', '')
-        this.selectionSizeLabel.querySelector('[data-label=selection-width]').textContent = parseInt(width)
-        this.selectionSizeLabel.querySelector('[data-label=selection-height]').textContent = parseInt(height)
+        this.selectionSizeLabel.setAttribute('class', '');
+        this.selectionSizeLabel.querySelector('[data-label=selection-width]').textContent = parseInt(width);
+        this.selectionSizeLabel.querySelector('[data-label=selection-height]').textContent = parseInt(height);
     }
 
     // EVENT HANDLERS
@@ -401,8 +405,16 @@
         this.getHeightInput().on('change', this.proxy(this.onSizeInputChange))
 
         this.initRulers()
-        this.initJCrop()
         this.applySelectionMode()
+
+        // Handle slow connections
+        var $img = this.getImageElement();
+        if ($img.get(0).complete) {
+            this.initJCrop();
+        }
+        else {
+            $img.one('load', this.proxy(this.initJCrop));
+        }
     }
 
     MediaManagerImageCropPopup.prototype.onSelectionModeChanged = function() {

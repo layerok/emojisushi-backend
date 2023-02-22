@@ -5,13 +5,13 @@
 columns:
     id:
         label: cms::lang.theme_log.id
-        searchable: yes
+        searchable: true
         invisible: true
         width: 75px
 
     created_at:
         label: cms::lang.theme_log.created_at
-        searchable: yes
+        searchable: true
         width: 160px
         type: timetense
 

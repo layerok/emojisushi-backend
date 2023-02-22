@@ -2,16 +2,13 @@
 
 use App;
 use File;
-use Event;
-use Lang;
 use Request;
 use BackendAuth;
 use Backend\Classes\FormWidgetBase;
 use Backend\Models\EditorSetting;
 
 /**
- * Rich Editor
- * Renders a rich content editor field.
+ * RichEditor renders a rich content editor field.
  *
  * @package october\backend
  * @author Alexey Bobkov, Samuel Georges
@@ -123,7 +120,7 @@ class RichEditor extends FormWidgetBase
         $this->vars['name'] = $this->getFieldName();
         $this->vars['value'] = $this->getLoadValue();
         $this->vars['toolbarButtons'] = $this->evalToolbarButtons();
-        $this->vars['useMediaManager'] = BackendAuth::userHasAccess('media.manage_media');
+        $this->vars['useMediaManager'] = BackendAuth::userHasAccess('media.library');
         $this->vars['legacyMode'] = $this->legacyMode;
 
         $this->vars['globalToolbarButtons'] = EditorSetting::getConfigured('html_toolbar_buttons');
@@ -145,7 +142,7 @@ class RichEditor extends FormWidgetBase
     }
 
     /**
-     * Determine the toolbar buttons to use based on config.
+     * evalToolbarButtons to use based on config.
      * @return string
      */
     protected function evalToolbarButtons()
@@ -161,24 +158,18 @@ class RichEditor extends FormWidgetBase
         return $buttons;
     }
 
-    public function onLoadPageLinksForm()
-    {
-        $this->vars['links'] = $this->getPageLinksArray();
-        return $this->makePartial('page_links_form');
-    }
-
     /**
      * @inheritDoc
      */
     protected function loadAssets()
     {
-        $this->addCss('css/richeditor.css', 'core');
-        $this->addJs('js/build-min.js', 'core');
-        $this->addJs('js/build-plugins-min.js', 'core');
-        $this->addJs('/modules/backend/formwidgets/codeeditor/assets/js/build-min.js', 'core');
+        $this->addCss('css/richeditor.css');
+        $this->addJs('js/build-min.js');
+        $this->addJs('js/richeditor.js');
+        $this->addJs('/modules/backend/formwidgets/codeeditor/assets/js/build-min.js');
 
         if ($lang = $this->getValidEditorLang()) {
-            $this->addJs('vendor/froala/js/languages/'.$lang.'.js', 'core');
+            $this->addJs('vendor/froala/js/languages/'.$lang.'.js');
         }
     }
 
@@ -199,103 +190,5 @@ class RichEditor extends FormWidgetBase
         $path = base_path('modules/backend/formwidgets/richeditor/assets/vendor/froala/js/languages/'.$locale.'.js');
 
         return File::exists($path) ? $locale : false;
-    }
-
-    /**
-     * Returns a list of registered page link types.
-     * This is reserved functionality for separating the links by type.
-     * @return array Returns an array of registered page link types
-     */
-    protected function getPageLinkTypes()
-    {
-        $result = [];
-
-        $apiResult = Event::fire('backend.richeditor.listTypes');
-        if (is_array($apiResult)) {
-            foreach ($apiResult as $typeList) {
-                if (!is_array($typeList)) {
-                    continue;
-                }
-
-                foreach ($typeList as $typeCode => $typeName) {
-                    $result[$typeCode] = $typeName;
-                }
-            }
-        }
-
-        return $result;
-    }
-
-    protected function getPageLinks($type)
-    {
-        $result = [];
-        $apiResult = Event::fire('backend.richeditor.getTypeInfo', [$type]);
-        if (is_array($apiResult)) {
-            foreach ($apiResult as $typeInfo) {
-                if (!is_array($typeInfo)) {
-                    continue;
-                }
-
-                foreach ($typeInfo as $name => $value) {
-                    $result[$name] = $value;
-                }
-            }
-        }
-
-        return $result;
-    }
-
-    /**
-     * Returns a single collection of available page links.
-     * This implementation has room to place links under
-     * different groups based on the link type.
-     * @return array
-     */
-    protected function getPageLinksArray()
-    {
-        $links = [];
-        $types = $this->getPageLinkTypes();
-
-        $links[] = ['name' => Lang::get('backend::lang.pagelist.select_page'), 'url' => false];
-
-        $iterator = function ($links, $level = 0) use (&$iterator) {
-            $result = [];
-
-            foreach ($links as $linkUrl => $link) {
-                /*
-                 * Remove scheme and host from URL
-                 */
-                $baseUrl = Request::getSchemeAndHttpHost();
-                if (strpos($linkUrl, $baseUrl) === 0) {
-                    $linkUrl = substr($linkUrl, strlen($baseUrl));
-                }
-
-                /*
-                 * Root page fallback.
-                 */
-                if (strlen($linkUrl) === 0) {
-                    $linkUrl = '/';
-                }
-
-                $linkName = str_repeat('&nbsp;', $level * 4);
-                $linkName .= is_array($link) ? array_get($link, 'title', '') : $link;
-                $result[] = ['name' => $linkName, 'url' => $linkUrl];
-
-                if (is_array($link)) {
-                    $result = array_merge(
-                        $result,
-                        $iterator(array_get($link, 'links', []), $level + 1)
-                    );
-                }
-            }
-
-            return $result;
-        };
-
-        foreach ($types as $typeCode => $typeName) {
-            $links = array_merge($links, $iterator($this->getPageLinks($typeCode)));
-        }
-
-        return $links;
     }
 }

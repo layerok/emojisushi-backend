@@ -1,7 +1,7 @@
 /*
  * Vue Inspector table control implementation
  */
-$.oc.module.register('backend.component.inspector.control.table', function () {
+oc.Module.register('backend.component.inspector.control.table', function () {
     Vue.component('backend-component-inspector-control-table', {
         extends: $.oc.vueComponentHelpers.inspector.controlBase,
         props: {

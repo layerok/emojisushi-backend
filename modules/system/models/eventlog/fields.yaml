@@ -8,4 +8,4 @@ fields:
         type: partial
         path: field_message
         containerAttributes:
-            data-plugin: exception-beautifier
+            data-control: exception-beautifier

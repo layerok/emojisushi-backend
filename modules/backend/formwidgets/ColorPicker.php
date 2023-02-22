@@ -34,12 +34,17 @@ class ColorPicker extends FormWidgetBase
     ];
 
     /**
-     * @var bool Allow empty value
+     * @var bool allowEmpty value
      */
     public $allowEmpty = false;
 
     /**
-     * @var bool Show opacity slider
+     * @var bool allowCustom value
+     */
+    public $allowCustom = true;
+
+    /**
+     * @var bool showAlpha opacity slider
      */
     public $showAlpha = false;
 
@@ -69,6 +74,7 @@ class ColorPicker extends FormWidgetBase
     {
         $this->fillFromConfig([
             'availableColors',
+            'allowCustom',
             'allowEmpty',
             'showAlpha',
             'readOnly',
@@ -93,6 +99,7 @@ class ColorPicker extends FormWidgetBase
         $this->vars['name'] = $this->getFieldName();
         $this->vars['value'] = $value = $this->getLoadValue();
         $this->vars['availableColors'] = $availableColors = $this->getAvailableColors();
+        $this->vars['allowCustom'] = $this->allowCustom;
         $this->vars['allowEmpty'] = $this->allowEmpty;
         $this->vars['showAlpha'] = $this->showAlpha;
         $this->vars['readOnly'] = $this->readOnly;
@@ -133,10 +140,10 @@ class ColorPicker extends FormWidgetBase
      */
     protected function loadAssets()
     {
-        $this->addCss('vendor/spectrum/spectrum.css', 'core');
-        $this->addJs('vendor/spectrum/spectrum.js', 'core');
-        $this->addCss('css/colorpicker.css', 'core');
-        $this->addJs('js/colorpicker.js', 'core');
+        $this->addCss('vendor/spectrum/spectrum.css');
+        $this->addJs('vendor/spectrum/spectrum.js');
+        $this->addCss('css/colorpicker.css');
+        $this->addJs('js/colorpicker.js');
     }
 
     /**

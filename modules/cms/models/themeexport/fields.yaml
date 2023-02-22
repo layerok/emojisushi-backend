@@ -5,10 +5,10 @@
 fields:
 
     themeName:
-        label: cms::lang.theme.theme_label
+        label: Theme
         disabled: true
 
     folders:
-        label: cms::lang.theme.export_folders_label
-        commentAbove: cms::lang.theme.export_folders_comment
+        label: Folders
+        commentAbove: Please select the theme folders you would like to export
         type: checkboxlist

@@ -1,7 +1,7 @@
 /*
  * Vue Inspector table control implementation
  */
-$.oc.module.register('backend.component.inspector.control.table.head', function () {
+oc.Module.register('backend.component.inspector.control.table.head', function () {
     Vue.component('backend-component-inspector-control-table-head', {
         props: {
             columns: Array
@@ -69,7 +69,7 @@ $.oc.module.register('backend.component.inspector.control.table.head', function 
                 if (!$(ev.target).hasClass('cell-resize-handle')) {
                     return;
                 }
-            
+
                 this.draggedHandle = ev.target;
                 var column = $(this.draggedHandle).closest('th');
 
@@ -99,7 +99,7 @@ $.oc.module.register('backend.component.inspector.control.table.head', function 
                     minSize = this.minColumnSize,
                     newWidth = 0,
                     widthDelta = 0;
-                
+
                 newWidth = Math.max(this.draggedColumnInitialWidth - delta, minSize);
 
                 if (delta < 0) {

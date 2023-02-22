@@ -1,6 +1,7 @@
 <?php namespace Backend\Controllers;
 
 use Redirect;
+use BackendAuth;
 use BackendMenu;
 use Backend\Classes\Controller;
 use Backend\Widgets\ReportContainer;
@@ -23,6 +24,11 @@ class Index extends Controller
     public $requiredPermissions = [];
 
     /**
+     * @var bool turboVisitControl
+     */
+    public $turboVisitControl = 'reload';
+
+    /**
      * __construct the controller
      */
     public function __construct()
@@ -31,7 +37,7 @@ class Index extends Controller
 
         BackendMenu::setContextOwner('October.Backend');
 
-        $this->addCss('/modules/backend/assets/css/dashboard/dashboard.css', 'core');
+        $this->addCss('/modules/backend/assets/css/dashboard/dashboard.css');
     }
 
     /**
@@ -76,7 +82,7 @@ class Index extends Controller
      */
     protected function checkPermissionRedirect()
     {
-        if ($this->user->hasAccess('backend.access_dashboard')) {
+        if (BackendAuth::userHasAccess('dashboard')) {
             return;
         }
 

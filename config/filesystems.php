@@ -49,6 +49,30 @@ return [
             'url' => '/storage/app',
         ],
 
+        'uploads' => [
+            'driver' => 'local',
+            'root' => storage_path('app/uploads'),
+            'url' => '/storage/app/uploads',
+            'visibility' => 'public',
+            'throw' => false,
+        ],
+
+        'media' => [
+            'driver' => 'local',
+            'root' => storage_path('app/media'),
+            'url' => '/storage/app/media',
+            'visibility' => 'public',
+            'throw' => false,
+        ],
+
+        'resources' => [
+            'driver' => 'local',
+            'root' => storage_path('app/resources'),
+            'url' => '/storage/app/resources',
+            'visibility' => 'public',
+            'throw' => false,
+        ],
+
         's3' => [
             'driver' => 's3',
             'key' => env('AWS_ACCESS_KEY_ID'),

@@ -1,6 +1,7 @@
 <?php namespace System\Console;
 
-use October\Rain\Process\Composer as ComposerProcess;
+use System\Helpers\Cache as CacheHelper;
+use October\Rain\Composer\Manager as ComposerManager;
 use Symfony\Component\Console\Input\InputOption;
 use Illuminate\Console\Command;
 
@@ -27,7 +28,7 @@ class PluginCheck extends Command
      */
     public function handle()
     {
-        $this->output->writeln('<info>Checking Dependencies...</info>');
+        $this->line('Checking Dependencies...');
 
         $this->installRequiredPlugins();
     }
@@ -54,17 +55,19 @@ class PluginCheck extends Command
         if (count($deps)) {
             // Composer update
             $this->comment("Executing: composer update");
-            $composer = new ComposerProcess;
-            $composer->setCallback(function($message) { echo $message; });
+
+            $composer = ComposerManager::instance();
+            $composer->setOutputCommand($this, $this->input);
             $composer->update();
 
             // Migrate database
             if (!$this->option('no-migrate')) {
                 $this->comment("Executing: php artisan october:migrate");
-                $this->output->newLine();
+                $this->line('');
 
                 $errCode = null;
-                passthru('php artisan october:migrate', $errCode);
+                static::passthruArtisan('october:migrate', $errCode);
+                $this->line('');
 
                 if ($errCode !== 0) {
                     $this->output->error('Migration failed. Check output above');
@@ -73,8 +76,11 @@ class PluginCheck extends Command
             }
         }
 
+        // Clear meta cache
+        CacheHelper::instance()->clearMeta();
+
         // Success
-        $this->output->writeln('<info>All dependencies installed</info>');
+        $this->info('All dependencies installed');
     }
 
     /**
@@ -85,5 +91,13 @@ class PluginCheck extends Command
         return [
             ['no-migrate', null, InputOption::VALUE_NONE, 'Do not run migration after install.'],
         ];
+    }
+
+    /**
+     * passthruArtisan
+     */
+    protected static function passthruArtisan($command, &$errCode = null)
+    {
+        passthru('"'.PHP_BINARY.'" artisan ' .$command, $errCode);
     }
 }

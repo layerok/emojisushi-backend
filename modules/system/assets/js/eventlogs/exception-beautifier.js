@@ -328,16 +328,27 @@
             '<div class="tab-pane pane-inset" id="beautifier-tab-raw"></div>' +
             '</div></div>');
 
-        if (rawSource.indexOf('Message-ID:') === 0) {
-            markup = rawSource.trim().replace(/(?:^|<\/html>)[^]*?(?:<html|$)/g, function(m) {
-                return m.replace(/\r\n|\r|\n/g, '<br>').replace(/ {2}/g, '&nbsp;&nbsp;')
-            });
+        // Rude check if this is a mail message
+        if (rawSource.includes('Message-ID:') && rawSource.includes('Subject:') && rawSource.includes('From:') && rawSource.includes('To:')) {
+            markup = rawSource
+                // Trim whitespace
+                .replace(/[\t\x20]$/gm, '')
+                // Join line endings
+                .replace(/=(?:\r\n?|\n|$)/g, '')
+                // Decode quoted printable
+                .replace(/=([a-fA-F0-9]{2})/g, function(_, m) {
+                    return String.fromCharCode(parseInt(m, 16));
+                })
+                // Encode HTML body
+                .replace(/(?:^|<\/html>)[^]*?(?:<html|$)/g, function(m) {
+                    return m.replace(/\r\n|\r|\n/g, '<br>').replace(/ {2}/g, '&nbsp;&nbsp;');
+                })
+            ;
+
             iframe = $('<iframe id="#beautifier-tab-formatted-iframe" style="width: 100%; height: 500px; padding: 0" frameborder="0"></iframe>');
         }
 
-        /*
-         * Build tab content
-         */
+        // Build tab content
         if (iframe) {
             tabs.find('#beautifier-tab-formatted').append(iframe);
             iframe.wrap('<div class="beautifier-formatted-content" />');
@@ -387,7 +398,7 @@
     $.fn.exceptionBeautifier.Constructor = ExceptionBeautifier;
 
     $(document).render(function () {
-        $('[data-plugin="exception-beautifier"]').exceptionBeautifier();
+        $('[data-control="exception-beautifier"]').exceptionBeautifier();
     });
 
 }(window.jQuery);

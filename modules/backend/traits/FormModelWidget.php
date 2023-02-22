@@ -95,13 +95,22 @@ trait FormModelWidget
     }
 
     /**
-     * Returns the value as a relation type from the model,
+     * getRelationType returns the value as a relation type from the model,
      * supports nesting via HTML array.
-     * @return Relation
+     * @return string
      */
     protected function getRelationType()
     {
         [$model, $attribute] = $this->resolveModelAttribute($this->valueFrom);
         return $model->getRelationType($attribute);
+    }
+
+    /**
+     * isRelationTypeSingular checks if the related model is singular.
+     */
+    protected function isRelationTypeSingular(): bool
+    {
+        [$model, $attribute] = $this->resolveModelAttribute($this->valueFrom);
+        return $model->isRelationTypeSingular($attribute);
     }
 }

@@ -8,6 +8,7 @@ use Cms\Classes\Theme as CmsTheme;
 use System\Classes\CombineAssets;
 use System\Models\File;
 use Exception;
+use PhpParser\Node\Stmt\Else_;
 
 /**
  * ThemeData for theme customization
@@ -167,6 +168,12 @@ class ThemeData extends Model
 
             if (in_array($field['type'], ['repeater', 'nestedform'])) {
                 if (!$this->isJsonable($id)) {
+                    $this->addJsonable($id);
+                }
+            }
+            elseif ($field['type'] === 'mediafinder' && isset($field['maxItems'])) {
+                $maxItems = (int) $field['maxItems'];
+                if ($maxItems !== 1 && !$this->isJsonable($id)) {
                     $this->addJsonable($id);
                 }
             }

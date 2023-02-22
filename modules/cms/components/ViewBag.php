@@ -1,6 +1,6 @@
 <?php namespace Cms\Components;
 
-use Cms\Classes\ComponentBase;
+use Cms\Classes\ComponentModuleBase;
 
 /**
  * ViewBag stores custom template properties, hidden in the backend.
@@ -8,14 +8,15 @@ use Cms\Classes\ComponentBase;
  * @package october\cms
  * @author Alexey Bobkov, Samuel Georges
  */
-class ViewBag extends ComponentBase
+class ViewBag extends ComponentModuleBase
 {
     /**
-     * @var boolean This component is hidden from the back-end UI.
+     * @var bool isHidden from the backend UI.
      */
     public $isHidden = true;
 
     /**
+     * componentDetails
      * @return array
      */
     public function componentDetails()
@@ -27,6 +28,7 @@ class ViewBag extends ComponentBase
     }
 
     /**
+     * validateProperties
      * @param array $properties
      * @return array
      */
@@ -36,7 +38,7 @@ class ViewBag extends ComponentBase
     }
 
     /**
-     * Implements the getter functionality.
+     * __get implements the getter functionality.
      * @param  string  $name
      * @return void
      */
@@ -50,7 +52,7 @@ class ViewBag extends ComponentBase
     }
 
     /**
-     * Determine if an attribute exists on the object.
+     * __isset determine if an attribute exists on the object.
      * @param  string $key
      * @return bool
      */
@@ -64,6 +66,7 @@ class ViewBag extends ComponentBase
     }
 
     /**
+     * defineProperties
      * @return array
      */
     public function defineProperties()

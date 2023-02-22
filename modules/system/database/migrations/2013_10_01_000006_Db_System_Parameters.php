@@ -3,7 +3,7 @@
 use October\Rain\Database\Schema\Blueprint;
 use October\Rain\Database\Updates\Migration;
 
-class DbSystemParameters extends Migration
+return new class extends Migration
 {
     public function up()
     {
@@ -21,4 +21,4 @@ class DbSystemParameters extends Migration
     {
         Schema::dropIfExists('system_parameters');
     }
-}
+};

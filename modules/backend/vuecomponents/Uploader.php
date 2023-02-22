@@ -31,9 +31,9 @@ class Uploader extends VueComponentBase
      */
     protected function loadDependencyAssets()
     {
-        $this->addJsBundle('js/utils.js', 'core');
-        $this->addJsBundle('js/queue.js', 'core');
-        $this->addJsBundle('js/file.js', 'core');
+        $this->addJsBundle('js/utils.js');
+        $this->addJsBundle('js/queue.js');
+        $this->addJsBundle('js/file.js');
     }
 
     protected function registerSubcomponents()

@@ -1,16 +1,15 @@
 <?php namespace Backend\Classes;
 
 use File;
-use stdClass;
 use SystemException;
 use October\Rain\Extension\Extendable;
 
 /**
- * Vue component base class.
+ * VueComponentBase class.
  *
  * Each component must include two files:
  *   vuecomponents/mycomponents
- *   - partials/mycomponents.htm
+ *   - partials/_mycomponents.php
  *   - assets/js/mycomponents.js
  *
  * The optional CSS file is loaded automatically if presented:
@@ -29,22 +28,22 @@ abstract class VueComponentBase extends Extendable
     use \System\Traits\AssetMaker;
 
     /**
-     * @var \Backend\Classes\Controller Backend controller object.
+     * @var \Backend\Classes\Controller controller object
      */
     protected $controller;
 
     /**
-     * @var array A list of Vue component class names required for this component.
+     * @var array require Vue component class names for this component.
      */
     protected $require = [];
 
     /**
-     * @var array A list of subcomponents this component provides
+     * @var array subcomponents this component provides
      */
     private $subcomponents = [];
 
     /**
-     * Constructor
+     * __construct
      * @param \Backend\Classes\Controller $controller
      */
     public function __construct($controller)
@@ -66,13 +65,16 @@ abstract class VueComponentBase extends Extendable
     }
 
     /**
-     * Renders the default component partial.
+     * render the default component partial.
      */
     public function render()
     {
         return $this->makePartial($this->getComponentBaseName());
     }
 
+    /**
+     * renderSubcomponent
+     */
     public function renderSubcomponent($name)
     {
         if (!array_key_exists($name, $this->subcomponents)) {
@@ -83,38 +85,47 @@ abstract class VueComponentBase extends Extendable
         return $this->makePartial($name);
     }
 
+    /**
+     * getDependencies
+     */
     public function getDependencies()
     {
         return $this->require;
     }
 
+    /**
+     * getSubcomponents
+     */
     public function getSubcomponents()
     {
         return array_keys($this->subcomponents);
     }
 
+    /**
+     * loadDefaultAssets
+     */
     protected function loadDefaultAssets()
     {
         $baseName = $this->getComponentBaseName();
 
-        $this->addJsBundle('js/'.$baseName.'.js', 'core');
+        $this->addJsBundle('js/'.$baseName.'.js');
 
         $cssPath = 'css/'.$baseName.'.css';
         if (File::exists(base_path($this->assetPath.'/'.$cssPath))) {
-            $this->addCssBundle($cssPath, 'core');
+            $this->addCssBundle($cssPath);
         }
     }
 
     /**
-     * Prepares variables required by the component's partials
+     * prepareVars required by the component's partials
      */
     protected function prepareVars()
     {
     }
 
     /**
-     * Adds component specific asset files. Use $this->addJs() and $this->addCss()
-     * to register new assets to include on the page.
+     * loadAssets adds component specific asset files. Use $this->addJs() and
+     * $this->addCss() to register new assets to include on the page.
      * The default component script and CSS file are loaded automatically.
      * @return void
      */
@@ -123,7 +134,7 @@ abstract class VueComponentBase extends Extendable
     }
 
     /**
-     * Adds dependency assets required for the component.
+     * loadDependencyAssets adds dependency assets required for the component.
      * This method is called before the component's default resources are loaded.
      * Use $this->addJs() and $this->addCss() to register new assets to include
      * on the page.
@@ -133,6 +144,9 @@ abstract class VueComponentBase extends Extendable
     {
     }
 
+    /**
+     * getComponentBaseName
+     */
     protected function getComponentBaseName()
     {
         $classNameArray = explode('\\', get_class($this));
@@ -140,7 +154,7 @@ abstract class VueComponentBase extends Extendable
     }
 
     /**
-     * Adds a subcomponent.
+     * registerSubcomponent adds a subcomponent.
      * @param string $name The component name.
      * A JavaScript file and partial with the same name must exist.
      */
@@ -149,9 +163,12 @@ abstract class VueComponentBase extends Extendable
         $name = strtolower($name);
 
         $this->subcomponents[$name] = true;
-        $this->addJsBundle('js/'.$name.'.js', 'core');
+        $this->addJsBundle('js/'.$name.'.js');
     }
 
+    /**
+     * registerSubcomponents
+     */
     protected function registerSubcomponents()
     {
     }

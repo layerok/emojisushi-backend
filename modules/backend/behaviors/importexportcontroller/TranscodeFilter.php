@@ -2,22 +2,30 @@
 
 use php_user_filter;
 
+// phpcs:ignoreFile
 stream_filter_register(TranscodeFilter::FILTER_NAME . "*", TranscodeFilter::class);
 
 /**
- * Transcode stream filter.
- *
- * Convert CSV source files from one encoding to another.
+ * TranscodeFilter converts CSV source files from one encoding to another.
  */
 class TranscodeFilter extends php_user_filter
 {
     const FILTER_NAME = 'october.csv.transcode.';
 
+    /**
+     * @var string encodingFrom
+     */
     protected $encodingFrom = 'auto';
 
+    /**
+     * @var string encodingTo
+     */
     protected $encodingTo;
 
-    public function filter($in, $out, &$consumed, $closing)
+    /**
+     * filter
+     */
+    public function filter($in, $out, &$consumed, $closing): int
     {
         while ($resource = stream_bucket_make_writeable($in)) {
             $resource->data = @mb_convert_encoding(
@@ -34,7 +42,10 @@ class TranscodeFilter extends php_user_filter
         return PSFS_PASS_ON;
     }
 
-    public function onCreate()
+    /**
+     * onCreate
+     */
+    public function onCreate(): bool
     {
         if (strpos($this->filtername, self::FILTER_NAME) !== 0) {
             return false;
@@ -62,7 +73,10 @@ class TranscodeFilter extends php_user_filter
         return true;
     }
 
-    public function onClose()
+    /**
+     * onClose
+     */
+    public function onClose(): void
     {
         setlocale(LC_CTYPE, $this->params['locale']);
     }

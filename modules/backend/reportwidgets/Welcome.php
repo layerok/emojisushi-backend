@@ -52,7 +52,7 @@ class Welcome extends ReportWidgetBase
      */
     protected function loadAssets()
     {
-        $this->addCss('css/welcome.css', 'core');
+        $this->addCss('css/welcome.css');
     }
 
     protected function loadData()

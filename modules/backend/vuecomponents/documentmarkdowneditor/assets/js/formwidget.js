@@ -1,23 +1,24 @@
-$.oc.module.register('backend.vuecomponents.documentmarkdowneditor.formwidget', function () {
+oc.Module.register('backend.vuecomponents.documentmarkdowneditor.formwidget', function() {
     'use strict';
 
-    var FormWidget = function () {
-        function FormWidget(element, options, changeCallback) {
-            babelHelpers.classCallCheck(this, FormWidget);
-
-            var widgetConnectorClass = Vue.extend(Vue.options.components['backend-component-documentmarkdowneditor-formwidgetconnector']);
+    class FormWidget {
+        constructor(element, options, changeCallback) {
+            const widgetConnectorClass = Vue.extend(
+                Vue.options.components['backend-component-documentmarkdowneditor-formwidgetconnector']
+            );
 
             this.connectorInstance = new widgetConnectorClass({
                 propsData: {
                     textarea: element,
                     useMediaManager: options.useMediaManager,
+                    sideBySide: options.sideBySide,
                     options: options,
                     lang: $(element).closest('.field-markdowneditor').data()
                 }
             });
 
             if (changeCallback) {
-                this.connectorInstance.$on('change', function () {
+                this.connectorInstance.$on('change', function() {
                     changeCallback();
                 });
             }
@@ -34,19 +35,15 @@ $.oc.module.register('backend.vuecomponents.documentmarkdowneditor.formwidget', 
             element.parentNode.appendChild(this.connectorInstance.$el);
         }
 
-        babelHelpers.createClass(FormWidget, [{
-            key: 'remove',
-            value: function remove() {
-                if (this.connectorInstance) {
-                    this.connectorInstance.$destroy();
-                    $(this.connectorInstance.$el).remove();
-                }
-
-                this.connectorInstance = null;
+        remove() {
+            if (this.connectorInstance) {
+                this.connectorInstance.$destroy();
+                $(this.connectorInstance.$el).remove();
             }
-        }]);
-        return FormWidget;
-    }();
+
+            this.connectorInstance = null;
+        }
+    }
 
     return FormWidget;
 });

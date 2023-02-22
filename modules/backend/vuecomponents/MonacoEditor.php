@@ -5,10 +5,9 @@ use Backend\Classes\VueComponentBase;
 use Backend\Models\Preference as BackendPreference;
 
 /**
- * Monaco editor Vue component
+ * MonacoEditor Vue component
  *
- * Dev notes.
- * - Emmet is not currently supported. Available third-party libraries did not work well. (July 2020)
+ * Dev notes:
  * - Automatic tag closing is not implemented. See https://github.com/microsoft/monaco-editor/issues/221
  *
  * @see https://github.com/microsoft/monaco-editor
@@ -23,7 +22,7 @@ class MonacoEditor extends VueComponentBase
     ];
 
     /**
-     * Adds dependency assets required for the component.
+     * loadDependencyAssets required for the component.
      * This method is called before the component's default resources are loaded.
      * Use $this->addJs() and $this->addCss() to register new assets to include
      * on the page.
@@ -33,10 +32,13 @@ class MonacoEditor extends VueComponentBase
     {
         $this->addJs('vendor/emmet-monaco-es@4.6.2/min/emmet-monaco.min.js');
         $this->addJs('vendor/monaco@0.23.0/min/vs/loader.js');
-        $this->addJsBundle('js/modelreference.js', 'core');
-        $this->addJsBundle('js/modeldefinition.js', 'core');
+        $this->addJsBundle('js/modelreference.js');
+        $this->addJsBundle('js/modeldefinition.js');
     }
 
+    /**
+     * prepareVars
+     */
     protected function prepareVars()
     {
         $preferences = BackendPreference::instance();
@@ -45,6 +47,7 @@ class MonacoEditor extends VueComponentBase
             'vendorPath' => Url::asset('/modules/backend/vuecomponents/monacoeditor/assets/vendor/monaco@0.23.0/min'),
             'fontSize' => $preferences->editor_font_size.'px',
             'tabSize' => $preferences->editor_tab_size,
+            'useEmmet' => !!$preferences->editor_use_emmet,
             'renderLineHighlight' => $preferences->editor_highlight_active_line ? 'all' : 'none',
             'useTabStops' => !!$preferences->editor_use_hard_tabs,
             'renderIndentGuides' => !!$preferences->editor_display_indent_guides,

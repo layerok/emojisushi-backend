@@ -1,8 +1,9 @@
 <?php namespace Backend\FormWidgets;
 
 use Lang;
-use ApplicationException;
+use Backend\Classes\FormField;
 use Backend\Classes\FormWidgetBase;
+use ApplicationException;
 
 /**
  * Repeater Form Widget
@@ -74,6 +75,11 @@ class Repeater extends FormWidgetBase
      * they will be collapsed and only select one at a time when clicking the header.
      */
     public $itemsExpanded = true;
+
+    /**
+     * @var bool useTabs for the form fields.
+     */
+    public $useTabs = false;
 
     /**
      * @var string Defines a mount point for the editor toolbar.
@@ -156,6 +162,7 @@ class Repeater extends FormWidgetBase
             'groupKeyFrom',
             'minItems',
             'maxItems',
+            'useTabs',
             'externalToolbarAppState',
             'externalToolbarEventBus'
         ]);
@@ -229,8 +236,8 @@ class Repeater extends FormWidgetBase
      */
     protected function loadAssets()
     {
-        $this->addCss('css/repeater.css', 'core');
-        $this->addJs('js/repeater-min.js', 'core');
+        $this->addCss('css/repeater.css');
+        $this->addJs('js/repeater-min.js');
     }
 
     /**
@@ -388,19 +395,42 @@ class Repeater extends FormWidgetBase
         }
 
         $config->alias = $this->alias . 'Form' . $index;
+        $config->context = self::$onAddItemCalled ? FormField::CONTEXT_CREATE : FormField::CONTEXT_UPDATE;
         $config->arrayName = $this->getFieldName().'['.$index.']';
         $config->sessionKey = $this->sessionKey;
         $config->sessionKeySuffix = $this->sessionKeySuffix . '-' . $index;
 
         $widget = $this->makeWidget(\Backend\Widgets\Form::class, $config);
         $widget->previewMode = $this->previewMode;
-        $widget->bindToController();
 
         $this->indexMeta[$index] = [
             'groupCode' => $groupCode
         ];
 
+        // Convert to tabbed config
+        if ($this->useTabs || ($config->useTabs ?? false)) {
+            $widget->bindEvent('form.extendFields', function() use ($widget) {
+                $this->moveTabbedFormFields($widget, 'outside', 'secondary');
+            });
+        }
+
+        $widget->bindToController();
+
         return $this->formWidgets[$index] = $widget;
+    }
+
+    /**
+     * moveTabbedFormFields from one tab to another
+     */
+    protected function moveTabbedFormFields($widget, $fromTab, $toTab)
+    {
+        $from = $widget->getTab($fromTab);
+        $to = $widget->getTab($toTab);
+
+        foreach ($from->getAllFields() as $name => $field) {
+            $to->addField($name, $field);
+            $from->removeField($name);
+        }
     }
 
     /**
@@ -460,6 +490,14 @@ class Repeater extends FormWidgetBase
         $fromIndex = post('_repeater_index');
         $groupCode = post('_repeater_group');
         $toIndex = $this->getNextIndex();
+
+        if ($this->useRelation) {
+            // Relation must be saved to replicate
+            $this->processSaveForRelation([$fromIndex => $this->getValueFromIndex($fromIndex)]);
+
+            // Duplicate the model with replication
+            $this->duplicateRelationAtIndex($fromIndex, $toIndex, $groupCode);
+        }
 
         $this->prepareVars();
         $this->vars['widget'] = $this->makeItemFormWidget($toIndex, $groupCode, $fromIndex);
@@ -537,13 +575,13 @@ class Repeater extends FormWidgetBase
             return null;
         }
 
-        $fields = array_get($this->groupDefinitions, $code.'.fields');
+        $config = array_get($this->groupDefinitions, $code);
 
-        if (!$fields) {
+        if (!isset($config['fields'])) {
             return null;
         }
 
-        return ['fields' => $fields];
+        return $config;
     }
 
     /**
@@ -561,12 +599,12 @@ class Repeater extends FormWidgetBase
             }
 
             foreach ($group as $code => $config) {
-                $palette[$code] = [
-                    'code' => $code,
-                    'name' => $config['name'] ?? '',
-                    'icon' => $config['icon'] ?? 'icon-square-o',
-                    'description' => $config['description'] ?? '',
-                    'fields' => $config['fields'] ?? ''
+                $palette[$code] = ['code' => $code] + ((array) $config) + [
+                    'name' => '',
+                    'icon' => 'icon-square-o',
+                    'description' => '',
+                    'titleFrom' => '',
+                    'fields' => [],
                 ];
             }
 

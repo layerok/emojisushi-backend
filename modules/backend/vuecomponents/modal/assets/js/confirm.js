@@ -1,7 +1,7 @@
 /*
  * Vue modal confirmation implementation
  */
-$.oc.module.register('backend.component.modal.confirm', function () {
+oc.Module.register('backend.component.modal.confirm', function () {
     Vue.component('backend-component-modal-confirm', {
         extends: Vue.options.components['backend-component-modal-alert'],
         props: {

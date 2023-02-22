@@ -1,7 +1,7 @@
 /*
  * Vue Inspector set control implementation
  */
-$.oc.module.register('backend.component.inspector.control.set', function () {
+oc.Module.register('backend.component.inspector.control.set', function () {
     Vue.component('backend-component-inspector-control-set', {
         extends: $.oc.vueComponentHelpers.inspector.controlBase,
         props: {
@@ -64,7 +64,7 @@ $.oc.module.register('backend.component.inspector.control.set', function () {
                         'default': false
                     });
                 }
-            
+
                 return result;
             },
 
@@ -79,7 +79,7 @@ $.oc.module.register('backend.component.inspector.control.set', function () {
                 if ($.isArray(value) && value.length > 0) {
                     var items = this.items,
                         titles = [];
-                
+
                     for (var i = 0; i < value.length; i++) {
                         var currentValue = value[i];
                         if (items[currentValue] != undefined) {
@@ -100,7 +100,7 @@ $.oc.module.register('backend.component.inspector.control.set', function () {
         methods: {
             updateValue: function updateValue(value) {
                 var storedValue = [];
-            
+
                 if (typeof value === 'object') {
                     for (var prop in value) {
                         if (!value.hasOwnProperty(prop)) {
@@ -135,7 +135,7 @@ $.oc.module.register('backend.component.inspector.control.set', function () {
         mounted: function mounted() {
             this.$emit('hidefullwidthlabel');
             this.$emit('hidebottomborder');
-        
+
             if (!this.control.items) {
                 this.loadDynamicOptions();
             }

@@ -5,10 +5,10 @@
     "homepage": "https://octobercms.com",
     "license": "proprietary",
     "require": {
-        "php": ">=7.2.9",
-        "october/rain": "^2.0",
-        "laravel/framework": "^6.0",
-        "october/all": "^2.0",
+        "php": ">=8.0.3",
+        "october/rain": "^3.0",
+        "laravel/framework": "^9.0",
+        "october/all": "^3.0",
         "rainlab/user-plugin": "^1.6",
         "rainlab/location-plugin": "^1.2",
         "rainlab/translate-plugin": "^1.11",
@@ -46,7 +46,8 @@
     "config": {
         "preferred-install": "dist",
         "allow-plugins": {
-            "composer/installers": true
+            "composer/installers": true,
+            "php-http/discovery": true
         }
     },
     "autoload": {

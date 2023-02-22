@@ -5,12 +5,12 @@
 scopes:
 
     created_at:
-        label: backend::lang.access_log.created_at
+        label: Date & Time
         type: daterange
         conditions: created_at >= ':after' AND created_at <= ':before'
 
     user:
-        label: backend::lang.access_log.login
+        label: Login
         modelClass: Backend\Models\User
         conditions: user_id in (:filtered)
         nameFrom: login

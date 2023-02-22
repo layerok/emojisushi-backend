@@ -2,60 +2,42 @@
 
 use Html;
 use Backend;
+use Backend\Classes\UiElement;
 
 /**
  * Button
+ *
+ * @method Button label(string $label) label for the button
+ * @method Button linkUrl(string $linkUrl) linkUrl will use an anchor button
+ * @method Button cssClass(string $cssClass) cssClass for the button
+ * @method Button replaceCssClass(string $replaceCssClass) replaceCssClass defaults for the button
+ * @method Button hotkey(...$hotkey) hotkey patterns
+ * @method Button type(string $type) type of button
+ * @method Button attributes(array $attributes) attributes in HTML
+ * @method Button primary(bool $primary) primary button
+ * @method Button outline(bool $outline) outline button
+ *
+ * @package october\backend
+ * @author Alexey Bobkov, Samuel Georges
  */
-class Button
+class Button extends UiElement
 {
-    use \Backend\Traits\ElementRenderer;
-
-    /**
-     * @var string label for the button
-     */
-    protected $label;
-
-    /**
-     * @var string linkUrl will use an anchor button
-     */
-    protected $linkUrl;
-
-    /**
-     * @var string cssClass for the button
-     */
-    protected $cssClass;
-
-    /**
-     * @var string replaceCssClass defaults for the button
-     */
-    protected $replaceCssClass;
-
-    /**
-     * @var array hotkey patterns
-     */
-    protected $hotkey;
-
-    /**
-     * @var string type of button
-     */
-    protected $type;
-
-    /**
-     * @var array attributes in HTML
-     */
-    protected $attributes;
-
-    /**
-     * @var bool isPrimary button
-     */
-    protected $isPrimary = false;
-
     /**
      * __construct
      */
-    public function __construct(string $label)
+    public function __construct($label = 'Button', $config = [])
     {
-        $this->label = $label;
+        $this->label($label);
+
+        parent::__construct($config);
+    }
+
+    /**
+     * initDefaultValues override method
+     */
+    protected function initDefaultValues()
+    {
+        $this->secondary();
     }
 
     /**
@@ -85,21 +67,11 @@ class Button
     }
 
     /**
-     * setDefaults
-     */
-    protected function setDefaults(): void
-    {
-        if ($this->type === null) {
-            $this->type = $this->isPrimary ? 'submit' : 'button';
-        }
-    }
-
-    /**
      * buildAttributes
      */
     protected function buildAttributes(array $attr = []): array
     {
-        $attr['type'] = $this->type;
+        $attr['type'] = $this->type === 'primary' ? 'submit' : 'button';
 
         if ($this->hotkey) {
             $attr['data-hotkey'] = implode(',', $this->hotkey);
@@ -123,11 +95,11 @@ class Button
 
         $css[] = 'btn';
 
-        if ($this->isPrimary) {
-            $css[] = 'btn-primary';
+        if ($this->outline) {
+            $css[] = 'btn-outline-'.$this->type;
         }
         else {
-            $css[] = 'btn-default';
+            $css[] = 'btn-'.$this->type;
         }
 
         $css[] = $this->cssClass;
@@ -136,19 +108,9 @@ class Button
     }
 
     /**
-     * label
-     */
-    public function label(string $label): Button
-    {
-        $this->label = $label;
-
-        return $this;
-    }
-
-    /**
      * linkTo
      */
-    public function linkTo(string $linkUrl, bool $isRaw = false): Button
+    public function linkTo(string $linkUrl, bool $isRaw = false): static
     {
         $this->linkUrl = $isRaw ? $linkUrl : Backend::url($linkUrl);
 
@@ -156,62 +118,56 @@ class Button
     }
 
     /**
-     * cssClass
+     * primary
      */
-    public function replaceCssClass(string $replaceCssClass): Button
+    public function primary(): static
     {
-        $this->replaceCssClass = $replaceCssClass;
-
+        $this->type('primary');
         return $this;
     }
 
     /**
-     * cssClass
+     * secondary
      */
-    public function cssClass(string $cssClass): Button
+    public function secondary(): static
     {
-        $this->cssClass = $cssClass;
-
+        $this->type('secondary');
         return $this;
     }
 
     /**
-     * type
+     * success
      */
-    public function type(string $type): Button
+    public function success(): static
     {
-        $this->type = $type;
-
+        $this->type('success');
         return $this;
     }
 
     /**
-     * hotkey
+     * danger
      */
-    public function hotkey(...$hotkey): Button
+    public function danger(): static
     {
-        $this->hotkey = $hotkey;
-
+        $this->type('danger');
         return $this;
     }
 
     /**
-     * attributes
+     * warning
      */
-    public function attributes(array $attributes): Button
+    public function warning(): static
     {
-        $this->attributes = $attributes;
-
+        $this->type('warning');
         return $this;
     }
 
     /**
-     * isPrimary
+     * info
      */
-    public function primary(): Button
+    public function info(): static
     {
-        $this->isPrimary = true;
-
+        $this->type('info');
         return $this;
     }
 }

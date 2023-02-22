@@ -1,8 +1,10 @@
 <?php namespace Backend\FormWidgets;
 
-use Backend\Widgets\Form;
+use Backend\Classes\FormField;
 use Backend\Classes\FormWidgetBase;
 use October\Rain\Database\Model;
+use October\Rain\Exception\ValidationException;
+use October\Rain\Html\Helper as HtmlHelper;
 
 /**
  * NestedForm widget
@@ -12,6 +14,7 @@ use October\Rain\Database\Model;
  */
 class NestedForm extends FormWidgetBase
 {
+    use \Backend\Traits\FormModelSaver;
     use \Backend\Traits\FormModelWidget;
 
     /**
@@ -30,14 +33,25 @@ class NestedForm extends FormWidgetBase
     public $showPanel = true;
 
     /**
+     * @var bool defaultCreate will create a new record when the form loads, useful
+     * for assocating relations within the nested form
+     */
+    public $defaultCreate = false;
+
+    /**
      * @var bool useRelation will instruct the widget to look for a relationship
      */
     protected $useRelation = false;
 
     /**
-     * @var Form formWidget reference
+     * @var \Backend\Widgets\Form formWidget reference
      */
     protected $formWidget;
+
+    /**
+     * @var \Model relatedRecord when using a relation
+     */
+    protected $relatedRecord;
 
     /**
      * @inheritDoc
@@ -46,7 +60,8 @@ class NestedForm extends FormWidgetBase
     {
         $this->fillFromConfig([
             'form',
-            'showPanel'
+            'showPanel',
+            'defaultCreate'
         ]);
 
         if ($this->formField->disabled) {
@@ -56,6 +71,81 @@ class NestedForm extends FormWidgetBase
         $this->processRelationMode();
 
         $this->makeNestedFormWidget();
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function render()
+    {
+        $this->prepareVars();
+        return $this->makePartial('nestedform');
+    }
+
+    /**
+     * prepareVars for display
+     */
+    public function prepareVars()
+    {
+        $this->formWidget->previewMode = $this->previewMode;
+    }
+
+    /**
+     * loadAssets
+     */
+    protected function loadAssets()
+    {
+        $this->addCss('css/nestedform.css');
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getSaveValue($value)
+    {
+        return $this->useRelation
+            ? $this->processSaveForRelation($value)
+            : $value;
+    }
+
+    /**
+     * resetFormValue from the form field
+     */
+    public function resetFormValue()
+    {
+        $this->formWidget->setFormValues($this->formField->value);
+    }
+
+    /**
+     * processSaveForRelation
+     * @param array $value
+     * @return array|null
+     */
+    protected function processSaveForRelation($value)
+    {
+        // Give form field widgets an opportunity to process the data
+        $widget = $this->formWidget;
+        $saveData = $widget->getSaveData();
+
+        // Save data to the model
+        $model = $widget->model;
+
+        $modelsToSave = $this->prepareModelsToSave($model, $saveData);
+
+        foreach ($modelsToSave as $attrChain => $modelToSave) {
+            try {
+                $modelToSave->save(null, $widget->getSessionKey());
+            }
+            catch (ValidationException $ve) {
+                $ve->setFieldPrefix(array_merge(
+                    HtmlHelper::nameToArray($this->valueFrom),
+                    $attrChain ? explode('.', $attrChain) : []
+                ));
+                throw $ve;
+            }
+        }
+
+        return FormField::NO_SAVE_DATA;
     }
 
     /**
@@ -75,9 +165,11 @@ class NestedForm extends FormWidgetBase
         }
 
         $config->alias = $this->alias . $this->defaultAlias;
+        $config->context = $this->formField->context;
         $config->arrayName = $this->getFieldName();
+        $config->sessionKey = $this->sessionKey;
 
-        $widget = $this->makeWidget(Form::class, $config);
+        $widget = $this->makeWidget(\Backend\Widgets\Form::class, $config);
         $widget->previewMode = $this->previewMode;
         $widget->bindToController();
 
@@ -85,46 +177,40 @@ class NestedForm extends FormWidgetBase
     }
 
     /**
-     * prepareVars for display
-     */
-    public function prepareVars()
-    {
-        $this->formWidget->previewMode = $this->previewMode;
-    }
-
-    /**
-     * resetFormValue from the form field
-     */
-    public function resetFormValue()
-    {
-        $this->formWidget->setFormValues($this->formField->value);
-    }
-
-    /**
      * getLoadValueFromRelation
      */
     protected function getLoadValueFromRelation()
     {
-        [$model, $attribute] = $this->resolveModelAttribute($this->valueFrom);
+        if ($this->relatedRecord !== null) {
+            return $this->relatedRecord;
+        }
 
-        return $model->{$attribute} ?? $this->getRelationModel();
+        $this->relatedRecord = $this->getRelationObject()
+            ->withDeferred($this->getSessionKey())
+            ->first()
+        ;
+
+        if (!$this->relatedRecord) {
+            $this->relatedRecord = $this->createRelationByDefault();
+        }
+
+        return $this->relatedRecord;
     }
 
     /**
-     * loadAssets
+     * createRelationByDefault
      */
-    protected function loadAssets()
+    protected function createRelationByDefault()
     {
-        $this->addCss('css/nestedform.css', 'core');
-    }
+        $model = $this->getRelationModel();
 
-    /**
-     * @inheritdoc
-     */
-    public function render()
-    {
-        $this->prepareVars();
-        return $this->makePartial('nestedform');
+        if ($this->defaultCreate) {
+            $model->save(['force' => true]);
+
+            $this->getRelationObject()->add($model, $this->getSessionKey());
+        }
+
+        return $model;
     }
 
     /**

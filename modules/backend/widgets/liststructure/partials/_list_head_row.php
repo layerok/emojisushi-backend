@@ -1,10 +1,7 @@
 <tr>
     <?php if ($showCheckboxes): ?>
         <th class="list-checkbox">
-            <div class="checkbox custom-checkbox nolabel">
-                <input type="checkbox" id="<?= $this->getId('checkboxAll') ?>" />
-                <label class="storm-icon-pseudo" for="<?= $this->getId('checkboxAll') ?>"></label>
-            </div>
+            <input type="checkbox" class="form-check-input" />
         </th>
     <?php endif ?>
     <?php if ($showReorder): ?>
@@ -25,7 +22,7 @@
                 $column->headCssClass
             ];
 
-            if ($index === 1) {
+            if ($showReorder && $index === 1) {
                 $styles[] = 'padding-left: '.$this->getIndentStartSize(0).'px';
                 $classes[] = 'explicit-left-padding';
             }
@@ -45,9 +42,8 @@
                     href="javascript:;"
                     data-request="<?= $this->getEventHandler('onSort') ?>"
                     data-stripe-load-indicator
-                    data-request-data="sortColumn: '<?= $column->columnName ?>', page: <?= $pageCurrent ?>">
-                    <?= $this->getHeaderValue($column) ?>
-                </a>
+                    data-request-data="sortColumn: '<?= $column->columnName ?>', page: <?= $pageCurrent ?>"
+                ><?= $this->getHeaderValue($column) ?></a>
             </th>
         <?php else: ?>
             <th style="<?= implode(';', $styles) ?>" class="<?= implode(' ', $classes) ?>">

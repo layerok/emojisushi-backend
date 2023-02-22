@@ -32,20 +32,10 @@
         margin: -2px 2px;
     }
 
-    .repeater-item-checkbox {
-        .checkbox {
-            margin: 0;
-            padding-left: 20px;
-            min-height: 0;
-        }
-        .custom-checkbox {
-            position: relative;
-            top: -14px;
-            label {
-                margin-right: 0;
-                margin-bottom: 0;
-            }
-        }
+    .repeater-item-checkbox .form-check-input {
+        position: relative;
+        top: 3px;
+        left: 5px;
     }
 
     a.repeater-item-menu,
@@ -85,9 +75,6 @@
 
     .repeater-item-dropdown {
         padding-right: 3px;
-        .dropdown-menu-right {
-            right: -5px;
-        }
     }
 }
 
@@ -162,6 +149,7 @@
             }
 
             > ul > li {
+                .group-title,
                 .group-description {
                     overflow: hidden;
                     text-overflow: ellipsis;
@@ -171,9 +159,21 @@
             > ul > li.field-repeater-group {
                 width: 250px;
                 display: inline-block;
+                vertical-align: top;
                 margin-right: 10px;
                 margin-bottom: 5px;
             }
         }
+    }
+}
+
+// Group palette sizing
+.field-repeater-selection-list {
+    width: 300px;
+}
+
+@media (max-width: @screen-sm) {
+    .field-repeater-selection-list {
+        width: auto;
     }
 }

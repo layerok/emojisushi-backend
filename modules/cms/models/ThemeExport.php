@@ -19,38 +19,38 @@ class ThemeExport extends Model
     use \October\Rain\Database\Traits\Validation;
 
     /**
-     * @var string The database table used by the model.
+     * @var string table in database used by the model.
      */
     public $table = 'cms_theme_data';
 
     /**
-     * @var array The rules to be applied to the data.
+     * @var array rules to be applied to the data.
      */
     public $rules = [];
 
     /**
-     * @var array Guarded fields
+     * @var array guarded fields
      */
     protected $guarded = [];
 
     /**
-     * @var array Fillable fields
+     * @var array fillable fields
      */
     protected $fillable = [];
 
     /**
-     * @var array Make the model's attributes public so behaviors can modify them.
+     * @var array attributes used
      */
     public $attributes = [
         'theme' => null,
         'themeName' => null,
         'dirName' => null,
         'folders' => [
-            'assets'   => true,
-            'pages'    => true,
-            'layouts'  => true,
-            'partials' => true,
-            'content'  => true,
+            'assets',
+            'pages',
+            'layouts',
+            'partials',
+            'content',
         ]
     ];
 
@@ -64,17 +64,23 @@ class ThemeExport extends Model
         throw new ApplicationException(sprintf("The % model is not intended to be saved, please use %s instead", get_class($this), 'ThemeData'));
     }
 
+    /**
+     * getFoldersOptions
+     */
     public function getFoldersOptions()
     {
         return [
-            'assets'   => 'Assets',
-            'pages'    => 'Pages',
-            'layouts'  => 'Layouts',
+            'assets' => 'Assets',
+            'pages' => 'Pages',
+            'layouts' => 'Layouts',
             'partials' => 'Partials',
-            'content'  => 'Content',
+            'content' => 'Content',
         ];
     }
 
+    /**
+     * setThemeAttribute
+     */
     public function setThemeAttribute($theme)
     {
         if (!$theme instanceof CmsTheme) {
@@ -86,6 +92,9 @@ class ThemeExport extends Model
         $this->attributes['theme'] = $theme;
     }
 
+    /**
+     * export
+     */
     public function export($theme, $data = [])
     {
         $this->theme = $theme;
@@ -134,6 +143,9 @@ class ThemeExport extends Model
         return $zipName;
     }
 
+    /**
+     * download
+     */
     public static function download($name, $outputName = null)
     {
         if (!preg_match('/^oc[0-9a-z]*$/i', $name)) {

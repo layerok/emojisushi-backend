@@ -79,12 +79,12 @@ abstract class ComponentBase extends Extendable implements CallsAnyMethod
     protected $externalPropertyNames = [];
 
     /**
-     * Component constructor. Takes in the page or layout code section object
+     * __construct the component, which takes in the page or layout code section object
      * and properties set by the page or layout.
-     * @param null|CodeBase $cmsObject
+     * @param CodeBase|null $cmsObject
      * @param array $properties
      */
-    public function __construct(CodeBase $cmsObject = null, $properties = [])
+    public function __construct($cmsObject = null, $properties = [])
     {
         if ($cmsObject !== null) {
             $this->page = $cmsObject;
@@ -94,7 +94,7 @@ abstract class ComponentBase extends Extendable implements CallsAnyMethod
         $this->properties = $this->validateProperties($properties);
 
         $className = Str::normalizeClassName(get_called_class());
-        $this->dirName = strtolower(str_replace('\\', '/', $className));
+        $this->dirName = '/'.strtolower(str_replace('\\', '/', $className));
         $this->assetPath = $this->getComponentAssetPath();
 
         parent::__construct();
@@ -122,14 +122,14 @@ abstract class ComponentBase extends Extendable implements CallsAnyMethod
     }
 
     /**
-     * Executed when this component is first initialized, before AJAX requests.
+     * init is executed when this component is first initialized, before AJAX requests.
      */
     public function init()
     {
     }
 
     /**
-     * Executed when this component is bound to a page or layout, part of
+     * onRun is executed when this component is bound to a page or layout, part of
      * the page life cycle.
      */
     public function onRun()
@@ -137,7 +137,7 @@ abstract class ComponentBase extends Extendable implements CallsAnyMethod
     }
 
     /**
-     * Executed when this component is rendered on a page or layout.
+     * onRender is executed when this component is rendered on a page or layout.
      */
     public function onRender()
     {

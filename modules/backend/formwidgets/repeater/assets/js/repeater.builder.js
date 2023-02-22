@@ -37,11 +37,12 @@
         this.eventOnChange = null;
         this.eventOnAddItem = this.builderOnAddItem;
         this.eventOnRemoveItem = this.builderOnRemoveItem;
+        this.eventOnAddItemError = this.builderOnAddItemError;
         this.eventMenuFilter = this.builderMenuFilter;
 
         // Locals
         this.$sidebar = $('> .field-repeater-builder > .field-repeater-groups:first', this.$el);
-        this.$sidebar.on('click', '> li', this.proxy(this.clickBuilderItem));
+        this.$sidebar.on('click', '> li:not(.is-placeholder)', this.proxy(this.clickBuilderItem));
 
         // Core logic
         $(document).on('render', this.proxy(this.builderOnRender));
@@ -51,9 +52,13 @@
     }
 
     RepeaterBuilder.prototype.disposeBuilderMode = function() {
-        this.$sidebar = null;
+        // Locals
+        this.$sidebar.off('click', '> li:not(.is-placeholder)', this.proxy(this.clickBuilderItem));
 
+        // Core logic
         $(document).off('render', this.proxy(this.builderOnRender));
+
+        this.$sidebar = null;
     }
 
     RepeaterBuilder.prototype.builderMenuFilter = function($item, $list) {
@@ -89,6 +94,10 @@
         this.$sidebar.append($loadingItem);
     }
 
+    RepeaterBuilder.prototype.builderOnAddItemError = function() {
+        $('li.is-placeholder:first', this.$sidebar).remove();
+    }
+
     RepeaterBuilder.prototype.builderOnRemoveItem = function($item) {
         var itemIndex = $item.data('repeater-index'),
             $containerItem = this.findItemFromIndex(itemIndex);
@@ -106,6 +115,8 @@
         }
 
         this.selectBuilderItem($item.data('repeater-index'));
+
+        $(window).trigger('oc.updateUi');
     }
 
     RepeaterBuilder.prototype.selectBuilderItem = function(itemIndex) {

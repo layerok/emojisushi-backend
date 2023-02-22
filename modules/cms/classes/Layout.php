@@ -21,9 +21,31 @@ class Layout extends CmsCompoundObject
     protected $dirName = 'layouts';
 
     /**
+     * @var array The attributes that are mass assignable.
+     */
+    protected $fillable = [
+        'description',
+        'is_priority',
+        'markup',
+        'settings',
+        'code'
+    ];
+
+    /**
      * @var array parsable attributes support using parsed variables.
      */
     protected $parsable = [];
+
+    /**
+     * beforeValidate applies custom validation rules
+     */
+    public function beforeValidate()
+    {
+        // Wipe priority attribute from page settings
+        if (!$this->getAttribute('is_priority')) {
+            unset($this->attributes['is_priority']);
+        }
+    }
 
     /**
      * Initializes the fallback layout.
@@ -39,12 +61,21 @@ class Layout extends CmsCompoundObject
     }
 
     /**
-     * Returns true if the layout is a fallback layout
-     * @return boolean
+     * isFallBack returns true if the layout is a fallback layout
+     * @return bool
      */
     public function isFallBack()
     {
         return $this->fileName === self::FALLBACK_FILE_NAME;
+    }
+
+    /**
+     * isPriority returns true if the layout should take priority in the load order
+     * @return bool
+     */
+    public function isPriority(): bool
+    {
+        return (bool) $this->is_priority;
     }
 
     /**

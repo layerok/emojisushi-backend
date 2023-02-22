@@ -3,7 +3,7 @@
 use October\Rain\Database\Schema\Blueprint;
 use October\Rain\Database\Updates\Migration;
 
-class DbSystemMailLayouts extends Migration
+return new class extends Migration
 {
     public function up()
     {
@@ -24,4 +24,4 @@ class DbSystemMailLayouts extends Migration
     {
         Schema::dropIfExists('system_mail_layouts');
     }
-}
+};

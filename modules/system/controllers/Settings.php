@@ -36,10 +36,10 @@ class Settings extends Controller
         parent::__construct();
 
         if ($this->action == 'backend_preferences') {
-            $this->requiredPermissions = ['backend.manage_preferences'];
+            $this->requiredPermissions = ['preferences'];
         }
 
-        $this->addCss('/modules/system/assets/css/settings/settings.css', 'core');
+        $this->addCss('/modules/system/assets/css/settings/settings.css', 'global');
 
         BackendMenu::setContext('October.System', 'system', 'settings');
     }
@@ -49,7 +49,7 @@ class Settings extends Controller
      */
     public function index()
     {
-        $this->pageTitle = 'system::lang.settings.menu_label';
+        $this->pageTitle = 'Settings';
         $this->vars['items'] = SettingsManager::instance()->listItems('system');
         $this->bodyClass = 'compact-container sidenav-tree-expanded';
     }
@@ -77,14 +77,15 @@ class Settings extends Controller
         SettingsManager::setContext($author.'.'.$plugin, $code);
 
         $this->vars['parentLink'] = Backend::url('system/settings');
-        $this->vars['parentLabel'] = Lang::get('system::lang.settings.menu_label');
+        $this->vars['parentLabel'] = __('Settings');
 
         try {
             if (!$item = $this->findSettingItem($author, $plugin, $code)) {
-                throw new ApplicationException(Lang::get('system::lang.settings.not_found'));
+                throw new ApplicationException(__('Unable to find the specified settings.'));
             }
 
             $this->pageTitle = $item->label;
+            $this->vars['formSize'] = $item->size;
 
             if ($item->context == 'mysettings') {
                 $this->vars['parentLink'] = Backend::url('system/settings/mysettings');
@@ -114,11 +115,9 @@ class Settings extends Controller
         }
         $model->save(null, $this->formWidget->getSessionKey());
 
-        Flash::success(Lang::get('system::lang.settings.update_success', ['name' => Lang::get($item->label)]));
+        Flash::success(__(':name settings updated', ['name' => e(Lang::get($item->label))]));
 
-        /*
-         * Handle redirect
-         */
+        // Handle redirect
         if ($redirectUrl = post('redirect', true)) {
             $redirectUrl = ($item->context == 'mysettings')
                 ? 'system/settings/mysettings'
@@ -176,7 +175,7 @@ class Settings extends Controller
     protected function createModel($item)
     {
         if (!isset($item->class) || !strlen($item->class)) {
-            throw new ApplicationException(Lang::get('system::lang.settings.missing_model'));
+            throw new ApplicationException(__('The settings page is missing a Model definition.'));
         }
 
         $class = $item->class;

@@ -17,6 +17,7 @@ use Exception;
  */
 class VersionManager
 {
+    use \System\Traits\NoteMaker;
     use \October\Rain\Support\Traits\Singleton;
 
     /**
@@ -29,11 +30,6 @@ class VersionManager
      */
     const HISTORY_TYPE_COMMENT = 'comment';
     const HISTORY_TYPE_SCRIPT = 'script';
-
-    /**
-     * @var \Illuminate\Console\OutputStyle
-     */
-    protected $notesOutput;
 
     /**
      * @var array fileVersions cache of plugin versions as files.
@@ -51,15 +47,18 @@ class VersionManager
     protected $databaseHistory;
 
     /**
-     * @var October\Rain\Database\Updater
+     * @var \October\Rain\Database\Updater
      */
     protected $updater;
 
     /**
-     * @var System\Classes\PluginManager
+     * @var \System\Classes\PluginManager
      */
     protected $pluginManager;
 
+    /**
+     * init
+     */
     protected function init()
     {
         $this->updater = new Updater;
@@ -84,9 +83,10 @@ class VersionManager
 
         // No updates needed
         if ((string) $currentVersion === (string) $databaseVersion) {
-            $this->note('- <info>Nothing to update.</info>');
-            return;
+            return false;
         }
+
+        $this->note($code);
 
         $newUpdates = $this->getNewFileVersions($code, $databaseVersion);
 
@@ -134,6 +134,17 @@ class VersionManager
     }
 
     /**
+     * getLatestVersion returns the latest version for a plugin
+     * @param string $plugin
+     */
+    public function getLatestVersion($pluginCode)
+    {
+        $pluginCode = $this->pluginManager->normalizeIdentifier($pluginCode);
+
+        return $this->getLatestFileVersion($pluginCode);
+    }
+
+    /**
      * applyPluginUpdate applies a single version update to a plugin.
      */
     protected function applyPluginUpdate($code, $version, $details)
@@ -142,9 +153,7 @@ class VersionManager
 
         [$comments, $scripts] = $this->extractScriptsAndComments($details);
 
-        /*
-         * Apply scripts, if any
-         */
+        // Apply scripts, if any
         foreach ($scripts as $script) {
             if ($this->hasDatabaseHistory($code, $version, $script)) {
                 continue;
@@ -153,9 +162,7 @@ class VersionManager
             $this->applyDatabaseScript($code, $version, $script);
         }
 
-        /*
-         * Register the comment and update the version
-         */
+        // Register the comment and update the version
         if (!$this->hasDatabaseHistory($code, $version)) {
             foreach ($comments as $comment) {
                 $this->applyDatabaseComment($code, $version, $comment);
@@ -337,8 +344,12 @@ class VersionManager
             return $this->fileVersions[$code];
         }
 
-        $versionFile = $this->getVersionFile($code);
-        $versionInfo = Yaml::parseFile($versionFile);
+        // Attempt to parse version information
+        $versionInfo = [];
+
+        if ($this->hasVersionFile($code)) {
+            $versionInfo = Yaml::parseFile($this->getVersionFile($code));
+        }
 
         if (!is_array($versionInfo)) {
             $versionInfo = [];
@@ -360,13 +371,17 @@ class VersionManager
     }
 
     /**
-     * getVersionFile returns the absolute path to a version file for a plugin
+     * getVersionFile returns the absolute path to a version file for a plugin, the string
+     * is empty if no file is found or resolved
      */
     protected function getVersionFile($code): string
     {
-        $versionFile = $this->pluginManager->getPluginPath($code) . '/updates/version.yaml';
+        $pluginPath = $this->pluginManager->getPluginPath($code);
+        if (!$pluginPath) {
+            return '';
+        }
 
-        return $versionFile;
+        return $pluginPath . '/updates/version.yaml';
     }
 
     /**
@@ -374,9 +389,11 @@ class VersionManager
      */
     protected function hasVersionFile($code): bool
     {
-        $versionFile = $this->getVersionFile($code);
+        if ($versionFile = $this->getVersionFile($code)) {
+            return File::isFile($versionFile);
+        }
 
-        return File::isFile($versionFile);
+        return false;
     }
 
     //
@@ -439,7 +456,7 @@ class VersionManager
             'code' => $code,
             'type' => self::HISTORY_TYPE_COMMENT,
             'version' => $version,
-            'detail' => null,
+            'detail' => $comment,
             'created_at' => new Carbon
         ]);
     }
@@ -481,14 +498,7 @@ class VersionManager
             ]);
         }
         catch (Exception $ex) {
-            try {
-                $this->note('- <error>v' . $version . ':  Migration "' . $script . '" failed, attempting to rollback</error>');
-                $this->updater->packDown($updateFile);
-            }
-            catch (Exception $ex) {
-                $this->note('<error>Rollback failed! Reason: "' . $ex->getMessage() . '"</error>');
-            }
-
+            $this->note('- <error>v' . $version . ':  Migration "' . $script . '" failed</error>');
             throw $ex;
         }
     }
@@ -589,35 +599,5 @@ class VersionManager
         }
 
         return [$comments, $scripts];
-    }
-
-    //
-    // Notes
-    //
-
-    /**
-     * note raises a note event for the migrator
-     * @param  string  $message
-     * @return void
-     */
-    protected function note($message)
-    {
-        if ($this->notesOutput !== null) {
-            $this->notesOutput->writeln($message);
-        }
-
-        return $this;
-    }
-
-    /**
-     * setNotesOutput sets an output stream for writing notes
-     * @param  Illuminate\Console\Command $output
-     * @return self
-     */
-    public function setNotesOutput($output)
-    {
-        $this->notesOutput = $output;
-
-        return $this;
     }
 }

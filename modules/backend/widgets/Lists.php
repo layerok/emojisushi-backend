@@ -4,32 +4,38 @@ use Db;
 use Str;
 use Html;
 use Lang;
+use View;
 use Backend;
 use DbDongle;
 use Carbon\Carbon;
 use October\Rain\Html\Helper as HtmlHelper;
 use October\Rain\Router\Helper as RouterHelper;
-use System\Helpers\DateTime as DateTimeHelper;
+use System\Helpers\DateTimeHelper;
 use System\Classes\PluginManager;
 use Backend\Classes\ListColumn;
 use Backend\Classes\WidgetBase;
 use October\Rain\Database\Model;
 use October\Rain\Element\Lists\ColumnDefinition;
 use October\Contracts\Element\ListElement;
+use Illuminate\Database\Query\Builder as QueryBuilder;
+use Illuminate\Pagination\UrlWindow;
 use ApplicationException;
-use BackendAuth;
 use Exception;
+use UnitEnum;
 
 /**
- * Lists Widget
- * Used for building back end lists, renders a list of model objects
+ * Lists Widget used for building back end lists, renders a list of model objects
  *
  * @package october\backend
  * @author Alexey Bobkov, Samuel Georges
  */
 class Lists extends WidgetBase implements ListElement
 {
-    use Backend\Traits\PreferenceMaker;
+    use \Backend\Widgets\Lists\ColumnProcessor;
+    use \Backend\Widgets\Lists\HasListSetup;
+    use \Backend\Widgets\Lists\HasSorting;
+    use \Backend\Widgets\Lists\HasSearch;
+    use \Backend\Traits\PreferenceMaker;
 
     //
     // Configurable properties
@@ -76,7 +82,7 @@ class Lists extends WidgetBase implements ListElement
     public $showSorting = true;
 
     /**
-     * @var mixed A default sort column to look for.
+     * @var mixed defaultSort column to look for.
      */
     public $defaultSort;
 
@@ -86,24 +92,34 @@ class Lists extends WidgetBase implements ListElement
     public $showCheckboxes = false;
 
     /**
-     * @var bool Display the list set up used for column visibility and ordering.
+     * @var bool showSetup displays the list set up used for column visibility and ordering.
      */
     public $showSetup = false;
 
     /**
-     * @var bool|string Display pagination when limiting records per page.
+     * @var bool expandLastCol will expand to squeeze extra room from the last column.
+     */
+    public $expandLastColumn = false;
+
+    /**
+     * @var bool|string showPagination when limiting records per page.
      */
     public $showPagination = 'auto';
 
     /**
-     * @var bool Display page numbers with pagination, disable to improve performance.
+     * @var bool showPageNumbers with pagination, disable to improve performance.
      */
     public $showPageNumbers = true;
 
     /**
-     * @var string Specify a custom view path to override partials used by the list.
+     * @var string customViewPath specifies a custom view path to override partials used by the list.
      */
     public $customViewPath;
+
+    /**
+     * @var string customPageName specifies a name to use in the page URL for paginated records.
+     */
+    public $customPageName;
 
     //
     // Object properties
@@ -141,50 +157,17 @@ class Lists extends WidgetBase implements ListElement
     protected $currentPageNumber;
 
     /**
-     * @var string Filter the records by a search term.
-     */
-    protected $searchTerm;
-
-    /**
-     * @var string If searching the records, specifies a policy to use.
-     * - all: result must contain all words
-     * - any: result can contain any word
-     * - exact: result must contain the exact phrase
-     */
-    protected $searchMode;
-
-    /**
-     * @var string Use a custom scope method for performing searches.
-     */
-    protected $searchScope;
-
-    /**
      * @var array Collection of functions to apply to each list query.
      */
     protected $filterCallbacks = [];
 
     /**
-     * @var array All sortable columns.
-     */
-    protected $sortableColumns;
-
-    /**
-     * @var string Sets the list sorting column.
-     */
-    protected $sortColumn;
-
-    /**
-     * @var string Sets the list sorting direction (asc, desc)
-     */
-    protected $sortDirection;
-
-    /**
-     * @var array List of CSS classes to apply to the list container element
+     * @var array cssClasses to apply to the list container element
      */
     public $cssClasses = [];
 
     /**
-     * Initialize the widget, called by the constructor and free from its parameters.
+     * init the widget, called by the constructor and free from its parameters.
      */
     public function init()
     {
@@ -201,13 +184,13 @@ class Lists extends WidgetBase implements ListElement
             'defaultSort',
             'showCheckboxes',
             'showSetup',
+            'expandLastColumn',
             'showPagination',
             'customViewPath',
+            'customPageName',
         ]);
 
-        /*
-         * Configure the list widget
-         */
+        // Configure the list widget
         if ($this->showSetup) {
             $this->recordsPerPage = $this->getUserPreference('per_page', $this->recordsPerPage);
         }
@@ -220,6 +203,10 @@ class Lists extends WidgetBase implements ListElement
             $this->addViewPath($this->customViewPath);
         }
 
+        if (!$this->customPageName) {
+            $this->customPageName = 'page';
+        }
+
         $this->validateModel();
     }
 
@@ -228,7 +215,7 @@ class Lists extends WidgetBase implements ListElement
      */
     protected function loadAssets()
     {
-        $this->addJs('js/october.list.js', 'core');
+        $this->addJs('js/october.list.js');
     }
 
     /**
@@ -254,18 +241,17 @@ class Lists extends WidgetBase implements ListElement
         $this->vars['showSetup'] = $this->showSetup;
         $this->vars['showPagination'] = $this->showPagination;
         $this->vars['showPageNumbers'] = $this->showPageNumbers;
+        $this->vars['expandLastColumn'] = $this->expandLastColumn;
         $this->vars['showSorting'] = $this->showSorting;
         $this->vars['sortColumn'] = $this->getSortColumn();
         $this->vars['sortDirection'] = $this->sortDirection;
+        $this->vars['pageName'] = $this->customPageName;
 
         if ($this->showPagination) {
             $this->vars['pageCurrent'] = $this->records->currentPage();
 
-            // Store the currently visited page number in the session so the same
-            // data can be displayed when the user returns to this list.
-            $this->putSession('lastVisitedPage', $this->vars['pageCurrent']);
-
             if ($this->showPageNumbers) {
+                $this->vars['recordElements'] = $this->getPaginationElements($this->records);
                 $this->vars['recordTotal'] = $this->records->total();
                 $this->vars['pageLast'] = $this->records->lastPage();
                 $this->vars['pageFrom'] = $this->records->firstItem();
@@ -282,7 +268,26 @@ class Lists extends WidgetBase implements ListElement
     }
 
     /**
-     * Event handler for refreshing the list.
+     * getPaginationElements get the array of elements to pass to the view.
+     * @return array
+     */
+    protected function getPaginationElements($records)
+    {
+        $records->onEachSide(1);
+
+        $window = UrlWindow::make($records);
+
+        return array_filter([
+            $window['first'],
+            is_array($window['slider']) ? '...' : null,
+            $window['slider'],
+            is_array($window['last']) ? '...' : null,
+            $window['last'],
+        ]);
+    }
+
+    /**
+     * onRefresh event handler for refreshing the list.
      */
     public function onRefresh()
     {
@@ -296,7 +301,7 @@ class Lists extends WidgetBase implements ListElement
      */
     public function onPaginate()
     {
-        $this->currentPageNumber = post('page');
+        $this->currentPageNumber = input($this->customPageName);
 
         return $this->onRefresh();
     }
@@ -469,13 +474,14 @@ class Lists extends WidgetBase implements ListElement
 
                 // Manipulate a count query for the sub query
                 $relationObj = $this->model->{$column->relation}();
-                $countQuery = $relationObj->getRelationExistenceQuery($relationObj->getRelated()->newQueryWithoutScopes(), $query);
+                $relationQuery = $relationObj->getRelated()->newQuery();
+                $countQuery = $relationObj->getRelationExistenceQuery($relationQuery, $query);
 
                 $joinSql = $this->isColumnRelated($column, true)
                     ? DbDongle::raw("group_concat(" . $sqlSelect . " separator ', ')")
                     : DbDongle::raw($sqlSelect);
 
-                $joinSql = $countQuery->select($joinSql)->toSql();
+                $joinSql = $countQuery->select($joinSql)->reorder()->toSql();
 
                 $selects[] = Db::raw("(".$joinSql.") as ".$alias);
 
@@ -505,7 +511,7 @@ class Lists extends WidgetBase implements ListElement
                 $sortColumn = $column->relation . '_count';
             }
 
-            $query->orderBy($sortColumn, $this->sortDirection);
+            $query->orderBy($sortColumn, $this->getSortDirection());
         }
 
         // Apply filters
@@ -588,27 +594,28 @@ class Lists extends WidgetBase implements ListElement
     }
 
     /**
-     * Returns the current page number for the list.
-     *
-     * This will override the current page number provided by the user if it is past the last page of available records.
-     *
+     * getCurrentPageNumber returns the current page number for the list. This will override
+     * the current page number provided by the user if it is past the last page of available
+     * records.
      * @param object $query
      * @return int
      */
     protected function getCurrentPageNumber($query)
     {
-        // Restore the last visited page from the session if available.
         $currentPageNumber = $this->currentPageNumber;
         if (empty($currentPageNumber)) {
-            $currentPageNumber = $this->getSession('lastVisitedPage');
+            $currentPageNumber = input($this->customPageName);
         }
 
         $currentPageNumber = intval($currentPageNumber);
 
+        // Validate the page number
         if ($currentPageNumber > 1) {
-            $count = $query->count();
+            $baseQuery = $query instanceof QueryBuilder ? $query : $query->toBase();
+            $count = $baseQuery->getCountForPagination();
 
-            // If the current page number is higher than the amount of available pages, go to the last available page
+            // If the current page number is higher than the amount of
+            // available pages, go to the last available page
             if ($count <= (($currentPageNumber - 1) * $this->recordsPerPage)) {
                 $currentPageNumber = ceil($count / $this->recordsPerPage);
             }
@@ -793,9 +800,7 @@ class Lists extends WidgetBase implements ListElement
         $definitions = $this->defineListColumns();
         $columns = [];
 
-        /*
-         * Supplied column list
-         */
+        // Supplied column list
         if ($this->showSetup && $this->columnOverride === null) {
             $this->columnOverride = $this->getUserPreference('visible', null);
         }
@@ -815,9 +820,7 @@ class Lists extends WidgetBase implements ListElement
                 $columns[$columnName] = $definitions[$columnName];
             }
         }
-        /*
-         * Use default column list
-         */
+        // Use default column list
         else {
             foreach ($definitions as $columnName => $column) {
                 if ($column->invisible) {
@@ -836,7 +839,10 @@ class Lists extends WidgetBase implements ListElement
      */
     public function defineColumn(string $columnName = null, string $label = null): ColumnDefinition
     {
-        return $this->allColumns[$columnName] = new ListColumn($columnName, $label);
+        return $this->allColumns[$columnName] = new ListColumn([
+            'columnName' => $columnName,
+            'label' => $label
+        ]);
     }
 
     /**
@@ -850,7 +856,6 @@ class Lists extends WidgetBase implements ListElement
         }
 
         $hasColumns = ($this->columns && is_array($this->columns)) || $this->allColumns;
-
         if (!$hasColumns) {
             $class = get_class($this->model instanceof Model ? $this->model : $this->controller);
             throw new ApplicationException(Lang::get('backend::lang.list.missing_columns', compact('class')));
@@ -915,54 +920,28 @@ class Lists extends WidgetBase implements ListElement
          */
         $this->fireSystemEvent('backend.list.extendColumns');
 
-        /*
-         * Purge hidden columns
-         */
-        foreach ($this->allColumns as $key => $column) {
-            if ($column->hidden) {
-                unset($this->allColumns[$key]);
-            }
-        }
-
-        /*
-         * Use a supplied column order
-         */
-        if ($columnOrder = $this->getUserPreference('order', null)) {
-            $orderedDefinitions = [];
-            foreach ($columnOrder as $column) {
-                if (isset($this->allColumns[$column])) {
-                    $orderedDefinitions[$column] = $this->allColumns[$column];
-                }
-            }
-
-            $this->allColumns = array_merge($orderedDefinitions, $this->allColumns);
-        }
+        $this->processPermissionCheck($this->allColumns);
+        $this->processAutoOrder($this->allColumns);
+        $this->processHiddenColumns($this->allColumns);
+        $this->processUserColumnOrders($this->allColumns, $this->getUserPreference('order'));
+        $this->processColumnTypeModifiers($this->allColumns);
 
         return $this->allColumns;
     }
 
     /**
-     * Programatically add columns, used internally and for extensibility.
+     * addColumns programatically add columns, used internally and for extensibility.
      * @param array $columns Column definitions
      */
     public function addColumns(array $columns)
     {
-        /*
-         * Build a final collection of list column objects
-         */
         foreach ($columns as $columnName => $config) {
-            // Check if user has permissions to show this column
-            $permissions = array_get($config, 'permissions');
-            if (!empty($permissions) && !BackendAuth::getUser()->hasAccess($permissions, false)) {
-                continue;
-            }
-
             $this->allColumns[$columnName] = $this->makeListColumn($columnName, $config);
         }
     }
 
     /**
-     * Programatically remove a column, used for extensibility.
+     * removeColumn programatically removes a column, used for extensibility.
      * @param string $column Column name
      */
     public function removeColumn($columnName)
@@ -973,12 +952,13 @@ class Lists extends WidgetBase implements ListElement
     }
 
     /**
-     * Creates a list column object from it's name and configuration.
+     * makeListColumn creates a list column object from it's name and configuration.
      */
     protected function makeListColumn($name, $config)
     {
         if (is_string($config)) {
             $label = $config;
+            $config = [];
         }
         elseif (isset($config['label'])) {
             $label = $config['label'];
@@ -987,9 +967,7 @@ class Lists extends WidgetBase implements ListElement
             $label = studly_case($name);
         }
 
-        /*
-         * Auto configure pivot relation
-         */
+        // Auto configure pivot relation
         if (starts_with($name, 'pivot[') && strpos($name, ']') !== false) {
             $_name = HtmlHelper::nameToArray($name);
             $relationName = array_shift($_name);
@@ -1003,9 +981,7 @@ class Lists extends WidgetBase implements ListElement
             $config['valueFrom'] = $valueFrom;
             $config['searchable'] = false;
         }
-        /*
-         * Auto configure standard relation
-         */
+        // Auto configure standard relation
         elseif (strpos($name, '[') !== false && strpos($name, ']') !== false) {
             $config['valueFrom'] = $name;
             $config['sortable'] = false;
@@ -1014,15 +990,25 @@ class Lists extends WidgetBase implements ListElement
 
         $columnType = $config['type'] ?? null;
 
-        $column = new ListColumn($name, $label);
-        $column->displayAs($columnType, $config);
+        $column = new ListColumn([
+            'columnName' => $name,
+            'label' => $label
+        ]);
+
+        if ($config) {
+            $column->useConfig($config);
+        }
+
+        if ($columnType) {
+            $column->displayAs($columnType);
+        }
 
         return $column;
     }
 
     /**
-     * Calculates the total columns used in the list, including checkboxes
-     * and other additions.
+     * getTotalColumns calculates the total columns used in the list, including
+     * checkboxes and other additions.
      */
     protected function getTotalColumns()
     {
@@ -1041,11 +1027,16 @@ class Lists extends WidgetBase implements ListElement
     }
 
     /**
-     * Looks up the column header
+     * getHeaderValue looks up the column header
      */
     public function getHeaderValue($column)
     {
-        $value = Lang::get($column->label);
+        if ($column->shortLabel !== null) {
+            $value = Lang::get($column->shortLabel);
+        }
+        else {
+            $value = Lang::get($column->label);
+        }
 
         /**
          * @event backend.list.overrideHeaderValue
@@ -1080,9 +1071,7 @@ class Lists extends WidgetBase implements ListElement
     {
         $columnName = $column->columnName;
 
-        /*
-         * Handle taking value from model relation.
-         */
+        // Handle taking value from model relation.
         if ($column->valueFrom && $column->relation) {
             $columnName = $column->relation;
 
@@ -1101,17 +1090,13 @@ class Lists extends WidgetBase implements ListElement
                 $value = null;
             }
         }
-        /*
-         * Handle taking value from model attribute.
-         */
+        // Handle taking value from model attribute.
         elseif ($column->valueFrom) {
             $value = $column->getValueFromData($record);
         }
-        /*
-         * Otherwise, if the column is a relation, it will be a custom select,
-         * so prevent the Model from attempting to load the relation
-         * if the value is NULL.
-         */
+        // Otherwise, if the column is a relation, it will be a custom select,
+        // so prevent the Model from attempting to load the relation
+        // if the value is NULL.
         else {
             if (
                 $record->hasRelation($columnName) &&
@@ -1158,23 +1143,22 @@ class Lists extends WidgetBase implements ListElement
      */
     public function getColumnValue($record, $column)
     {
-        /*
-         * Custom display attribute that pulls directly from the model
-         */
+        // Custom display attribute that pulls directly from the model
         if ($column->displayFrom) {
             $columnName = $column->displayFrom;
             $value = $record->{$columnName};
         }
-        /*
-         * Standard value
-         */
+        // Standard value
         else {
             $value = $this->getColumnValueRaw($record, $column);
         }
 
-        /*
-         * Apply filters
-         */
+        // Cast enums to scalar
+        if ($value instanceof UnitEnum) {
+            $value = $value->value;
+        }
+
+        // Apply filters
         if (method_exists($this, 'eval'. studly_case($column->type) .'TypeValue')) {
             $value = $this->{'eval'. studly_case($column->type) .'TypeValue'}($record, $column, $value);
         }
@@ -1182,9 +1166,7 @@ class Lists extends WidgetBase implements ListElement
             $value = $this->evalCustomListType($column->type, $record, $column, $value);
         }
 
-        /*
-         * Apply default value.
-         */
+        // Apply default value.
         if ($value === '' || $value === null) {
             $value = $column->defaults;
         }
@@ -1244,7 +1226,7 @@ class Lists extends WidgetBase implements ListElement
     }
 
     /**
-     * Adds a custom CSS class string to a record row
+     * getRowClass adds a custom CSS class string to a record row
      * @param  Model $record Populated model
      * @return string
      */
@@ -1295,13 +1277,13 @@ class Lists extends WidgetBase implements ListElement
     //
 
     /**
-     * Process a custom list types registered by plugins.
+     * evalCustomListType processes a custom list types registered by plugins and the app.
      */
     protected function evalCustomListType($type, $record, $column, $value)
     {
-        $plugins = PluginManager::instance()->getRegistrationMethodValues('registerListColumnTypes');
-
-        foreach ($plugins as $availableTypes) {
+        // Load plugin and app column types
+        $methodValues = PluginManager::instance()->getRegistrationMethodValues('registerListColumnTypes');
+        foreach ($methodValues as $availableTypes) {
             if (!isset($availableTypes[$type])) {
                 continue;
             }
@@ -1360,37 +1342,38 @@ class Lists extends WidgetBase implements ListElement
         $isDefaultSize = !isset($config['width']) && !isset($config['height']);
 
         $colName = $column->columnName;
-        $image = null;
+        $images = [];
 
         // File model
         if (isset($record->attachMany[$colName])) {
-            $image = $value ? $value->first() : null;
+            $images = $value->count() ? $value : [];
         }
         elseif (isset($record->attachOne[$colName])) {
-            $image = $value;
+            $images = $value ? [$value] : [];
         }
         // Media item
         else {
-            if (is_array($value)) {
-                $value = array_unshift($value);
-            }
-
-            if (strpos($value, '://') !== false) {
-                $image = $value;
-            }
-            elseif (strlen($value)) {
-                $image = \Media\Classes\MediaLibrary::url($value);
+            foreach ((array) $value as $val) {
+                if (strpos($val, '://') !== false) {
+                    $images[] = $val;
+                }
+                elseif (strlen($val)) {
+                    $images[] = \Media\Classes\MediaLibrary::url($val);
+                }
             }
         }
 
-        if (!$image) {
+        if (!$images) {
             return '';
         }
 
-        $imageUrl = \System\Classes\ResizeImages::resize($image, $width, $height, $options);
+        $imageUrls = [];
+        foreach ($images as $image) {
+            $imageUrls[] = \System\Classes\ResizeImages::resize($image, $width, $height, $options);
+        }
 
         return $this->makePartial('column_image', [
-            'imageUrl' => $imageUrl,
+            'imageUrls' => $imageUrls,
             'isDefaultSize' => $isDefaultSize,
             'width' => $width,
             'height' => $height
@@ -1402,17 +1385,13 @@ class Lists extends WidgetBase implements ListElement
      */
     protected function evalSwitchTypeValue($record, $column, $value)
     {
-        $contents = '';
         $config = $column->config;
 
-        if ($value) {
-            $contents = Lang::get($config['options'][1] ?? 'backend::lang.list.column_switch_true');
-        }
-        else {
-            $contents = Lang::get($config['options'][0] ?? 'backend::lang.list.column_switch_false');
-        }
-
-        return $contents;
+        return $this->makePartial('column_switch', [
+            'value' => $value,
+            'trueValue' => Lang::get($config['options'][1] ?? 'backend::lang.list.column_switch_true'),
+            'falseValue' => Lang::get($config['options'][0] ?? 'backend::lang.list.column_switch_false'),
+        ]);
     }
 
     /**
@@ -1443,8 +1422,8 @@ class Lists extends WidgetBase implements ListElement
 
         // Limit by chars and estimate word count
         if (!$limitWords) {
-            $limitStr = Str::limit($result, $limitChars, '');
-            $limitWords = substr_count($limitStr, ' ') + 1;
+            $result = Str::limit($result, $limitChars, '');
+            $limitWords = substr_count($result, ' ') + 1;
         }
 
         // Strip HTML, limit to words
@@ -1589,7 +1568,10 @@ class Lists extends WidgetBase implements ListElement
      */
     protected function evalSelectableTypeValue($record, $column, $value)
     {
-        $formField = new \Backend\Classes\FormField($column->columnName, $column->label);
+        $formField = new \Backend\Classes\FormField([
+            'fieldName' => $column->columnName,
+            'label' => $column->label
+        ]);
 
         $fieldOptions = $column->config['options'] ?? null;
 
@@ -1612,18 +1594,50 @@ class Lists extends WidgetBase implements ListElement
     }
 
     /**
+     * evalLinkageTypeValue
+     */
+    protected function evalLinkageTypeValue($record, $column, $value)
+    {
+        if (is_array($value) && count($value) === 2) {
+            $linkUrl = $value[0];
+            $linkText = $value[1];
+        }
+        else {
+            $linkText = $linkUrl = $value;
+        }
+
+        if ($column->linkText) {
+            $linkText = $column->linkText;
+        }
+
+        return $this->makePartial('column_linkage', [
+            'attributes' => (array) $column->attributes,
+            'linkText' => $linkText,
+            'linkUrl' => $linkUrl,
+            'value' => $value
+        ]);
+    }
+
+    /**
      * evalPartialTypeValue as partial reference
      */
     protected function evalPartialTypeValue($record, $column, $value)
     {
-        return $this->controller->makePartial($column->path ?: $column->columnName, [
+        $vars = [
             'listColumn' => $column,
             'listRecord' => $record,
             'listValue' => $value,
             'column' => $column,
             'record' => $record,
             'value' => $value
-        ]);
+        ];
+
+        if (strpos($column->path, '::') !== false) {
+            return View::make($column->path, $vars);
+        }
+        else {
+            return $this->controller->makePartial($column->path ?: $column->columnName, $vars);
+        }
     }
 
     /**
@@ -1666,298 +1680,14 @@ class Lists extends WidgetBase implements ListElement
     }
 
     //
-    // Searching
-    //
-
-    /**
-     * setSearchTerm applies a search term to the list results, searching will disable tree
-     * view if a value is supplied.
-     * @param string $term
-     * @param boolean $resetPagination
-     */
-    public function setSearchTerm($term, $resetPagination = false)
-    {
-        // Reset pagination
-        if ($resetPagination) {
-            $this->currentPageNumber = 1;
-        }
-
-        // Set the actual term
-        $this->searchTerm = $term;
-    }
-
-    /**
-     * setSearchOptions applies a search options to the list search.
-     * @param array $options
-     */
-    public function setSearchOptions($options = [])
-    {
-        extract(array_merge([
-            'mode' => null,
-            'scope' => null
-        ], $options));
-
-        $this->searchMode = $mode;
-        $this->searchScope = $scope;
-    }
-
-    /**
-     * getSearchableColumns returns a collection of columns which can be searched.
-     * @return array
-     */
-    protected function getSearchableColumns()
-    {
-        $columns = $this->getColumns();
-        $searchable = [];
-
-        foreach ($columns as $column) {
-            if (!$column->searchable) {
-                continue;
-            }
-
-            $searchable[] = $column;
-        }
-
-        return $searchable;
-    }
-
-    /**
-     * applySearchToQuery applies the search constraint to a query.
-     */
-    protected function applySearchToQuery($query, $columns, $boolean = 'and')
-    {
-        $term = $this->searchTerm;
-
-        if ($scopeMethod = $this->searchScope) {
-            $searchMethod = $boolean == 'and' ? 'where' : 'orWhere';
-            $query->$searchMethod(function ($q) use ($term, $columns, $scopeMethod) {
-                $q->$scopeMethod($term, $columns);
-            });
-        }
-        else {
-            $searchMethod = $boolean == 'and' ? 'searchWhere' : 'orSearchWhere';
-            $query->$searchMethod($term, $columns, $this->searchMode);
-        }
-    }
-
-    //
-    // Sorting
-    //
-
-    /**
-     * Event handler for sorting the list.
-     */
-    public function onSort()
-    {
-        if ($column = post('sortColumn')) {
-            /*
-             * Toggle the sort direction and set the sorting column
-             */
-            $sortOptions = ['column' => $this->getSortColumn(), 'direction' => $this->sortDirection];
-
-            if ($column != $sortOptions['column'] || $sortOptions['direction'] == 'asc') {
-                $this->sortDirection = $sortOptions['direction'] = 'desc';
-            }
-            else {
-                $this->sortDirection = $sortOptions['direction'] = 'asc';
-            }
-
-            $this->sortColumn = $sortOptions['column'] = $column;
-
-            /*
-             * Persist the page number
-             */
-            $this->currentPageNumber = post('page');
-
-            /*
-             * Attempt a refresh with the new sortOptions and update the
-             * the user session only if the query succeeded.
-             */
-            $result = $this->onRefresh();
-
-            $this->putSession('sort', $sortOptions);
-
-            return $result;
-        }
-    }
-
-    /**
-     * getSortColumn returns the current sorting column, saved in a session or cached.
-     */
-    public function getSortColumn()
-    {
-        if (!$this->isSortable()) {
-            return false;
-        }
-
-        if ($this->sortColumn !== null) {
-            return $this->sortColumn;
-        }
-
-        // User preference
-        if ($this->showSorting && ($sortOptions = $this->getSession('sort'))) {
-            $this->sortColumn = $sortOptions['column'];
-            $this->sortDirection = $sortOptions['direction'];
-        }
-        // Supplied default
-        else {
-            if (is_string($this->defaultSort)) {
-                $this->sortColumn = $this->defaultSort;
-                $this->sortDirection = 'desc';
-            }
-            elseif (is_array($this->defaultSort) && isset($this->defaultSort['column'])) {
-                $this->sortColumn = $this->defaultSort['column'];
-                $this->sortDirection = $this->defaultSort['direction'] ?? 'desc';
-            }
-        }
-
-        // First available column
-        if ($this->sortColumn === null || !$this->isSortable($this->sortColumn)) {
-            $columns = $this->visibleColumns ?: $this->getVisibleColumns();
-            $columns = array_filter($columns, function ($column) {
-                return $column->sortable;
-            });
-            $this->sortColumn = key($columns);
-            $this->sortDirection = 'desc';
-        }
-
-        return $this->sortColumn;
-    }
-
-    /**
-     * useSorting
-     */
-    protected function useSorting(): bool
-    {
-        return true;
-    }
-
-    /**
-     * Returns the current sort direction or default of 'asc'
-     */
-    public function getSortDirection()
-    {
-        return $this->sortDirection ?? 'asc';
-    }
-
-    /**
-     * Returns true if the column can be sorted.
-     */
-    protected function isSortable($column = null)
-    {
-        if ($column === null) {
-            return (count($this->getSortableColumns()) > 0);
-        }
-
-        return array_key_exists($column, $this->getSortableColumns());
-    }
-
-    /**
-     * Returns a collection of columns which are sortable.
-     */
-    protected function getSortableColumns()
-    {
-        if ($this->sortableColumns !== null) {
-            return $this->sortableColumns;
-        }
-
-        $columns = $this->getColumns();
-        $sortable = array_filter($columns, function ($column) {
-            return $column->sortable;
-        });
-
-        return $this->sortableColumns = $sortable;
-    }
-
-    //
-    // List Setup
-    //
-
-    /**
-     * onLoadSetup handler to display the list set up.
-     */
-    public function onLoadSetup()
-    {
-        $this->vars['columns'] = $this->getSetupListColumns();
-        $this->vars['perPageOptions'] = $this->getSetupPerPageOptions();
-        $this->vars['recordsPerPage'] = $this->recordsPerPage;
-        return $this->makePartial('setup_form');
-    }
-
-    /**
-     * onApplySetup handler
-     */
-    public function onApplySetup()
-    {
-        if (($visibleColumns = post('visible_columns')) && is_array($visibleColumns)) {
-            $this->columnOverride = $visibleColumns;
-            $this->putUserPreference('visible', $this->columnOverride);
-        }
-
-        $this->recordsPerPage = post('records_per_page', $this->recordsPerPage);
-
-        $this->putUserPreference('order', post('column_order'));
-
-        $this->putUserPreference('per_page', $this->recordsPerPage);
-
-        return $this->onRefresh();
-    }
-
-    /**
-     * onResetSetup handler
-     */
-    public function onResetSetup()
-    {
-        $this->resetUserPreference('visible');
-
-        $this->resetUserPreference('per_page');
-
-        $this->resetUserPreference('order');
-
-        return $this->onRefresh();
-    }
-
-    /**
-     * Returns an array of allowable records per page.
-     */
-    protected function getSetupPerPageOptions()
-    {
-        $perPageOptions = is_array($this->perPageOptions)
-            ? $this->perPageOptions
-            : [20, 40, 80, 100, 120];
-
-        if (!in_array($this->recordsPerPage, $perPageOptions)) {
-            $perPageOptions[] = $this->recordsPerPage;
-        }
-
-        sort($perPageOptions);
-
-        return $perPageOptions;
-    }
-
-    /**
-     * Returns all the list columns used for list set up.
-     */
-    protected function getSetupListColumns()
-    {
-        /*
-         * Force all columns invisible
-         */
-        $columns = $this->defineListColumns();
-        foreach ($columns as $column) {
-            $column->invisible = true;
-        }
-
-        return array_merge($columns, $this->getVisibleColumns());
-    }
-
-    //
     // Helpers
     //
 
     /**
-     * isColumnRelated checks if column refers to a relation of the model
+     * isColumnRelated checks if column refers to a relation of the model, with a toggle
+     * switch for checking only relationsips with multiple records.
      * @param ListColumn $column
+     * @param bool $isMulti
      */
     protected function isColumnRelated($column, bool $isMulti = false): bool
     {
@@ -1972,21 +1702,11 @@ class Lists extends WidgetBase implements ListElement
             ));
         }
 
-        if (!$isMulti) {
-            return true;
+        if ($isMulti) {
+            return !$this->model->isRelationTypeSingular($column->relation);
         }
 
-        $relationType = $this->model->getRelationType($column->relation);
-
-        return in_array($relationType, [
-            'hasMany',
-            'belongsToMany',
-            'morphToMany',
-            'morphedByMany',
-            'morphMany',
-            'attachMany',
-            'hasManyThrough'
-        ]);
+        return true;
     }
 
     /**

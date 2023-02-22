@@ -1,7 +1,7 @@
 /*
  * Vue modal alert implementation
  */
-$.oc.module.register('backend.component.modal.alert', function () {
+oc.Module.register('backend.component.modal.alert', function () {
     Vue.component('backend-component-modal-alert', {
         props: {
             title: {
@@ -49,7 +49,6 @@ $.oc.module.register('backend.component.modal.alert', function () {
             this.$refs.modal.show();
         },
         beforeDestroy: function beforeDestroy() {
-            
         },
         template: '#backend_vuecomponents_modal_alert'
     });

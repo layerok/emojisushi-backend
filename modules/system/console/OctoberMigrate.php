@@ -14,6 +14,8 @@ use Symfony\Component\Console\Input\InputOption;
  */
 class OctoberMigrate extends Command
 {
+    use \Illuminate\Console\ConfirmableTrait;
+
     /**
      * @var string name of console command
      */
@@ -33,12 +35,9 @@ class OctoberMigrate extends Command
             return $this->handleRollback();
         }
 
-        $this->output->writeln('<info>Migrating application and plugins...</info>');
+        $this->line('Migrating Application and Plugins');
 
-        UpdateManager::instance()
-            ->setNotesOutput($this->output)
-            ->update()
-        ;
+        UpdateManager::instance()->setNotesCommand($this)->update();
     }
 
     /**
@@ -46,32 +45,11 @@ class OctoberMigrate extends Command
      */
     protected function handleRollback()
     {
-        if ($this->userAbortedFromWarning()) {
+        if (!$this->confirmToProceed('This will DESTROY all database tables.')) {
             return;
         }
 
-        UpdateManager::instance()
-            ->setNotesOutput($this->output)
-            ->uninstall()
-        ;
-    }
-
-    /**
-     * userAbortedFromWarning
-     */
-    protected function userAbortedFromWarning(): bool
-    {
-        // Bypass from force
-        if ($this->option('force', false)) {
-            return false;
-        }
-
-        // Warn user
-        if (!$this->confirm('This will DESTROY all database tables.')) {
-            return true;
-        }
-
-        return false;
+        UpdateManager::instance()->setNotesCommand($this)->uninstall();
     }
 
     /**
@@ -83,5 +61,15 @@ class OctoberMigrate extends Command
             ['force', 'f', InputOption::VALUE_NONE, 'Force the operation to run.'],
             ['rollback', 'r', InputOption::VALUE_NONE, 'Destroys all database tables and records.'],
         ];
+    }
+
+    /**
+     * getDefaultConfirmCallback specifies the default confirmation callback
+     */
+    protected function getDefaultConfirmCallback()
+    {
+        return function () {
+            return true;
+        };
     }
 }

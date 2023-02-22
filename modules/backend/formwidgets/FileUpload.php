@@ -3,7 +3,6 @@
 use Input;
 use Response;
 use Validator;
-use Backend\Widgets\Form;
 use Backend\Classes\FormField;
 use Backend\Classes\FormWidgetBase;
 use System\Models\File as FileModel;
@@ -93,11 +92,9 @@ class FileUpload extends FormWidgetBase
     public $useCaption = true;
 
     /**
-     * @var boolean attachOnUpload automatically attaches the uploaded file on upload
-     * if the parent record exists instead of using deferred binding to attach on save
-     * of the parent record. Defaults to false.
+     * @var bool deferredBinding defers the upload action using a session key
      */
-    public $attachOnUpload = false;
+    public $deferredBinding = true;
 
     //
     // Object properties
@@ -109,7 +106,7 @@ class FileUpload extends FormWidgetBase
     protected $defaultAlias = 'fileupload';
 
     /**
-     * @var Backend\Widgets\Form configFormWidget is the embedded form for modifying the
+     * @var \Backend\Widgets\Form configFormWidget is the embedded form for modifying the
      * properties of the selected file.
      */
     protected $configFormWidget;
@@ -130,16 +127,23 @@ class FileUpload extends FormWidgetBase
             'mimeTypes',
             'thumbOptions',
             'useCaption',
-            'attachOnUpload',
+            'deferredBinding',
             'externalToolbarAppState',
             'externalToolbarEventBus'
         ]);
+
+        // @deprecated API
+        if ($this->getConfig('attachOnUpload') === true) {
+            $this->deferredBinding = false;
+        }
 
         if ($this->formField->disabled) {
             $this->previewMode = true;
         }
 
-        $this->getConfigFormWidget();
+        if (post('fileupload_flag')) {
+            $this->getConfigFormWidget();
+        }
     }
 
     /**
@@ -169,6 +173,7 @@ class FileUpload extends FormWidgetBase
             throw new ApplicationException('Maximum allowed size for uploaded files: ' . $maxPhpSetting);
         }
 
+        $this->vars['name'] = $this->getFieldName();
         $this->vars['size'] = $this->formField->size;
         $this->vars['fileList'] = $fileList = $this->getFileList();
         $this->vars['singleFile'] = $fileList->first();
@@ -187,14 +192,14 @@ class FileUpload extends FormWidgetBase
 
     /**
      * getFileRecord for this request, returns false if none available
-     * @return System\Models\File|false
+     * @return System\Models\File|bool
      */
     protected function getFileRecord()
     {
         $record = false;
 
-        if (!empty(post('file_id'))) {
-            $record = $this->getRelationModel()::find(post('file_id')) ?: false;
+        if ($fileId = post('file_id')) {
+            $record = $this->getRelationModel()->find($fileId) ?: false;
         }
 
         return $record;
@@ -214,7 +219,7 @@ class FileUpload extends FormWidgetBase
         $config->alias = $this->alias . $this->defaultAlias;
         $config->arrayName = $this->getFieldName();
 
-        $widget = $this->makeWidget(Form::class, $config);
+        $widget = $this->makeWidget(\Backend\Widgets\Form::class, $config);
         $widget->bindToController();
 
         return $this->configFormWidget = $widget;
@@ -254,8 +259,7 @@ class FileUpload extends FormWidgetBase
             return $mode;
         }
 
-        $relationType = $this->getRelationType();
-        $mode .= ($relationType == 'attachMany' || $relationType == 'morphMany') ? '-multi' : '-single';
+        $mode .= $this->isRelationTypeSingular() ? '-single' : '-multi';
 
         return $mode;
     }
@@ -343,6 +347,7 @@ class FileUpload extends FormWidgetBase
     public function onSortAttachments()
     {
         if ($sortData = post('sortOrder')) {
+            asort($sortData);
             $ids = array_keys($sortData);
             $orders = array_values($sortData);
 
@@ -367,6 +372,7 @@ class FileUpload extends FormWidgetBase
         $this->vars['file'] = $file;
         $this->vars['displayMode'] = $this->getDisplayMode();
         $this->vars['cssDimensions'] = $this->getCssDimensions();
+        $this->vars['configFormWidget'] = $this->getConfigFormWidget();
 
         return $this->makePartial('config_form');
     }
@@ -401,8 +407,8 @@ class FileUpload extends FormWidgetBase
      */
     protected function loadAssets()
     {
-        $this->addCss('css/fileupload.css', 'core');
-        $this->addJs('js/fileupload.js', 'core');
+        $this->addCss('css/fileupload.css');
+        $this->addJs('js/fileupload.js');
     }
 
     /**
@@ -455,17 +461,13 @@ class FileUpload extends FormWidgetBase
             $file->is_public = $fileRelation->isPublic();
             $file->save();
 
-            /**
-             * Attach directly to the parent model if it exists and attachOnUpload has been set to true
-             * else attach via deferred binding
-             */
+            // Determine the session key and if deferred binding should be used
             $parent = $fileRelation->getParent();
-            if ($this->attachOnUpload && $parent && $parent->exists) {
-                $fileRelation->add($file);
-            }
-            else {
-                $fileRelation->add($file, $this->getSessionKey());
-            }
+            $attachOnUpload = $this->deferredBinding === false && $parent && $parent->exists;
+            $sessionKey = $attachOnUpload ? null : $this->getSessionKey();
+
+            // Attach the file
+            $fileRelation->add($file, $sessionKey);
 
             $file = $this->decorateFileAttributes($file);
 
@@ -495,7 +497,7 @@ class FileUpload extends FormWidgetBase
     {
         $path = $thumb = $file->getPath();
 
-        if ($this->imageWidth || $this->imageHeight) {
+        if ($this->shouldGenerateThumb()) {
             $thumb = $file->getThumb($this->imageWidth, $this->imageHeight, $this->thumbOptions);
         }
 
@@ -503,6 +505,18 @@ class FileUpload extends FormWidgetBase
         $file->thumbUrl = $thumb;
 
         return $file;
+    }
+
+    /**
+     * shouldGenerateThumb determines if the resizer should be used
+     */
+    protected function shouldGenerateThumb()
+    {
+        if ($this->thumbOptions === false) {
+            return false;
+        }
+
+        return $this->imageWidth || $this->imageHeight;
     }
 
     /**

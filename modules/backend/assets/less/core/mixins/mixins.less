@@ -1,0 +1,24 @@
+.svg-fix-load() {
+    /* Fix for SVG icons not rendering on initial page load until repaint (hover, move, etc) */
+    -webkit-backface-visibility: hidden;
+    backface-visibility: hidden;
+}
+
+.backend-hide-text() {
+    font-size: 0;
+    color: transparent;
+}
+
+.bg-variant(@color) {
+    background-color: @color;
+    a&:hover {
+        background-color: darken(@color, 10%);
+    }
+}
+
+.text-emphasis-variant(@color) {
+    color: @color;
+    a&:hover {
+        color: darken(@color, 10%);
+    }
+}

@@ -3,7 +3,7 @@
 use October\Rain\Database\Schema\Blueprint;
 use October\Rain\Database\Updates\Migration;
 
-class DbBackendUserPreferences extends Migration
+return new class extends Migration
 {
     public function up()
     {
@@ -22,4 +22,4 @@ class DbBackendUserPreferences extends Migration
     {
         Schema::dropIfExists('backend_user_preferences');
     }
-}
+};

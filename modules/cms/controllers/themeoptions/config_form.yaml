@@ -3,7 +3,7 @@
 # ===================================
 
 # Record name
-name: cms::lang.theme.theme_label
+name: Theme
 
 # Fields are defined by extension
 form: []
@@ -16,6 +16,6 @@ defaultRedirect: cms/themes
 
 # Update page
 update:
-    title: cms::lang.theme.customize_theme
+    title: Customize Theme
     redirect: cms/themes
     redirectClose: cms/themes

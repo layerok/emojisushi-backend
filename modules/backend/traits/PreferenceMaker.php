@@ -4,10 +4,8 @@ use Str;
 use Backend\Models\UserPreference;
 
 /**
- * Preference Maker Trait
- *
- * Adds methods for modifying user preferences in a controller class, or a class
- * that contains a `$controller` property referencing a controller.
+ * PreferenceMaker Trait adds methods for modifying user preferences in a controller class,
+ * or a class that contains a `$controller` property referencing a controller.
  */
 trait PreferenceMaker
 {

@@ -5,8 +5,8 @@ use Model;
 use System\Classes\MailManager;
 use October\Rain\Mail\MailParser;
 use ApplicationException;
-use Exception;
 use File as FileHelper;
+use Exception;
 
 /**
  * Mail partial
@@ -37,18 +37,29 @@ class MailPartial extends Model
      * @var array Validation rules
      */
     public $rules = [
-        'code'                  => 'required|unique:system_mail_partials',
-        'name'                  => 'required',
-        'content_html'          => 'required',
+        'code' => 'required|unique:system_mail_partials',
+        'name' => 'required',
+        'content_html' => 'required',
     ];
 
+    /**
+     * afterFetch
+     */
     public function afterFetch()
     {
         if (!$this->is_custom) {
-            $this->fillFromCode();
+            try {
+                $this->fillFromCode();
+            }
+            catch (Exception $ex) {
+                return null;
+            }
         }
     }
 
+    /**
+     * findOrMakePartial
+     */
     public static function findOrMakePartial($code)
     {
         try {
@@ -66,7 +77,7 @@ class MailPartial extends Model
     }
 
     /**
-     * Loops over each mail layout and ensures the system has a layout,
+     * createPartials loops over each mail layout and ensures the system has a layout,
      * if the layout does not exist, it will create one.
      * @return void
      */
@@ -88,6 +99,9 @@ class MailPartial extends Model
         }
     }
 
+    /**
+     * fillFromCode
+     */
     public function fillFromCode($code = null)
     {
         $definitions = MailManager::instance()->listRegisteredPartials();
@@ -103,6 +117,9 @@ class MailPartial extends Model
         $this->fillFromView($definition);
     }
 
+    /**
+     * fillFromView
+     */
     public function fillFromView($path)
     {
         $sections = self::getTemplateSections($path);
@@ -112,6 +129,9 @@ class MailPartial extends Model
         $this->content_text = array_get($sections, 'text');
     }
 
+    /**
+     * getTemplateSections
+     */
     protected static function getTemplateSections($code)
     {
         return MailParser::parse(FileHelper::get(View::make($code)->getPath()));

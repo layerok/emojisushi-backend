@@ -33,7 +33,7 @@ class PluginDisable extends Command
 
         // Lookup
         if (!$manager->hasPlugin($name)) {
-            return $this->output->error("Unable to find plugin '${name}'");
+            return $this->output->error("Unable to find plugin '{$name}'");
         }
 
         // Disable in filesystem
@@ -45,7 +45,7 @@ class PluginDisable extends Command
             $plugin->save();
         }
 
-        $this->output->success("Plugin '${name}' disabled");
+        $this->output->success("Plugin '{$name}' disabled");
     }
 
     /**

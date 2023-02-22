@@ -1,16 +1,18 @@
 <?php namespace Cms\Twig;
 
+use System;
 use Cms\Classes\Controller;
 use Cms\Classes\ComponentBase;
+use October\Rain\Database\Model;
+use October\Rain\Support\Debug\HtmlDumper;
 use Twig\Template as TwigTemplate;
 use Twig\Environment as TwigEnvironment;
 use Twig\TwigFunction as TwigSimpleFunction;
 use Twig\Extension\AbstractExtension as TwigExtension;
-use Illuminate\Support\Collection;
-use Illuminate\Pagination\Paginator;
-use October\Rain\Support\Debug\HtmlDumper;
 use Symfony\Component\VarDumper\Cloner\VarCloner;
-use October\Rain\Database\Model;
+use Illuminate\Pagination\Paginator;
+use Illuminate\Support\Collection;
+use ReflectionClass;
 
 /**
  * DebugExtension for Twig
@@ -67,6 +69,19 @@ class DebugExtension extends TwigExtension
     }
 
     /**
+     * addExtensionToTwig adds this extension to the Twig environment and ensures
+     * it cannot be used in safe mode.
+     */
+    public static function addExtensionToTwig(TwigEnvironment $twig)
+    {
+        if (System::checkSafeMode()) {
+            return;
+        }
+
+        $twig->addExtension(new static);
+    }
+
+    /**
      * getFunctions returns a list of global functions to add to the existing list.
      * @return array An array of global functions
      */
@@ -78,14 +93,43 @@ class DebugExtension extends TwigExtension
                 'needs_context' => true,
                 'needs_environment' => true
             ]),
+            new TwigSimpleFunction('d', [$this, 'dumpVars'], [
+                'is_safe' => ['html'],
+            ]),
+            new TwigSimpleFunction('dd', [$this, 'dumpVarsAndDie'], [
+                'is_safe' => ['html'],
+            ]),
         ];
+    }
+
+    /**
+     * dumpVars returns dumped variables
+     */
+    public function dumpVars(...$vars)
+    {
+        return implode(PHP_EOL, array_map(function($var) {
+            return $this->variableToDump($var);
+        }, $vars));
+    }
+
+    /**
+     * dumpVarsAndDie outputs dumped variables and then dies
+     */
+    public function dumpVarsAndDie(...$vars)
+    {
+        if (!in_array(\PHP_SAPI, ['cli', 'phpdbg'], true) && !headers_sent()) {
+            header('HTTP/1.1 500 Internal Server Error');
+        }
+
+        echo $this->dumpVars(...$vars);
+        exit(1);
     }
 
     /**
      * runDump processes the dump variables, if none is supplied, all the twig
      * template variables are used
      * @param  TwigEnvironment $env
-     * @param  array            $context
+     * @param  array $context
      * @return string
      */
     public function runDump(TwigEnvironment $env, $context)
@@ -242,13 +286,9 @@ class DebugExtension extends TwigExtension
      */
     protected function evalVarDump($variable)
     {
-        $dumper = new HtmlDumper;
-        $cloner = new VarCloner;
-
         $output = '<div style="display:none">';
-        $output .= $dumper->dump($cloner->cloneVar($variable), true);
+        $output .= $this->variableToDump($variable);
         $output .= '</div>';
-
         return $output;
     }
 
@@ -367,7 +407,7 @@ class DebugExtension extends TwigExtension
 
     /**
      * evalMethodDesc evaluates an method type for description
-     * @param  object $variable
+     * @param  string $variable
      * @return string
      */
     protected function evalMethodDesc($variable)
@@ -456,30 +496,36 @@ class DebugExtension extends TwigExtension
     protected function objectToArray($object)
     {
         $class = get_class($object);
-        $info = new \ReflectionClass($object);
+        $info = new ReflectionClass($object);
 
         $this->commentMap[$class] = [];
 
         $methods = [];
         foreach ($info->getMethods() as $method) {
+            // Only public
             if (!$method->isPublic()) {
-                continue; // Only public
+                continue;
             }
+            // Only locals
             if ($method->class != $class) {
-                continue; // Only locals
+                continue;
             }
             $name = $method->getName();
+            // Blocked methods
             if (in_array($name, $this->blockMethods)) {
-                continue; // Blocked methods
+                continue;
             }
+            // AJAX methods
             if (preg_match('/^on[A-Z]{1}[\w+]*$/', $name)) {
-                continue; // AJAX methods
+                continue;
             }
+            // getSomethingOptions
             if (preg_match('/^get[A-Z]{1}[\w+]*Options$/', $name)) {
-                continue; // getSomethingOptions
+                continue;
             }
+            // Magic/hidden method
             if (substr($name, 0, 1) == '_') {
-                continue; // Magic/hidden method
+                continue;
             }
             $name .= '()';
             $methods[$name] = '___METHOD___|'.$name;
@@ -488,14 +534,17 @@ class DebugExtension extends TwigExtension
 
         $vars = [];
         foreach ($info->getProperties() as $property) {
+            // Only non-static
             if ($property->isStatic()) {
-                continue; // Only non-static
+                continue;
             }
+            // Only public
             if (!$property->isPublic()) {
-                continue; // Only public
+                continue;
             }
+            // Only locals
             if ($property->class != $class) {
-                continue; // Only locals
+                continue;
             }
             $name = $property->getName();
             $vars[$name] = $object->{$name};
@@ -613,5 +662,16 @@ class DebugExtension extends TwigExtension
         }
 
         return implode('; ', $strings);
+    }
+
+    /**
+     * variableToDump converts a variable to a HTML dumped version
+     */
+    protected function variableToDump($variable)
+    {
+        $dumper = new HtmlDumper;
+        $cloner = new VarCloner;
+
+        return $dumper->dump($cloner->cloneVar($variable), true);
     }
 }

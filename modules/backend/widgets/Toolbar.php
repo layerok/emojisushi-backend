@@ -16,12 +16,12 @@ class Toolbar extends WidgetBase
     //
 
     /**
-     * @var string Partial name containing the toolbar buttons
+     * @var string buttons partial name
      */
     public $buttons;
 
     /**
-     * @var array|string Search widget configuration or partial name, optional.
+     * @var array|string search widget configuration or partial name, optional.
      */
     public $search;
 
@@ -35,12 +35,12 @@ class Toolbar extends WidgetBase
     protected $defaultAlias = 'toolbar';
 
     /**
-     * @var WidgetBase Reference to the search widget object.
+     * @var WidgetBase searchWidget reference
      */
     protected $searchWidget;
 
     /**
-     * @var array List of CSS classes to apply to the toolbar container element
+     * @var array cssClasses to apply to the toolbar container element
      */
     public $cssClasses = [];
 
@@ -50,7 +50,7 @@ class Toolbar extends WidgetBase
     public $listWidgetId;
 
     /**
-     * Initialize the widget, called by the constructor and free from its parameters.
+     * init the widget, called by the constructor and free from its parameters.
      */
     public function init()
     {
@@ -59,9 +59,7 @@ class Toolbar extends WidgetBase
             'search',
         ]);
 
-        /*
-         * Prepare the search widget (optional)
-         */
+        // Prepare the search widget (optional)
         if (isset($this->search)) {
             if (is_string($this->search)) {
                 $searchConfig = $this->makeConfig(['partial' => $this->search]);
@@ -95,15 +93,21 @@ class Toolbar extends WidgetBase
         $this->vars['controlPanel'] = $this->makeControlPanel();
     }
 
+    /**
+     * getSearchWidget
+     */
     public function getSearchWidget()
     {
         return $this->searchWidget;
     }
 
+    /**
+     * makeControlPanel
+     */
     public function makeControlPanel()
     {
         if (!isset($this->buttons)) {
-            return false;
+            return '<div data-control="toolbar"></div>';
         }
 
         return $this->controller->makePartial($this->buttons, $this->vars);

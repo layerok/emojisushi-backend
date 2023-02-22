@@ -43,7 +43,7 @@ class MailBrandSettings extends SettingsController
     /**
      * @var array requiredPermissions to view this page.
      */
-    public $requiredPermissions = ['system.manage_mail_templates'];
+    public $requiredPermissions = ['mail.templates'];
 
     /**
      * @var string bodyClass HTML body tag class
@@ -65,8 +65,8 @@ class MailBrandSettings extends SettingsController
      */
     public function index()
     {
-        $this->addJs('/modules/system/assets/js/mailbrandsettings/mailbrandsettings.js', 'core');
-        $this->addCss('/modules/system/assets/css/mailbrandsettings/mailbrandsettings.css', 'core');
+        $this->addJs('/modules/system/assets/js/mailbrandsettings/mailbrandsettings.js');
+        $this->addCss('/modules/system/assets/css/mailbrandsettings/mailbrandsettings.css');
 
         Block::append('head', $this->renderSampleMessageAsScript());
 
@@ -104,8 +104,6 @@ class MailBrandSettings extends SettingsController
      */
     public function onUpdateSampleMessage()
     {
-        $this->pageAction();
-
         $this->formGetWidget()->setFormValues();
 
         return ['previewHtml' => $this->renderSampleMessage()];

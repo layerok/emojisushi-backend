@@ -1,9 +1,9 @@
 <?php namespace Cms\Classes;
 
 use Lang;
-use ApplicationException;
 use October\Rain\Router\Helper as RouterHelper;
 use October\Rain\Filesystem\Definitions as FileDefinitions;
+use ApplicationException;
 use ValidationException;
 
 /**
@@ -70,7 +70,8 @@ class Page extends CmsCompoundObject
     }
 
     /**
-     * Returns name of a PHP class to us a parent for the PHP class created for the object's PHP section.
+     * getCodeClassParent returns name of a PHP class to us a parent for the PHP class
+     * created for the object's PHP section.
      * @return mixed Returns the class name or null.
      */
     public function getCodeClassParent()
@@ -79,7 +80,7 @@ class Page extends CmsCompoundObject
     }
 
     /**
-     * Returns a list of layouts available in the theme.
+     * getLayoutOptions returns a list of layouts available in the theme.
      * This method is used by the form widget.
      * @return array Returns an array of strings.
      */
@@ -107,7 +108,7 @@ class Page extends CmsCompoundObject
     }
 
     /**
-     * Helper that returns a nicer list of pages for use in dropdowns.
+     * getNameList helper that returns a nicer list of pages for use in dropdowns.
      * @return array
      */
     public static function getNameList()
@@ -122,25 +123,22 @@ class Page extends CmsCompoundObject
     }
 
     /**
-     * Helper that makes a URL for a page in the active theme.
+     * url helper that makes a URL for a page in the active theme.
      * @param mixed $page Specifies the Cms Page file name.
      * @param array $params Route parameters to consider in the URL.
      * @return string
      */
     public static function url($page, array $params = [])
     {
-        /*
-         * Reuse existing controller or create a new one,
-         * assuming that the method is called not during the front-end
-         * request processing.
-         */
+        // Reuse existing controller or create a new one, assuming that the method is
+        // called not during the front-end request processing.
         $controller = Controller::getController() ?: new Controller;
 
         return $controller->pageUrl($page, $params, true);
     }
 
     /**
-     * Handler for the pages.menuitem.getTypeInfo event.
+     * getMenuTypeInfo handler for the pages.menuitem.getTypeInfo event.
      * Returns a menu item type information. The type information is returned as array
      * with the following elements:
      * - references - a list of the item type reference options. The options are returned in the
@@ -166,12 +164,12 @@ class Page extends CmsCompoundObject
             $references = [];
 
             foreach ($pages as $page) {
-                $references[$page->getBaseFileName()] = $page->title . ' [' . $page->getBaseFileName() . ']';
+                $references[$page->getBaseFileName()] = $page->title . ' (' . $page->getBaseFileName() . ')';
             }
 
             $result = [
-                'references'   => $references,
-                'nesting'      => false,
+                'references' => $references,
+                'nesting' => false,
                 'dynamicItems' => false
             ];
         }
@@ -180,7 +178,7 @@ class Page extends CmsCompoundObject
     }
 
     /**
-     * Handler for the pages.menuitem.resolveItem event.
+     * resolveMenuItem handler for the pages.menuitem.resolveItem event.
      * Returns information about a menu item. The result is an array
      * with the following keys:
      * - url - the menu item URL. Not required for menu item types that return all available records.
@@ -213,29 +211,6 @@ class Page extends CmsCompoundObject
             $result['url'] = $pageUrl;
             $result['isActive'] = $pageUrl == $url;
             $result['mtime'] = $page ? $page->mtime : null;
-        }
-
-        return $result;
-    }
-
-    /**
-     * Handler for the backend.richeditor.getTypeInfo event.
-     * Returns a menu item type information. The type information is returned as array
-     * @param string $type Specifies the page link type
-     * @return array
-     */
-    public static function getRichEditorTypeInfo(string $type)
-    {
-        $result = [];
-
-        if ($type === 'cms-page') {
-            $theme = Theme::getActiveTheme();
-            $pages = self::listInTheme($theme, true);
-
-            foreach ($pages as $page) {
-                $url = self::url($page->getBaseFileName());
-                $result[$url] = $page->title;
-            }
         }
 
         return $result;

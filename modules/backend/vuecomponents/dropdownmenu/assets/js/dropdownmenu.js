@@ -1,4 +1,4 @@
-$.oc.module.register('backend.component.dropdownmenu', function () {
+oc.Module.register('backend.component.dropdownmenu', function () {
     Vue.component('backend-component-dropdownmenu', {
         props: {
             items: Array,

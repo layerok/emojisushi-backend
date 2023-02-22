@@ -5,7 +5,6 @@ use Config;
 use Request;
 use Session;
 use Carbon\Carbon;
-use Symfony\Component\HttpFoundation\Response as BaseResponse;
 use Symfony\Component\HttpFoundation\Cookie;
 
 /**

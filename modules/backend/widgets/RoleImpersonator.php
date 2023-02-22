@@ -31,7 +31,7 @@ class RoleImpersonator extends WidgetBase
      */
     protected function loadAssets()
     {
-        $this->addCss('css/roleimpersonator.css', 'core');
+        $this->addCss('css/roleimpersonator.css');
     }
 
     /**

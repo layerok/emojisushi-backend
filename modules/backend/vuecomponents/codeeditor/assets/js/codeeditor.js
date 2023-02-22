@@ -1,5 +1,5 @@
-$.oc.module.register('backend.component.codeeditor', function () {
-    $(document).ready(function() {
+oc.Module.register('backend.component.codeeditor', function () {
+    jQuery(function() {
         // Fix EMMET HTML when syntax is Twig
         //
         +(function(exports) {
@@ -32,7 +32,7 @@ $.oc.module.register('backend.component.codeeditor', function () {
 
         // Set theme, anticipated languages should be preloaded
         //
-        assetManager.load(
+        oc.AssetManager.load(
             {
                 js: [options.vendorPath + '/theme-' + options.theme + '.js']
             },

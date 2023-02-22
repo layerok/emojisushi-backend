@@ -1,4 +1,4 @@
-$.oc.module.register('backend.component.header', function () {
+oc.Module.register('backend.component.header', function () {
     Vue.component('backend-component-document-header', {
         props: {
             data: {

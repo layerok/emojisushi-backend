@@ -51,11 +51,11 @@ class ThemeImport extends Model
         'dirName' => null,
         'overwrite' => true,
         'folders' => [
-            'assets'   => true,
-            'pages'    => true,
-            'layouts'  => true,
-            'partials' => true,
-            'content'  => true,
+            'assets',
+            'pages',
+            'layouts',
+            'partials',
+            'content',
         ]
     ];
 
@@ -69,17 +69,23 @@ class ThemeImport extends Model
         throw new ApplicationException(sprintf("The % model is not intended to be saved, please use %s instead", get_class($this), 'ThemeData'));
     }
 
+    /**
+     * getFoldersOptions
+     */
     public function getFoldersOptions()
     {
         return [
-            'assets'   => 'Assets',
-            'pages'    => 'Pages',
-            'layouts'  => 'Layouts',
+            'assets' => 'Assets',
+            'pages' => 'Pages',
+            'layouts' => 'Layouts',
             'partials' => 'Partials',
-            'content'  => 'Content',
+            'content' => 'Content',
         ];
     }
 
+    /**
+     * setThemeAttribute
+     */
     public function setThemeAttribute($theme)
     {
         if (!$theme instanceof CmsTheme) {
@@ -91,6 +97,9 @@ class ThemeImport extends Model
         $this->attributes['theme'] = $theme;
     }
 
+    /**
+     * import
+     */
     public function import($theme, $data = [], $sessionKey = null)
     {
         @set_time_limit(3600);
@@ -147,7 +156,7 @@ class ThemeImport extends Model
     }
 
     /**
-     * Helper for copying directories that supports the ability
+     * copyDirectory helper for copying directories that supports the ability
      * to not overwrite existing files. Inherited from File::copyDirectory
      *
      * @param  string  $directory
@@ -168,7 +177,7 @@ class ThemeImport extends Model
         $options = FilesystemIterator::SKIP_DOTS;
 
         if (!File::isDirectory($destination)) {
-            File::makeDirectory($destination, 0777, true);
+            File::makeDirectory($destination, 0755, true);
         }
 
         $items = new FilesystemIterator($directory, $options);

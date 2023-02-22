@@ -78,6 +78,7 @@ trait HasViewMode
         $config->showCheckboxes = $this->getConfig('view[showCheckboxes]', !$this->readOnly);
         $config->recordUrl = $this->getConfig('view[recordUrl]', null);
         $config->customViewPath = $this->getConfig('view[customViewPath]', null);
+        $config->customPageName = $this->getConfig('view[customPageName]', camel_case(class_basename($this->relationModel).'Page'));
 
         $defaultOnClick = sprintf(
             "$.oc.relationBehavior.clickViewListRecord(':%s', '%s', '%s')",
@@ -121,7 +122,7 @@ trait HasViewMode
             $this->model->isSortableRelation($this->field)
         ) {
             $widget->bindEvent('list.reorderStructure', function () {
-                $this->model->setSortableRelationOrder($this->field, post('sort_orders'), array_keys((array) post('sort_orders')));
+                $this->model->setSortableRelationOrder($this->field, post('sort_orders'), true);
             });
         }
 
@@ -143,7 +144,7 @@ trait HasViewMode
                 // Reset any orders that may have come from the definition
                 // because it has a tendency to break things
                 if (!$this->model->exists) {
-                    $query->getQuery()->orders = [];
+                    $query->getQuery()->reorder();
                 }
             });
         }
@@ -257,8 +258,6 @@ trait HasViewMode
      */
     public function onRelationButtonAdd()
     {
-        $this->eventTarget = 'button-add';
-
         return $this->onRelationManageForm();
     }
 
@@ -267,8 +266,6 @@ trait HasViewMode
      */
     public function onRelationButtonCreate()
     {
-        $this->eventTarget = 'button-create';
-
         return $this->onRelationManageForm();
     }
 
@@ -285,8 +282,6 @@ trait HasViewMode
      */
     public function onRelationButtonLink()
     {
-        $this->eventTarget = 'button-link';
-
         return $this->onRelationManageForm();
     }
 
@@ -311,8 +306,6 @@ trait HasViewMode
      */
     public function onRelationButtonUpdate()
     {
-        $this->eventTarget = 'button-update';
-
         return $this->onRelationManageForm();
     }
 
@@ -341,8 +334,35 @@ trait HasViewMode
      */
     public function onRelationClickViewList()
     {
-        $this->eventTarget = 'list';
         return $this->onRelationManageForm();
+    }
+
+    /**
+     * evalEventTarget determines the source of an AJAX event used for determining
+     * the manage mode state. See the `evalManageMode` method.
+     * @return string
+     */
+    protected function evalEventTarget()
+    {
+        switch ($this->controller->getAjaxHandler()) {
+            case 'onRelationButtonAdd':
+                return 'button-add';
+
+            case 'onRelationButtonCreate':
+                return 'button-create';
+
+            case 'onRelationButtonLink':
+                return 'button-link';
+
+            case 'onRelationButtonUpdate':
+                return 'button-update';
+
+            case 'onRelationClickViewList':
+                return 'list';
+
+            default:
+                return '';
+        }
     }
 
     /**
@@ -368,6 +388,9 @@ trait HasViewMode
             case 'morphOne':
             case 'belongsTo':
                 return 'single';
+
+            default:
+                return '';
         }
     }
 

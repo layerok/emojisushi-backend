@@ -3,9 +3,11 @@
 use System;
 use Illuminate\Console\Command;
 use System\Classes\UpdateManager;
-use October\Rain\Process\Composer as ComposerProcess;
+use System\Helpers\Cache as CacheHelper;
+use October\Rain\Composer\Manager as ComposerManager;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputOption;
+use Exception;
 
 /**
  * PluginInstall installs a new plugin.
@@ -34,61 +36,65 @@ class PluginInstall extends Command
     {
         $name = $this->argument('name');
 
-        $this->output->writeln("<info>Installing Plugin: {$name}</info>");
+        $this->line("Installing Plugin: {$name}");
 
         if ($src = $this->option('from')) {
-            $this->output->writeln("<info>Added Repo: {$src}</info>");
+            $this->info("Added Repo: {$src}");
             $composerCode = System::octoberToComposerCode(
                 $name,
                 'plugin',
                 (bool) $this->option('oc')
             );
+            $composerVersion = '*';
 
             $this->addRepoFromSource($composerCode, $src);
         }
         else {
             $info = UpdateManager::instance()->requestPluginDetails($name);
             $composerCode = array_get($info, 'composer_code');
+            $composerVersion = '^'.array_get($info, 'composer_version');
         }
 
         // Splice in version
-        $requirePackage = $composerCode;
         if ($requireVersion = $this->option('want')) {
-            $requirePackage .= ':'.$requireVersion;
+            $composerVersion = $requireVersion;
         }
 
         // Composer require
-        $this->comment("Executing: composer require {$requirePackage}");
-        $this->output->newLine();
+        $this->comment("Executing: composer require {$composerCode} {$composerVersion}");
+        $this->line('');
 
-        $composer = new ComposerProcess;
-        $composer->setCallback(function($message) { echo $message; });
-        if ($this->option('no-update')) {
-            $composer->requireNoUpdate($requirePackage);
-        }
-        else {
-            $composer->require($requirePackage);
-        }
+        $composer = ComposerManager::instance();
+        $composer->setOutputCommand($this, $this->input);
 
-        // Composer failed
-        if ($composer->lastExitCode() !== 0) {
+        try {
+            if ($this->option('no-update')) {
+                $composer->addPackages([$composerCode => $composerVersion]);
+            }
+            else {
+                $composer->require([$composerCode => $composerVersion]);
+            }
+        }
+        catch (Exception $ex) {
             if ($src = $this->option('from')) {
-                $this->output->writeln("<info>Reverted repo change</info>");
+                $this->info("Reverted repo change");
                 $this->removeRepoFromSource($composerCode);
             }
-
-            $this->output->error('Install failed. Check output above');
-            exit(1);
+            throw $ex;
         }
+
+        // Clear meta cache
+        CacheHelper::instance()->clearMeta();
 
         // Run migrations
         if (!$this->option('no-migrate')) {
             $this->comment("Executing: php artisan october:migrate");
-            $this->output->newLine();
+            $this->line('');
 
             // Migrate database
             $errCode = null;
-            passthru('php artisan october:migrate', $errCode);
+            static::passthruArtisan('october:migrate', $errCode);
+            $this->line('');
 
             if ($errCode !== 0) {
                 $this->output->error('Migration failed. Check output above');
@@ -96,7 +102,7 @@ class PluginInstall extends Command
             }
         }
 
-        $this->output->success("Plugin '${name}' installed");
+        $this->output->success("Plugin '{$name}' installed");
     }
 
     /**
@@ -116,8 +122,7 @@ class PluginInstall extends Command
             $srcType = 'git';
         }
 
-        $composer = new ComposerProcess;
-        $composer->addRepository($composerCode, $srcType, $src);
+        ComposerManager::instance()->addRepository($composerCode, $srcType, $src);
     }
 
     /**
@@ -125,8 +130,7 @@ class PluginInstall extends Command
      */
     protected function removeRepoFromSource($composerCode)
     {
-        $composer = new ComposerProcess;
-        $composer->removeRepository($composerCode);
+        ComposerManager::instance()->removeRepository($composerCode);
     }
 
     /**
@@ -151,5 +155,13 @@ class PluginInstall extends Command
             ['no-migrate', null, InputOption::VALUE_NONE, 'Do not run migration after install.'],
             ['no-update', null, InputOption::VALUE_NONE, 'Do not run composer update after install.'],
         ];
+    }
+
+    /**
+     * passthruArtisan
+     */
+    protected static function passthruArtisan($command, &$errCode = null)
+    {
+        passthru('"'.PHP_BINARY.'" artisan ' .$command, $errCode);
     }
 }

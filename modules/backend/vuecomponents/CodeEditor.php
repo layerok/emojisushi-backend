@@ -22,7 +22,7 @@ class CodeEditor extends VueComponentBase
     {
         // This Vue component uses Ace dependencies from the form widget
         //
-        $this->addJs('../../../formwidgets/codeeditor/assets/js/build-min.js', 'core');
+        $this->addJs('../../../formwidgets/codeeditor/assets/js/build-min.js');
     }
 
     /**

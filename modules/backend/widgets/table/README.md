@@ -9,26 +9,28 @@ The data source and cell processor JavaScript classes use the simple parasitic c
 - http://javascriptissexy.com/oop-in-javascript-what-you-need-to-know/
 - https://developer.mozilla.org/en-US/docs/Web/JavaScript/Introduction_to_Object-Oriented_JavaScript
 
-    // Parent class with a method
-    var SuperClass = function(params) {}
-    SuperClass.prototype.someMethod = function() {}
+```js
+// Parent class with a method
+var SuperClass = function(params) {}
+SuperClass.prototype.someMethod = function() {}
 
-    // Child class
-    var SubClass = function(params) {
-        // Call the parent constructor
-        SuperClass.call(this, params)
-    }
+// Child class
+var SubClass = function(params) {
+    // Call the parent constructor
+    SuperClass.call(this, params)
+}
 
-    SubClass.prototype = Object.create(SuperClass.prototype)
-    SubClass.prototype.constructor = SubClass
+SubClass.prototype = Object.create(SuperClass.prototype)
+SubClass.prototype.constructor = SubClass
 
-    // Child class methods can be defined only after the prototype
-    // is updated in the two previous lines
+// Child class methods can be defined only after the prototype
+// is updated in the two previous lines
 
-    SubClass.prototype.someMethod = function() {
-        // Call the parent method
-        SuperClass.prototype.someMethod.call(this)
-    };
+SubClass.prototype.someMethod = function() {
+    // Call the parent method
+    SuperClass.prototype.someMethod.call(this)
+};
+```
 
 ### Namespaces
 
@@ -61,20 +63,20 @@ There are several articles that provide a good insight into the high performance
 
 Any `DIV` elements that have the `data-control="table"` attributes are automatically picked up by the control.
 
-```
+```html
 <div data=control="table" data-columns="{...}"></div>
 ```
 
 ### Options
 
-The options below are listed in the JavaScript notation. Corresponding data attributes would look like `data-client-data-source-class`. 
+The options below are listed in the JavaScript notation. Corresponding data attributes would look like `data-client-data-source-class`.
 
 - `clientDataSourceСlass` (default is **client**)- specifies the client-side data source class. There are two data source classes supported on the client side - **client** and **server**.
 - `data` - specifies the data in JSON format for the **client**.
 - `recordsPerPage` - specifies how many records per page to display. If the value is not defined or `false` or `null`, the pagination feature is disabled and all records are displayed. Pagination and `rowSorting` cannot be used in the same time.
 - `columns` - column definitions in JSON format, see the server-side column definition format below.
 - `rowSorting` - enables the drag & drop row sorting. The sorting cannot be used with the pagination (`recordsPerPage` is not `null` or `false`).
-- `keyColumn` - specifies the name of the key column. The default value is **id**. 
+- `keyColumn` - specifies the name of the key column. The default value is **id**.
 - `postback` - post the client-memory data source data to the server automatically when the parent form gets submitted. The default value is `true`. The option is used only with client-memory data sources. When enabled, the data source data  is available in the widget's server-side data source: `$table->getDataSource()->getRecords();` The data postback occurs only of the request handler name matches the `postbackHandlerName` option value.
 - `postbackHandlerName` - AJAX data handler name for the automatic data postback. The data will be posted only when the AJAX request posts data matching this handler name. The default value is **onSave**.
 - `adding` - determines whether users can add new records. Default value is **true**.
@@ -128,14 +130,16 @@ The table object calls the `onFocus()` method of the cell processors when a cell
 
 The drop-down column type can load options from the column configuration or with AJAX. Example column configuration:
 
-    color:
-        title: Color
-        type: dropdown
-        options:
-            red: Red
-            green: Green
-            blue: Blue
-        width: 15%
+```yaml
+color:
+    title: Color
+    type: dropdown
+    options:
+        red: Red
+        green: Green
+        blue: Blue
+    width: 15%
+```
 
 If the `options` element is not presented in the configuration, the options will be loaded with AJAX.
 
@@ -143,17 +147,21 @@ If the `options` element is not presented in the configuration, the options will
 
 The drop-down options could depend on other columns. This works only with AJAX-based drop-downs. The column a drop-down depends on are defined with the `dependsOn` property:
 
-    state:
-        title: State
-        type: dropdown
-        dependsOn: country
+```yaml
+state:
+    title: State
+    type: dropdown
+    dependsOn: country
+```
 
-Multiple fields are allowed as well: 
+Multiple fields are allowed as well:
 
-    state:
-        title: State
-        type: dropdown
-        dependsOn: [country, language]
+```yaml
+state:
+    title: State
+    type: dropdown
+    dependsOn: [country, language]
+```
 
 **Note:** Dependent drop-down should always be defined after their master columns.
 
@@ -161,15 +169,17 @@ Multiple fields are allowed as well:
 
 The autocomplete column type can load options from the column configuration or with AJAX. Example column configuration:
 
-    color:
-        title: Color
-        type: autocomplete
-        options:
-            red: Red
-            green: Green
-            blue: Blue
+```yaml
+color:
+    title: Color
+    type: autocomplete
+    options:
+        red: Red
+        green: Green
+        blue: Blue
+```
 
-If the `options` element is not presented in the configuration, the options will be loaded with AJAX. 
+If the `options` element is not presented in the configuration, the options will be loaded with AJAX.
 
 **TODO:** Document the AJAX interface
 
@@ -208,7 +218,7 @@ Columns are defined as array with the `columns` property. The array keys corresp
 - `dependsOn` (from drop-down elements)
 - validation - defines the column client-side validation rules. See the **Client-side validation** section below.
 
-## Events 
+## Events
 
 ### table.getDropdownOptions
 
@@ -219,12 +229,14 @@ table.getDropdownOptions - triggered when drop-down options are requested by the
 
 Example event handler:
 
-```
+```php
 $table->bindEvent('table.getDropdownOptions',
     function ($columnName, $rowData) {
-        if ($columnName == 'state')
+        if ($columnName == 'state') {
             return ['ca'=>'California', 'wa'=>'Washington'];
-        ...
+        }
+
+        // ...
     }
 );
 ```
@@ -233,7 +245,7 @@ $table->bindEvent('table.getDropdownOptions',
 
 After the table widget is created, its data source optionally could be filled with records. Example code:
 
-```
+```php
 $table = new Table($this, $config);
 $dataSource = $table->getDataSource();
 
@@ -251,14 +263,13 @@ The `initRecords()` method can be called multiple times. Each call adds records 
 
 ## Emptying the data source
 
-The `purge` method removes all records from the data source. This method should always be used with server memory data sources. Nonetheless, server side data sources should take care about providing the automatic ways of cleaning data with using the time-to-live mechanisms. 
+The `purge` method removes all records from the data source. This method should always be used with server memory data sources. Nonetheless, server side data sources should take care about providing the automatic ways of cleaning data with using the time-to-live mechanisms.
 
-```
+```php
 $table = new Table($this, $config);
 $dataSource = $table->getDataSource();
 $dataSource->purge();
 ```
-
 
 ## Reading data from the data source
 
@@ -270,10 +281,10 @@ The server-memory data source always automatically maintain its contents in sync
 
 In PHP reading data from a data source of any type looks like this (it should be in the AJAX handler that saves the data, for the client-memory data source the handler name should match the `postbackHandlerName` option value):
 
-```
+```php
 public function onSave()
 {
-    // Assuming that the widget was initialized in the 
+    // Assuming that the widget was initialized in the
     // controller constructor with the "table" alias.
     $dataSource = $this->widget->table->getDataSource();
 
@@ -281,7 +292,6 @@ public function onSave()
         traceLog($records);
     }
 ```
-
 
 ## Validation
 
@@ -293,21 +303,25 @@ The client-side validation is performed before the data is sent to the server, o
 
 The client-side validation is configured in the widget configuration file in the column definition with the `validation` key. Example:
 
-    state:
-        title: State
-        type: dropdown
-        validation:
-            required:
-                message: Please select the state
-                requiredWith: country
+```yaml
+state:
+    title: State
+    type: dropdown
+    validation:
+        required:
+            message: Please select the state
+            requiredWith: country
+```
 
 If a validator doesn't have any options (or default option values should be used), the declaration could look like this:
 
-    state:
-        title: State
-        type: dropdown
-        validation:
-            required: {}
+```yaml
+state:
+    title: State
+    type: dropdown
+    validation:
+        required: {}
+```
 
 The `requiredWith` and `message` parameters are common for all validators.
 
@@ -319,11 +333,11 @@ Currently implemented client-side validation rules:
 - length
 - regex
 
-Validation rules can be configured with extra parameters, which depend on a specific validator. 
+Validation rules can be configured with extra parameters, which depend on a specific validator.
 
 #### required validator ($.oc.table.validator.required)
 
-Checks if the user has provided a value for the cell. 
+Checks if the user has provided a value for the cell.
 
 #### integer validator ($.oc.table.validator.integer)
 
@@ -337,16 +351,18 @@ Checks if the value is integer. Parameters:
     * `value` - defines the maximum value.
     * `message` - optional, defines the error message.
 
-Example of defining the integer validator with the `min` parameter: 
+Example of defining the integer validator with the `min` parameter:
 
-    length:
-        title: Length
-        type: string
-        validation:
-            integer:
-                min:
-                    value: 3
-                    message: "The length cannot be less than 3"
+```yaml
+length:
+    title: Length
+    type: string
+    validation:
+        integer:
+            min:
+                value: 3
+                message: "The length cannot be less than 3"
+```
 
 #### float validator ($.oc.table.validator.float)
 
@@ -386,7 +402,7 @@ Example column definition:
 Checks a string against a provided regular expression:
 
 * `pattern` - specifies the regular expression pattern string. Example: **^[0-9a-z]+$**
-* `modifiers` - optional, a string containing regular expression modifiers (https://developer.mozilla.org/en/docs/Web/JavaScript/Reference/Global_Objects/RegExp), for example **i** for "case insensitive". 
+* `modifiers` - optional, a string containing regular expression modifiers (https://developer.mozilla.org/en/docs/Web/JavaScript/Reference/Global_Objects/RegExp), for example **i** for "case insensitive".
 
 Example:
 

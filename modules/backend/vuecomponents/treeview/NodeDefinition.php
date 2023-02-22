@@ -4,8 +4,7 @@ use SystemException;
 use Backend\VueComponents\DropdownMenu\ItemDefinition;
 
 /**
- * Treeview node definition. 
- * Encapsulates Treeview node information.
+ * NodeDefinition encapsulates Treeview node information.
  *
  * @package october\backend
  * @author Alexey Bobkov, Samuel Georges
@@ -23,46 +22,109 @@ class NodeDefinition
     const GROUP_BY_MODE_FOLDERS = 'folders';
     const GROUP_BY_MODE_NESTING = 'nesting';
 
-    private $label;
+    /**
+     * @var mixed label
+     */
+    protected $label;
 
-    private $key;
+    /**
+     * @var mixed key
+     */
+    protected $key;
 
-    private $childKeyPrefix;
+    /**
+     * @var mixed childKeyPrefix
+     */
+    protected $childKeyPrefix;
 
-    private $displayMode = NodeDefinition::DISPLAY_MODE_LIST;
+    /**
+     * @var mixed displayMode
+     */
+    protected $displayMode = NodeDefinition::DISPLAY_MODE_LIST;
 
-    private $draggable = false;
+    /**
+     * @var bool draggable
+     */
+    protected $draggable = false;
 
-    private $selectable = true;
+    /**
+     * @var bool selectable
+     */
+    protected $selectable = true;
 
-    private $icon;
+    /**
+     * @var mixed icon
+     */
+    protected $icon;
 
-    private $nodes = [];
+    /**
+     * @var array nodes
+     */
+    protected $nodes = [];
 
-    private $userData = null;
+    /**
+     * @var mixed userData
+     */
+    protected $userData = null;
 
-    private $sortBy = null;
+    /**
+     * @var mixed sortBy
+     */
+    protected $sortBy = null;
 
-    private $groupBy = null;
+    /**
+     * @var mixed groupBy
+     */
+    protected $groupBy = null;
 
-    private $groupByMode = NodeDefinition::GROUP_BY_MODE_FOLDERS;
+    /**
+     * @var mixed groupByMode
+     */
+    protected $groupByMode = NodeDefinition::GROUP_BY_MODE_FOLDERS;
 
-    private $dragAndDropMode = null;
+    /**
+     * @var mixed dragAndDropMode
+     */
+    protected $dragAndDropMode = null;
 
-    private $rootMenuItems = null;
+    /**
+     * @var mixed rootMenuItems
+     */
+    protected $rootMenuItems = null;
 
-    private $description = null;
+    /**
+     * @var mixed description
+     */
+    protected $description = null;
 
-    private $hasApiMenuItems = false;
+    /**
+     * @var mixed hasApiMenuItems
+     */
+    protected $hasApiMenuItems = false;
 
-    private $displayProperty;
+    /**
+     * @var mixed displayProperty
+     */
+    protected $displayProperty;
 
-    private $noMoveDrop = null;
+    /**
+     * @var mixed noMoveDrop
+     */
+    protected $noMoveDrop = null;
 
-    private $multiSelect = null;
+    /**
+     * @var mixed multiSelect
+     */
+    protected $multiSelect = null;
 
-    private $hideInQuickAccess = false;
+    /**
+     * @var mixed hideInQuickAccess
+     */
+    protected $hideInQuickAccess = false;
 
+    /**
+     * __construct
+     */
     public function __construct(string $label, string $key)
     {
         $this->label = $label;
@@ -132,7 +194,7 @@ class NodeDefinition
     }
 
     /**
-     * Sets node description. 
+     * Sets node description.
      * Node descriptions are rendered by the treeview component
      * but their styling must be done by a parent component.
      */
@@ -155,6 +217,9 @@ class NodeDefinition
         return $this;
     }
 
+    /**
+     * setIcon
+     */
     public function setIcon(string $backgroundColor, string $iconClassName)
     {
         $this->icon = [
@@ -165,6 +230,9 @@ class NodeDefinition
         return $this;
     }
 
+    /**
+     * setFolderIcon
+     */
     public function setFolderIcon()
     {
         $this->icon = 'folder';
@@ -180,6 +248,9 @@ class NodeDefinition
         return $this;
     }
 
+    /**
+     * setUserDataElement
+     */
     public function setUserDataElement(string $key, $value)
     {
         if (!is_array($this->userData)) {
@@ -190,6 +261,9 @@ class NodeDefinition
         return $this;
     }
 
+    /**
+     * addNode
+     */
     public function addNode(string $label, string $key)
     {
         if (strlen($this->childKeyPrefix)) {
@@ -202,6 +276,9 @@ class NodeDefinition
         return $this->nodes[] = $node;
     }
 
+    /**
+     * setChildKeyPrefix
+     */
     public function setChildKeyPrefix($prefix)
     {
         $this->childKeyPrefix = $this->childKeyPrefix.$prefix;
@@ -267,7 +344,11 @@ class NodeDefinition
         return $this;
     }
 
-    public function setGroupByMode(string $mode) {
+    /**
+     * setGroupByMode
+     */
+    public function setGroupByMode(string $mode)
+    {
         if (!in_array($mode, [self::GROUP_BY_MODE_NESTING, self::GROUP_BY_MODE_FOLDERS])) {
             throw new SystemException('Invalid treeview branch group by mode: '.$mode);
         }
@@ -277,6 +358,9 @@ class NodeDefinition
         return $this;
     }
 
+    /**
+     * addRootMenuItem
+     */
     public function addRootMenuItem($type, string $label = null, string $command = null)
     {
         if (!$this->rootMenuItems) {
@@ -307,11 +391,17 @@ class NodeDefinition
         return $this;
     }
 
+    /**
+     * getNodes
+     */
     public function getNodes()
     {
         return $this->nodes;
     }
 
+    /**
+     * toArray
+     */
     public function toArray()
     {
         $result = [

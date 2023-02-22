@@ -18,21 +18,14 @@
         <div class="mediafinder-control-toolbar">
             <a href="javascript:;" class="backend-toolbar-button control-button toolbar-find-button">
                 <i class="octo-icon-common-file-star"></i>
-                <span
-                    class="button-label"
-                    data-upload-label="<?= e(trans('backend::lang.fileupload.upload')) ?>"
-                    data-replace-label="<?= e(trans('backend::lang.fileupload.replace')) ?>"
-                ><?= $singleFile
-                    ? e(trans('backend::lang.mediafinder.replace'))
-                    : e(trans('backend::lang.mediafinder.select'))
-                ?></span>
+                <span class="button-label"><?= $singleFile ? __("Replace") : __("Select") ?></span>
             </a>
 
             <button
                 class="backend-toolbar-button control-button find-remove-button populated-only"
             >
                 <i class="octo-icon-common-file-remove"></i>
-                <span class="button-label"><?= e(trans('backend::lang.fileupload.clear')) ?></span>
+                <span class="button-label"><?= __("Clear") ?></span>
             </button>
         </div>
 
@@ -40,7 +33,8 @@
         <div class="mediafinder-files-container">
             <div class="server-file"
                 data-public-url="<?= e($singleFile->publicUrl ?? '') ?>"
-                data-path="<?= e($singleFile->spawnPath ?? '') ?>"
+                data-thumb-url="<?= $singleFile->thumbUrl ?? '' ?>"
+                data-path="<?= e($singleFile->path ?? '') ?>"
                 data-title="<?= e($singleFile->title ?? '') ?>"
             ></div>
         </div>
@@ -51,7 +45,7 @@
         <input
             type="hidden"
             name="<?= $field->getName() ?>"
-            value="<?= $singleFile ? e($singleFile->spawnPath) : '' ?>"
+            value="<?= $singleFile ? e($singleFile->path) : '' ?>"
             />
     </div>
 </div>

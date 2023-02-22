@@ -3,11 +3,11 @@
 use Url;
 use Html;
 use Config;
+use System;
 use Request;
 use Redirect;
 use October\Rain\Router\Helper as RouterHelper;
-use System\Helpers\DateTime as DateTimeHelper;
-use System\Models\Parameter as SystemParameters;
+use System\Helpers\DateTimeHelper;
 use Backend\Classes\Skin;
 use Exception;
 
@@ -26,8 +26,7 @@ class Backend
      */
     public function assetVersion(): string
     {
-        return hash('crc32', SystemParameters::get('system::core.build', 1)
-            . filemtime(base_path('modules/backend/ServiceProvider.php')));
+        return hash('crc32', filemtime(base_path('vendor/autoload.php')) . System::VERSION);
     }
 
     /**
@@ -35,7 +34,7 @@ class Backend
      */
     public function uri(): string
     {
-        return Config::get('backend.uri', Config::get('cms.backendUri', 'backend'));
+        return ltrim(Config::get('backend.uri', Config::get('cms.backendUri', 'backend')), '/');
     }
 
     /**

@@ -31,11 +31,6 @@ class CodeParser
     protected static $cache = [];
 
     /**
-     * @var \Illuminate\Cache\CacheManager
-     */
-    protected $cacheManager;
-
-    /**
      * @var string dataCacheKey is the key for the parsed PHP file information cache.
      */
     protected $dataCacheKey = '';
@@ -48,7 +43,6 @@ class CodeParser
     {
         $this->object = $object;
         $this->filePath = $object->getFilePath();
-        $this->cacheManager = Cache::driver(Config::get('cms.template_cache_driver', 'file'));
         $this->dataCacheKey = 'cms_code_parser_'.$object->theme->getDirName();
     }
 
@@ -62,17 +56,13 @@ class CodeParser
      */
     public function parse()
     {
-        /*
-         * If the object has already been parsed in this request return the cached data.
-         */
+        // If the object has already been parsed in this request return the cached data.
         if (array_key_exists($this->filePath, self::$cache)) {
             self::$cache[$this->filePath]['source'] = 'request-cache';
             return self::$cache[$this->filePath];
         }
 
-        /*
-         * Try to load the parsed data from the cache
-         */
+        // Try to load the parsed data from the cache
         $path = $this->getCacheFilePath();
 
         $result = [
@@ -82,18 +72,14 @@ class CodeParser
             'offset' => 0
         ];
 
-        /*
-         * There are two types of possible caching scenarios, either stored
-         * in the cache itself, or stored as a cache file. In both cases,
-         * make sure the cache is not stale and use it.
-         */
+        // There are two types of possible caching scenarios, either stored
+        // in the cache itself, or stored as a cache file. In both cases,
+        // make sure the cache is not stale and use it.
         if (is_file($path)) {
             $cachedInfo = $this->getCachedFileInfo();
             $hasCache = $cachedInfo !== null;
 
-            /*
-             * Valid cache, return result
-             */
+            // Valid cache, return result
             if ($hasCache && $cachedInfo['mtime'] == $this->object->mtime) {
                 $result['className'] = $cachedInfo['className'];
                 $result['source'] = 'cache';
@@ -101,9 +87,7 @@ class CodeParser
                 return self::$cache[$this->filePath] = $result;
             }
 
-            /*
-             * Cache expired, cache file not stale, refresh cache and return result
-             */
+            // Cache expired, cache file not stale, refresh cache and return result
             if (!$hasCache && filemtime($path) >= $this->object->mtime) {
                 $className = $this->extractClassFromFile($path);
                 if ($className) {
@@ -129,8 +113,15 @@ class CodeParser
     */
     protected function rebuild($path)
     {
-        $uniqueName = str_replace('.', '', uniqid('', true)).'_'.md5(mt_rand());
-        $className = 'Cms'.$uniqueName.'Class';
+        $className = 'Cms'.hash('sha256', $path).'Class';
+
+        $count = 0;
+        while (class_exists($className)) {
+            $className = 'Cms'.hash('sha256', $path.$count).'Class';
+            if ($count++ > 100) {
+                throw new SystemException('Maximum call stack exceeded for Cms\Classes\CodeParser class name generation.');
+            }
+        }
 
         $body = $this->object->code;
         $body = preg_replace('/^\s*function/m', 'public function', $body);
@@ -183,7 +174,9 @@ class CodeParser
         // Handle corrupt cache during concurrent access
         $count = 0;
         while (!class_exists($className)) {
-            usleep(rand(50000, 200000));
+            if ($count !== 0) {
+                usleep(rand(50000, 200000));
+            }
 
             $data = $this->handleCorruptCache($data);
             $className = $data['className'];
@@ -242,11 +235,11 @@ class CodeParser
 
         $minutes = Config::get('cms.template_cache_ttl', 1440);
         if ($minutes < 0) {
-            $this->cacheManager->forever($this->dataCacheKey, $toStore);
+            Cache::forever($this->dataCacheKey, $toStore);
         }
         else {
             $expiresAt = now()->addMinutes($minutes);
-            $this->cacheManager->put($this->dataCacheKey, $toStore, $expiresAt);
+            Cache::put($this->dataCacheKey, $toStore, $expiresAt);
         }
 
         self::$cache[$this->filePath] = $result;
@@ -274,7 +267,7 @@ class CodeParser
      */
     protected function getCachedInfo()
     {
-        $cached = $this->cacheManager->get($this->dataCacheKey, false);
+        $cached = Cache::get($this->dataCacheKey, false);
 
         if (
             $cached !== false &&
@@ -330,7 +323,8 @@ class CodeParser
                 return $matches[0];
             }
         }
-        catch (Exception $ex) {}
+        catch (Exception $ex) {
+        }
 
         return null;
     }
@@ -386,7 +380,7 @@ class CodeParser
             return;
         }
 
-        while (!is_dir($dir) && !@mkdir($dir, 0777, true)) {
+        while (!is_dir($dir) && !@mkdir($dir, 0755, true)) {
             usleep(rand(50000, 200000));
 
             if ($count++ > 10) {

@@ -81,7 +81,7 @@ class IndexDatabaseTableOperations extends IndexOperationsBehaviorBase
         $tableName = Input::get('table_name');
 
         $model = $this->loadOrCreateBaseModel($tableName);
-        $model->fill($this->processColumnData($_POST));
+        $model->fill($this->processColumnData(post()));
 
         $pluginCode = Request::input('plugin_code');
         $model->setPluginCode($pluginCode);
@@ -117,7 +117,7 @@ class IndexDatabaseTableOperations extends IndexOperationsBehaviorBase
         $model = new MigrationModel();
         $model->setPluginCodeObj($pluginCode);
 
-        $model->fill($_POST);
+        $model->fill(post());
 
         $operation = Input::get('operation');
         $table = Input::get('table');
@@ -228,7 +228,6 @@ class IndexDatabaseTableOperations extends IndexOperationsBehaviorBase
 
         if (!$tableName) {
             $model->name = $this->getPluginCode()->toDatabasePrefix().'_';
-
             return $model;
         }
 
@@ -246,7 +245,7 @@ class IndexDatabaseTableOperations extends IndexOperationsBehaviorBase
         $widgetConfig->alias = 'form_migration_'.uniqid();
 
         $form = $this->makeWidget(\Backend\Widgets\Form::class, $widgetConfig);
-        $form->context = FormController::CONTEXT_CREATE;
+        $form->context = 'create';
 
         return $form;
     }

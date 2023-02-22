@@ -36,6 +36,8 @@
         this.$el.on('oc.triggerOn.afterUpdate', this.proxy(this.toggleEmptyTabs));
         this.$el.one('dispose-control', this.proxy(this.dispose));
 
+        oc.Events.on(this.$el.get(0), 'trigger:empty', '.field-checkboxlist', this.proxy(this.clearCheckboxlist));
+
         this.bindDependents();
         this.bindCheckboxlist();
         this.bindCollapsibleSections();
@@ -50,6 +52,8 @@
         this.$el.off('click', '[data-field-checkboxlist-all]');
         this.$el.off('click', '[data-field-checkboxlist-none]');
         $('.section-field[data-field-collapsible]', this.$form).off('click');
+
+        oc.Events.off(this.$el.get(0), 'trigger:empty', '.field-checkboxlist', this.proxy(this.clearCheckboxlist));
 
         this.$el.off('dispose-control', this.proxy(this.dispose));
         this.$el.removeData('oc.formwidget');
@@ -72,23 +76,29 @@
         $('input[type=checkbox]', $field).prop('disabled', isDisabled);
     }
 
+    FormWidget.prototype.clearCheckboxlist = function(ev) {
+        this.checkAllCheckboxlist(ev.target, false);
+    }
+
     FormWidget.prototype.bindCheckboxlist = function() {
-        var checkAllBoxes = function($field, flag) {
-            $('input[type=checkbox]', $field)
-                .prop('checked', flag)
-                .first()
-                .trigger('change');
-        }
+        var self = this;
 
         this.$el.on('click', '[data-field-checkboxlist-all]', function() {
-            checkAllBoxes($(this).closest('.field-checkboxlist'), true);
+            self.checkAllCheckboxlist($(this).closest('.field-checkboxlist'), true);
         });
 
         this.$el.on('click', '[data-field-checkboxlist-none]', function() {
-            checkAllBoxes($(this).closest('.field-checkboxlist'), false);
+            self.checkAllCheckboxlist($(this).closest('.field-checkboxlist'), false);
         });
 
         this.toggleCheckboxlist();
+    }
+
+    FormWidget.prototype.checkAllCheckboxlist = function($field, flag) {
+        $('input[type=checkbox]', $field)
+            .prop('checked', flag)
+            .first()
+            .trigger('change');
     }
 
     /*
@@ -118,9 +128,7 @@
             fieldMap = {},
             fieldElements = this.getFieldElements();
 
-        /*
-         * Map master and slave fields
-         */
+        // Map master and slave fields
         fieldElements.filter('[data-field-depends]').each(function() {
             var name = $(this).data('field-name'),
                 depends = $(this).data('field-depends');
@@ -134,9 +142,7 @@
             })
         })
 
-        /*
-         * When a master is updated, refresh its slaves
-         */
+        // When a master is updated, refresh its slaves
         $.each(fieldMap, function(fieldName, toRefresh){
             fieldElements.filter('[data-field-name="'+fieldName+'"]')
                 .on('change.oc.formwidget', $.proxy(self.onRefreshDependents, self, fieldName, toRefresh));
@@ -219,26 +225,21 @@
                 return;
             }
 
-            /*
-             * Check each tab pane for form field groups
-             */
+            // Check each tab pane for form field groups
             $('.tab-pane:not(.is-lazy):not(.nohide)', tabControl).each(function() {
-                var hasControls = $('.form-group:not(:empty):not(.hide)', $(this)).length;
+                var hasControls = $('.form-group:not(:empty):not(.oc-hide)', $(this)).length;
 
-                $('[data-target="#' + $(this).attr('id') + '"]', tabControl)
+                $('[data-bs-target="#' + $(this).attr('id') + '"]', tabControl)
                     .closest('li')
                     .toggle(!!hasControls);
             });
 
-            /*
-             * If a hidden tab was selected, select the first visible tab
-             */
+            // If a hidden tab was selected, select the first visible tab
             if (!$('> li.active:visible', tabContainer).length) {
                 $('> li:visible:first', tabContainer)
                     .find('> a:first')
                     .tab('show');
             }
-
         }, 1);
     }
 
@@ -334,7 +335,7 @@
         if (typeof value == 'object') return value;
 
         try {
-            return ocJSON("{" + value + "}");
+            return oc.parseJSON("{" + value + "}");
         }
         catch (e) {
             throw new Error('Error parsing the '+name+' attribute value. '+e);

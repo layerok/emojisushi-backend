@@ -2,7 +2,6 @@
 
 class ChangelogWidgetTest extends TestCase
 {
-
     //
     // Tests
     //

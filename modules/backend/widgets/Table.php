@@ -158,8 +158,8 @@ class Table extends WidgetBase
      */
     protected function loadAssets()
     {
-        $this->addCss('css/table.css', 'core');
-        $this->addJs('js/build-min.js', 'core');
+        $this->addCss('css/table.css');
+        $this->addJs('js/build-min.js');
     }
 
     /**

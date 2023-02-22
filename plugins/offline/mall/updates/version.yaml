@@ -403,4 +403,42 @@
     - 'Fixed bug where properties are displayed multiple times on the product detail page'
 2.0.0:
     - '!!! This plugin now requires October 2+. If you have installed the plugin from the marketplace, we suggest to migrate to Composer and track the ^1.0 version. V1 will continue to receive bugfixes but no new features will be backported.'
+2.0.1:
+    - 'Bugfixes for October 2+, optimized Winter CMS compatibility (thanks to @mjauvin)'
+2.0.2:
+    - 'October 3 compatibility update'
+2.0.3:
+    - 'Bugfix release'
+2.0.4:
+    - 'Minor Bugfix release'
+2.0.5:
+    - 'Fixed demo seeder in October 3'
+2.0.7:
+    - 'Fixed compatibility with PHP 7.4'
+2.0.8:
+    - 'Further compatibility fixes'
+2.0.9:
+    - 'Optimized OFFLINE.SiteSearch integration'
+2.0.10:
+    - 'Added PDFMaker trait to product model'
+2.0.11:
+    - 'Update to Version 3 of this plugin to get RainLab.Translate v2 support'
+2.0.12:
+    - 'Fixed bug in product filter with new October JS framework'
+2.0.13:
+    - 'Added support to load Wishlist using a component parameter'
+2.0.15:
+    - 'Fixed handling of Currency model timestamps'
+2.0.16:
+    - 'Fixed bug in addressSelector component. If you did override any of the component partials, make sure to include the following change in your own partials: https://github.com/OFFLINE-GmbH/oc-mall-plugin/commit/8e66134b35e03bf373e2a7a91d09c190a3a7e8c4'
+2.0.17:
+    - 'Cleaned up the return values of the Product::onAddToCart component method'
+2.0.18:
+    - 'Fixed handling of recipient name for billing addresses'
+2.0.19:
+    - 'Fixed handling of recipient name for shipping addresses'
+2.0.20:
+    - 'Added mall.index.extendData event to extend the indexed data (thanks to @chocolata)'
+2.0.21:
+    - 'Minor bugfixes'
 

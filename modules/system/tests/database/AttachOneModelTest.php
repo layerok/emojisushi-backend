@@ -13,7 +13,7 @@ class AttachOneModelTest extends PluginTestCase
 
         include_once base_path() . '/modules/system/tests/fixtures/plugins/database/tester/models/User.php';
 
-        $this->runPluginRefreshCommand('Database.Tester');
+        $this->migratePlugin('Database.Tester');
     }
 
     public function testSetRelationValue()
@@ -41,7 +41,6 @@ class AttachOneModelTest extends PluginTestCase
             base_path() . '/modules/system/tests/fixtures/plugins/database/tester/assets/images/avatar.png',
             $sample->file_name,
             $sample->content_type,
-            $sample->file_size,
             null,
             true
         );

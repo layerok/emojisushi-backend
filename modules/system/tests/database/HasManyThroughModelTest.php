@@ -15,7 +15,7 @@ class HasManyThroughModelTest extends PluginTestCase
         include_once base_path() . '/modules/system/tests/fixtures/plugins/database/tester/models/Author.php';
         include_once base_path() . '/modules/system/tests/fixtures/plugins/database/tester/models/Country.php';
 
-        $this->runPluginRefreshCommand('Database.Tester');
+        $this->migratePlugin('Database.Tester');
     }
 
     public function testGet()

@@ -1,4 +1,4 @@
-$.oc.module.register('backend.component.toolbar.button', function () {
+oc.Module.register('backend.component.toolbar.button', function () {
     Vue.component('backend-component-document-toolbar-button', {
         props: {
             settings: Object,
@@ -102,6 +102,8 @@ $.oc.module.register('backend.component.toolbar.button', function () {
         },
         methods: {
             onClick: function onClick(ev, isHotkey, isMenuButton) {
+                Vue.nextTick($.oc.octoberTooltips.clear, 1);
+
                 if (this.settings.disabled || this.toolbarDisabled || $(document.body).hasClass('drag')) {
                     ev.preventDefault();
                     ev.stopPropagation();

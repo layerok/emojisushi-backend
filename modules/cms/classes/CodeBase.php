@@ -4,7 +4,7 @@ use ArrayAccess;
 use October\Rain\Extension\Extendable;
 
 /**
- * Parent class for PHP classes created for layout and page code sections.
+ * CodeBase is a parent class for PHP classes created for layout and page code sections.
  *
  * @package october\cms
  * @author Alexey Bobkov, Samuel Georges
@@ -12,22 +12,27 @@ use October\Rain\Extension\Extendable;
 class CodeBase extends Extendable implements ArrayAccess
 {
     /**
-     * @var \Cms\Classes\Page Specifies the current page
+     * @var \Cms\Classes\Page page object
      */
     public $page;
 
     /**
-     * @var \Cms\Classes\Layout Specifies the current layout
+     * @var \Cms\Classes\Layout layout object
      */
     public $layout;
 
     /**
-     * @var \Cms\Classes\controller Specifies the CMS controller
+     * @var \Cms\Classes\controller controller object
      */
     public $controller;
 
     /**
-     * Creates the object instance.
+     * @var array vars is a list of variables passed to the page.
+     */
+    public $vars = [];
+
+    /**
+     * __construct the object instance.
      * @param \Cms\Classes\Page $page Specifies the CMS page.
      * @param \Cms\Classes\Layout $layout Specifies the CMS layout.
      * @param \Cms\Classes\Controller $controller Specifies the CMS controller.
@@ -42,7 +47,7 @@ class CodeBase extends Extendable implements ArrayAccess
     }
 
     /**
-     * This event is triggered when all components are initialized and before AJAX is handled.
+     * onInit is triggered when all components are initialized and before AJAX is handled.
      * The layout's onInit method triggers before the page's onInit method.
      */
     public function onInit()
@@ -50,7 +55,7 @@ class CodeBase extends Extendable implements ArrayAccess
     }
 
     /**
-     * This event is triggered in the beginning of the execution cycle.
+     * onStart is triggered in the beginning of the execution cycle.
      * The layout's onStart method triggers before the page's onStart method.
      */
     public function onStart()
@@ -58,7 +63,7 @@ class CodeBase extends Extendable implements ArrayAccess
     }
 
     /**
-     * This event is triggered in the end of the execution cycle, but before the page is displayed.
+     * onEnd is triggered in the end of the execution cycle, but before the page is displayed.
      * The layout's onEnd method triggers after the page's onEnd method.
      */
     public function onEnd()
@@ -66,39 +71,40 @@ class CodeBase extends Extendable implements ArrayAccess
     }
 
     /**
-     * ArrayAccess implementation
+     * offsetExists implementation
      */
-    public function offsetSet($offset, $value)
-    {
-        $this->controller->vars[$offset] = $value;
-    }
-
-    /**
-     * ArrayAccess implementation
-     */
-    public function offsetExists($offset)
+    public function offsetExists($offset): bool
     {
         return isset($this->controller->vars[$offset]);
     }
 
     /**
-     * ArrayAccess implementation
+     * offsetSet implementation
      */
-    public function offsetUnset($offset)
+    public function offsetSet($offset, $value): void
+    {
+        $this->controller->vars[$offset] = $this->vars[$offset] = $value;
+    }
+
+    /**
+     * offsetUnset implementation
+     */
+    public function offsetUnset($offset): void
     {
         unset($this->controller->vars[$offset]);
     }
 
     /**
-     * ArrayAccess implementation
+     * offsetGet implementation
      */
-    public function offsetGet($offset)
+    public function offsetGet($offset): mixed
     {
         return $this->controller->vars[$offset] ?? null;
     }
 
     /**
-     * Dynamically handle calls into the controller instance.
+     * __call dynamically handles calls to this classes behaviors, the page and layout
+     * object methods, and finally the controller instance.
      * @param string $method
      * @param array $parameters
      * @return mixed
@@ -106,14 +112,22 @@ class CodeBase extends Extendable implements ArrayAccess
     public function __call($method, $parameters)
     {
         if ($this->methodExists($method)) {
-            return call_user_func_array([$this, $method], $parameters);
+            return $this->$method(...$parameters);
         }
 
-        return call_user_func_array([$this->controller, $method], $parameters);
+        if (($pageObj = $this->controller->getPageObject()) && $pageObj !== $this && $pageObj->methodExists($method)) {
+            return $pageObj->$method(...$parameters);
+        }
+
+        if (($layoutObj = $this->controller->getLayoutObject()) && $layoutObj !== $this && $layoutObj->methodExists($method)) {
+            return $layoutObj->$method(...$parameters);
+        }
+
+        return $this->controller->$method(...$parameters);
     }
 
     /**
-     * This object is referenced as $this->page in Cms\Classes\ComponentBase,
+     * __get is referenced as $this->page in Cms\Classes\ComponentBase,
      * so to avoid $this->page->page this method will proxy there. This is also
      * used as a helper for accessing controller variables/components easier
      * in the page code, eg. $this->foo instead of $this['foo']
@@ -138,7 +152,7 @@ class CodeBase extends Extendable implements ArrayAccess
     }
 
     /**
-     * This will set a property on the CMS Page object.
+     * __set a property on the CMS Page object.
      * @param  string  $name
      * @param  mixed   $value
      * @return void
@@ -149,7 +163,7 @@ class CodeBase extends Extendable implements ArrayAccess
     }
 
     /**
-     * This will check if a property is set on the CMS Page object.
+     * __isset checks if a property is set on the CMS Page object.
      * @param string $name
      * @return bool
      */

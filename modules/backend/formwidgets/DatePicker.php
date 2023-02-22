@@ -1,10 +1,8 @@
 <?php namespace Backend\FormWidgets;
 
 use Carbon\Carbon;
-use Backend\Classes\FormField;
 use Backend\Classes\FormWidgetBase;
-use System\Helpers\DateTime as DateTimeHelper;
-use Backend\Models\Preference as BackendPreference;
+use System\Helpers\DateTimeHelper;
 
 /**
  * DatePicker renders a date picker field
@@ -53,6 +51,11 @@ class DatePicker extends FormWidgetBase
     public $firstDay = 0;
 
     /**
+     * @var bool twelveHour clock
+     */
+    public $twelveHour = false;
+
+    /**
      * @var bool showWeekNumber at head of row
      */
     public $showWeekNumber = false;
@@ -89,6 +92,7 @@ class DatePicker extends FormWidgetBase
             'maxDate',
             'yearRange',
             'firstDay',
+            'twelveHour',
             'showWeekNumber',
             'useTimezone',
             'defaultTimeMidnight'
@@ -145,6 +149,7 @@ class DatePicker extends FormWidgetBase
         $this->vars['maxDate'] = $this->maxDate;
         $this->vars['yearRange'] = $this->yearRange;
         $this->vars['firstDay'] = $this->firstDay;
+        $this->vars['twelveHour'] = $this->twelveHour;
         $this->vars['showWeekNumber'] = $this->showWeekNumber;
         $this->vars['useTimezone'] = $this->useTimezone;
         $this->vars['format'] = $this->format;

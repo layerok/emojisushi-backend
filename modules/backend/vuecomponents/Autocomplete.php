@@ -14,7 +14,7 @@ class Autocomplete extends VueComponentBase
 {
     protected function loadDependencyAssets()
     {
-        $this->addJs('vendor/vue-autocomplete/vue-autocomplete.min.js', 'core');
-        $this->addCss('vendor/vue-autocomplete/vue-autocomplete.min.css', 'core');
+        $this->addJs('vendor/vue-autocomplete/vue-autocomplete.min.js');
+        $this->addCss('vendor/vue-autocomplete/vue-autocomplete.min.css');
     }
 }

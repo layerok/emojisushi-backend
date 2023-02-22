@@ -1,14 +1,19 @@
 <?php namespace Cms\Twig;
 
+use App;
+use Cms;
 use Block;
 use Event;
+use Response;
 use Redirect;
+use Cms\Classes\PageLookup;
+use Cms\Classes\Controller;
+use Twig\Environment as TwigEnvironment;
 use Twig\TwigFilter as TwigSimpleFilter;
 use Twig\TwigFunction as TwigSimpleFunction;
 use Twig\Extension\AbstractExtension as TwigExtension;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
-use Cms\Classes\Controller;
 
 /**
  * Extension implements the basic CMS Twig functions and filters.
@@ -32,6 +37,28 @@ class Extension extends TwigExtension
     }
 
     /**
+     * addExtensionToTwig adds this extension to the Twig environment and also
+     * creates a hook for others.
+     */
+    public static function addExtensionToTwig(TwigEnvironment $twig, Controller $controller = null)
+    {
+        $twig->addExtension(new static($controller));
+
+        /**
+         * @event cms.extendTwig
+         * Provides an opportunity to extend the Twig environment used by the CMS
+         *
+         * Example usage:
+         *
+         *     Event::listen('system.extendTwig', function ((Twig\Environment) $twig) {
+         *         $twig->addExtension(new \Twig\Extension\StringLoaderExtension);
+         *     });
+         *
+         */
+        Event::fire('cms.extendTwig', [$twig]);
+    }
+
+    /**
      * getFunctions returns a list of functions to add to the existing list.
      * @return array
      */
@@ -45,6 +72,9 @@ class Extension extends TwigExtension
             new TwigSimpleFunction('hasContent', [$this, 'hasContentFunction'], ['is_safe' => ['html']]),
             new TwigSimpleFunction('component', [$this, 'componentFunction'], ['is_safe' => ['html']]),
             new TwigSimpleFunction('placeholder', [$this, 'placeholderFunction'], ['is_safe' => ['html']]),
+            new TwigSimpleFunction('hasPlaceholder', [$this, 'hasPlaceholderFunction'], ['is_safe' => ['html']]),
+            new TwigSimpleFunction('ajaxHandler', [$this, 'ajaxHandlerFunction'], []),
+            new TwigSimpleFunction('response', [$this, 'responseFunction'], []),
             new TwigSimpleFunction('redirect', [$this, 'redirectFunction'], []),
             new TwigSimpleFunction('abort', [$this, 'abortFunction'], []),
         ];
@@ -59,6 +89,7 @@ class Extension extends TwigExtension
         return [
             new TwigSimpleFilter('page', [$this, 'pageFilter'], ['is_safe' => ['html']]),
             new TwigSimpleFilter('theme', [$this, 'themeFilter'], ['is_safe' => ['html']]),
+            new TwigSimpleFilter('content', [$this, 'contentFilter'], ['is_safe' => ['html']]),
         ];
     }
 
@@ -71,6 +102,7 @@ class Extension extends TwigExtension
         return [
             new PageTokenParser,
             new PartialTokenParser,
+            new AjaxPartialTokenParser,
             new ContentTokenParser,
             new PutTokenParser,
             new PlaceholderTokenParser,
@@ -97,10 +129,15 @@ class Extension extends TwigExtension
     /**
      * pageFunction renders a page.
      * This function should be used in the layout code to output the requested page.
+     * @param array|null $context
      * @return string
      */
-    public function pageFunction()
+    public function pageFunction($context = null)
     {
+        if ($this->controller->getLayout()->isPriority() && is_array($context)) {
+            $this->controller->vars += $context;
+        }
+
         return $this->controller->renderPage();
     }
 
@@ -185,20 +222,60 @@ class Extension extends TwigExtension
     }
 
     /**
+     * hasPlaceholderFunction checks that a placeholder exists without rendering it
+     */
+    public function hasPlaceholderFunction($name)
+    {
+        return Block::has($name);
+    }
+
+    /**
+     * ajaxHandlerFunction runs an ajax handler
+     * @param string $name
+     */
+    public function ajaxHandlerFunction($name = '')
+    {
+        return $this->controller->runAjaxHandlerAsResponse($name);
+    }
+
+    /**
+     * responseFunction returns a new response from the application.
+     * @param \Illuminate\Contracts\View\View|string|array|null $content
+     * @param int|null $status
+     * @param array $headers
+     */
+    public function responseFunction($content = '', $status = null, array $headers = [])
+    {
+        if ($content instanceof \Illuminate\Contracts\Support\Responsable) {
+            $response = $content->toResponse(App::make('request'));
+        }
+        elseif ($content instanceof \Cms\Classes\AjaxResponse && $content->isAjaxRedirect()) {
+            $response = Redirect::to($content->getAjaxRedirectUrl(), $status ?: 302, $headers);
+        }
+        elseif ($content instanceof \Symfony\Component\HttpFoundation\Response) {
+            $response = $content;
+        }
+        else {
+            $response = Response::make($content, $status ?: 200, $headers);
+        }
+
+        if ($status !== null) {
+            $response->setStatusCode($status);
+        }
+
+        $this->controller->setResponse($response);
+    }
+
+    /**
      * redirectFunction will redirect the response to a theme page or URL
      * @param string $to
      * @param int $code
      */
     public function redirectFunction($to, $parameters = [], $code = 302)
     {
-        if (is_int($parameters)) {
-            $code = $parameters;
-            $parameters = [];
-        }
-
-        $url = $this->controller->pageUrl($to, $parameters) ?: $to;
-
-        $this->controller->setResponse(Redirect::to($url, $code));
+        $this->controller->setResponse(
+            Cms::redirect($to, $parameters, $code)
+        );
     }
 
     /**
@@ -242,6 +319,20 @@ class Extension extends TwigExtension
     public function themeFilter($url)
     {
         return $this->controller->themeUrl($url);
+    }
+
+    /**
+     * contentFilter processes content for links and snippets
+     * @param string $content
+     * @return string
+     */
+    public function contentFilter($content)
+    {
+        $content = PageLookup::processMarkup($content);
+
+        // @todo process snippets markup
+
+        return $content;
     }
 
     /**

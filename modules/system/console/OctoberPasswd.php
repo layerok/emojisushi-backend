@@ -1,6 +1,7 @@
 <?php namespace System\Console;
 
 use Str;
+use BackendAuth;
 use Backend\Models\User;
 use Illuminate\Console\Command;
 use Symfony\Component\Console\Input\InputArgument;
@@ -58,10 +59,13 @@ class OctoberPasswd extends Command
         $user->password = $password;
         $user->forceSave();
 
+        // Clear throttles
+        BackendAuth::clearThrottleForUserId($user->id);
+
         $this->output->success('Password successfully changed');
 
         if ($this->displayPassword) {
-            $this->output->writeLn('Password set to <info>' . $password . '</info>.');
+            $this->line('Password set to <info>' . $password . '</info>.');
         }
     }
 

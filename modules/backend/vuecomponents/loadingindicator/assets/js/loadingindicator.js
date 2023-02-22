@@ -1,7 +1,7 @@
 /*
  * Vue loading indicator implementation.
  */
-$.oc.module.register('backend.component.loading.indicator', function () {
+oc.Module.register('backend.component.loading.indicator', function () {
     Vue.component('backend-component-loading-indicator', {
         props: {
             indicatorStyle: {

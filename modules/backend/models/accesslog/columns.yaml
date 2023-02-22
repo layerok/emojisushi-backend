@@ -5,49 +5,45 @@
 columns:
 
     id:
-        label: backend::lang.access_log.id
-        searchable: yes
+        label: ID
+        searchable: true
         invisible: true
         width: 75px
 
     created_at:
-        label: backend::lang.access_log.created_at
-        searchable: yes
+        label: Date & Time
+        searchable: true
         type: timetense
         width: 160px
 
-    type:
-        label: backend::lang.access_log.type
-        invisible: true
-
     ip_address:
-        label: backend::lang.access_log.ip_address
-        searchable: yes
+        label: IP address
+        searchable: true
 
     login:
-        label: backend::lang.access_log.login
+        label: Login
         relation: user
         select: login
-        searchable: yes
+        searchable: true
         sortable: false
 
     first_name:
-        label: backend::lang.access_log.first_name
+        label: First name
         relation: user
         select: first_name
-        searchable: yes
+        searchable: true
         sortable: false
 
     last_name:
-        label: backend::lang.access_log.last_name
+        label: Last name
         relation: user
         select: last_name
-        searchable: yes
+        searchable: true
         sortable: false
 
     email:
-        label: backend::lang.access_log.email
+        label: Email
         relation: user
         select: email
-        searchable: yes
+        searchable: true
         sortable: false

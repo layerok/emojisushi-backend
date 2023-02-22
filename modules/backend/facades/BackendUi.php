@@ -10,6 +10,7 @@ use October\Rain\Support\Facade;
  *
  * @method static \Backend\Elements\Button button(string $label)
  * @method static \Backend\Elements\AjaxButton ajaxButton(string $label, string $ajaxHandler)
+ * @method static \Backend\Elements\PopupButton popupButton(string $label, string $ajaxHandler)
  * @method static \Backend\Elements\FormToolbar formToolbar(callable $body)
  * @method static \Backend\Elements\Callout callout(callable $body = null)
  * @method static \Backend\Elements\ContentPlaceholder contentPlaceholder()

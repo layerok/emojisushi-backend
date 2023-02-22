@@ -2,6 +2,7 @@
 
 use Twig\Token as TwigToken;
 use Twig\TokenParser\AbstractTokenParser as TwigTokenParser;
+use Twig\Error\SyntaxError as TwigErrorSyntax;
 
 /**
  * FrameworkTokenParser for the `{% framework %}` Twig tag.
@@ -22,13 +23,31 @@ class FrameworkTokenParser extends TwigTokenParser
         $lineno = $token->getLine();
         $stream = $this->parser->getStream();
 
-        $name = null;
-        if ($token = $stream->nextIf(TwigToken::NAME_TYPE)) {
-            $name = $token->getValue();
+        $options = [];
+        $end = false;
+        while (!$end) {
+            $current = $stream->next();
+
+            switch ($current->getType()) {
+                case TwigToken::NAME_TYPE:
+                    $options[] = strtolower(trim((string) $current->getValue()));
+                    break;
+
+                case TwigToken::BLOCK_END_TYPE:
+                    $end = true;
+                    break;
+
+                default:
+                    throw new TwigErrorSyntax(
+                        sprintf('Invalid syntax in the framework tag. Line %s', $lineno),
+                        $stream->getCurrent()->getLine(),
+                        $stream->getSourceContext()
+                    );
+                    break;
+            }
         }
 
-        $stream->expect(TwigToken::BLOCK_END_TYPE);
-        return new FrameworkNode($name, $lineno, $this->getTag());
+        return new FrameworkNode($options, $lineno, $this->getTag());
     }
 
     /**

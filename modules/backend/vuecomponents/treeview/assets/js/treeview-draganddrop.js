@@ -599,7 +599,7 @@
                 return;
             }
 
-            if ($(document.documentElement).hasClass('user-touch')) {
+            if ($.oc.isTouchEnabled()) {
                 return;
             }
 

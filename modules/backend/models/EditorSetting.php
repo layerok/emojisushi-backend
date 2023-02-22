@@ -42,7 +42,7 @@ class EditorSetting extends Model
     /**
      * @var string defaultHtmlAllowEmptyTags
      */
-    protected $defaultHtmlAllowEmptyTags = 'textarea, a, iframe, object, video, style, script';
+    protected $defaultHtmlAllowEmptyTags = 'textarea, a, i, iframe, object, video, style, script, .icon, .bi, .fa, .fr-emoticon, .fr-inner, path, line';
 
     /**
      * @var string defaultHtmlAllowTags
@@ -128,12 +128,12 @@ class EditorSetting extends Model
      */
     protected $editorToolbarPresets = [
         'default' => 'paragraphFormat, paragraphStyle, quote, bold, italic, align, formatOL, formatUL, insertTable,
-                      insertLink, insertImage, insertVideo, insertAudio, insertFile, insertHR, html',
-        'minimal' => 'bold, italic, underline, |, insertLink, insertImage, |, html',
+                      insertPageLink, insertImage, insertVideo, insertAudio, insertFile, insertHR, fullscreen, html',
+        'minimal' => 'bold, italic, underline, |, insertPageLink, insertImage, |, html',
         'full'    => 'undo, redo, |, bold, italic, underline, |, paragraphFormat, paragraphStyle, inlineStyle, |,
                       strikeThrough, subscript, superscript, clearFormatting, |, fontFamily, fontSize, |, color,
                       emoticons, -, selectAll, |, align, formatOL, formatUL, outdent, indent, quote, |, insertHR,
-                      insertLink, insertImage, insertVideo, insertAudio, insertFile, insertTable, |, selectAll,
+                      insertPageLink, insertImage, insertVideo, insertAudio, insertFile, insertTable, |, selectAll,
                       html, fullscreen',
     ];
 
@@ -287,7 +287,7 @@ class EditorSetting extends Model
     public function getEditorToolbarPresets(): array
     {
         return array_map(function($value) {
-            return preg_replace('/\s+/', ' ',$value);
+            return preg_replace('/\s+/', ' ', $value);
         }, $this->editorToolbarPresets);
     }
 

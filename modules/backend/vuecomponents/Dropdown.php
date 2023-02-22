@@ -14,7 +14,7 @@ class Dropdown extends VueComponentBase
 {
     protected function loadDependencyAssets()
     {
-        $this->addJs('vendor/vue-multiselect/vue-multiselect.min.js', 'core');
-        $this->addCss('vendor/vue-multiselect/vue-multiselect.min.css', 'core');
+        $this->addJs('vendor/vue-multiselect/vue-multiselect.min.js');
+        $this->addCss('vendor/vue-multiselect/vue-multiselect.min.css');
     }
 }

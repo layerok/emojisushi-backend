@@ -44,15 +44,12 @@ class QueryString
         if ( ! $category) {
             return $specialProperties;
         }
-        $keys = $query->keys();
 
-        $properties = $category->load('property_groups.properties')->properties->whereIn('slug', $keys);
+        $properties = $category->load('property_groups.properties')->properties->whereIn('slug', $query->keys());
 
-        $foo = [];
         // Map the user defined database properties.
         return $properties->mapWithKeys(function (Property $property) use ($query) {
-            $filter_type = $property->pivot->filter_type ?? 'set';
-            $delimiter = $this->getDelimiter($filter_type);
+            $delimiter = $this->getDelimiter($property->pivot->filter_type);
             $values    = $query->get($property->slug);
             if ($property->pivot->filter_type === 'set') {
                 $values = $this->getPropValues($values, $delimiter);

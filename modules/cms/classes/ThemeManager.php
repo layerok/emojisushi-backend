@@ -6,7 +6,7 @@ use Yaml;
 use File;
 use System;
 use Cms\Classes\Theme as CmsTheme;
-use October\Rain\Process\ComposerPhp;
+use October\Rain\Composer\Manager as ComposerManager;
 use ApplicationException;
 use Exception;
 
@@ -23,36 +23,85 @@ class ThemeManager
     use \October\Rain\Support\Traits\Singleton;
 
     /**
-     * @var array themes is for storing installed themes cache
+     * @var array installedThemes is for storing installed themes cache
      */
     protected $themes;
 
     /**
-     * @var array themes is for storing installed themes cache
+     * @var array installedThemes is for storing installed themes cache
      */
-    protected $themeDirs;
+    protected $installedThemes;
+
+    /**
+     * @var array installedThemeDirs is for storing installed themes cache
+     */
+    protected $installedThemeDirs;
+
+    /**
+     * bootAllFrontend
+     */
+    public function bootAllFrontend()
+    {
+        $theme = $this->getActiveTheme();
+        $langPath = $theme->getPath() . '/lang';
+        if (is_dir($langPath)) {
+            Lang::addJsonPath($langPath);
+        }
+
+        if ($parent = $theme->getParentTheme()) {
+            $langPath = $parent->getPath() . '/lang';
+            if (is_dir($langPath)) {
+                Lang::addJsonPath($langPath);
+            }
+        }
+    }
 
     /**
      * bootAllBackend will boot language messages for the active theme as `theme.acme::lang.*`
      */
     public function bootAllBackend()
     {
-        $theme = CmsTheme::getActiveTheme();
-        if (!$theme) {
-            return;
-        }
-
+        $theme = $this->getActiveTheme();
         $langPath = $theme->getPath() . '/lang';
-        if (File::isDirectory($langPath)) {
+        if (is_dir($langPath)) {
+            Lang::addJsonPath($langPath);
             Lang::addNamespace("theme.{$theme->getId()}", $langPath);
         }
 
         if ($parent = $theme->getParentTheme()) {
             $langPath = $parent->getPath() . '/lang';
-            if (File::isDirectory($langPath)) {
+            if (is_dir($langPath)) {
+                Lang::addJsonPath($langPath);
                 Lang::addNamespace("theme.{$parent->getId()}", $langPath);
             }
         }
+    }
+
+    /**
+     * getActiveTheme return the active theme without affecting the internal cache
+     * since it may fire before the session driver has loaded.
+     */
+    public function getActiveTheme(): CmsTheme
+    {
+        return CmsTheme::load(CmsTheme::getActiveThemeCode());
+    }
+
+    /**
+     * getThemes returns all themes in the filesystem
+     */
+    public function getThemes(): array
+    {
+        if ($this->themes !== null) {
+            return $this->themes;
+        }
+
+        $result = [];
+        foreach (CmsTheme::all() as $theme) {
+            $dirName = $theme->getDirName();
+            $result[$dirName] = $theme;
+        }
+
+        return $this->themes = $result;
     }
 
     /**
@@ -62,15 +111,13 @@ class ThemeManager
      */
     public function getInstalled(): array
     {
-        if ($this->themes !== null) {
-            return $this->themes;
+        if ($this->installedThemes !== null) {
+            return $this->installedThemes;
         }
 
         $result = [];
 
-        foreach (CmsTheme::all() as $theme) {
-            $dirName = $theme->getDirName();
-
+        foreach ($this->getThemes() as $dirName => $theme) {
             // Check composer file
             if (!$octoberCode = $this->getProductCode($dirName)) {
                 continue;
@@ -86,7 +133,7 @@ class ThemeManager
             $result[$publishedCode] = $this->getLatestVersion($dirName);
         }
 
-        return $this->themes = $result;
+        return $this->installedThemes = $result;
     }
 
     /**
@@ -96,15 +143,13 @@ class ThemeManager
      */
     protected function getInstalledDirectories(): array
     {
-        if ($this->themeDirs !== null) {
-            return $this->themeDirs;
+        if ($this->installedThemeDirs !== null) {
+            return $this->installedThemeDirs;
         }
 
         $result = [];
 
-        foreach (CmsTheme::all() as $theme) {
-            $dirName = $theme->getDirName();
-
+        foreach ($this->getThemes() as $dirName => $theme) {
             // Check composer file
             if (!$octoberCode = $this->getProductCode($dirName)) {
                 continue;
@@ -113,7 +158,7 @@ class ThemeManager
             $result[$octoberCode] = $dirName;
         }
 
-        return $this->themeDirs = $result;
+        return $this->installedThemeDirs = $result;
     }
 
     /**
@@ -261,7 +306,7 @@ class ThemeManager
         $sourcePath = $theme->getPath();
         $destinationPath = themes_path().'/'.$newDirName;
 
-        if (File::isDirectory($destinationPath)) {
+        if (is_dir($destinationPath)) {
             return false;
         }
 
@@ -353,18 +398,15 @@ class ThemeManager
         }
 
         $theme = CmsTheme::load($theme);
-
         if ($theme->isActiveTheme()) {
-            throw new ApplicationException(trans('cms::lang.theme.delete_active_theme_failed'));
+            throw new ApplicationException(__('Cannot delete the active theme, try making another theme active first.'));
         }
 
         $theme->removeCustomData();
 
-        /*
-         * Delete from file system
-         */
+        // Delete from file system
         $themePath = $theme->getPath();
-        if (File::isDirectory($themePath)) {
+        if (is_dir($themePath)) {
             File::deleteDirectory($themePath);
         }
     }
@@ -383,7 +425,7 @@ class ThemeManager
 
         $missing = [];
 
-        foreach (CmsTheme::all() as $theme) {
+        foreach ($this->getThemes() as $theme) {
             $required = $theme->getConfigValue('require', false);
             if (!$required || !is_array($required)) {
                 continue;
@@ -408,7 +450,7 @@ class ThemeManager
      */
     public function findLockableThemes(): array
     {
-        $packages = (new ComposerPhp)->listAllPackages();
+        $packages = ComposerManager::instance()->listAllPackages();
 
         $themes = [];
 
@@ -423,8 +465,7 @@ class ThemeManager
             return false;
         };
 
-        foreach (CmsTheme::all() as $theme) {
-            $dirName = $theme->getDirName();
+        foreach ($this->getThemes() as $dirName => $theme) {
             $composerCode = $this->getComposerCode($dirName);
             if (!$composerCode || !$crossCheckPackage($composerCode, $packages)) {
                 continue;

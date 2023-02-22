@@ -8,7 +8,7 @@ use System\Classes\SettingsManager;
 use Cms\Models\ThemeLog;
 
 /**
- * Request Logs controller
+ * ThemeLogs controller
  *
  * @package october\system
  * @author Alexey Bobkov, Samuel Georges
@@ -36,7 +36,7 @@ class ThemeLogs extends Controller
     /**
      * @var array Permissions required to view this page.
      */
-    public $requiredPermissions = ['system.access_logs'];
+    public $requiredPermissions = ['utilities.logs'];
 
     /**
      * Constructor.
@@ -82,9 +82,9 @@ class ThemeLogs extends Controller
 
     public function preview($id)
     {
-        $this->addCss('/modules/cms/assets/css/themelogs/template-diff.css', 'core');
-        $this->addJs('/modules/cms/assets/vendor/jsdiff/diff.js', 'core');
-        $this->addJs('/modules/cms/assets/js/themelogs/template-diff.js', 'core');
+        $this->addCss('/modules/cms/assets/css/themelogs/template-diff.css');
+        $this->addJs('/modules/cms/assets/vendor/jsdiff/diff.js');
+        $this->addJs('/modules/cms/assets/js/themelogs/template-diff.js');
 
         return $this->asExtension('FormController')->preview($id);
     }

@@ -11,7 +11,7 @@ body {
 
     .fr-box.fr-basic.fr-top .fr-wrapper,
     .fr-box.fr-basic.fr-bottom .fr-wrapper {
-        .box-shadow(none);
+        box-shadow: none;
     }
 
     //
@@ -120,7 +120,7 @@ body {
 
     .fr-popup .fr-buttons {
         border-bottom: 1px solid @color-list-border;
-        .box-shadow(none);
+        box-shadow: none;
     }
 
     //
@@ -148,9 +148,14 @@ body {
             background-color: @input-bg;
             color: @input-color;
             margin-bottom: 0;
-            .box-shadow(@input-box-shadow);
-            .input-size(@input-height-small; @padding-small-vertical; @padding-small-horizontal; @font-size-small; @line-height-small; @border-radius-small);
-            .transition(margin @transition-timing);
+            box-shadow: @input-box-shadow;
+
+            height: @input-height-small;
+            padding: @padding-small-vertical @padding-small-horizontal;
+            font-size: @font-size-small;
+            line-height: @line-height-small;
+            border-radius: @border-radius-small;
+            transition: margin @transition-timing;
 
             &:focus {
                 border: 1px solid @input-border;
@@ -158,6 +163,10 @@ body {
 
             &.fr-not-empty {
                 margin-top: 12px;
+            }
+
+            textarea& {
+                height: auto;
             }
         }
 

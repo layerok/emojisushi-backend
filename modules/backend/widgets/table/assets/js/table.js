@@ -138,6 +138,10 @@
         this.activeCellProcessor = null
     }
 
+    Table.prototype.setColumnConfiguration = function(column, options) {
+        this.cellProcessors[column].columnConfiguration = { ...this.cellProcessors[column].columnConfiguration || {}, ...options };
+    }
+
     Table.prototype.createDataSource = function() {
         var dataSourceClass = this.options.clientDataSourceClass
 
@@ -287,59 +291,63 @@
 
     Table.prototype.buildHeaderTable = function() {
         var headersTable = document.createElement('table'),
-            row = document.createElement('tr')
+            row = document.createElement('tr');
 
-        headersTable.className = 'headers'
-        headersTable.appendChild(row)
+        headersTable.className = 'headers';
+        headersTable.appendChild(row);
 
         for (var i = 0, len = this.options.columns.length; i < len; i++) {
-            var header = document.createElement('th')
+            var header = document.createElement('th');
 
-            if (this.options.columns[i].width)
-                header.setAttribute('style', 'width: '+this.options.columns[i].width)
+            if (this.options.columns[i].width) {
+                header.setAttribute('style', 'width: '+this.options.columns[i].width);
+            }
 
             header.textContent !== undefined
                 ? header.textContent = this.options.columns[i].title
-                : header.innerText = this.options.columns[i].title
+                : header.innerText = this.options.columns[i].title;
 
-            row.appendChild(header)
+            row.appendChild(header);
         }
 
-        this.headerTable = headersTable
+        this.headerTable = headersTable;
 
-        return headersTable
+        return headersTable;
     }
 
     Table.prototype.updateDataTable = function(onSuccess) {
-        var self = this
+        var self = this;
 
-        this.unfocusTable()
+        this.unfocusTable();
 
         this.fetchRecords(function onUpdateDataTableSuccess(records, totalCount) {
-            self.buildDataTable(records, totalCount)
+            self.buildDataTable(records, totalCount);
 
-            if (onSuccess)
-                onSuccess()
+            if (onSuccess) {
+                onSuccess();
+            }
 
-            if (totalCount == 0)
-                self.addRecord('above', true)
+            if (totalCount == 0 && self.options.adding) {
+                self.addRecord('above', true);
+            }
 
             self.$el.trigger('oc.tableUpdateData', [
                 records,
                 totalCount
-            ])
+            ]);
 
-            self = null
+            self = null;
         })
     }
 
     Table.prototype.updateColumnWidth = function() {
         var headerCells = this.headerTable.querySelectorAll('th'),
-            dataCells = this.dataTable.querySelectorAll('tr:first-child td')
+            dataCells = this.dataTable.querySelectorAll('tr:first-child td');
 
         for (var i = 0, len = headerCells.length; i < len; i++) {
-            if (dataCells[i])
-                dataCells[i].setAttribute('style', headerCells[i].getAttribute('style'))
+            if (dataCells[i]) {
+                dataCells[i].setAttribute('style', headerCells[i].getAttribute('style'));
+            }
         }
     }
 
@@ -525,40 +533,45 @@
      * if needed.
      */
     Table.prototype.focusCell = function(cellElement, isClick) {
-        var columnName = cellElement.getAttribute('data-column')
-        if (columnName === null)
-            return
+        var columnName = cellElement.getAttribute('data-column');
+        if (columnName === null) {
+            return;
+        }
 
-        this.focusTable()
+        this.focusTable();
 
-        var processor = this.getCellProcessor(columnName)
-        if (!processor)
-            throw new Error("Cell processor not found for the column "+columnName)
+        var processor = this.getCellProcessor(columnName);
+        if (!processor) {
+            throw new Error("Cell processor not found for the column "+columnName);
+        }
 
         if (this.activeCell !== cellElement) {
-            if (this.activeCell)
-                this.elementRemoveClass(this.activeCell, 'active')
+            if (this.activeCell) {
+                this.elementRemoveClass(this.activeCell, 'active');
+            }
 
-            this.setActiveProcessor(processor)
-            this.activeCell = cellElement
+            this.setActiveProcessor(processor);
+            this.activeCell = cellElement;
 
-            if (processor.isCellFocusable())
-                this.elementAddClass(this.activeCell, 'active')
+            if (processor.isCellFocusable()) {
+                this.elementAddClass(this.activeCell, 'active');
+            }
         }
 
         // If the cell belongs to other row than the currently edited,
         // commit currently edited row to the data source. Update the
         // currently edited row key.
-        var rowKey = this.getCellRowKey(cellElement)
+        var rowKey = this.getCellRowKey(cellElement);
 
-        if (this.editedRowKey !== null && rowKey != this.editedRowKey)
-            this.commitEditedRow()
+        if (this.editedRowKey !== null && rowKey != this.editedRowKey) {
+            this.commitEditedRow();
+        }
 
-        this.editedRowKey = rowKey
+        this.editedRowKey = rowKey;
 
-        processor.onFocus(cellElement, isClick)
+        processor.onFocus(cellElement, isClick);
 
-        this.scrollCellIntoView()
+        this.scrollCellIntoView();
     }
 
     Table.prototype.markCellRowDirty = function(cellElement) {
@@ -570,84 +583,90 @@
         // row sorting is disabled, add the record to the bottom of
         // the table (last page).
 
-        if (!this.activeCell || this.navigation.paginationEnabled() || !this.options.rowSorting)
-            placement = 'bottom'
-
-        var relativeToKey = null,
-            currentRowIndex = null
-
-        if (placement == 'above' || placement == 'below') {
-            relativeToKey = this.getCellRowKey(this.activeCell)
-            currentRowIndex = this.getCellRowIndex(this.activeCell)
+        if (!this.activeCell || this.navigation.paginationEnabled() || !this.options.rowSorting) {
+            placement = 'bottom';
         }
 
-        this.unfocusTable()
+        var relativeToKey = null,
+            currentRowIndex = null;
+
+        if (placement == 'above' || placement == 'below') {
+            relativeToKey = this.getCellRowKey(this.activeCell);
+            currentRowIndex = this.getCellRowIndex(this.activeCell);
+        }
+
+        this.unfocusTable();
 
         if (this.navigation.paginationEnabled()) {
-            var newPageIndex = this.navigation.getNewRowPage(placement, currentRowIndex)
+            var newPageIndex = this.navigation.getNewRowPage(placement, currentRowIndex);
 
             if (newPageIndex != this.navigation.pageIndex) {
                 // Validate data on the current page if adding a new record
                 // is going to create another page.
-                if (!this.validate())
-                    return
+                if (!this.validate()) {
+                    return;
+                }
             }
 
-            this.navigation.pageIndex = newPageIndex
+            this.navigation.pageIndex = newPageIndex;
         }
 
-        this.recordsAddedOrDeleted++
+        this.recordsAddedOrDeleted++;
 
         // New records have negative keys
         var keyColumn = this.options.keyColumn,
             recordData = {},
-            self = this
+            self = this;
 
-        recordData[keyColumn] = -1 * this.recordsAddedOrDeleted
+        recordData[keyColumn] = -1 * this.recordsAddedOrDeleted;
 
         this.$el.trigger('oc.tableNewRow', [
             recordData
-        ])
+        ]);
 
         this.dataSource.createRecord(recordData, placement, relativeToKey,
             this.navigation.getPageFirstRowOffset(),
             this.options.recordsPerPage,
             function onAddRecordDataTableSuccess(records, totalCount) {
-                self.buildDataTable(records, totalCount)
+                self.buildDataTable(records, totalCount);
 
-                var row = self.findRowByKey(recordData[keyColumn])
-                if (!row)
-                    throw new Error('New row is not found in the updated table: '+recordData[keyColumn])
+                var row = self.findRowByKey(recordData[keyColumn]);
+                if (!row) {
+                    throw new Error('New row is not found in the updated table: '+recordData[keyColumn]);
+                }
 
-                if (!noFocus)
-                    self.navigation.focusCell(row, 0)
+                if (!noFocus) {
+                    self.navigation.focusCell(row, 0);
+                }
 
-                self = null
+                self = null;
             }
         )
     }
 
     Table.prototype.deleteRecord = function() {
-        if (!this.activeCell)
-            return
+        if (!this.activeCell) {
+            return;
+        }
 
-        var currentRowIndex = this.getCellRowIndex(this.activeCell),
+        var self = this,
             key = this.getCellRowKey(this.activeCell),
-            self = this,
+            currentRowIndex = this.getCellRowIndex(this.activeCell),
             paginationEnabled = this.navigation.paginationEnabled(),
             currentPageIndex = this.navigation.pageIndex,
-            currentCellIndex = this.activeCell.cellIndex
+            currentCellIndex = this.activeCell.cellIndex;
 
-        if (paginationEnabled)
-            this.navigation.pageIndex = this.navigation.getPageAfterDeletion(currentRowIndex)
+        if (paginationEnabled) {
+            this.navigation.pageIndex = this.navigation.getPageAfterDeletion(currentRowIndex);
+        }
 
-        this.recordsAddedOrDeleted++
+        this.recordsAddedOrDeleted++;
 
         // New records have negative keys
         var keyColumn = this.options.keyColumn,
-            newRecordData = {}
+            newRecordData = {};
 
-        newRecordData[keyColumn] = -1 * this.recordsAddedOrDeleted
+        newRecordData[keyColumn] = -1 * this.recordsAddedOrDeleted;
 
         this.dataSource.deleteRecord(
             key,
@@ -655,81 +674,85 @@
             this.navigation.getPageFirstRowOffset(),
             this.options.recordsPerPage,
             function onDeleteRecordDataTableSuccess(records, totalCount) {
-                self.buildDataTable(records, totalCount)
+                self.buildDataTable(records, totalCount);
 
-                if (!paginationEnabled)
-                    self.navigation.focusCellInReplacedRow(currentRowIndex, currentCellIndex)
+                if (!paginationEnabled) {
+                    self.navigation.focusCellInReplacedRow(currentRowIndex, currentCellIndex);
+                }
                 else {
-                    if (currentPageIndex != self.navigation.pageIndex)
-                        self.navigation.focusCell('bottom', currentCellIndex)
-                    else
-                        self.navigation.focusCellInReplacedRow(currentRowIndex, currentCellIndex)
+                    if (currentPageIndex != self.navigation.pageIndex) {
+                        self.navigation.focusCell('bottom', currentCellIndex);
+                    }
+                    else {
+                        self.navigation.focusCellInReplacedRow(currentRowIndex, currentCellIndex);
+                    }
                 }
 
-                self = null
+                self = null;
             }
         )
     }
 
     Table.prototype.notifyRowProcessorsOnChange = function(cellElement) {
         var columnName = cellElement.getAttribute('data-column'),
-            row = cellElement.parentNode
+            row = cellElement.parentNode;
 
         for (var i = 0, len = row.children.length; i < len; i++) {
-            var column = this.options.columns[i].key
+            var column = this.options.columns[i].key;
 
-            this.cellProcessors[column].onRowValueChanged(columnName, row.children[i])
+            this.cellProcessors[column].onRowValueChanged(columnName, row.children[i]);
         }
     }
 
     Table.prototype.getToolbar = function() {
-        return this.tableContainer.querySelector('div.toolbar')
+        return this.tableContainer.querySelector('div.toolbar');
     }
 
     /*
-     * Validaates data on the current page
+     * Validates data on the current page
      */
     Table.prototype.validate = function() {
-        var rows = this.dataTable.querySelectorAll('tbody tr[data-row]')
+        var rows = this.dataTable.querySelectorAll('tbody tr[data-row]');
 
         for (var i = 0, len = rows.length; i < len; i++) {
-            var row = rows[i]
-
-            this.elementRemoveClass(row, 'error')
+            var row = rows[i];
+            this.elementRemoveClass(row, 'error');
         }
 
         for (var i = 0, rowsLen = rows.length; i < rowsLen; i++) {
             var row = rows[i],
-                rowData = this.getRowData(row)
+                rowData = this.getRowData(row);
 
-            for (var j = 0, colsLen = row.children.length; j < colsLen; j++)
-                this.elementRemoveClass(row.children[j], 'error')
+            for (var j = 0, colsLen = row.children.length; j < colsLen; j++) {
+                this.elementRemoveClass(row.children[j], 'error');
+            }
 
             for (var columnName in rowData) {
                 var cellProcessor = this.getCellProcessor(columnName),
-                    message = cellProcessor.validate(rowData[columnName], rowData)
+                    message = cellProcessor.validate(rowData[columnName], rowData);
 
                 if (message !== undefined) {
                     var cell = row.querySelector('td[data-column="'+columnName+'"]'),
-                        self = this
+                        self = this;
 
-                    this.elementAddClass(row, 'error')
-                    this.elementAddClass(cell, 'error')
+                    this.elementAddClass(row, 'error');
+                    this.elementAddClass(cell, 'error');
 
-                    $.oc.flashMsg({text: message, 'class': 'error'})
+                    $.oc.flashMsg({ text: message, 'class': 'error'});
 
                     window.setTimeout(function(){
                         self.focusCell(cell, false)
                         cell = null
                         self = null
                         cellProcessor = null
-                    }, 100)
-                    return false
+                    }, 100);
+
+                    return false;
                 }
             }
         }
 
-        return true
+        return true;
     }
 
     // EVENT HANDLERS
@@ -762,46 +785,45 @@
             return;
         }
 
-        this.focusCell(target, true)
+        this.focusCell(target, true);
     }
 
     Table.prototype.onKeydown = function(ev) {
         if ((ev.key === 'a' || ev.key === 'A') && ev.altKey && this.options.adding) {
             if (!ev.shiftKey) {
                 // alt+a - add record below
-                this.addRecord('below')
+                this.addRecord('below');
             }
             else {
                 // alt+shift+a - add record above
-                this.addRecord('above')
+                this.addRecord('above');
             }
 
-            this.stopEvent(ev)
-            return
+            this.stopEvent(ev);
+            return;
         }
 
         if ((ev.key === 'd' || ev.key === 'D') && ev.altKey && this.options.deleting) {
             // alt+d - delete record
-            this.deleteRecord()
+            this.deleteRecord();
 
-            this.stopEvent(ev)
-            return
+            this.stopEvent(ev);
+            return;
         }
 
         for (var i = 0, len = this.options.columns.length; i < len; i++) {
-            var column = this.options.columns[i].key
-
+            var column = this.options.columns[i].key;
             if (this.cellProcessors[column].onKeyDown(ev) === false) {
-                return
+                return;
             }
         }
 
         if (this.navigation.onKeydown(ev) === false) {
-            return
+            return;
         }
 
         if (this.search.onKeydown(ev) === false) {
-            return
+            return;
         }
     }
 
@@ -832,41 +854,43 @@
             cmd = target && target.getAttribute('data-cmd');
 
         if (!cmd) {
-            return
+            return;
         }
 
         switch (cmd) {
             case 'record-add':
             case 'record-add-below':
-                this.addRecord('below')
+                this.addRecord('below');
             break
             case 'record-add-above':
-                this.addRecord('above')
+                this.addRecord('above');
             break
             case 'record-delete':
-                this.deleteRecord()
+                this.deleteRecord();
             break
         }
 
-        this.stopEvent(ev)
+        this.stopEvent(ev);
     }
 
     Table.prototype.onDocumentClick = function(ev) {
-        var target = this.getEventTarget(ev)
+        var target = this.getEventTarget(ev);
 
         // Determine if the click was inside the table element
         // and just exit if so
-        if (this.parentContainsElement(this.el, target))
-            return
+        if (this.parentContainsElement(this.el, target)) {
+            return;
+        }
 
         // Request the active cell processor if the clicked
         // element belongs to any extra-table element created
         // by the processor
 
-        if (this.activeCellProcessor && this.activeCellProcessor.elementBelongsToProcessor(target))
-            return
+        if (this.activeCellProcessor && this.activeCellProcessor.elementBelongsToProcessor(target)) {
+            return;
+        }
 
-        this.unfocusTable()
+        this.unfocusTable();
     }
 
     // PUBLIC METHODS
@@ -1047,54 +1071,57 @@
 
     Table.prototype.parentContainsElement = function(parent, element) {
         while (element && element != parent) {
-            element = element.parentNode
+            element = element.parentNode;
         }
 
-        return element ? true : false
+        return element ? true : false;
     }
 
     Table.prototype.getCellValue = function(cellElement) {
-        return cellElement.querySelector('[data-container]').value
+        return cellElement.querySelector('[data-container]').value;
     }
 
     Table.prototype.getCellRowKey = function(cellElement) {
-        return parseInt(cellElement.parentNode.getAttribute('data-row'))
+        // Was parseInt -sg
+        return cellElement.parentNode.getAttribute('data-row');
     }
 
     Table.prototype.getRowKey = function(rowElement) {
-        return parseInt(rowElement.getAttribute('data-row'))
+        // Was parseInt -sg
+        return rowElement.getAttribute('data-row');
     }
 
     Table.prototype.findRowByKey = function(key) {
-        return this.dataTable.querySelector('tbody tr[data-row="'+key+'"]')
+        return this.dataTable.querySelector('tbody tr[data-row="'+key+'"]');
     }
 
     Table.prototype.findRowByIndex = function(index) {
-        return this.getDataTableBody().children[index]
+        return this.getDataTableBody().children[index];
     }
 
     Table.prototype.getCellRowIndex = function(cellElement) {
-        return parseInt(cellElement.parentNode.rowIndex)
+        return parseInt(cellElement.parentNode.rowIndex);
     }
 
     Table.prototype.getRowCellValueByColumnName = function(row, columnName) {
-        var cell = row.querySelector('td[data-column="'+columnName+'"]')
+        var cell = row.querySelector('td[data-column="'+columnName+'"]');
 
-        if (!cell)
-            return cell
+        if (!cell) {
+            return cell;
+        }
 
-        return this.getCellValue(cell)
+        return this.getCellValue(cell);
     }
 
     Table.prototype.getRowData = function(row) {
-        var result = {}
+        var result = {};
 
         for (var i = 0, len = row.children.length; i < len; i++) {
-            var cell = row.children[i]
-            result[cell.getAttribute('data-column')] = this.getCellValue(cell)
+            var cell = row.children[i];
+            result[cell.getAttribute('data-column')] = this.getCellValue(cell);
         }
 
-        return result
+        return result;
     }
 
     Table.prototype.getCellColumnName = function(cellElement) {

@@ -2,7 +2,7 @@
 
 use System;
 use System\Classes\UpdateManager;
-use October\Rain\Process\Composer as ComposerProcess;
+use October\Rain\Composer\Manager as ComposerManager;
 use Illuminate\Console\Command;
 use Exception;
 
@@ -29,7 +29,7 @@ class ProjectSync extends Command
      */
     public function handle()
     {
-        $this->output->writeln('<info>Synchronizing Project...</info>');
+        $this->line('Synchronizing Project...');
 
         try {
             // Install project packages
@@ -37,24 +37,24 @@ class ProjectSync extends Command
 
             // Composer update
             $this->comment("Executing: composer update");
-            $composer = new ComposerProcess;
-            $composer->setCallback(function($message) { echo $message; });
+            $composer = ComposerManager::instance();
+            $composer->setOutputCommand($this, $this->input);
             $composer->update();
 
             // Check dependencies
-            passthru('php artisan plugin:check --no-migrate');
+            static::passthruArtisan('plugin:check --no-migrate');
 
             // Lock themes
             if (System::hasModule('Cms')) {
-                passthru('php artisan theme:check');
+                static::passthruArtisan('theme:check');
             }
 
             // Migrate database
             $this->comment("Executing: php artisan october:migrate");
-            $this->output->newLine();
+            $this->line('');
 
             $errCode = null;
-            passthru('php artisan october:migrate', $errCode);
+            static::passthruArtisan('october:migrate', $errCode);
 
             if ($errCode !== 0) {
                 $this->output->error('Migration failed. Check output above');
@@ -83,17 +83,22 @@ class ProjectSync extends Command
 
         // Composer install differences
         foreach ($installPackages as $installPackage) {
-            $this->comment("Executing: composer require {$installPackage} --no-update");
-            $this->output->newLine();
+            [$composerCode, $composerVersion] = $installPackage;
+            $composerVersion = '^'.$composerVersion;
+            $this->comment("Executing: composer require {$composerCode} {$composerVersion} --no-update");
+            $this->line('');
 
-            $composer = new ComposerProcess;
-            $composer->setCallback(function($message) { echo $message; });
-            $composer->requireNoUpdate($installPackage);
-
-            if ($composer->lastExitCode() !== 0) {
-                $this->output->error('Sync failed. Check output above');
-                exit(1);
-            }
+            $composer = ComposerManager::instance();
+            $composer->setOutputCommand($this, $this->input);
+            $composer->addPackages([$composerCode => $composerVersion]);
         }
+    }
+
+    /**
+     * passthruArtisan
+     */
+    protected static function passthruArtisan($command, &$errCode = null)
+    {
+        passthru('"'.PHP_BINARY.'" artisan ' .$command, $errCode);
     }
 }

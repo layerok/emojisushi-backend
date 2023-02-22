@@ -1,9 +1,15 @@
 /*
  * This file has been compiled from: /modules/system/lang/{{locale}}/client.php
  */
-if ($.oc === undefined) $.oc = {}
-if ($.oc.langMessages === undefined) $.oc.langMessages = {}
-$.oc.langMessages['{{locale}}'] = $.extend(
-    $.oc.langMessages['{{locale}}'] || {},
+if (!window.oc) {
+    window.oc = {};
+}
+
+if (!window.oc.langMessages) {
+    window.oc.langMessages = {};
+}
+
+window.oc.langMessages['{{locale}}'] = $.extend(
+    window.oc.langMessages['{{locale}}'] || {},
     {{messages}}
 );

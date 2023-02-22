@@ -26,10 +26,10 @@ class TreeView extends VueComponentBase
      */
     protected function loadAssets()
     {
-        $this->addJsBundle('js/treeview-navigation.js', 'core');
-        $this->addJsBundle('js/treeview-utils.js', 'core');
-        $this->addJsBundle('js/treeview-draganddrop.js', 'core');
-        $this->addJsBundle('js/treeview-selection.js', 'core');
+        $this->addJsBundle('js/treeview-navigation.js');
+        $this->addJsBundle('js/treeview-utils.js');
+        $this->addJsBundle('js/treeview-draganddrop.js');
+        $this->addJsBundle('js/treeview-selection.js');
     }
 
     protected function registerSubcomponents()

@@ -183,20 +183,6 @@
     animation-name: fadeInUp;
 }
 
-@-webkit-keyframes fadeInUpBig {
-    0% {
-        opacity: 0;
-        -webkit-transform: translate3d(0, 2000px, 0);
-        transform: translate3d(0, 2000px, 0);
-    }
-
-    100% {
-        opacity: 1;
-        -webkit-transform: none;
-        transform: none;
-    }
-}
-
 //
 // Fade Out
 //
@@ -360,4 +346,42 @@
 .fadeOutUp {
     -webkit-animation-name: fadeOutUp;
     animation-name: fadeOutUp;
+}
+
+//
+// Fade Cycle
+//
+
+@-webkit-keyframes fadeCycle {
+    0% {
+        opacity: 1;
+    }
+
+    50% {
+        opacity: .5;
+    }
+
+    100% {
+        opacity: 1;
+    }
+}
+
+@keyframes fadeCycle {
+    0% {
+        opacity: 1;
+    }
+
+    50% {
+        opacity: .5;
+    }
+
+    100% {
+        opacity: 1;
+    }
+}
+
+.fadeCycle {
+    -webkit-animation: fadeCycle 2s infinite;
+    -moz-animation: fadeCycle 2s infinite;
+    animation: fadeCycle 2s infinite;
 }

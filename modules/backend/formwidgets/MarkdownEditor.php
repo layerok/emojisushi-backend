@@ -14,7 +14,7 @@ use Request;
 class MarkdownEditor extends FormWidgetBase
 {
     //
-    // Configurable properties
+    // Legacy properties
     //
 
     /**
@@ -31,6 +31,15 @@ class MarkdownEditor extends FormWidgetBase
      * @var bool The Legacy mode disables the Vue integration.
      */
     public $legacyMode = false;
+
+    //
+    // Configurable properties
+    //
+
+    /**
+     * @var bool sideBySide window by default.
+     */
+    public $sideBySide = false;
 
     /**
      * @var string Defines a mount point for the editor toolbar.
@@ -66,6 +75,7 @@ class MarkdownEditor extends FormWidgetBase
             'mode',
             'safe',
             'legacyMode',
+            'sideBySide',
             'externalToolbarAppState',
             'externalToolbarEventBus'
         ]);
@@ -91,11 +101,12 @@ class MarkdownEditor extends FormWidgetBase
     {
         $this->vars['mode'] = $this->mode;
         $this->vars['legacyMode'] = $this->legacyMode;
+        $this->vars['sideBySide'] = $this->sideBySide;
         $this->vars['stretch'] = $this->formField->stretch;
         $this->vars['size'] = $this->formField->size;
         $this->vars['name'] = $this->getFieldName();
         $this->vars['value'] = $this->getLoadValue();
-        $this->vars['useMediaManager'] = BackendAuth::userHasAccess('media.manage_media');
+        $this->vars['useMediaManager'] = BackendAuth::userHasAccess('media.library');
         $this->vars['externalToolbarAppState'] = $this->externalToolbarAppState;
         $this->vars['externalToolbarEventBus'] = $this->externalToolbarEventBus;
 
@@ -107,16 +118,16 @@ class MarkdownEditor extends FormWidgetBase
      */
     protected function loadAssets()
     {
-        $this->addCss('css/markdowneditor.css', 'core');
-        $this->addJs('js/markdowneditor.js', 'core');
-        $this->addJs('/modules/backend/formwidgets/codeeditor/assets/js/build-min.js', 'core');
+        $this->addCss('css/markdowneditor.css');
+        $this->addJs('js/markdowneditor.js');
+        $this->addJs('/modules/backend/formwidgets/codeeditor/assets/js/build-min.js');
     }
 
     public function onRefresh()
     {
         $value = (string) post($this->getFieldName());
         $previewHtml = $this->safe
-            ? Markdown::parseSafe($value)
+            ? Markdown::parseIndent($value)
             : Markdown::parse($value);
 
         return [

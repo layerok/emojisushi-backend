@@ -16,7 +16,7 @@ The event handler must return an extension class name. Extension classes must ex
 
 On the client side every extension is represented with a class which must extend the `editor.extension.base` class. The class must be registered in the `editor.extension.extension.main` module, for example `editor.extension.cms.main`.
 
-For every document type, a client-side extension code must provide at least two classes: 
+For every document type, a client-side extension code must provide at least two classes:
 
 * document controller,
 * document editor Vue component class.
@@ -24,14 +24,14 @@ For every document type, a client-side extension code must provide at least two 
 Document controllers provide client-side features specific to a single document type supported by the extension. The client-side extension class must return the list of the supported document controllers using the `listDocumentControllerClasses()` method:
 
 ```
-$.oc.module.register('editor.extension.cms.main', function() {
+oc.Module.register('editor.extension.cms.main', function() {
     'use strict';
 
-    const { ExtensionBase } = $.oc.module.import('editor.extension.base');
+    const { ExtensionBase } = oc.Module.import('editor.extension.base');
 
     class CmsEditorExtension extends ExtensionBase {
         listDocumentControllerClasses() {
-            const { DocumentControllerPage } = $.oc.module.import('cms.editor.extension.documentcontroller.page');
+            const { DocumentControllerPage } = oc.Module.import('cms.editor.extension.documentcontroller.page');
 
             return [DocumentControllerPage];
         }
@@ -44,10 +44,10 @@ $.oc.module.register('editor.extension.cms.main', function() {
 Document controller classes must extend the `editor.extension.documentcontroller.base`. Document controller classes must return the document type name they handle, and the name of the Vue component class. Example:
 
 ```
-$.oc.module.register('cms.editor.extension.documentcontroller.layout', function() {
+oc.Module.register('cms.editor.extension.documentcontroller.layout', function() {
     'use strict';
 
-    const DocumentControllerBase = $.oc.module.import('editor.extension.documentcontroller.base');
+    const DocumentControllerBase = oc.Module.import('editor.extension.documentcontroller.base');
 
     class DocumentControllerPage extends DocumentControllerBase {
         get documentType() {
@@ -85,7 +85,7 @@ Commands are dispatched to a document controller registered by an extension spec
 
 Base Vue component: 'editor.extension.documentcomponent.base'
 
-Useful computed properties of the base component: 
+Useful computed properties of the base component:
 
 * `namespace` - namespace of the Editor extension the component belongs to, for example "cms".
 * `extension` - a reference to the Editor extension the component belongs to.

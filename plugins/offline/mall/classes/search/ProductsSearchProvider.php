@@ -17,7 +17,7 @@ class ProductsSearchProvider extends ResultsProvider
         $matchingProducts = $this->searchProducts();
         $matchingVariants = $this->searchVariants();
 
-        $controller  = new Controller();
+        $controller  = Controller::getController() ?? new Controller();
         $productPage = GeneralSettings::get('product_page');
 
         $groupByProducts = GeneralSettings::get('group_search_results_by_product', false);
@@ -43,7 +43,10 @@ class ProductsSearchProvider extends ResultsProvider
                 $results->put($match->id, $match);
             }
         }
-
+        
+        // clean any null values from the results collection
+        $results = $results->filter();
+        
         // Build the OFFLINE.SiteSearch results collection.
         foreach ($results as $match) {
             $url = $controller->pageUrl($productPage, [

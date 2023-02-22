@@ -137,6 +137,10 @@
             $loaderEl = $(loaderEl),
             handler = $el.data('handler');
 
+        if (!handler) {
+            return;
+        }
+
         $.request(handler).done(function(data) {
             var result = data;
 

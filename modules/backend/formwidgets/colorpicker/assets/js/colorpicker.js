@@ -47,9 +47,7 @@
             });
         }
 
-        /*
-         * Custom color
-         */
+        // Custom color
         if (this.$customColor.length) {
             this.$customColor.spectrum({
                 preferredFormat: 'hex',

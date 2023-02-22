@@ -3,7 +3,7 @@
 use October\Rain\Database\Schema\Blueprint;
 use October\Rain\Database\Updates\Migration;
 
-class DbSystemFiles extends Migration
+return new class extends Migration
 {
     public function up()
     {
@@ -36,4 +36,4 @@ class DbSystemFiles extends Migration
     {
         Schema::dropIfExists('system_files');
     }
-}
+};

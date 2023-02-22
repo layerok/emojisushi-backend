@@ -5,7 +5,7 @@
             data-repeater-cmd="add-group"
             data-attach-loading>
             <i class="octo-icon-add-bold"></i>
-            <?= e(trans($prompt)) ?>
+            <?= e(__($prompt)) ?>
         </a>
     <?php else: ?>
         <a
@@ -14,7 +14,7 @@
             data-request="<?= $this->getEventHandler('onAddItem') ?>"
             data-attach-loading>
             <i class="octo-icon-add-bold"></i>
-            <?= e(trans($prompt)) ?>
+            <?= e(__($prompt)) ?>
         </a>
     <?php endif ?>
 </div>

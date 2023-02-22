@@ -1,7 +1,7 @@
 /*
  * Vue Inspector text control implementation
  */
-$.oc.module.register('backend.component.inspector.control.text', function () {
+oc.Module.register('backend.component.inspector.control.text', function () {
     Vue.component('backend-component-inspector-control-text', {
         extends: $.oc.vueComponentHelpers.inspector.controlBase,
         props: {

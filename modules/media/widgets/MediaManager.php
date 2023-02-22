@@ -9,6 +9,7 @@ use Config;
 use Request;
 use Response;
 use Exception;
+use BackendAuth;
 use SystemException;
 use ApplicationException;
 use Backend\Classes\WidgetBase;
@@ -17,6 +18,7 @@ use Media\Classes\MediaLibraryItem;
 use October\Rain\Resize\Resizer;
 use October\Rain\Filesystem\Definitions as FileDefinitions;
 use Form as FormHelper;
+use ForbiddenException;
 
 /**
  * MediaManager widget
@@ -44,29 +46,39 @@ class MediaManager extends WidgetBase
     protected $brokenImageHash;
 
     /**
-     * @var boolean readOnly determines whether the widget is in readonly mode or not.
+     * @var bool readOnly determines whether the widget is in readonly mode or not.
      */
     public $readOnly = false;
 
     /**
-     * @var boolean bottomToolbar determines whether the bottom toolbar is visible.
+     * @var bool bottomToolbar determines whether the bottom toolbar is visible.
      */
     public $bottomToolbar = false;
 
     /**
-     * @var boolean cropAndInsertButton determines whether the Crop & Insert button is visible.
+     * @var bool cropAndInsertButton determines whether the Crop & Insert button is visible.
      */
     public $cropAndInsertButton = false;
 
     /**
+     * @var string defaultAlias to identify this widget.
+     */
+    protected $defaultAlias = 'mediamanager';
+
+    /**
      * __construct
      */
-    public function __construct($controller, $alias, $readOnly = false)
+    public function __construct($controller, $config = [], $readOnly = false)
     {
-        $this->alias = $alias;
-        $this->readOnly = $readOnly;
+        // @deprecated construct arguments should be controller, config only
+        // drop readOnly from constructor and adjust code below
+        if (is_string($config)) {
+            $config = ['alias' => $config];
+        }
 
-        parent::__construct($controller, []);
+        $this->readOnly = $config['readOnly'] ?? $readOnly;
+
+        parent::__construct($controller, $config);
 
         $this->checkUploadPostback();
     }
@@ -78,19 +90,10 @@ class MediaManager extends WidgetBase
      */
     protected function loadAssets()
     {
-        $this->addCss('css/mediamanager.css', 'core');
-        $this->addJs('js/mediamanager-browser-min.js', 'core');
-    }
-
-    /**
-     * abortIfReadOnly aborts the request with an access-denied code if readOnly mode is active
-     * @return void
-     */
-    protected function abortIfReadOnly()
-    {
-        if ($this->readOnly) {
-            abort(403);
-        }
+        $this->addCssBundle('css/mediamanager.css', 'global');
+        $this->addJsBundle('js/mediamanager.js', 'global');
+        $this->addJsBundle('js/mediamanager.imagecroppopup.js', 'global');
+        $this->addJsBundle('js/mediamanager.popup.js', 'global');
     }
 
     /**
@@ -190,10 +193,8 @@ class MediaManager extends WidgetBase
             throw new ApplicationException('Invalid input data');
         }
 
-        /*
-         * If the thumbnail file exists, just return the thumbnail markup,
-         * otherwise generate a new thumbnail.
-         */
+        // If the thumbnail file exists, just return the thumbnail markup,
+        // otherwise generate a new thumbnail.
         $thumbnailPath = $this->thumbnailExists($thumbnailParams, $path, $lastModified);
         if ($thumbnailPath) {
             return [
@@ -282,7 +283,9 @@ class MediaManager extends WidgetBase
      */
     public function onDeleteItem()
     {
-        $this->abortIfReadOnly();
+        if (!$this->checkHasPermission('mediaDelete')) {
+            throw new ForbiddenException;
+        }
 
         $paths = Input::get('paths');
 
@@ -302,9 +305,7 @@ class MediaManager extends WidgetBase
             }
 
             if ($type === MediaLibraryItem::TYPE_FILE) {
-                /*
-                 * Add to bulk collection
-                 */
+                // Add to bulk collection
                 $filesToDelete[] = $path;
             }
             elseif ($type === MediaLibraryItem::TYPE_FOLDER) {
@@ -335,9 +336,7 @@ class MediaManager extends WidgetBase
         }
 
         if (count($filesToDelete) > 0) {
-            /*
-             * Delete collection of files
-             */
+            // Delete collection of files
             $library->deleteFiles($filesToDelete);
 
             /*
@@ -379,7 +378,9 @@ class MediaManager extends WidgetBase
      */
     public function onLoadRenamePopup()
     {
-        $this->abortIfReadOnly();
+        if (!$this->checkHasPermission('mediaDelete')) {
+            throw new ForbiddenException;
+        }
 
         $path = Input::get('path');
         $path = MediaLibrary::validatePath($path);
@@ -398,7 +399,9 @@ class MediaManager extends WidgetBase
      */
     public function onApplyName()
     {
-        $this->abortIfReadOnly();
+        if (!$this->checkHasPermission('mediaDelete')) {
+            throw new ForbiddenException;
+        }
 
         $newName = trim(Input::get('name'));
         if (!strlen($newName)) {
@@ -481,7 +484,9 @@ class MediaManager extends WidgetBase
      */
     public function onCreateFolder()
     {
-        $this->abortIfReadOnly();
+        if (!$this->checkHasPermission('mediaCreate')) {
+            throw new ForbiddenException;
+        }
 
         $name = trim(Input::get('name'));
         if (!strlen($name)) {
@@ -544,7 +549,9 @@ class MediaManager extends WidgetBase
      */
     public function onLoadMovePopup()
     {
-        $this->abortIfReadOnly();
+        if (!$this->checkHasPermission('mediaDelete')) {
+            throw new ForbiddenException;
+        }
 
         $exclude = Input::get('exclude', []);
         if (!is_array($exclude)) {
@@ -580,7 +587,9 @@ class MediaManager extends WidgetBase
      */
     public function onMoveItems()
     {
-        $this->abortIfReadOnly();
+        if (!$this->checkHasPermission('mediaDelete')) {
+            throw new ForbiddenException;
+        }
 
         $dest = trim(Input::get('dest'));
         if (!strlen($dest)) {
@@ -695,7 +704,9 @@ class MediaManager extends WidgetBase
      */
     public function onLoadImageCropPopup()
     {
-        $this->abortIfReadOnly();
+        if (!$this->checkHasPermission('mediaCreate')) {
+            throw new ForbiddenException;
+        }
 
         $path = Input::get('path');
         $path = MediaLibrary::validatePath($path);
@@ -724,7 +735,9 @@ class MediaManager extends WidgetBase
      */
     public function onEndCroppingSession()
     {
-        $this->abortIfReadOnly();
+        if (!$this->checkHasPermission('mediaCreate')) {
+            throw new ForbiddenException;
+        }
 
         $cropSessionKey = Input::get('cropSessionKey');
         if (!preg_match('/^[0-9a-z]+$/', $cropSessionKey)) {
@@ -740,7 +753,9 @@ class MediaManager extends WidgetBase
      */
     public function onCropImage()
     {
-        $this->abortIfReadOnly();
+        if (!$this->checkHasPermission('mediaCreate')) {
+            throw new ForbiddenException;
+        }
 
         $imageSrcPath = trim(Input::get('img'));
         $selectionData = Input::get('selection');
@@ -777,7 +792,9 @@ class MediaManager extends WidgetBase
      */
     public function onResizeImage()
     {
-        $this->abortIfReadOnly();
+        if (!$this->checkHasPermission('mediaCreate')) {
+            throw new ForbiddenException;
+        }
 
         $cropSessionKey = Input::get('cropSessionKey');
         if (!preg_match('/^[0-9a-z]+$/', $cropSessionKey)) {
@@ -1222,7 +1239,11 @@ class MediaManager extends WidgetBase
      */
     protected function getThumbnailImageUrl($imagePath)
     {
-        return Url::to('/storage/temp'.$imagePath);
+        $fullPath = temp_path(ltrim($imagePath, '/'));
+
+        return Config::get('system.relative_links') === true
+            ? Url::toRelative(File::localToPublic($fullPath))
+            : Url::asset(File::localToPublic($fullPath));
     }
 
     /**
@@ -1253,7 +1274,6 @@ class MediaManager extends WidgetBase
     protected function thumbnailIsError($thumbnailPath)
     {
         $fullPath = temp_path(ltrim($thumbnailPath, '/'));
-
         return hash_file('crc32', $fullPath) === $this->getBrokenImageHash();
     }
 
@@ -1265,13 +1285,10 @@ class MediaManager extends WidgetBase
     protected function getLocalTempFilePath($fileName)
     {
         $fileName = md5($fileName.uniqid().microtime());
-
-        $mediaFolder = Config::get('system.storage.media.folder', 'media');
-
-        $path = temp_path() . MediaLibrary::validatePath($mediaFolder, true);
+        $path = temp_path('media');
 
         if (!File::isDirectory($path)) {
-            File::makeDirectory($path, 0777, true, true);
+            File::makeDirectory($path, 0755, true, true);
         }
 
         return $path.'/'.$fileName;
@@ -1283,11 +1300,7 @@ class MediaManager extends WidgetBase
      */
     protected function getThumbnailDirectory()
     {
-        /*
-         * NOTE: Custom routing for /storage/temp/$thumbnailDirectory must be setup
-         * to return the thumbnail if not using default 'public' directory
-         */
-        return MediaLibrary::validatePath(Config::get('system.storage.media.thumb_folder', 'public'), true) . '/';
+        return MediaLibrary::validatePath(Config::get('media.thumb_folder', 'public'), true) . '/';
     }
 
     /**
@@ -1319,12 +1332,11 @@ class MediaManager extends WidgetBase
             if ($this->isVector($path)) {
                 $markup = $this->makePartial('thumbnail-image', [
                     'isError' => false,
-                    'imageUrl' => Url::to(config('system.storage.media.path') . $thumbnailInfo['path'])
+                    'imageUrl' => Url::to(Config::get('filesystems.disks.media.url') . $thumbnailInfo['path'])
                 ]);
-            } else {
-                /*
-                 * Get and validate input data
-                 */
+            }
+            else {
+                // Get and validate input data
                 $width = $thumbnailInfo['width'];
                 $height = $thumbnailInfo['height'];
                 $lastModified = $thumbnailInfo['lastModified'];
@@ -1342,9 +1354,7 @@ class MediaManager extends WidgetBase
                 $thumbnailPath = $this->getThumbnailImagePath($thumbnailParams, $path, $lastModified);
                 $fullThumbnailPath = temp_path(ltrim($thumbnailPath, '/'));
 
-                /*
-                 * Save the file locally
-                 */
+                // Save the file locally
                 $library = MediaLibrary::instance();
                 $tempFilePath = $this->getLocalTempFilePath($path);
 
@@ -1352,14 +1362,10 @@ class MediaManager extends WidgetBase
                     throw new SystemException('Error saving remote file to a temporary location');
                 }
 
-                /*
-                 * Resize the thumbnail and save to the thumbnails directory
-                 */
+                // Resize the thumbnail and save to the thumbnails directory
                 $this->resizeImage($fullThumbnailPath, $thumbnailParams, $tempFilePath);
 
-                /*
-                 * Delete the temporary file
-                 */
+                // Delete the temporary file
                 File::delete($tempFilePath);
                 $markup = $this->makePartial('thumbnail-image', [
                     'isError' => false,
@@ -1378,9 +1384,7 @@ class MediaManager extends WidgetBase
 
             $markup = $this->makePartial('thumbnail-image', ['isError' => true]);
 
-            /*
-             * @todo We need to log all types of exceptions here
-             */
+            // @todo We need to log all types of exceptions here
             traceLog($ex->getMessage());
         }
 
@@ -1404,7 +1408,7 @@ class MediaManager extends WidgetBase
         $thumbnailDir = dirname($fullThumbnailPath);
         if (
             !File::isDirectory($thumbnailDir)
-            && File::makeDirectory($thumbnailDir, 0777, true) === false
+            && File::makeDirectory($thumbnailDir, 0755, true) === false
         ) {
             throw new SystemException('Error creating thumbnail directory');
         }
@@ -1458,7 +1462,7 @@ class MediaManager extends WidgetBase
     {
         try {
             $thumbnailDir = dirname($path);
-            if (!File::isDirectory($thumbnailDir) && File::makeDirectory($thumbnailDir, 0777, true) === false) {
+            if (!File::isDirectory($thumbnailDir) && File::makeDirectory($thumbnailDir, 0755, true) === false) {
                 return;
             }
 
@@ -1516,40 +1520,58 @@ class MediaManager extends WidgetBase
             return;
         }
 
-        try {
-            if (!Input::hasFile('file_data')) {
-                throw new ApplicationException('File missing from request');
-            }
+        if (!$this->checkHasPermission('mediaCreate')) {
+            throw new ForbiddenException;
+        }
 
+        if (!Input::hasFile('file_data')) {
+            throw new ApplicationException('File missing from request');
+        }
+
+        try {
             $uploadedFile = Input::file('file_data');
 
-            $fileName = $uploadedFile->getClientOriginalName();
-
-            /*
-             * Convert uppcare case file extensions to lower case
+            /**
+             * @event media.file.beforeUpload
+             * Called before a file is uploaded
+             *
+             * Example usage:
+             *
+             *     Event::listen('media.file.beforeUpload', function ((\Symfony\Component\HttpFoundation\File\UploadedFile) $uploadedFile) {
+             *         \Log::info($path . " was upoaded.");
+             *     });
+             *
+             * Or
+             *
+             *     $mediaWidget->bindEvent('file.beforeUpload', function ((\Symfony\Component\HttpFoundation\File\UploadedFile) $uploadedFile) {
+             *         \Log::info($path . " was uploaded");
+             *     });
+             *
              */
+            $this->fireSystemEvent('media.file.beforeUpload', [$uploadedFile]);
+
+            // Convert uppercase file extensions to lowercase
+            //
+            $fileName = $uploadedFile->getClientOriginalName();
             $extension = strtolower($uploadedFile->getClientOriginalExtension());
             $fileName = File::name($fileName).'.'.$extension;
 
-            /*
-             * File name contains non-latin characters, attempt to slug the value
-             */
+            // File name contains non-latin characters, attempt to slug the value
+            //
             $autoRename = Config::get('media.auto_rename') === 'slug';
             if (!$this->validateFileName($fileName) || $autoRename) {
                 $fileNameClean = $this->slugFileName(File::name($fileName));
                 $fileName = $fileNameClean . '.' . $extension;
             }
 
-            /*
-             * Check for unsafe file extensions
-             */
+            // Check for unsafe file extensions
+            //
             if (!$this->validateFileType($fileName)) {
                 throw new ApplicationException(Lang::get('backend::lang.media.type_blocked'));
             }
 
-            /*
-             * See mime type handling in the asset manager
-             */
+            // See mime type handling in the asset manager
+            //
             if (!$uploadedFile->isValid()) {
                 throw new ApplicationException($uploadedFile->getErrorMessage());
             }
@@ -1558,13 +1580,20 @@ class MediaManager extends WidgetBase
             $path = MediaLibrary::validatePath($path);
             $filePath = $path.'/'.$fileName;
 
-            /*
-             * getRealPath() can be empty for some environments (IIS)
-             */
+            // getRealPath() can be empty for some environments (IIS)
+            //
             $realPath = empty(trim($uploadedFile->getRealPath()))
                 ? $uploadedFile->getPath() . DIRECTORY_SEPARATOR . $uploadedFile->getFileName()
                 : $uploadedFile->getRealPath();
 
+            // Cannot overwrite files
+            //
+            if (!$this->checkHasPermission('mediaDelete') && MediaLibrary::instance()->has($filePath)) {
+                throw new ApplicationException(__('A media file already exists at this location, please upload using a different filename.'));
+            }
+
+            // Write file to disk
+            //
             MediaLibrary::instance()->put(
                 $filePath,
                 File::get($realPath)
@@ -1689,7 +1718,7 @@ class MediaManager extends WidgetBase
         $sessionDirectoryCreated = false;
 
         if (!File::isDirectory($fullSessionDirectoryPath)) {
-            File::makeDirectory($fullSessionDirectoryPath, 0777, true, true);
+            File::makeDirectory($fullSessionDirectoryPath, 0755, true, true);
             $sessionDirectoryCreated = true;
         }
 
@@ -1700,10 +1729,8 @@ class MediaManager extends WidgetBase
             $library = MediaLibrary::instance();
             $originalThumbFileName = 'original.'.$extension;
 
-            /*
-             * If the target dimensions are not provided, save the original image to the
-             * crop session directory and return its URL.
-             */
+            // If the target dimensions are not provided, save the original image to the
+            // crop session directory and return its URL.
             if (!$params) {
                 $tempFilePath = $fullSessionDirectoryPath.'/'.$originalThumbFileName;
 
@@ -1719,11 +1746,9 @@ class MediaManager extends WidgetBase
                     'dimensions' => $dimensions
                 ];
             }
-            /*
-             * If the target dimensions are provided, resize the original image and
-             * return its URL and dimensions.
-             */
 
+            // If the target dimensions are provided, resize the original image and
+            // return its URL and dimensions.
             $originalFilePath = $fullSessionDirectoryPath.'/'.$originalThumbFileName;
             if (!File::isFile($originalFilePath)) {
                 throw new SystemException('The original image is not found in the cropping session directory.');
@@ -1778,7 +1803,7 @@ class MediaManager extends WidgetBase
     /**
      * cropImage is business logic to crop a media library image
      * @param string $imageSrcPath
-     * @param string $selectionData
+     * @param array $selectionData
      * @param string $cropSessionKey
      * @param string $path
      * @return array
@@ -1819,9 +1844,7 @@ class MediaManager extends WidgetBase
             throw new SystemException('The image editing session is not found.');
         }
 
-        /*
-         * Find the image on the disk and resize it
-         */
+        // Find the image on the disk and resize it
         $imagePath = $fullSessionDirectoryPath.'/'.$fileName;
         if (!File::isFile($imagePath)) {
             throw new SystemException('The image is not found on the disk.');
@@ -1840,9 +1863,7 @@ class MediaManager extends WidgetBase
 
         $targetTmpPath = $fullSessionDirectoryPath.'/'.$targetImageName;
 
-        /*
-         * Crop the image, otherwise copy original to target destination.
-         */
+        // Crop the image, otherwise copy original to target destination.
         if ($selectionData['w'] === 0 || $selectionData['h'] === 0) {
             File::copy($imagePath, $targetTmpPath);
         }
@@ -1860,17 +1881,16 @@ class MediaManager extends WidgetBase
             ;
         }
 
-        /*
-         * Upload the cropped file to the Library
-         */
+        // Upload the cropped file to the Library
         $targetFolder = $path.'cropped-images';
         $targetPath = $targetFolder.'/'.$targetImageName;
 
         $library = MediaLibrary::instance();
-        $library->put($targetPath, file_get_contents($targetTmpPath));
+        $library->putFile($targetPath, $targetTmpPath);
 
         return [
             'publicUrl' => $library->getPathUrl($targetPath),
+            'thumbUrl' => $library->getPathUrl($targetPath),
             'documentType' => MediaLibraryItem::FILE_TYPE_IMAGE,
             'itemType' => MediaLibraryItem::TYPE_FILE,
             'path' => $targetPath,
@@ -1882,10 +1902,24 @@ class MediaManager extends WidgetBase
     /**
      * isVector detects if image is vector graphic (SVG)
      * @param string $path
-     * @return boolean
+     * @return bool
      */
     protected function isVector($path)
     {
         return pathinfo($path, PATHINFO_EXTENSION) === 'svg';
+    }
+
+    /**
+     * checkHasPermission checks if a custom permission has been specified
+     */
+    protected function checkHasPermission(string $name)
+    {
+        if ($this->readOnly) {
+            return false;
+        }
+
+        $foundKey = $name === 'mediaCreate' ? 'media.library.create' : 'media.library.delete';
+
+        return $foundKey ? BackendAuth::userHasAccess($foundKey) : true;
     }
 }

@@ -1,7 +1,7 @@
 /*
  * Vue Inspector table control implementation
  */
-$.oc.module.register('backend.component.inspector.control.table.headcell', function () {
+oc.Module.register('backend.component.inspector.control.table.headcell', function () {
     Vue.component('backend-component-inspector-control-table-headcell', {
         props: {
             column: Object,

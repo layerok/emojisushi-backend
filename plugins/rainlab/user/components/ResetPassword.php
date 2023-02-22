@@ -91,8 +91,8 @@ class ResetPassword extends ComponentBase
             throw new ValidationException($validation);
         }
 
-        $user = UserModel::findByEmail(post('email'));
-        if (!$user || $user->is_guest) {
+        $user = Auth::findUserByEmail(post('email'));
+        if (!$user || $user->is_guest || $user->trashed()) {
             throw new ApplicationException(Lang::get(/*A user was not found with the given credentials.*/'rainlab.user::lang.account.invalid_user'));
         }
 
@@ -162,7 +162,7 @@ class ResetPassword extends ComponentBase
     //
 
     /**
-     * Returns a link used to reset the user account.
+     * makeResetUrl returns a link used to reset the user account.
      * @return string
      */
     protected function makeResetUrl($code)
@@ -171,10 +171,14 @@ class ResetPassword extends ComponentBase
             $this->property('paramCode') => $code
         ];
 
+        // Locate the current page
+        $url = '';
+
         if ($pageName = $this->property('resetPage')) {
             $url = $this->pageUrl($pageName, $params);
         }
-        else {
+
+        if (!$url) {
             $url = $this->currentPageUrl($params);
         }
 

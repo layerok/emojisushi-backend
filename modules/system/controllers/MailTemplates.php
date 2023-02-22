@@ -6,6 +6,7 @@ use BackendMenu;
 use Backend\Classes\Controller;
 use System\Models\MailTemplate;
 use System\Classes\SettingsManager;
+use ApplicationException;
 use Exception;
 
 /**
@@ -41,10 +42,10 @@ class MailTemplates extends Controller
     /**
      * @var array Permissions required to view this page.
      */
-    public $requiredPermissions = ['system.manage_mail_templates'];
+    public $requiredPermissions = ['mail.templates'];
 
     /**
-     * Constructor.
+     * __construct
      */
     public function __construct()
     {
@@ -54,6 +55,9 @@ class MailTemplates extends Controller
         SettingsManager::setContext('October.System', 'mail_templates');
     }
 
+    /**
+     * index
+     */
     public function index($tab = null)
     {
         MailTemplate::syncAll();
@@ -63,11 +67,17 @@ class MailTemplates extends Controller
         $this->vars['activeTab'] = $tab ?: 'templates';
     }
 
+    /**
+     * formBeforeSave
+     */
     public function formBeforeSave($model)
     {
         $model->is_custom = 1;
     }
 
+    /**
+     * onTest
+     */
     public function onTest($recordId)
     {
         try {
@@ -79,7 +89,7 @@ class MailTemplates extends Controller
             Flash::success(trans('system::lang.mail_templates.test_success'));
         }
         catch (Exception $ex) {
-            Flash::error($ex->getMessage());
+            throw new ApplicationException($ex->getMessage());
         }
     }
 }

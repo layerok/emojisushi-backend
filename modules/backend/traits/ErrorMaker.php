@@ -11,7 +11,7 @@ use System\Classes\ErrorHandler;
 trait ErrorMaker
 {
     /**
-     * @var string fatalError stores the object used for a fatal error.
+     * @var string|null fatalError stores the object used for a fatal error.
      */
     protected $fatalError;
 
