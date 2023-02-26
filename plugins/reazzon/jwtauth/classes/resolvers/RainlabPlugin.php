@@ -19,7 +19,8 @@ final class RainlabPlugin implements Plugin
      * @return JWTSubject
      * @throws PluginModelResolverException
      */
-    public function resolve(Model $model): JWTSubject
+    // todo: copy plugin to get rid of external plugin edition
+    public function resolve(/* Model @external-plugin-edition */$model): JWTSubject
     {
         if (!$model instanceof RainlabUserModel) {
             throw new PluginModelResolverException;
@@ -28,7 +29,6 @@ final class RainlabPlugin implements Plugin
         $proxyObject = $this->proxyObject();
         return (new $proxyObject)->setRawAttributes($model->getAttributes());
     }
-
     /**
      * @return RainlabUserModel|JWTSubject
      */
