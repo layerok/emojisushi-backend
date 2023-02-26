@@ -3,6 +3,7 @@
 use Layerok\Telegram\Models\Bot;
 use Layerok\Telegram\Models\Chat;
 use October\Rain\Database\Model;
+use October\Rain\Database\Traits\Sluggable;
 use October\Rain\Database\Traits\Validation;
 use OFFLINE\Mall\Models\Category;
 use OFFLINE\Mall\Models\Product;
@@ -10,11 +11,17 @@ use OFFLINE\Mall\Models\Product;
 
 class Spot extends Model
 {
+    use Sluggable;
 
     protected $table = 'layerok_posterpos_spots';
     protected $primaryKey = 'id';
     public $implement = ['@RainLab.Translate.Behaviors.TranslatableModel'];
-    public $translatable = ['name', 'address', 'html_content'];
+    public $translatable = [
+        ['slug', 'index' => true],
+        'name',
+        'address',
+        'html_content'
+    ];
 
 
     public $timestamps = true;
@@ -25,9 +32,19 @@ class Spot extends Model
         'bot_id',
         'chat_id',
         'address',
+        'slug',
         'poster_id'
     ];
 
+    public $slugs = [
+        'slug' => 'name',
+    ];
+
+    public $rules = [
+        'slug' => ['regex:/^[a-z0-9\/\:_\-\*\[\]\+\?\|]*$/i', 'unique:layerok_posterpos_spots'],
+        'name' => 'required',
+        'poster_id' => 'required'
+    ];
 
     public $belongsToMany = [
         'hideProducts'          => [

@@ -1,0 +1,49 @@
+# ===================================
+#  Form Field Definitions
+# ===================================
+
+fields:
+    name:
+        label: Название
+        description: Название этого заведения
+        span: auto
+        required: true
+    poster_id:
+        label: ID в системе постер
+        span: auto
+        required: true
+    code:
+        label: Code
+        span: auto
+    tablet:
+        type: relation
+        label: Tablet
+        span: auto
+    address:
+        label: Address
+        span: auto
+    google_map_url:
+        label: Google map url
+        span: auto
+    phones:
+        label: Телефоны
+        description: Введите телефоны через запятую
+        span: auto
+    bot:
+        label: Bot
+        type: relation
+        span: auto
+    chat:
+        label: Chat
+        type: relation
+        span: auto
+    published:
+          label: 'layerok.posterpos::lang.extend.published'
+          span: left
+          type: switch
+    html_content:
+        type: richeditor
+        toolbarButtons: fullscreen, bold, italic, underline, strikeThrough, subscript, superscript, fontFamily, fontSize, |, color, emoticons, inlineStyle, paragraphStyle, |, paragraphFormat, align, formatOL, formatUL, outdent, indent, quote, insertHR, -, insertLink, insertImage, insertVideo, insertAudio, insertFile, insertTable, undo, redo, clearFormatting, selectAll, html
+        size: huge
+
+
