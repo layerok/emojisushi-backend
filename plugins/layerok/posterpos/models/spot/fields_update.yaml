@@ -22,6 +22,10 @@ fields:
         type: relation
         label: Tablet
         span: auto
+    city:
+        label: City
+        type: relation
+        span: auto
     address:
         label: Address
         span: auto

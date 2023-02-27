@@ -33,6 +33,10 @@ class City extends Model
         'name' => 'required',
     ];
 
+    public $hasMany = [
+        'spots' => Spot::class,
+    ];
+
     /**
      * @var string table name
      */

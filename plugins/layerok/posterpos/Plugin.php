@@ -319,12 +319,12 @@ class Plugin extends PluginBase
                 'sideMenu' => [
                     'posterpos-spots' => [
                         'label' => "Spots",
-                        'icon'   => 'icon-globe',
+                        'icon'   => 'icon-map-marker',
                         'url'    => Backend::url('layerok/posterpos/spot'),
                     ],
                     'posterpos-cities' => [
                         'label' => "Cities",
-                        'icon'   => 'icon-map-marker',
+                        'icon'   => 'icon-globe',
                         'url'    => Backend::url('layerok/posterpos/cities'),
                     ],
                     'posterpos-tablets' => [

@@ -9,3 +9,6 @@ fields:
     slug:
         label: Slug
         span: auto
+    spots:
+        label: Spots
+        type: relation

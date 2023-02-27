@@ -5,6 +5,8 @@ columns:
     name:
         label: Name
         searchable: true
+    city[name]:
+        label: City
     published:
           label: 'layerok.posterpos::lang.extend.published'
           type: partial
