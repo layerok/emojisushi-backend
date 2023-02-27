@@ -1,0 +1,41 @@
+<?php namespace Layerok\PosterPos\Models;
+
+use Model;
+use October\Rain\Database\Traits\Sluggable;
+
+/**
+ * City Model
+ *
+ * @link https://docs.octobercms.com/3.x/extend/system/models.html
+ */
+class City extends Model
+{
+    use \October\Rain\Database\Traits\Validation;
+    use Sluggable;
+    public $implement = ['@RainLab.Translate.Behaviors.TranslatableModel'];
+
+    public $translatable = [
+        ['slug', 'index' => true],
+        'name',
+    ];
+
+    public $fillable = [
+        'name',
+        'slug',
+    ];
+
+    public $slugs = [
+        'slug' => 'name',
+    ];
+
+    public $rules = [
+        'slug' => ['regex:/^[a-z0-9\/\:_\-\*\[\]\+\?\|]*$/i', 'unique:layerok_posterpos_spots'],
+        'name' => 'required',
+    ];
+
+    /**
+     * @var string table name
+     */
+    public $table = 'layerok_posterpos_cities';
+
+}
