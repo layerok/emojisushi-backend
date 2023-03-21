@@ -16,6 +16,7 @@ use \Layerok\Restapi\Http\Controllers\OrderController;
 use Layerok\Restapi\Http\Controllers\ActivationController;
 use Layerok\Restapi\Http\Controllers\AuthController;
 use Layerok\Restapi\Http\Controllers\RefreshController;
+use \Layerok\Restapi\Http\Controllers\CityController;
 
 Route::group([
     'middleware' => [
@@ -28,6 +29,7 @@ Route::group([
     Route::get('products', [ProductController::class, 'fetch']);
     Route::get('categories', [CategoryController::class, 'fetch']);
     Route::get('spots', [SpotController::class, 'fetch']);
+    Route::get('cities', [CityController::class, 'fetch']);
     Route::get('shipping', [ShippingMethodController::class, 'all']);
     Route::get('payments', [PaymentMethodController::class, 'all']);
     Route::get('ingredients', [IngredientController::class, 'all']);
