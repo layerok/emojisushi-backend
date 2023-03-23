@@ -5,6 +5,7 @@ namespace Layerok\Restapi\Http\Controllers;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Routing\Controller;
 use Illuminate\Support\Collection;
+use Layerok\PosterPos\Models\Spot;
 use Layerok\Restapi\Classes\Index\MySQL\MySQL;
 use OFFLINE\Mall\Classes\CategoryFilter\QueryString;
 use OFFLINE\Mall\Classes\CategoryFilter\SetFilter;
@@ -41,7 +42,17 @@ class ProductController extends Controller
 
         $this->wishlist_id = input('wishlist_id');
         $this->filter = input('filter');
-        $this->spot_id = input('spot_id');
+
+        $spot_id_or_slug = input('spot_id_or_slug');
+        $this->spot_id = null;
+
+        if(!empty($spot_id_or_slug)) {
+            $key = is_numeric($spot_id_or_slug) ? 'id': 'slug';
+            $spot = Spot::where($key, $spot_id_or_slug)->first();
+            if($spot) {
+                $this->spot_id = $spot->id;
+            }
+        }
 
         $this->perPage = $this->limit;
 

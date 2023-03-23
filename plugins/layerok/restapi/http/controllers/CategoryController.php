@@ -6,6 +6,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Routing\Controller;
 use Layerok\PosterPos\Classes\RootCategory;
 use Layerok\PosterPos\Models\HideCategory;
+use Layerok\PosterPos\Models\Spot;
 use OFFLINE\Mall\Models\Category;
 
 class CategoryController extends Controller
@@ -14,16 +15,18 @@ class CategoryController extends Controller
     {
         $offset = input('offset');
         $limit = input('limit');
-        $spot_id = input('spot_id');
+        $spot_id_or_slug = input('spot_id_or_slug');
 
         $root = Category::where('slug', RootCategory::SLUG_KEY)->first();
 
         $query = Category::query();
 
 
-        if(!empty($spot_id)) {
+        if(!empty($spot_id_or_slug)) {
+            $key = is_numeric($spot_id_or_slug) ? 'id': 'slug';
+            $spot = Spot::where($key, $spot_id_or_slug)->first();
             $hidden = HideCategory::where([
-                'spot_id' => $spot_id
+                'spot_id' => $spot->id
             ])->pluck('category_id');
 
             $query = Category::where([
