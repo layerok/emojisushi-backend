@@ -180,7 +180,6 @@ class MySQL implements Index
     {
 
         $wishlist_only = $params['wishlist_only'];
-        $spot_id = $params['spot_id'];
         $wishlist_sid = $params['wishlist_sid'];
 
         $idCol      = $index === 'products' ? 'product_id' : 'variant_id';
@@ -194,8 +193,6 @@ class MySQL implements Index
         ]);
 
         $db->where('index', $index)->where('published', true);
-
-        $this->applyHidden($db, $spot_id);
 
         $filters = $this->applySpecialFilters($filters, $db);
 
@@ -266,27 +263,7 @@ class MySQL implements Index
         }
     }
 
-    protected function applyHidden($db, $spot_id) {
-        // hide products in hidden categories
-        if(!empty($spot_id)) {
-            $hidden_categories = HideCategory::where([
-                'spot_id' => $spot_id
-            ])->pluck('category_id')->toArray();
 
-            $db->where(function($query) use ($hidden_categories) {
-                foreach($hidden_categories as $category_id) {
-                    $query->orWhereRaw('NOT JSON_CONTAINS(category_id, ?)', json_encode([(int)$category_id]));
-                }
-            });
-
-            $hidden = HideProduct::where([
-                ['spot_id', '=', $spot_id],
-            ])->pluck('product_id');
-
-            $db->whereNotIn('product_id', $hidden);
-        }
-
-    }
 
     protected function applySpecialFilters(Collection $filters, $db)
     {

@@ -43,16 +43,6 @@ class ProductController extends Controller
         $this->wishlist_id = input('wishlist_id');
         $this->filter = input('filter');
 
-        $spot_id_or_slug = input('spot_id_or_slug');
-        $this->spot_id = null;
-
-        if(!empty($spot_id_or_slug)) {
-            $key = is_numeric($spot_id_or_slug) ? 'id': 'slug';
-            $spot = Spot::where($key, $spot_id_or_slug)->first();
-            if($spot) {
-                $this->spot_id = $spot->id;
-            }
-        }
 
         $this->perPage = $this->limit;
 
@@ -101,7 +91,6 @@ class ProductController extends Controller
             [
                 'wishlist_only' => $this->wishlist_only,
                 'wishlist_sid' => Session::get('wishlist_session_id'),
-                'spot_id' => $this->spot_id
             ]
         );
 
@@ -187,6 +176,8 @@ class ProductController extends Controller
         return [
             'variants',
             'variants.property_values',
+            'hide_products_in_spot',
+            'categories.hide_categories_in_spot',
             'variants.additional_prices',
             'image_sets',
             'prices',
