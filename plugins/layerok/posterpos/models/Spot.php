@@ -32,6 +32,7 @@ class Spot extends Model
         'bot_id',
         'chat_id',
         'address',
+        'cover',
         'slug',
         'poster_id'
     ];
@@ -59,6 +60,10 @@ class Spot extends Model
             'key' => 'spot_id',
             'otherKey' => 'category_id',
         ]
+    ];
+
+    public $attachMany = [
+        'photos' => \System\Models\File::class
     ];
 
     public $belongsTo = [

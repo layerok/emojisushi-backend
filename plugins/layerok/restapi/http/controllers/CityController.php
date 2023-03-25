@@ -17,7 +17,7 @@ class CityController extends Controller
         $query = City::query();
 
         if($includeSpots) {
-            $query->with('spots');
+            $query->with('spots.photos');
         }
 
         if($limit) {

@@ -44,6 +44,14 @@ fields:
         label: Chat
         type: relation
         span: auto
+    photos:
+        label: Photos
+        type: fileupload
+        mode: image
+        span: auto
+    cover:
+        label: Cover
+        type: mediafinder
     published:
           label: 'layerok.posterpos::lang.extend.published'
           span: left

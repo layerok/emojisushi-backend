@@ -56,3 +56,6 @@
 1.1.19:
     - 'add city_id field to spots table'
     - add_city_id_to_spots_table.php
+1.1.20:
+    - 'add cover field to spots table'
+    - add_cover_field_to_spots_table.php
