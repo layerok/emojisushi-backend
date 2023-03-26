@@ -5,7 +5,6 @@ namespace Layerok\Restapi\Http\Controllers;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Routing\Controller;
 use Illuminate\Support\Collection;
-use Layerok\PosterPos\Models\Spot;
 use Layerok\Restapi\Classes\Index\MySQL\MySQL;
 use OFFLINE\Mall\Classes\CategoryFilter\QueryString;
 use OFFLINE\Mall\Classes\CategoryFilter\SetFilter;
@@ -29,7 +28,6 @@ class ProductController extends Controller
     public $limit;
     public $totalCount;
     public $wishlist_only;
-    public $spot_id;
     public $wishlist_id;
 
     public function fetch(): JsonResponse

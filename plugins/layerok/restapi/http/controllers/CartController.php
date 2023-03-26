@@ -5,6 +5,7 @@ namespace Layerok\Restapi\Http\Controllers;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Routing\Controller;
 use Layerok\PosterPos\Models\Cart;
+use Layerok\PosterPos\Models\Spot;
 use October\Rain\Exception\ValidationException;
 use OFFLINE\Mall\Classes\Exceptions\OutOfStockException;
 
@@ -83,9 +84,9 @@ class CartController extends Controller
         ]);
 
         $cart_product_id = input('cart_product_id');
-
         $jwtGuard = app('JWTGuard');
         $user = $jwtGuard->user();
+
         $cart = Cart::byUser($user);
 
         $cartProduct = CartProduct::where([

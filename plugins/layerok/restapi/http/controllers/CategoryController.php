@@ -18,7 +18,7 @@ class CategoryController extends Controller
 
         $root = Category::where('slug', RootCategory::SLUG_KEY)->first();
 
-        $query = Category::query()->with('hide_categories_in_spot');
+        $query = Category::query()->with(['hide_categories_in_spot', 'image']);
 
         if($limit) {
             $query->limit($limit);

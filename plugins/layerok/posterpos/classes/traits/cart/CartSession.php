@@ -3,8 +3,8 @@
 namespace Layerok\PosterPos\Classes\Traits\Cart;
 
 use Cookie;
-use OFFLINE\Mall\Models\Cart;
-use OFFLINE\Mall\Models\CartProduct;
+use Layerok\PosterPos\Models\Spot;
+use Layerok\PosterPos\Models\Cart;
 use OFFLINE\Mall\Models\Customer;
 use RainLab\User\Models\User;
 use Session;
@@ -17,12 +17,9 @@ trait CartSession
             return self::bySession();
         }
 
-        $spot_id = Session::get('spot_id');
-
         $cart = self::orderBy('created_at', 'DESC')
             ->firstOrCreate([
                 'customer_id' => $user->customer->id,
-                'spot_id' => $spot_id
             ]);
 
         if ( ! $cart->shipping_address_id || ! $cart->billing_address_id) {
@@ -51,12 +48,10 @@ trait CartSession
         $sessionId = Session::get('cart_session_id') ?? Cookie::get('cart_session_id') ?? str_random(100);
         Cookie::queue('cart_session_id', $sessionId, 9e6);
         Session::put('cart_session_id', $sessionId);
-        $spot_id = Session::get('spot_id');
 
         return self::orderBy('created_at', 'DESC')
             ->firstOrCreate([
                 'session_id' => $sessionId,
-                'spot_id'=> $spot_id
             ]);
     }
 
@@ -84,11 +79,9 @@ trait CartSession
     public function transferToCustomer(Customer $customer): Cart
     {
         $shippingId = $customer->default_shipping_address_id ?? $customer->default_billing_address_id;
-        $spot_id = Session::get('spot_id');
         // Remove any old active cart by this customer.
         $existing = Cart::where([
             ['customer_id', $customer->id],
-            ['spot_id', $spot_id]
         ])->whereNull('session_id')->first();
         if ($existing) {
             $existing->delete();

@@ -4,7 +4,7 @@ declare(strict_types=1);
 namespace Layerok\Restapi\Http\Controllers;
 
 use Cms\Classes\Page;
-use Layerok\PosterPos\Models\Cart;
+use Layerok\PosterPos\Models\Spot;
 use Layerok\PosterPos\Models\Wishlist;
 use Layerok\Restapi\Http\Requests\RegistrationRequest;
 use October\Rain\Argon\Argon;
@@ -13,7 +13,7 @@ use OFFLINE\Mall\Models\Customer;
 use RainLab\User\Models\User as UserModel;
 use ReaZzon\JWTAuth\Classes\Dto\TokenDto;
 use Layerok\Restapi\Http\Requests\LoginRequest;
-
+use Layerok\PosterPos\Models\Cart;
 
 use Lang;
 use Validator;

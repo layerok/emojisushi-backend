@@ -205,13 +205,10 @@ class OrderController extends Controller
     public function getSelectedSpot() {
         $spots = Spot::all();
 
+        $spot = Spot::findBySlugOrId(input('spot_slug_or_id'));
 
-        $spot_id = input('spot_id');
-
-        foreach ($spots as $spot) {
-            if ($spot_id == $spot['id']) {
-                return $spot;
-            }
+        if($spot) {
+            return $spot;
         }
 
         // По умолчанию будет выбрано первое заведение

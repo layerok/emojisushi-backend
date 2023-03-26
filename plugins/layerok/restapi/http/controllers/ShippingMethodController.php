@@ -4,8 +4,7 @@ namespace Layerok\Restapi\Http\Controllers;
 
 use Illuminate\Http\JsonResponse;
 use Illuminate\Routing\Controller;
-use Layerok\PosterPos\Models\Spot;
-use OFFLINE\Mall\Models\ShippingMethod;
+use Layerok\PosterPos\Models\ShippingMethod;
 
 class ShippingMethodController extends Controller
 {
