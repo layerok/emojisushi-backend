@@ -58,4 +58,13 @@ class WishlistController extends Controller
         ]);
 
     }
+
+    public function list():JsonResponse {
+        $jwtGuard = app('JWTGuard');
+        $user = $jwtGuard->user();
+
+        $wishlists = Wishlist::byUser($user);
+
+        return response()->json($wishlists);
+    }
 }

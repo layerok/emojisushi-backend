@@ -27,18 +27,15 @@ class ProductController extends Controller
     public $offset;
     public $limit;
     public $totalCount;
-    public $wishlist_only;
-    public $wishlist_id;
 
     public function fetch(): JsonResponse
     {
         $this->offset = input('offset');
         $this->limit = input('limit') ?? 25;
-        $this->wishlist_only = input('wishlist');
+
 /*        $this->includeChildren = input('include_children');;*/
         $this->category = $this->getCategory();
 
-        $this->wishlist_id = input('wishlist_id');
         $this->filter = input('filter');
 
 
@@ -86,13 +83,9 @@ class ProductController extends Controller
             $sortOrder,
             $this->perPage,
             $this->pageNumber,
-            [
-                'wishlist_only' => $this->wishlist_only,
-                'wishlist_sid' => Session::get('wishlist_session_id'),
-            ]
         );
 
-        $ids_in_wishlist = $result->ids_in_wishlist;
+
 
 
         $this->totalCount = $result->totalCount;
@@ -116,14 +109,6 @@ class ProductController extends Controller
             return is_int($id)
                 ? $models->find($id)
                 : $ghosts->find(str_replace('product-', '', $id));
-        });
-
-        $items->each(function($item, $i) use ($ids_in_wishlist, $items) {
-            $index = $this->includeVariants ? 'variant': 'product';
-            if(in_array($item["{$index}_id"], $ids_in_wishlist[$index])) {
-                $items[$i]->is_favorite_ = true;
-            }
-
         });
 
         return $items;

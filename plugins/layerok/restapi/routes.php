@@ -47,6 +47,7 @@ Route::group([
 
     Route::prefix('wishlist')->group(function() {
         Route::get('add', [WishlistController::class, 'add']);
+        Route::get('list', [WishlistController::class, 'list']);
     });
 
     Route::prefix('auth')->group(function() {

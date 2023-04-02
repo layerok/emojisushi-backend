@@ -5,9 +5,6 @@ namespace Layerok\Restapi\Classes\Index\MySQL;
 use Cache;
 use DB;
 use Illuminate\Support\Collection;
-use Layerok\PosterPos\Models\HideCategory;
-use Layerok\PosterPos\Models\HideProduct;
-use Layerok\PosterPos\Models\Wishlist;
 use Layerok\Restapi\Classes\FuzzySearch;
 use October\Rain\Database\Schema\Blueprint;
 use October\Rain\Support\Facades\Schema;
@@ -22,7 +19,6 @@ use OFFLINE\Mall\Classes\Index\IndexNotSupportedException;
 use Layerok\RestApi\Classes\Index\IndexResult;
 use OFFLINE\Mall\Classes\Index\MySQL\IndexEntry;
 use OFFLINE\Mall\Models\Currency;
-use OFFLINE\Mall\Models\Product;
 use Throwable;
 
 class MySQL implements Index
@@ -167,20 +163,18 @@ class MySQL implements Index
         $skip  = $perPage * ($forPage - 1);
         $searchResult = $this->search($index, $filters, $order, $params);
         $items = $searchResult['items'];
-        $ids_in_wishlist = $searchResult['ids_in_wishlist'];
 
         $slice = array_map(function ($item) {
             return $item->is_ghost ? 'product-' . $item->other_id : $item->id;
         }, array_slice($items, $skip, $perPage));
 
-        return new IndexResult($slice, count($items), $ids_in_wishlist);
+        return new IndexResult($slice, count($items));
     }
 
     protected function search(string $index, Collection $filters, SortOrder $order, $params)
     {
 
-        $wishlist_only = $params['wishlist_only'];
-        $wishlist_sid = $params['wishlist_sid'];
+
 
         $idCol      = $index === 'products' ? 'product_id' : 'variant_id';
         $otherIdCol = $idCol === 'product_id' ? 'variant_id' : 'product_id';
@@ -199,12 +193,6 @@ class MySQL implements Index
         $this->applyCustomFilters($filters, $db);
 
 
-        $ids_in_wishlist = $this->getProductIdsFromWishlist($wishlist_sid);
-
-        if($wishlist_only) {
-            $this->applyWishlist($ids_in_wishlist, $db);
-        }
-
         // $this->applySearch($db); simple search
 
         $this->handleOrder($order, $db);
@@ -215,7 +203,6 @@ class MySQL implements Index
 
         return [
             'items' => $items,
-            'ids_in_wishlist' => $ids_in_wishlist
         ];
     }
 
@@ -307,38 +294,6 @@ class MySQL implements Index
         return $filters;
     }
 
-    protected function applyWishlist($ids, $db) {
-        $db->where((function($query) use($ids) {
-            $query->orWhereIn('product_id', $ids['product']);
-            $query->orWhereIn('variant_id', $ids['variant']);
-        }));
-        return $ids;
-    }
-
-    protected function getProductIdsFromWishlist($session_id) {
-        $jwtGuard = app('JWTGuard');
-        $user = $jwtGuard->user();
-
-        $wishlist = Wishlist::byUser($user)->first();
-
-        $wishlist_ids = [
-            'product' => [],
-            'variant' => []
-        ];
-
-        if($wishlist) {
-            $items = $wishlist->items()->get();
-            $product_ids = $items->pluck('product_id')->toArray();
-            $variant_ids = $items->pluck('variant_id')->toArray();
-
-            $wishlist_ids = [
-                'product' => $product_ids,
-                'variant' => $variant_ids
-            ];
-        }
-
-        return $wishlist_ids;
-    }
 
     protected function applyCustomFilters(Collection $filters, $db)
     {
