@@ -32,14 +32,10 @@ class ProductController extends Controller
     {
         $this->offset = input('offset');
         $this->limit = input('limit') ?? 25;
-
-/*        $this->includeChildren = input('include_children');;*/
         $this->category = $this->getCategory();
-
         $this->filter = input('filter');
-
-
         $this->perPage = $this->limit;
+        /*$this->includeChildren = input('include_children');*/
 
         if ($this->category) {
             $this->categories = collect([$this->category]);
@@ -84,9 +80,6 @@ class ProductController extends Controller
             $this->perPage,
             $this->pageNumber,
         );
-
-
-
 
         $this->totalCount = $result->totalCount;
         // Every id that is not an int is a "ghosted" variant, with an id like

@@ -30,7 +30,7 @@ class WishlistController extends Controller
        $wishlists = Wishlist::byUser($user);
 
         if ($wishlists->count() < 1) {
-            $wishlists = collect([Wishlist::createForUser($user)]);
+            $wishlists = Wishlist::createForUser($user);
         }
 
         $wishlist = $wishlists->first();
@@ -40,11 +40,9 @@ class WishlistController extends Controller
             'wishlist_id' => $wishlist->id,
         ])->first();
 
-        $added = true;
 
         if($wishlistItem) {
             $wishlistItem->delete();
-            $added = false;
         } else {
             WishlistItem::create([
                 'product_id' => input('product_id'),
@@ -53,9 +51,10 @@ class WishlistController extends Controller
             ]);
         }
 
-        return response()->json([
-            'added' => $added
-        ]);
+        // todo: optimize that
+        $wishlists = Wishlist::byUser($user);
+
+        return response()->json($wishlists);
 
     }
 
