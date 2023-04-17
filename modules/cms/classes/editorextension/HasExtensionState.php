@@ -206,7 +206,7 @@ trait HasExtensionState
                 $pagePath = "";
             }
 
-            $title = strlen($page->title) ? $page->title : 'No title';
+            $title = strlen($page->title) ? $page->title : __("No Title");
 
             $pagesNode
                 ->addNode($title, $page->getFileName())
@@ -423,14 +423,14 @@ trait HasExtensionState
         $componentManager = ComponentManager::instance();
         $knownAliases = [];
 
-        foreach ($componentManager->listComponentOwnerDetails() as $owner) {
+        foreach ($componentManager->listComponentOwnerDetails() as $ownerClass => $owner) {
             $detailsArr = $owner['details'] ?? [];
             $components = $owner['components'] ?? [];
 
             $ownerName = trans($detailsArr['name']) ?? trans('system::lang.plugin.unnamed');
             $ownerIcon = $detailsArr['icon'] ?? 'icon-puzzle-piece';
 
-            $ownerNode = $rootNode->addNode($ownerName, $ownerIcon);
+            $ownerNode = $rootNode->addNode($ownerName, $ownerClass);
             $ownerNode
                 ->setSelectable(false)
                 ->setDisplayMode(NodeDefinition::DISPLAY_MODE_LIST)

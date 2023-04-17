@@ -11,7 +11,7 @@
 
     nav.responsive-menu-pane {
         z-index: @zindex-popover + 2;
-        background-color: @color-mainmenu;
+        background-color: @mainnav-bg;
         transition: margin .25s ease-in-out;
         position: absolute;
         top: 0;
@@ -51,11 +51,11 @@
                     }
 
                     .user-name {
-                        color: @color-mainmenu-inactive;
+                        color: rgba(255,255,255,.7);
                         cursor: pointer;
 
                         &:hover {
-                            color: @color-mainmenu-active;
+                            color: @mainnav-color;
                         }
                     }
                 }
@@ -232,7 +232,7 @@
                         }
 
                         .user-name {
-                            color: @color-mainmenu-active;
+                            color: @mainnav-color;
                             position: relative;
                             top: 11px;
                             cursor: default;

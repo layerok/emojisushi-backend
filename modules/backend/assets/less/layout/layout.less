@@ -18,7 +18,7 @@ body.loading, body.loading * {
 }
 
 body.no-select {
-    .user-select(none);
+    user-select: none;
     cursor: default !important;
 }
 
@@ -122,6 +122,10 @@ body {
 
 .whiteboard {
     background: white;
+}
+
+[data-bs-theme="dark"] .whiteboard {
+    background: #181a1e;
 }
 
 .layout-fill-container {

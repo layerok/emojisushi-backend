@@ -77,20 +77,28 @@
     }
 
     GroupFilter.prototype.selectItem = function($item, isDeselect) {
-        var $otherContainer = isDeselect
+        var itemId = $item.data('item-id'),
+            $otherContainer = isDeselect
             ? $item.closest('.control-filter-popover').find('.filter-items:first > ul')
             : $item.closest('.control-filter-popover').find('.filter-active-items:first > ul');
 
-        $item
-            .addClass('animate-enter')
-            .prependTo($otherContainer)
-            .one('webkitAnimationEnd mozAnimationEnd MSAnimationEnd oanimationend animationend', function() {
-                $(this).removeClass('animate-enter');
-            });
+        if (isDeselect) {
+            $(`[data-item-id="${itemId}"]`, $otherContainer).removeClass('oc-hide');
+            $item.remove();
+        }
+        else {
+            $item
+                .clone()
+                .addClass('animate-enter')
+                .prependTo($otherContainer)
+                .one('animationend', function() {
+                    $(this).removeClass('animate-enter');
+                });
 
-        var
-            itemId = $item.data('item-id'),
-            active = this.scopeValues,
+            $item.addClass('oc-hide');
+        }
+
+        var active = this.scopeValues,
             available = this.scopeAvailable,
             fromItems = isDeselect ? active : available,
             testFunc = function(active){ return active.id == itemId },
@@ -173,12 +181,12 @@
         this.scopeAvailable = data.available;
 
         // Inject available
-        var container = $('.filter-items > ul:first', this.$el).empty();
-        this.addItemsToListElement(container, data.available);
+        var $container = $('.filter-items > ul:first', this.$el).empty();
+        this.addItemsToListElement($container, data.available, data.active);
 
         // Inject active
-        var container = $('.filter-active-items > ul:first', this.$el);
-        this.addItemsToListElement(container, data.active);
+        var $container = $('.filter-active-items > ul:first', this.$el);
+        this.addItemsToListElement($container, data.active);
     }
 
     GroupFilter.prototype.filterAvailable = function(available) {
@@ -186,36 +194,28 @@
             return;
         }
 
-        var self = this,
-            filtered = [],
-            items = this.scopeValues;
-
-        //* Ensure any active items do not appear in the search results
-        if (items.length) {
-            var activeIds = [];
-            $.each(items, function (key, obj) {
-                activeIds.push(obj.id);
-            });
-
-            filtered = $.grep(available, function(item) {
-                return $.inArray(item.id, activeIds) === -1;
-            });
-        }
-        else {
-            filtered = available;
-        }
-
-        var container = $('.filter-items > ul', this.$el).empty();
-        this.addItemsToListElement(container, filtered);
+        var $container = $('.filter-items > ul', this.$el).empty();
+        this.addItemsToListElement($container, available, this.scopeValues);
     }
 
-    GroupFilter.prototype.addItemsToListElement = function($ul, items) {
+    GroupFilter.prototype.addItemsToListElement = function($ul, items, selectedItems) {
         $.each(items, function(key, obj) {
-            var item = $('<li />').data({ 'item-id': obj.id })
-                .append($('<a />').prop({ 'href': 'javascript:;',}).text(obj.name));
+            var item = $('<li />')
+                .attr('data-item-id', obj.id)
+                .append(
+                    $('<a />')
+                        .attr('href', 'javascript:;')
+                        .text(obj.name)
+                );
 
             $ul.append(item);
         });
+
+        if (selectedItems) {
+            $.each(selectedItems, function (key, obj) {
+                $(`[data-item-id="${obj.id}"]`, $ul).addClass('oc-hide');
+            });
+        }
     }
 
     GroupFilter.prototype.getGroupTemplate = function() {

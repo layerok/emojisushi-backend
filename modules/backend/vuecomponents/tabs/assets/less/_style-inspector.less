@@ -1,26 +1,26 @@
 &.style-inspector {
     > .tablist-container {
-        background: white;
+        background: transparent;
         padding-top: 15px;
 
         .tablist {
             &:after {
                 .full-width-border();
-                background-color: @color-grey-3;
+                background-color: @primary-border;
                 z-index: 0;
             }
 
             button {
                 overflow: visible;
                 text-overflow: clip;
-                color:  @color-text-grey-1;
+                color: @toolbar-color;
                 font-weight: 500;
 
                 // Important - setting anything else for z-index
                 // breaks styles for Inspector dropdown controls
                 // overlapping tabs.
                 //
-                z-index: auto; 
+                z-index: auto;
 
                 margin-right: 15px;
                 padding: 0 0 4px;

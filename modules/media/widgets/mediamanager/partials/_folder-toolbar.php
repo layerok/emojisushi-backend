@@ -1,4 +1,4 @@
-<div class="panel padding-less border-bottom triangle-down">
+<div class="panel padding-less border-bottom">
     <div class="layout">
         <div class="layout-cell">
             <div class="layout-row" id="<?= $this->getId('folder-path') ?>">

@@ -6,80 +6,84 @@ tabs:
     fields:
 
         app_name:
-            label: backend::lang.branding.app_name
-            commentAbove: backend::lang.branding.app_name_description
-            tab: backend::lang.branding.brand
+            label: App Name
+            commentAbove: This name is shown in the title area of the back-end.
+            tab: Brand
             span: left
 
         app_tagline:
-            label: backend::lang.branding.app_tagline
-            commentAbove: backend::lang.branding.app_tagline_description
-            tab: backend::lang.branding.brand
+            label: App Tagline
+            commentAbove: This name is shown on the sign in screen for the back-end.
+            tab: Brand
             span: right
 
         logo:
-            label: backend::lang.branding.logo
+            label: Logo
             type: fileupload
-            commentAbove: backend::lang.branding.logo_description
+            commentAbove: Upload a custom logo to use in the back-end.
             mode: image
             imageHeight: 170
-            tab: backend::lang.branding.brand
+            tab: Brand
             span: left
             fileTypes: jpg,jpeg,bmp,png,webp,gif,svg
 
         favicon:
-            label: backend::lang.branding.favicon
+            label: Favicon
             type: fileupload
-            commentAbove: backend::lang.branding.favicon_description
+            commentAbove: Upload a custom favicon to use in the back-end
+            # (32x32)
             mode: image
             imageHeight: 32
-            tab: backend::lang.branding.brand
+            imageWidth: 32
+            tab: Brand
             span: right
             fileTypes: jpg,jpeg,bmp,png,webp,gif,svg,ico
 
-        # primary_color:
-        #     label: backend::lang.branding.primary_color
-        #     type: colorpicker
-        #     tab: backend::lang.branding.colors
-        #     availableColors: ['#6a6cf7', '#16a085', '#27ae60', '#6bc48d', '#3498db', '#9b59b6', '#34495e', '#f1c40f', '#e67e22', '#e74c3c', '#ecf0f1', '#95a5a6']
+        _ruler1:
+            type: ruler
+            tab: Brand
 
-        # secondary_color:
-        #     label: backend::lang.branding.secondary_color
-        #     type: colorpicker
-        #     tab: backend::lang.branding.colors
-        #     availableColors: ['#6a6cf7', '#16a085', '#27ae60', '#6bc48d', '#3498db', '#9b59b6', '#34495e', '#f1c40f', '#e67e22', '#e74c3c', '#ecf0f1', '#95a5a6']
+        menu_logo:
+            label: Navigation Logo
+            tab: Brand
+            type: fileupload
+            commentAbove: Replaces the dashboard link with a custom logo in the navigation.
+            mode: image
+            imageHeight: 60
+            span: left
+            fileTypes: jpg,jpeg,bmp,png,webp,gif,svg
 
-        # accent_color:
-        #     label: backend::lang.branding.accent_color
-        #     type: colorpicker
-        #     tab: backend::lang.branding.colors
-        #     availableColors: ['#6a6cf7', '#16a085', '#27ae60', '#6bc48d', '#3498db', '#9b59b6', '#34495e', '#f1c40f', '#e67e22', '#e74c3c', '#ecf0f1', '#95a5a6']
-
-        # selection_color:
-        #     label: backend::lang.branding.selection_color
-        #     type: colorpicker
-        #     tab: backend::lang.branding.colors
-        #     availableColors: ['#6a6cf7', '#16a085', '#27ae60', '#6bc48d', '#3498db', '#9b59b6', '#34495e', '#f1c40f', '#e67e22', '#e74c3c', '#ecf0f1', '#95a5a6']
+        dashboard_icon:
+            label: Dashboard Icon
+            tab: Brand
+            type: fileupload
+            commentAbove: Use a custom image for the dashboard icon (60x60).
+            mode: image
+            imageHeight: 60
+            imageWidth: 60
+            span: right
+            fileTypes: jpg,jpeg,bmp,png,webp,gif,svg
 
         login_prompt:
-            label: backend::lang.branding.login_prompt
-            commentAbove: backend::lang.branding.login_prompt_description
-            tab: backend::lang.branding.login_page
+            label: Welcome Message
+            commentAbove: This message is shown on the sign in screen for the back-end.
+            tab: Login Page
             span: full
 
         login_background_type:
-            label: backend::lang.branding.login_background_type
-            tab: backend::lang.branding.login_page
+            label: Background Type
+            tab: Login Page
             type: dropdown
             default: color
             options:
-                color: backend::lang.branding.background_flat_color
-                wallpaper: backend::lang.branding.background_wallpaper
+                color: Flat Color
+                wallpaper: Wallpaper
+                october_ai_images: October CMS AI Generated Images
             span: left
 
         login_background_color:
-            label: backend::lang.branding.background_color
-            tab: backend::lang.branding.login_page
+            label: Background Color
+            tab: Login Page
             type: colorpicker
             availableColors: ['#6a6cf7', '#16a085', '#27ae60', '#6bc48d', '#3498db', '#9b59b6', '#34495e', '#f1c40f', '#e67e22', '#e74c3c', '#ecf0f1', '#95a5a6']
             span: full
@@ -89,10 +93,10 @@ tabs:
                 condition: value[color]
 
         login_background_wallpaper:
-            label: backend::lang.branding.background_wallpaper_image
+            label: Background Wallpaper Image
             type: fileupload
             mode: image
-            tab: backend::lang.branding.login_page
+            tab: Login Page
             span: right
             fileTypes: jpg,jpeg,png
             trigger:
@@ -101,8 +105,8 @@ tabs:
                 condition: value[wallpaper]
 
         login_background_wallpaper_size:
-            label: backend::lang.branding.background_wallpaper_image_size
-            tab: backend::lang.branding.login_page
+            label: Wallpaper Size
+            tab: Login Page
             span: left
             type: radio
             default: auto
@@ -111,23 +115,27 @@ tabs:
                 field: login_background_type
                 condition: value[wallpaper]
             options:
-                auto: backend::lang.branding.background_wallpaper_size_auto
-                cover: backend::lang.branding.background_wallpaper_size_cover
+                auto: Auto
+                cover: Cover
 
         login_image_type:
-            label: backend::lang.branding.login_image
-            tab: backend::lang.branding.login_page
+            label: Image
+            tab: Login Page
             type: dropdown
             options:
-                autumn_images: backend::lang.branding.login_image_random_autumn_images
-                custom: backend::lang.branding.login_image_custom
+                autumn_images: Random Autumn Images
+                custom: Custom Image
+            trigger:
+                action: show
+                field: login_background_type
+                condition: value[color][wallpaper]
             span: left
 
         login_custom_image:
-            label: backend::lang.branding.login_page_image
+            label: Login Page Image
             type: fileupload
             mode: image
-            tab: backend::lang.branding.login_page
+            tab: Login Page
             span: right
             fileTypes: jpg,jpeg,png
             trigger:
@@ -135,15 +143,26 @@ tabs:
                 field: login_image_type
                 condition: value[custom]
 
+        color_mode:
+            label: Color Mode
+            tab: Colors
+            type: partial
+            path: ~/modules/backend/models/brandsetting/_color_mode.php
+
+        color_palette:
+            label: Color Preset
+            type: Backend\FormWidgets\PaletteEditor
+            tab: Colors
+
         menu_mode:
-            label: backend::lang.branding.menu_mode
-            tab: backend::lang.branding.navigation
+            label: Menu Style
+            tab: Navigation
             type: partial
             path: ~/modules/backend/models/brandsetting/_menu_mode.php
 
         custom_css:
-            label: backend::lang.branding.custom_stylesheet
+            label: Custom Stylesheet
             type: codeeditor
-            tab: backend::lang.branding.styles
+            tab: Styles
             size: giant
             language: css

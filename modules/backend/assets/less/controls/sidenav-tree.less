@@ -1,10 +1,21 @@
+@settings-icon-size:     22px;
+@settings-color:         var(--oc-settings-color);
+@settings-bg:            var(--oc-settings-bg);
+@settings-item:          var(--oc-settings-item);
+@settings-active-color:  var(--oc-settings-active-color);
+@settings-active-bg:     var(--oc-settings-active-bg);
+@settings-hover-bg:      var(--oc-settings-hover-bg);
+
+@settings-back-link-color: white;
+@settings-back-link-bg:    var(--bs-secondary);
+
 html .sidenav-tree {
-    background: @color-grey-4;
+    background: @settings-bg;
 }
 
 .sidenav-tree {
     width: 300px;
-    border-right: 1px solid @color-grey-3;
+    border-right: 1px solid @primary-border;
 
     // .scrollbar-scrollbar {
     //     display: none !important;
@@ -12,7 +23,7 @@ html .sidenav-tree {
 
     .settings-search-toolbar-item  {
         display: block;
-        background: white;
+        background: @input-bg;
         position: relative;
 
         &:before {
@@ -30,7 +41,7 @@ html .sidenav-tree {
             border: none;
             outline: none;
             padding: 1px 35px 1px 10px;
-            border-bottom: 1px solid @color-grey-3;
+            border-bottom: 1px solid @primary-border;
             height: 40px;
             background: transparent;
             border-radius: 0;
@@ -55,7 +66,7 @@ html .sidenav-tree {
         &[data-status=collapsed] {
             > div.group {
                 h3:before {
-                    .transform(~'rotate(0deg) translate(2px, -2px)');
+                    transform: rotate(0deg) translate(2px, -2px);
                 }
 
                 // Hide triangle
@@ -76,12 +87,10 @@ html .sidenav-tree {
             z-index: 1;
 
             h3 {
-                .user-select(none);
-                background: @color-sidebarnav-tree-group-bg;
-                color: @color-sidebarnav-tree-group;
+                user-select: none;
                 font-size: @font-size-base;
                 font-weight: 500;
-                padding: 7px 15px 8px 25px;
+                padding: 9px 15px 7px 25px;
                 margin: 0;
                 position: relative;
                 cursor: pointer;
@@ -92,11 +101,10 @@ html .sidenav-tree {
                     width: 10px;
                     height: 10px;
                     left: 10px;
-                    top: 8px;
-                    color: @color-sidebarnav-tree-group;
+                    top: 10px;
                     .icon(@angle-right);
-                    .transform(~'rotate(90deg) translate(5px, -3px)');
-                    .transition(all 0.1s ease);
+                    transform: rotate(90deg) translate(5px, -3px);
+                    transition: all 0.1s ease;
                     font-size: 16px;
                 }
             }
@@ -110,25 +118,14 @@ html .sidenav-tree {
                     display: block;
                     position: relative;
                     padding: 10px 5px 15px 44px;
-                    background: @color-sidebarnav-tree-inactive-bg;
-                    color: @color-sidebarnav-tree-inactive-text;
                     text-decoration: none !important;
                     border-radius: @border-radius-base;
-
-                    &:active,
-                    &:hover {
-                        text-decoration: none;
-                    }
-
-                    &:hover {
-                        background: @background-color-focus;
-                    }
 
                     i {
                         position: absolute;
                         left: 11px;
                         top: 11px;
-                        font-size: 22px;
+                        font-size: @settings-icon-size;
                     }
 
                     span {
@@ -136,20 +133,19 @@ html .sidenav-tree {
                         line-height: 150%;
 
                         &.header {
-                            color: @color-sidebarnav-tree-inactive-header;
                             margin-bottom: 3px;
                         }
 
                         &.description {
-                            color: @color-sidebarnav-tree-inactive-desc;
                             font-size: .875em;
                         }
                     }
                 }
 
-                &:hover a,
+                a:hover,
                 &.active a {
                     opacity: 1;
+                    text-decoration: none;
                 }
             }
         }
@@ -159,8 +155,8 @@ html .sidenav-tree {
 .system-home-link {
     display: block;
     padding: 13px 15px;
-    background: @color-sidebarnav-back-link-bg;
-    color: @color-sidebarnav-back-link-text;
+    background: @settings-back-link-bg;
+    color: @settings-back-link-color;
     font-size: 14px;
     line-height: 14px;
     text-decoration: none;
@@ -175,7 +171,7 @@ html .sidenav-tree {
     }
 
     &:hover {
-        color: @color-sidebarnav-back-link-text;
+        color: @settings-back-link-color;
         text-decoration: none;
     }
 
@@ -228,22 +224,6 @@ body.compact-container {
     body.has-sidenav-tree {
         #layout-body {
             display: block !important;
-        }
-    }
-}
-
-body:not(.sidenav-tree-expanded) {
-    .sidenav-tree ul.top-level > li > ul li.active a {
-        background: @brand-selection !important;
-        color: @color-sidebarnav-tree-active-text;
-        // padding-right: 20px;
-
-        span.header {
-            color: @color-sidebarnav-tree-active-header;
-        }
-
-        span.description {
-            color: @color-sidebarnav-tree-active-text;
         }
     }
 }
@@ -301,8 +281,7 @@ body.sidenav-tree-expanded {
                 width: 350px;
 
                 a {
-                    background: white;
-                    border: 1px solid @color-grey-4;
+                    background: @settings-item;
                     padding-top: 10px;
                     padding-right: 10px;
                     padding-bottom: 10px;
@@ -311,15 +290,14 @@ body.sidenav-tree-expanded {
                     height: 100%;
                     overflow: hidden;
 
-                    &:hover {
-                        background: @background-color-focus;
-                        border-color: @background-color-focus;
-                    }
-
                     i {
                         top: 12px;
                         font-size: 28px;
                     }
+                }
+
+                a:hover {
+                    background: @settings-hover-bg;
                 }
             }
         }
@@ -330,15 +308,70 @@ body.sidenav-tree-expanded {
         border-radius: 20px !important;
 
         input.form-control {
-            border: 1px solid @color-grey-3;
+            border: 1px solid @input-border;
             border-radius: 20px !important;
             padding-left: 15px;
             line-height: 40px;
             height: 40px;
 
             &:focus {
-                border-color: @color-form-field-border-focus;
+                border-color: @input-border-focus;
             }
+        }
+    }
+}
+
+// Item Styling
+
+.sidenav-tree ul.top-level > li {
+    > div.group h3 {
+        color: @settings-color;
+
+        &:before {
+            color: @settings-color;
+        }
+    }
+}
+
+.sidenav-tree ul.top-level > li > ul li {
+    a {
+        color: @settings-color;
+
+        span.header {
+            color: @settings-color;
+        }
+
+        span.description {
+            color: @settings-color;
+            opacity: .7;
+        }
+    }
+
+    a:hover {
+        background: @settings-hover-bg;
+        color: @settings-color;
+
+        span.header {
+            color: @settings-color;
+        }
+
+        span.description {
+            color: @settings-color;
+            opacity: 1;
+        }
+    }
+
+    &.active a {
+        color: @settings-active-color;
+        background: @settings-active-bg;
+
+        span.header {
+            color: @settings-active-color;
+        }
+
+        span.description {
+            color: @settings-active-color;
+            opacity: 1;
         }
     }
 }

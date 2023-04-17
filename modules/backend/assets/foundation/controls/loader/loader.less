@@ -82,6 +82,15 @@ a.oc-loading, button.oc-loading, span.oc-loading {
     }
 }
 
+[data-bs-theme="dark"] {
+    .loading-indicator.is-opaque,
+    .loading-indicator-container.is-opaque .loading-indicator {
+        > span {
+            background-image: url('../../images/loader-dark.svg');
+        }
+    }
+}
+
 // Sizes
 
 .loading-indicator-container.size-small {

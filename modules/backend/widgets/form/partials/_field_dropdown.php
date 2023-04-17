@@ -13,7 +13,7 @@
     ?>
     <div class="form-control" <?= $field->readOnly ? 'disabled="disabled"' : '' ?>>
         <?php if (is_array($fieldValue)): ?>
-            <?php if (substr($fieldValue[1], 0, 1) === '#'): ?>
+            <?php if (Html::isValidColor($fieldValue[1])): ?>
                 <span class="status-indicator" style="background:<?= $fieldValue[1] ?>"></span>
             <?php elseif (strpos($fieldValue[1], '.')): ?>
                 <img src="<?= $fieldValue[1] ?>" alt="" />
@@ -46,7 +46,7 @@
             <option
                 <?= $field->isSelected($value) ? 'selected="selected"' : '' ?>
                 <?php if (isset($option[1])): ?>
-                    <?php if (substr($option[1], 0, 1) === '#'): ?>
+                    <?php if (Html::isValidColor($option[1])): ?>
                         data-status="<?= $option[1] ?>"
                     <?php elseif (strpos($option[1], '.')): ?>
                         data-image="<?= $option[1] ?>"

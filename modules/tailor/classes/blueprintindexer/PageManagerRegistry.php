@@ -22,7 +22,18 @@ trait PageManagerRegistry
 
         // Sections
         foreach (EntryBlueprint::listInProject() as $blueprint) {
-            $types[$this->pageManagerBlueprintToType($blueprint)] = $blueprint->name;
+            if ($typeCode = $this->pageManagerBlueprintToType($blueprint)) {
+                if ($blueprint->usePageFinder()) {
+                    $types[$typeCode] = $blueprint->getMessage('pagefinderItemType', ":name Entry", ['name' => $blueprint->name]);
+                }
+
+                if ($blueprint->usePageFinder('list')) {
+                    $types['list-'.$typeCode] = [
+                        $blueprint->getMessage('pagefinderListType', "All :name Entries", ['name' => $blueprint->name]),
+                        true
+                    ];
+                }
+            }
         }
 
         return $types;
@@ -33,14 +44,20 @@ trait PageManagerRegistry
      */
     public function getPageManagerTypeInfo($type): array
     {
-        if ($record = $this->pageManagerTypeToModel($type)) {
-            return [
-                'references' => $this->listRecordOptionsForPageInfo($record),
-                'cmsPages' => $this->listBlueprintCmsPagesForPageInfo($record)
-            ];
+        $record = $this->pageManagerTypeToModel($type);
+        if (!$record) {
+            return [];
         }
 
-        return [];
+        $result = [];
+
+        if (!starts_with($type, 'list-')) {
+            $result['references'] = $this->listRecordOptionsForPageInfo($record);
+        }
+
+        $result['cmsPages'] = $this->listBlueprintCmsPagesForPageInfo($record);
+
+        return $result;
     }
 
     /**
@@ -86,6 +103,41 @@ trait PageManagerRegistry
      */
     public function resolvePageManagerItem($type, $item, $url, $theme): array
     {
+        if (starts_with($type, 'list-')) {
+            return $this->resolvePageManagerItemAsList($type, $item, $url, $theme);
+        }
+
+        return $this->resolvePageManagerItemAsReference($type, $item, $url, $theme);
+    }
+
+    /**
+     * resolvePageManagerItemAsList
+     */
+    protected function resolvePageManagerItemAsList($type, $item, $url, $theme): array
+    {
+        $record = $this->pageManagerTypeToModel($type);
+        if (!$record) {
+            return [];
+        }
+
+        $result = [];
+
+        $records = $record->isClassInstanceOf(\October\Contracts\Database\TreeInterface::class)
+            ? $record->getNested()
+            : $record->get();
+
+        $recurse = $record->isEntryStructure() && $item->nesting;
+
+        $result['items'] = $this->resolvePageManagerItemAsChildren($records, $item, $theme, $url, $recurse);
+
+        return $result;
+    }
+
+    /**
+     * resolvePageManagerItemAsReference
+     */
+    protected function resolvePageManagerItemAsReference($type, $item, $url, $theme): array
+    {
         $record = $this->pageManagerTypeToModel($type);
         if (!$record) {
             return [];
@@ -108,32 +160,42 @@ trait PageManagerRegistry
             return $result;
         }
 
-        $iterator = function($children) use (&$iterator, &$item, &$theme, $url) {
-            $branch = [];
-
-            foreach ($children as $child) {
-                $childUrl = $this->getPageManagerPageUrl($item->cmsPage, $child, $theme);
-
-                $childItem = [
-                    'url' => $childUrl,
-                    'isActive' => $childUrl == $url,
-                    'title' => $child->title,
-                    'mtime' => $child->updated_at,
-                ];
-
-                if ($child->children) {
-                    $childItem['items'] = $iterator($child->children);
-                }
-
-                $branch[] = $childItem;
-            }
-
-            return $branch;
-        };
-
-        $result['items'] = $iterator($model->children);
+        $result['items'] = $this->resolvePageManagerItemAsChildren($model->children, $item, $theme, $url);
 
         return $result;
+    }
+
+    /**
+     * resolvePageManagerItemAsChildren
+     */
+    protected function resolvePageManagerItemAsChildren($children, $item, $theme, $url, $recursive = true)
+    {
+        $branch = [];
+
+        foreach ($children as $child) {
+            $childUrl = $this->getPageManagerPageUrl($item->cmsPage, $child, $theme);
+
+            $childItem = [
+                'url' => $childUrl,
+                'isActive' => $childUrl == $url,
+                'title' => $child->title,
+                'mtime' => $child->updated_at,
+            ];
+
+            if ($recursive && $child->children) {
+                $childItem['items'] = $this->resolvePageManagerItemAsChildren(
+                    $child->children,
+                    $item,
+                    $theme,
+                    $url,
+                    $recursive
+                );
+            }
+
+            $branch[] = $childItem;
+        }
+
+        return $branch;
     }
 
     /**
@@ -161,6 +223,10 @@ trait PageManagerRegistry
             'entry' => [EntryRecord::class, 'inSectionUuid']
         ];
 
+        if (starts_with($typeName, 'list-')) {
+            $typeName = substr($typeName, 5);
+        }
+
         foreach ($typesToModel as $code => $callable) {
             if (starts_with($typeName, $code . '-')) {
                 $uuid = substr($typeName, strlen($code) + 1);
@@ -182,7 +248,7 @@ trait PageManagerRegistry
 
         foreach ($modelsToType as $code => $class) {
             if (is_a($blueprint, $class)) {
-                return $code . '-' . str_replace('_', '-', $blueprint->uuid);
+                return $code . '-' . $blueprint->uuid;
             }
         }
 

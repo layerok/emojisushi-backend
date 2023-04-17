@@ -1,14 +1,13 @@
 <?php namespace Backend\Models;
 
-use App;
 use Url;
 use File;
 use Lang;
-use Model;
 use Cache;
 use Config;
 use Backend;
 use Less_Parser;
+use System\Models\SettingModel;
 use Exception;
 
 /**
@@ -17,17 +16,11 @@ use Exception;
  * @package october\backend
  * @author Alexey Bobkov, Samuel Georges
  */
-class BrandSetting extends Model
+class BrandSetting extends SettingModel
 {
     use \System\Traits\ViewMaker;
     use \October\Rain\Database\Traits\Validation;
-
-    /**
-     * @var array implement these behavioral mixins
-     */
-    public $implement = [
-        \System\Behaviors\SettingsModel::class
-    ];
+    use \Backend\Models\BrandSetting\HasPalettes;
 
     /**
      * @var string settingsCode is a unique code for this object
@@ -43,7 +36,9 @@ class BrandSetting extends Model
         'favicon' => \System\Models\File::class,
         'logo' => \System\Models\File::class,
         'login_background_wallpaper' => \System\Models\File::class,
-        'login_custom_image' => \System\Models\File::class
+        'login_custom_image' => \System\Models\File::class,
+        'menu_logo' => \System\Models\File::class,
+        'dashboard_icon' => \System\Models\File::class
     ];
 
     /**
@@ -51,10 +46,9 @@ class BrandSetting extends Model
      */
     public $cacheKey = 'backend::brand.custom_css';
 
-    const PRIMARY_COLOR = '#6a6cf7';
-    const SECONDARY_COLOR = '#e67e22';
-    const ACCENT_COLOR = '#3498db';
-    const SELECTION_COLOR = '#6bc48d';
+    const COLOR_AUTO = 'auto';
+    const COLOR_LIGHT = 'light';
+    const COLOR_DARK = 'dark';
 
     const MENU_INLINE = 'inline';
     const MENU_TEXT = 'text';
@@ -63,8 +57,9 @@ class BrandSetting extends Model
     const MENU_ICONS = 'icons';
     const MENU_LEFT = 'left';
 
+    const DEFAULT_PALETTE_COLOR = 'default';
     const DEFAULT_LOGIN_COLOR = '#fef6eb';
-    const DEFAULT_LOGIN_BG_TYPE = 'color';
+    const DEFAULT_LOGIN_BG_TYPE = 'october_ai_images';
     const DEFAULT_LOGIN_IMG_TYPE = 'autumn_images';
     const DEFAULT_WALLPAPER_SIZE = 'auto';
 
@@ -86,15 +81,18 @@ class BrandSetting extends Model
         $this->app_name = self::getBaseConfig('app_name', Lang::get('system::lang.app.name'));
         $this->app_tagline = self::getBaseConfig('tagline', Lang::get('system::lang.app.tagline'));
         $this->login_prompt = self::getBaseConfig('login_prompt', Lang::get('backend::lang.account.login_prompt'));
-        $this->primary_color = self::getBaseConfig('primary_color', self::PRIMARY_COLOR);
-        $this->secondary_color = self::getBaseConfig('secondary_color', self::SECONDARY_COLOR);
-        $this->accent_color = self::getBaseConfig('accent_color', self::ACCENT_COLOR);
-        $this->selection_color = self::getBaseConfig('selection_color', self::SELECTION_COLOR);
+        $this->color_mode = self::getBaseConfig('color_mode', self::COLOR_LIGHT);
         $this->menu_mode = self::getBaseConfig('menu_mode', self::MENU_INLINE);
         $this->login_background_type = self::getBaseConfig('login_background_type', self::DEFAULT_LOGIN_BG_TYPE);
         $this->login_background_color = self::getBaseConfig('login_background_color', self::DEFAULT_LOGIN_COLOR);
         $this->login_background_wallpaper_size = self::getBaseConfig('login_background_wallpaper_size', self::DEFAULT_WALLPAPER_SIZE);
         $this->login_image_type = self::getBaseConfig('login_image_type', self::DEFAULT_LOGIN_IMG_TYPE);
+
+        $defaultPalette = self::getBaseConfig('color_palette', self::DEFAULT_PALETTE_COLOR);
+
+        $this->color_palette = [
+            'preset' => $defaultPalette,
+        ] + $this->getPaletteColors($defaultPalette);
 
         // Attempt to load custom CSS
         $brandCssPath = File::symbolizePath(self::getBaseConfig('stylesheet_path'));
@@ -104,11 +102,33 @@ class BrandSetting extends Model
     }
 
     /**
-     * afterSave event
+     * clearCache
      */
-    public function afterSave()
+    public function clearCache()
     {
-        Cache::forget(self::instance()->cacheKey);
+        parent::clearCache();
+
+        Cache::forget($this->cacheKey . '.stylesheet');
+        Cache::forget($this->cacheKey . '.favicon');
+        Cache::forget($this->cacheKey . '.menu_logo');
+        Cache::forget($this->cacheKey . '.dashboard_icon');
+    }
+
+    /**
+     * getColorMode
+     */
+    public static function getColorMode(): string
+    {
+        $settings = self::instance();
+
+        if (
+            $settings->color_mode === 'auto' &&
+            isset($_COOKIE['admin_color_mode'])
+        ) {
+            return (string) $_COOKIE['admin_color_mode'];
+        }
+
+        return (string) $settings->color_mode;
     }
 
     /**
@@ -116,13 +136,17 @@ class BrandSetting extends Model
      */
     public static function getFavicon()
     {
-        $settings = self::instance();
+        $cacheKey = self::instance()->cacheKey . '.favicon';
 
-        if ($settings->favicon) {
-            return $settings->favicon->getPath();
-        }
+        return Cache::rememberForever($cacheKey, function() {
+            $settings = self::instance();
 
-        return self::getDefaultFavicon() ?: null;
+            if ($settings->favicon) {
+                return $settings->favicon->getPath();
+            }
+
+            return self::getBaseConfigPath('favicon_path', Backend::skinAsset('assets/images/favicon.png'));
+        });
     }
 
     /**
@@ -137,6 +161,42 @@ class BrandSetting extends Model
         }
 
         return self::getDefaultLogo() ?: null;
+    }
+
+    /**
+     * getNavLogo
+     */
+    public static function getNavLogo()
+    {
+        $cacheKey = self::instance()->cacheKey . '.menu_logo';
+
+        return Cache::rememberForever($cacheKey, function() {
+            $settings = self::instance();
+
+            if ($settings->menu_logo) {
+                return $settings->menu_logo->getPath();
+            }
+
+            return self::getBaseConfigPath('menu_logo_path');
+        });
+    }
+
+    /**
+     * getNavDashboardIcon
+     */
+    public static function getNavDashboardIcon()
+    {
+        $cacheKey = self::instance()->cacheKey . '.dashboard_icon';
+
+        return Cache::rememberForever($cacheKey, function() {
+            $settings = self::instance();
+
+            if ($settings->dashboard_icon) {
+                return $settings->dashboard_icon->getPath();
+            }
+
+            return self::getBaseConfigPath('dashboard_icon_path');
+        });
     }
 
     /**
@@ -186,14 +246,12 @@ class BrandSetting extends Model
      */
     public static function renderCss()
     {
-        $cacheKey = self::instance()->cacheKey;
-        if (Cache::has($cacheKey)) {
-            return Cache::get($cacheKey);
-        }
-
         try {
-            $customCss = self::compileCss();
-            Cache::forever($cacheKey, $customCss);
+            $cacheKey = self::instance()->cacheKey . '.stylesheet';
+
+            $customCss = Cache::rememberForever($cacheKey, function() {
+                return self::compileCss();
+            });
         }
         catch (Exception $ex) {
             $customCss = '/* ' . $ex->getMessage() . ' */';
@@ -207,31 +265,39 @@ class BrandSetting extends Model
      */
     public static function compileCss()
     {
-        $parser = new Less_Parser(['compress' => true]);
+        $instance = self::instance();
         $basePath = base_path('modules/backend/models/brandsetting');
 
-        $primaryColor = self::get('primary_color', self::PRIMARY_COLOR);
-        $secondaryColor = self::get('secondary_color', self::PRIMARY_COLOR);
-        $accentColor = self::get('accent_color', self::ACCENT_COLOR);
-        $loginBgColor = self::get('login_background_color', self::DEFAULT_LOGIN_COLOR);
-        $wallpaperSize = self::get('login_background_wallpaper_size', self::DEFAULT_WALLPAPER_SIZE);
+        // Process settings
+        $loginBgColor = $instance->login_background_color ?? self::DEFAULT_LOGIN_COLOR;
+        $wallpaperSize = $instance->login_background_wallpaper_size ?? self::DEFAULT_WALLPAPER_SIZE;
 
-        $parser->ModifyVars([
+        // Process palettes
+        $preset = $instance->color_palette['preset'] ?? 'default';
+        $usePalette = $preset !== 'default';
+        $lightPalette = $instance->getPaletteStyleVarsFor($preset, 'light', $instance->color_palette['light'] ?? []);
+        $darkPalette = $instance->getPaletteStyleVarsFor($preset, 'dark', $instance->color_palette['dark'] ?? []);
+
+        // Prepare LESS content
+        $lessContent = '';
+        if ($usePalette) {
+            $lessContent .= File::get($basePath . '/style_palette.less');
+        }
+        $lessContent .= File::get($basePath . '/style_custom.less');
+        $lessContent .= self::get('custom_css');
+
+        // Prepare LESS vars
+        $lessVars = [
             'logo-image' => "'".self::getLogo()."'",
-            'brand-primary' => $primaryColor,
-            'brand-secondary' => $secondaryColor,
-            'brand-accent' => $accentColor,
-            'brand-selection' => $accentColor,
             'login-bg-color' => $loginBgColor,
             'login-wallpaper-size' => $wallpaperSize,
             'login-wallpaper' => "'".self::getLoginWallpaperImage()."'"
-        ]);
+        ] + $lightPalette + $darkPalette;
 
-        $parser->parse(
-            File::get($basePath . '/custom.less') .
-            self::get('custom_css')
-        );
-
+        // Compile LESS
+        $parser = new Less_Parser(['compress' => true]);
+        $parser->ModifyVars($lessVars);
+        $parser->parse($lessContent);
         return $parser->getCss();
     }
 
@@ -242,7 +308,8 @@ class BrandSetting extends Model
     {
         return (object)[
             'loginImageType' => self::get('login_image_type', self::DEFAULT_LOGIN_IMG_TYPE),
-            'loginCustomImage' => self::getLoginCustomImage()
+            'loginCustomImage' => self::getLoginCustomImage(),
+            'loginBackgroundType' => self::get('login_background_type', self::DEFAULT_LOGIN_BG_TYPE)
         ];
     }
 
@@ -263,6 +330,25 @@ class BrandSetting extends Model
     }
 
     /**
+     * getBaseConfigPath returns a configured path from base config
+     */
+    public static function getBaseConfigPath(string $value, string $default = null): ?string
+    {
+        $configValue = self::getBaseConfig($value);
+        if (!$configValue) {
+            return $default;
+        }
+
+        $configPath = File::symbolizePath($configValue);
+
+        if ($configPath && File::exists($configPath)) {
+            return Url::asset(File::localToPublic($configPath));
+        }
+
+        return $default;
+    }
+
+    /**
      * isBaseConfigured checks if base brand settings found in config
      */
     public static function isBaseConfigured(): bool
@@ -271,30 +357,10 @@ class BrandSetting extends Model
     }
 
     /**
-     * getDefaultFavicon returns a configured favicon image
-     */
-    public static function getDefaultFavicon()
-    {
-        $faviconPath = File::symbolizePath(self::getBaseConfig('favicon_path'));
-
-        if ($faviconPath && File::exists($faviconPath)) {
-            return Url::asset(File::localToPublic($faviconPath));
-        }
-
-        return Backend::skinAsset('assets/images/favicon.png');
-    }
-
-    /**
      * getDefaultLogo returns a default backend logo image
      */
     public static function getDefaultLogo()
     {
-        $logoPath = File::symbolizePath(self::getBaseConfig('logo_path'));
-
-        if ($logoPath && File::exists($logoPath)) {
-            return Url::asset(File::localToPublic($logoPath));
-        }
-
-        return null;
+        return self::getBaseConfigPath('logo_path');
     }
 }

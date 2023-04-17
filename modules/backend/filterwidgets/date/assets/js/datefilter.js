@@ -121,6 +121,13 @@
         if (!this.timezone) {
             this.timezone = 'UTC';
         }
+
+        // Set both timezones to UTC to disable converting between them
+        var scopeData = this.$el.data('scope-data');
+        if (!scopeData.useTimezone) {
+            this.appTimezone = 'UTC';
+            this.timezone = 'UTC';
+        }
     }
 
     DateFilter.prototype.dispose = function() {

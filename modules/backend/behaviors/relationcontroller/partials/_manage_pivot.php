@@ -28,7 +28,7 @@
                     class="btn btn-primary"
                     data-control="popup"
                     data-handler="onRelationManageAddPivot"
-                    data-size="huge"
+                    data-size="<?= $this->popupSize ?>"
                     data-dismiss="popup"
                     data-stripe-load-indicator>
                     <?= e(trans('backend::lang.relation.add_selected')) ?>

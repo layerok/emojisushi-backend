@@ -98,6 +98,8 @@ class RoleManager
                 unset($this->permissions[$key]);
             }
         }
+        
+        $this->permissionCache = $this->permissions;
     }
 
     /**

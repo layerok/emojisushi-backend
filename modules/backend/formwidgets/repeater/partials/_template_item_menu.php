@@ -32,26 +32,28 @@
             <?= __("Collapse") ?>
         </a>
     </li>
-    <li role="presentation">
-        <a
-            data-repeater-move-up
-            role="menuitem"
-            href="javascript:;"
-            tabindex="-1">
-            <i class="octo-icon-long-arrow-up"></i>
-            <?= __("Move Up") ?>
-        </a>
-    </li>
-    <li role="presentation">
-        <a
-            data-repeater-move-down
-            role="menuitem"
-            href="javascript:;"
-            tabindex="-1">
-            <i class="octo-icon-long-arrow-down"></i>
-            <?= __("Move Down") ?>
-        </a>
-    </li>
+    <?php if ($showReorder): ?>
+        <li role="presentation">
+            <a
+                data-repeater-move-up
+                role="menuitem"
+                href="javascript:;"
+                tabindex="-1">
+                <i class="octo-icon-long-arrow-up"></i>
+                <?= __("Move Up") ?>
+            </a>
+        </li>
+        <li role="presentation">
+            <a
+                data-repeater-move-down
+                role="menuitem"
+                href="javascript:;"
+                tabindex="-1">
+                <i class="octo-icon-long-arrow-down"></i>
+                <?= __("Move Down") ?>
+            </a>
+        </li>
+    <?php endif ?>
     <li role="separator" class="divider"></li>
     <li role="presentation">
         <a

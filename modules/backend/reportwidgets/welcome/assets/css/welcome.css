@@ -9,11 +9,11 @@
     margin-top: 15px;
 }
 .widget-welcome .welcome-message strong {
-    color: #35425B;
+    color: var(--oc-primary-color);
 }
 
 .widget-welcome .welcome-logo {
-    background: #f9f9f9;
+    background: var(--bs-body-bg);
     width: 200px;
     padding: 15px;
     float: left;

@@ -1,6 +1,6 @@
 <a
     data-control="popup"
-    data-size="huge"
+    data-size="<?= $this->popupSize ?>"
     data-handler="onRelationButtonUpdate"
     data-request-data="manage_id: '<?= $relationManageId ?>'"
     href="javascript:;"

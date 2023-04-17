@@ -11,8 +11,8 @@
 .field-markdowneditor {
     width: 100%;
     position: relative;
-    border: 1px solid @color-form-field-border;
-    background: #fff;
+    border: 1px solid @input-border;
+    background: @input-bg;
     transition: @input-transition;
 
     &.size-adaptive {
@@ -23,7 +23,7 @@
         opacity: 0;
     }
 
-    .border-radius(@input-border-radius);
+    border-radius: @input-border-radius;
     .editor-toolbar {
         border-top: none;
         border-right: none;
@@ -38,7 +38,7 @@
     }
 
     &.editor-focus {
-        border: 1px solid @color-form-field-border-focus;
+        border: 1px solid @input-border-focus;
     }
 
     &.size-tiny {
@@ -164,7 +164,7 @@
             width: 50%;
 
             .editor-code {
-                border-right: 1px solid @color-grey-3;
+                border-right: 1px solid @primary-border;
             }
         }
     }

@@ -119,7 +119,7 @@ class Lists extends WidgetBase implements ListElement
     /**
      * @var string customPageName specifies a name to use in the page URL for paginated records.
      */
-    public $customPageName;
+    public $customPageName = 'page';
 
     //
     // Object properties
@@ -131,28 +131,28 @@ class Lists extends WidgetBase implements ListElement
     protected $defaultAlias = 'list';
 
     /**
-     * @var array Collection of all list columns used in this list.
+     * @var array allColumns collection of all list columns used in this list.
      * @see Backend\Classes\ListColumn
      */
     protected $allColumns;
 
     /**
-     * @var array Override default columns with supplied key names.
+     * @var array columnOverride default columns with supplied key names.
      */
     protected $columnOverride;
 
     /**
-     * @var array Columns to display and their order.
+     * @var array visibleColumns to display and their order.
      */
     protected $visibleColumns;
 
     /**
-     * @var object Model data collection.
+     * @var object records of models as a data collection.
      */
     protected $records;
 
     /**
-     * @var int Current page number.
+     * @var int currentPageNumber
      */
     protected $currentPageNumber;
 
@@ -204,7 +204,7 @@ class Lists extends WidgetBase implements ListElement
         }
 
         if (!$this->customPageName) {
-            $this->customPageName = 'page';
+            $this->customPageName = '_page';
         }
 
         $this->validateModel();
@@ -293,11 +293,42 @@ class Lists extends WidgetBase implements ListElement
     {
         $this->prepareVars();
 
-        return ['#'.$this->getId() => $this->makePartial('list')];
+        $result = ['#'.$this->getId() => $this->makePartial('list')];
+
+        /**
+         * @event backend.list.refresh
+         * Called after the list is refreshed, should return an array of additional result parameters.
+         *
+         * Example usage:
+         *
+         *     Event::listen('backend.list.refresh', function ((\Backend\Widgets\List) $listWidget, (array) $result) {
+         *         $result['#my-partial-id' => $listWidget->makePartial('$/path/to/custom/backend/_partial.php')];
+         *         return $result;
+         *     });
+         *
+         * Or
+         *
+         *     $listWidget->bindEvent('list.refresh', function ((array) $result) use ((\Backend\Widgets\List $listWidget)) {
+         *         $result['#my-partial-id' => $listWidget->makePartial('$/path/to/custom/backend/_partial.php')];
+         *         return $result;
+         *     });
+         *
+         */
+        $eventResults = $this->fireSystemEvent('backend.list.refresh', [$result], false);
+
+        foreach ($eventResults as $eventResult) {
+            if (!is_array($eventResult)) {
+                continue;
+            }
+
+            $result = $eventResult + $result;
+        }
+
+        return $result;
     }
 
     /**
-     * Event handler for switching the page number.
+     * onPaginate event handler for switching the page number.
      */
     public function onPaginate()
     {
@@ -307,7 +338,7 @@ class Lists extends WidgetBase implements ListElement
     }
 
     /**
-     * Event handler for changing the filter
+     * onFilter event handler for changing the filter
      */
     public function onFilter()
     {
@@ -317,8 +348,7 @@ class Lists extends WidgetBase implements ListElement
     }
 
     /**
-     * Validate the supplied form model.
-     * @return void
+     * validateModel is present and right class type
      */
     protected function validateModel()
     {
@@ -400,7 +430,7 @@ class Lists extends WidgetBase implements ListElement
                 else {
                     $columnName = isset($column->sqlSelect)
                         ? DbDongle::raw($this->parseTableName($column->sqlSelect, $primaryTable))
-                        : DbDongle::cast(Db::getTablePrefix() . $primaryTable . '.' . $column->columnName, 'TEXT');
+                        : Db::getTablePrefix() . $primaryTable . '.' . $column->columnName;
 
                     $primarySearchable[] = $columnName;
                 }
@@ -607,7 +637,8 @@ class Lists extends WidgetBase implements ListElement
             $currentPageNumber = input($this->customPageName);
         }
 
-        $currentPageNumber = intval($currentPageNumber);
+        // Convert empty page number to page 1
+        $currentPageNumber = $currentPageNumber ? intval($currentPageNumber) : 1;
 
         // Validate the page number
         if ($currentPageNumber > 1) {
@@ -1484,7 +1515,7 @@ class Lists extends WidgetBase implements ListElement
             'defaultValue' => $value,
             'format' => $column->format,
             'formatAlias' => 'time',
-            'useTimezone' => $this->getColumnTimezonePreference($column, false),
+            'useTimezone' => $this->getColumnTimezonePreference($column),
         ];
 
         return Backend::dateTime($dateTime, $options);
@@ -1512,7 +1543,7 @@ class Lists extends WidgetBase implements ListElement
             'defaultValue' => $value,
             'format' => $column->format,
             'formatAlias' => 'dateLongMin',
-            'useTimezone' => $this->getColumnTimezonePreference($column, false),
+            'useTimezone' => $this->getColumnTimezonePreference($column),
         ];
 
         return Backend::dateTime($dateTime, $options);

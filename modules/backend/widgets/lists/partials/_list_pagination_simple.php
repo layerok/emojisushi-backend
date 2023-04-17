@@ -1,3 +1,6 @@
+<?php
+    $transportMethod = $pageName === '_page' ? 'data' : 'query';
+?>
 <div class="list-pagination">
     <nav class="list-pagination-links ms-auto loading-indicator-container size-small">
         <ul class="pagination">
@@ -7,7 +10,7 @@
                         href="javascript:;"
                         class="page-link page-first"
                         data-request="<?= $this->getEventHandler('onPaginate') ?>"
-                        data-request-query="{ <?= e($pageName) ?>: 1 }"
+                        data-request-<?= $transportMethod ?>="{ <?= e($pageName) ?>: 1 }"
                         data-load-indicator="<?= e(trans('backend::lang.list.loading')) ?>"
                         title="<?= e(trans('backend::lang.list.first_page')) ?>">
                         <i class="icon-angle-double-left"></i>
@@ -27,7 +30,7 @@
                         href="javascript:;"
                         class="page-link page-back"
                         data-request="<?= $this->getEventHandler('onPaginate') ?>"
-                        data-request-query="{ <?= e($pageName) ?>: <?= $pageCurrent - 1 ?> }"
+                        data-request-<?= $transportMethod ?>="{ <?= e($pageName) ?>: <?= $pageCurrent - 1 ?> }"
                         data-load-indicator="<?= e(trans('backend::lang.list.loading')) ?>"
                         title="<?= e(trans('backend::lang.list.prev_page')) ?>">
                         <i class="icon-angle-left"></i>
@@ -52,7 +55,7 @@
                     <a
                         href="javascript:;"
                         class="page-link page-next"
-                        data-request-query="{ <?= e($pageName) ?>: <?= $pageCurrent + 1 ?> }"
+                        data-request-<?= $transportMethod ?>="{ <?= e($pageName) ?>: <?= $pageCurrent + 1 ?> }"
                         data-request="<?= $this->getEventHandler('onPaginate') ?>"
                         data-load-indicator="<?= e(trans('backend::lang.list.loading')) ?>"
                         title="<?= e(trans('backend::lang.list.next_page')) ?>">

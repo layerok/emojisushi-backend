@@ -53,7 +53,7 @@ table.table.data {
 
         span.list-reorder-handle {
             display: none;
-            background: white;
+            background: @toolbar-bg;
             text-align: center;
             cursor: move;
             left: -6px;
@@ -71,7 +71,7 @@ table.table.data {
             }
 
             &:active {
-                background: @background-color-focus;
+                background: @toolbar-focus-bg;
             }
         }
     }
@@ -111,7 +111,7 @@ table.table.data {
                     width: @tree-control-size;
                     height: @tree-control-size;
                     font-size: 15px;
-                    color: #333333;
+                    color: @text-color;
                     text-indent: 0;
                 }
             }

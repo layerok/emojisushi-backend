@@ -53,11 +53,11 @@ trait HasStatusScopes
     public function getStatusCodeOptions()
     {
         return [
-            'published' => ['Published', '#85CB43'],
-            'expired' => ['Expired', '#c0392b'],
-            'scheduled' => ['Scheduled', '#6a6cf7'],
+            'published' => ['Published', 'var(--bs-green)'],
+            'expired' => ['Expired', 'var(--bs-red)'],
+            'scheduled' => ['Scheduled', 'var(--bs-indigo)'],
             'hidden' => ['Hidden', '#bdc3c7'],
-            'draft' => ['Draft', '#e67e21'],
+            'draft' => ['Draft', 'var(--bs-orange)'],
             'deleted' => ['Deleted', '#536061']
         ];
     }

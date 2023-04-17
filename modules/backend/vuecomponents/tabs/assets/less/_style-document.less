@@ -12,19 +12,19 @@
 
     > .tablist-container {
         .tabs-scrollable {
-            background-color: @color-grey-3-light;
+            background-color: @editor-tab-bg;
         }
 
         .tabs-toolbar {
             line-height: 39px;
-            background-color: @color-grey-3-light;
+            background-color: @editor-tab-bg;
 
             &:after {
                 content: '';
                 height: 100%;
                 width: 1px;
                 top: 0;
-                background: @color-grey-3;
+                background: @primary-border;
                 position: absolute;
                 margin-left: -1px;
             }
@@ -37,7 +37,7 @@
         .tablist {
             &:after {
                 .full-width-border();
-                background-color: @color-grey-3;
+                background-color: @primary-border;
                 z-index: 0;
             }
 
@@ -47,18 +47,18 @@
 
             button {
                 height: 48px;
-                border-left: 1px solid @color-grey-3;
+                border-left: 1px solid @primary-border;
                 max-width: 220px;
                 min-width: 120px;
 
                 &.active {
-                    background-color: @body-bg;
-                    color: @color-grey-7;
+                    background-color: @editor-tab-active-bg;
+                    color: @editor-tab-active-color;
 
                     &:after {
                         .full-width-border();
                         z-index: 1;
-                        background-color: @body-bg;
+                        background-color: @editor-tab-active-bg;
                     }
                 }
 
@@ -67,7 +67,7 @@
                 }
 
                 &:last-child {
-                    border-right: 1px solid @color-grey-3;
+                    border-right: 1px solid @primary-border;
                 }
             }
         }

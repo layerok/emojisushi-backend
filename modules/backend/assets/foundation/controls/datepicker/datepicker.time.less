@@ -194,7 +194,7 @@
     height: 200px;
     overflow: visible;
     position: relative;
-    // Disable text selection highlighting. Thanks to Hermanya 
+    // Disable text selection highlighting. Thanks to Hermanya
     -webkit-touch-callout: none;
     -webkit-user-select: none;
     -khtml-user-select: none;
@@ -226,7 +226,6 @@
     cursor: pointer;
     &.active,
     &:hover {
-        background-color: rgb(192, 229, 247);
         background-color: rgba(0, 149, 221, .25);
     }
 }
@@ -250,7 +249,7 @@
 // }
 
 .clockpicker-dial {
-    .transition(~"transform 350ms, opacity 350ms");
+    transition: transform 350ms, opacity 350ms;
 }
 .clockpicker-dial-out {
     opacity: 0;

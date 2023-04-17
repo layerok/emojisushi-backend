@@ -19,6 +19,7 @@ class System
      * @var const keys for manifest storage
      */
     const MANIFEST_MODULES = 'modules.all';
+    const MANIFEST_DB_CHECK = 'database.check';
 
     /**
      * @var bool hasDatabaseCache helps multiple calls to hasDatabase()
@@ -91,8 +92,16 @@ class System
             return $this->hasDatabaseCache;
         }
 
-        return $this->hasDatabaseCache = App::hasDatabase() &&
+        if (Manifest::get(self::MANIFEST_DB_CHECK) === true) {
+            return $this->hasDatabaseCache = true;
+        }
+
+        $loadedValue = App::hasDatabase() &&
             Schema::hasTable(Config::get('database.migrations', 'migrations'));
+
+        Manifest::put(self::MANIFEST_DB_CHECK, (bool) $loadedValue);
+
+        return $this->hasDatabaseCache = $loadedValue;
     }
 
     /**

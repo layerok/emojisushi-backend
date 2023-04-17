@@ -67,7 +67,7 @@ trait HasViewMode
      */
     protected function makeViewWidgetAsList(): ?ListWidget
     {
-        $isPivot = in_array($this->relationType, ['belongsToMany', 'morphToMany', 'morphedByMany']);
+        $isPivot = in_array($this->relationType, ['belongsToMany', 'morphedByMany', 'morphToMany']);
 
         $config = $this->makeConfigForMode('view', 'list');
         $config->model = $this->relationModel;
@@ -81,10 +81,11 @@ trait HasViewMode
         $config->customPageName = $this->getConfig('view[customPageName]', camel_case(class_basename($this->relationModel).'Page'));
 
         $defaultOnClick = sprintf(
-            "$.oc.relationBehavior.clickViewListRecord(':%s', '%s', '%s')",
+            "$.oc.relationBehavior.clickViewListRecord(':%s', '%s', '%s', '%s')",
             $this->relationModel->getKeyName(),
             $this->relationGetId(),
-            $this->relationGetSessionKey()
+            $this->relationGetSessionKey(),
+            $this->popupSize
         );
 
         if ($config->recordUrl) {

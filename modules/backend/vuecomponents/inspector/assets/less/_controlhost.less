@@ -1,14 +1,14 @@
 .component-backend-inspector-controlhost {
     width: 100%;
     table-layout: fixed; // The fixed layout doesn't work well in some cases but it still must be "fixed"
-    background: white;
-    border-top: 1px solid @color-grey-3;
+    background-color: transparent;
+    border-top: 1px solid @primary-border;
 
     > tr {
         > th,
         > td {
             padding: 0;
-            border-bottom: 1px solid @color-grey-3;
+            border-bottom: 1px solid @primary-border;
         }
 
         &.hide-bottom-border {
@@ -43,7 +43,7 @@
         th {
             background: @color-grey-4;
             vertical-align: top;
-            .user-select(none);
+            user-select: none;
         }
     }
 
@@ -61,7 +61,7 @@
             top: 0;
             height: 100%;
             width: 1px;
-            border-left: 1px dotted @color-grey-3;
+            border-left: 1px dotted @primary-border;
             opacity: 1;
             transition: opacity 0.35s;
         }
@@ -100,7 +100,7 @@
             overflow: hidden;
             text-overflow: ellipsis;
             font-weight: 500;
-            color: @color-text-grey-4;
+            color: @primary-color;
         }
 
         .property-description {
@@ -134,7 +134,7 @@
 
         label, .full-width-property-description {
             word-break: break-all;
-            color: @color-text-grey-4;
+            color: @primary-color;
         }
 
         .full-width-property-description {

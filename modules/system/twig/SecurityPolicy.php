@@ -146,6 +146,7 @@ final class SecurityPolicy implements SecurityPolicyInterface
             $obj instanceof \Carbon\Carbon ||
             $obj instanceof \Illuminate\View\View ||
             $obj instanceof \Illuminate\Http\Request ||
+            $obj instanceof \Illuminate\Session\Store ||
             $obj instanceof \Illuminate\Support\HtmlString ||
             $obj instanceof \Illuminate\Support\Collection ||
             $obj instanceof \Illuminate\Database\Query\Builder ||

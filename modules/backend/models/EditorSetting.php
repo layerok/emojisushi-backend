@@ -2,8 +2,8 @@
 
 use File;
 use Cache;
-use Model;
 use Less_Parser;
+use System\Models\SettingModel;
 use Exception;
 
 /**
@@ -12,17 +12,10 @@ use Exception;
  * @package october\backend
  * @author Alexey Bobkov, Samuel Georges
  */
-class EditorSetting extends Model
+class EditorSetting extends SettingModel
 {
     use \System\Traits\ViewMaker;
     use \October\Rain\Database\Traits\Validation;
-
-    /**
-     * @var array Behaviors implemented by this model.
-     */
-    public $implement = [
-        \System\Behaviors\SettingsModel::class
-    ];
 
     /**
      * @var string settingsCode is a unique code for this object.
@@ -176,11 +169,13 @@ class EditorSetting extends Model
     }
 
     /**
-     * afterSave
+     * clearCache
      */
-    public function afterSave()
+    public function clearCache()
     {
-        Cache::forget(self::instance()->cacheKey);
+        parent::clearCache();
+
+        Cache::forget($this->cacheKey);
     }
 
     /**

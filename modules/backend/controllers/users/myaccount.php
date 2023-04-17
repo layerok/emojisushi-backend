@@ -1,9 +1,9 @@
 <?php if ($this->user->hasAccess('admins.manage')): ?>
     <?php Block::put('breadcrumb') ?>
-        <ul>
-            <li><a href="<?= Backend::url('backend/users') ?>"><?= e(trans('backend::lang.user.menu_label')) ?></a></li>
-            <li><?= e(__($this->pageTitle)) ?></li>
-        </ul>
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="<?= Backend::url('backend/users') ?>"><?= e(trans('backend::lang.user.menu_label')) ?></a></li>
+            <li class="breadcrumb-item active" aria-current="page"><?= e(__($this->pageTitle)) ?></li>
+        </ol>
     <?php Block::endPut() ?>
 <?php endif ?>
 
@@ -56,9 +56,9 @@
     <?php Block::endPut() ?>
 
 <?php else: ?>
-    <div class="control-breadcrumb">
+    <nav class="control-breadcrumb">
         <?= Block::placeholder('breadcrumb') ?>
-    </div>
+    </nav>
     <div class="padded-container">
         <p class="flash-message static error"><?= e(__($this->fatalError)) ?></p>
         <p><a href="<?= Backend::url('backend/users') ?>" class="btn btn-default"><?= e(trans('backend::lang.user.return')) ?></a></p>

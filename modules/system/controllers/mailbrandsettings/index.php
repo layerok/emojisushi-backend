@@ -1,7 +1,7 @@
 <?php Block::put('breadcrumb') ?>
-    <ul>
-        <li><?= e(__($this->pageTitle)) ?></li>
-    </ul>
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item active" aria-current="page"><?= e(__($this->pageTitle)) ?></li>
+    </ol>
 <?php Block::endPut() ?>
 
 <?php if (!$this->fatalError): ?>

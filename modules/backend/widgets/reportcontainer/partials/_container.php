@@ -3,12 +3,12 @@
 
     <ul
         id="<?= $this->getId('container-list') ?>"
-        class="<?= $this->canAddAndDelete ? 'add-delete' : null ?>"
+        class="<?= $this->showAddRemove ? 'add-delete' : null ?>"
         data-control="report-container">
         <?= $this->makePartial('widget_list') ?>
     </ul>
 
-    <?php if ($this->canAddAndDelete): ?>
+    <?php if ($this->showAddRemove): ?>
         <div id="<?= $this->getId('container-toolbar') ?>" data-container-toolbar>
             <?= $this->makePartial('widget_toolbar') ?>
         </div>

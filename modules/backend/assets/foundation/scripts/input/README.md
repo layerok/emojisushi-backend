@@ -2,41 +2,42 @@
 
 Allows keyboard shortcuts (hotkeys) to be bound to an element's click event.
 
-# Example
+## Example
 
-    <button
-        class="btn btn-default"
-        data-hotkey="b"
-        onclick="alert('B is for Banana!')">
-        Press "B" on your keyboard
-    </button>
+```html
+<button
+    class="btn btn-default"
+    data-hotkey="b"
+    onclick="alert('B is for Banana!')">
+    Press "B" on your keyboard
+</button>
 
-    <button
-        class="btn btn-default"
-        data-hotkey="shift+r"
-        onclick="confirm('Shift gears...?')">
-        Press "Shift + R" on your keyboard
-    </button>
+<button
+    class="btn btn-default"
+    data-hotkey="shift+r"
+    onclick="confirm('Shift gears...?')">
+    Press "Shift + R" on your keyboard
+</button>
+```
 
 ## Javascript API
 
 If you use a selector other than a button or a link, you will need to add the `hotkeyVisible` property to the hotkey config.
 
-    $('html').hotKey({
-        hotkey: 'ctrl+s, cmd+s',
-        hotkeyVisible: false,
-        callback: doSomething
-    });
+```js
+$('html').hotKey({
+    hotkey: 'ctrl+s, cmd+s',
+    hotkeyVisible: false,
+    callback: doSomething
+});
+```
 
 # Input Monitoring
 
 This will monitor the user input for unsaved changes and show a confirmation box if the user attempts to leave the page. The script adds the "oc-data-changed" class to the form element when the form data is changed.
 
 ```html
-<form
-    data-change-monitor
-    data-window-close-confirm="There is unsaved data"
->
+<form data-change-monitor>
     ...
 </form>
 ```
@@ -45,29 +46,31 @@ This will monitor the user input for unsaved changes and show a confirmation box
 
 Click the "Mark changed" button and "Reload page".
 
-    <form
-        data-window-close-confirm="There is unsaved data"
-        data-change-monitor>
 
-        <button type="button" onclick="$(this).trigger('change')">
-            Mark changed
-        </button>
+```html
+<form data-change-monitor>
 
-        <button type="button" onclick="$(this).trigger('unchange.oc.changeMonitor')">
-            Mark saved
-        </button>
+    <button type="button" onclick="$(this).trigger('change')">
+        Mark Changed
+    </button>
 
-        <hr />
+    <button type="button" data-change-monitor-commit>
+        Mark Saved
+    </button>
 
-        <button type="button" onclick="window.location.reload()">
-            Reload page
-        </button>
+    <hr />
 
-    </form>
+    <button type="button" onclick="window.location.reload()">
+        Reload Page
+    </button>
+
+</form>
+```
 
 ## Supported data attributes
 
 - data-change-monitor - enables the plugin form a form
+- data-change-monitor-commit - commits changes to monitor (unchange) when clicked
 
 ## Supported events
 
@@ -92,7 +95,7 @@ $('#form').changeMonitor()
 
 Scripts that manage user input events.
 
-# Example
+## Example
 
     <input type="text" id="presetExample1" placeholder="Type something" />
     <input type="text"

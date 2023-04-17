@@ -5,7 +5,7 @@ ul {
 
         .node-label {
             display: block;
-            color: @color-text-grey-1;
+            color: @toolbar-color;
             position: relative;
             z-index: 1;
             vertical-align: top;
@@ -38,24 +38,24 @@ ul {
         }
 
         &.root-node > .item-label-outer-container > .item-label-container .node-label {
-            color: @gray-dark;
+            color: @editor-section-color;
         }
 
         &:focus {
             outline: none;
 
             > .item-label-outer-container:before {
-                background-color: @background-color-focus;
+                background-color: @toolbar-focus-bg;
             }
         }
 
         &.selectable-node:not(.selected-node) {
             > .item-label-outer-container:hover:before {
-                background-color: @background-color-focus;
+                background-color: @toolbar-focus-bg;
             }
 
             &.context-menu-visible > .item-label-outer-container:before {
-                background-color: @background-color-focus;
+                background-color: @toolbar-focus-bg;
             }
         }
 

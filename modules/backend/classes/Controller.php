@@ -152,7 +152,7 @@ class Controller extends Extendable
         }
 
         // Impersonate backend role
-        if (BackendAuth::isRoleImpersonator()) {
+        if ($this->user && BackendAuth::isRoleImpersonator()) {
             (new \Backend\Widgets\RoleImpersonator($this))->bindToController();
         }
 

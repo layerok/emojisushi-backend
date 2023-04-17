@@ -3,6 +3,9 @@ Spectrum Colorpicker v1.8.0
 https://github.com/bgrins/spectrum
 Author: Brian Grinstead
 License: MIT
+Modified for OC
+- Commented out some overriden styles
+- Commented out button classes (bootstrap used)
 ***/
 
 .sp-container {
@@ -260,7 +263,7 @@ See http://bgrins.github.io/spectrum/themes/ for instructions.
     padding: 0;
 }
 .sp-container, .sp-container button, .sp-container input, .sp-color, .sp-hue, .sp-clear {
-    font: normal 12px "Lucida Grande", "Lucida Sans Unicode", "Lucida Sans", Geneva, Verdana, sans-serif;
+    /* font: normal 12px "Lucida Grande", "Lucida Sans Unicode", "Lucida Sans", Geneva, Verdana, sans-serif; */
     -webkit-box-sizing: border-box;
     -moz-box-sizing: border-box;
     -ms-box-sizing: border-box;
@@ -283,14 +286,14 @@ See http://bgrins.github.io/spectrum/themes/ for instructions.
     width: 100%;
 }
 .sp-input {
-   font-size: 12px !important;
+   /* font-size: 12px !important; */
    border: 1px inset;
    padding: 4px 5px;
    margin: 0;
    width: 100%;
    background:transparent;
-   border-radius: 3px;
-   color: #222;
+   /* border-radius: 3px; */
+   /* color: #222; */
 }
 .sp-input:focus  {
     border: 1px solid orange;
@@ -418,7 +421,7 @@ See http://bgrins.github.io/spectrum/themes/ for instructions.
 
 
 /* Buttons: http://hellohappy.org/css3-buttons/ */
-.sp-container button {
+/* .sp-container button {
   background-color: #eeeeee;
   background-image: -webkit-linear-gradient(top, #eeeeee, #cccccc);
   background-image: -moz-linear-gradient(top, #eeeeee, #cccccc);
@@ -457,6 +460,8 @@ See http://bgrins.github.io/spectrum/themes/ for instructions.
     -o-box-shadow: inset 0 0 5px 2px #aaaaaa, 0 1px 0 0 #eeeeee;
     box-shadow: inset 0 0 5px 2px #aaaaaa, 0 1px 0 0 #eeeeee;
 }
+*/
+
 .sp-cancel {
     font-size: 11px;
     color: #d93f3f !important;
@@ -471,7 +476,6 @@ See http://bgrins.github.io/spectrum/themes/ for instructions.
     color: #d93f3f !important;
     text-decoration: underline;
 }
-
 
 .sp-palette span:hover, .sp-palette span.sp-thumb-active {
     border-color: #000;

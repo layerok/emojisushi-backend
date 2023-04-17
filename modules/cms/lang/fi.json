@@ -93,5 +93,22 @@
   "Saving Theme...": "Tallennetaan teemaa...",
   "Return to Themes List": "Palaa teemalistaan",
   "No themes found": "Teemoja ei löytynyt",
-  "CMS Page": "CMS-sivu"
+  "Seed Theme": "Jaa teema",
+  "Seed the specified theme with blueprints, translations and data.": "Jaa tietty teema blueprinttien, käännöksien ja datan kanssa.",
+  "Theme Seeded!": "Teema jaettu!",
+  "Select Page Link": "Valitse sivulinkki",
+  "Search all references...": "Etsi kaikki esiintymiset...",
+  "CMS Page": "CMS-sivu",
+  "Link": "Linkki",
+  "Please select a CMS page": "Valitse CMS-sivu",
+  "Please select a page reference": "Valitse sivureferenssi",
+  "Please enter a valid URL": "Anna URL-osoite oikeassa muodossa",
+  "Delete Theme": "Poista teema",
+  "Activate Theme": "Aktivoi teema",
+  "Manage Partials": "Hallitse osia",
+  "A unique name given to this component when using it in the page or layout code.": "Uniikki nimi komponentille kun käytössä sivulla tai ulkoasun koodissa.",
+  "Alias": "Alias",
+  "Component aliases are required and can contain only Latin symbols, digits, and underscores. The aliases should start with a Latin symbol.": "Komponentin alias on vaadittu ja se voi sisältää ainoastaan latinalaisia kirjaimia, numeroita ja alaviivoja. Aliaksien pitäisi alkaa latinalaisella kirjaisimella.",
+  "Unnamed": "Nimeämätön",
+  "No description provided": "Ei annettua kuvausta"
 }

@@ -22,7 +22,7 @@
             $el.attr('data-closable', '');
         }
 
-        // Cast empty attribute @todo solve via global util -sg
+        // Cast empty attribute
         if (this.options.linkable === '') {
             this.options.linkable = true;
         }
@@ -125,8 +125,10 @@
             $tabs = $('> li', this.$tabsContainer),
             tabIndex = $tabs.index(li),
             time = new Date().getTime(),
-            targetId = this.tabId + '-tab-' + tabIndex + time,
-            $anchor = $('a', li);
+            $anchor = $('a', li),
+            $pane = $('> .tab-pane', this.$pagesContainer).eq(tabIndex);
+
+        var targetId = this.tabId + '-tab-' + tabIndex + time;
 
         $anchor
             .data('target', '#'+targetId)
@@ -142,7 +144,7 @@
                 .append($('<span></span>').html(html)));
         }
 
-        var pane = $('> .tab-pane', this.$pagesContainer).eq(tabIndex).attr('id', targetId);
+        $pane.attr('id', targetId);
 
         if (!$('span.tab-close', li).length) {
             $(li).append($('<span class="tab-close"><i>&times;</i></span>').click(function(){
@@ -151,9 +153,9 @@
             }));
         }
 
-        pane.data('tab', li);
+        $pane.data('tab', li);
 
-        this.$el.trigger('initTab.oc.tab', [{ 'pane': pane, 'tab': li }]);
+        this.$el.trigger('initTab.oc.tab', [{ 'pane': $pane, 'tab': li }]);
     }
 
     Tab.prototype.addTab = function(title, content, identifier, tabClass) {

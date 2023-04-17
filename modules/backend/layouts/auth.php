@@ -51,8 +51,14 @@
             $customizationVars = Backend\Classes\LoginCustomization::getCustomizationVariables($this);
             $logo = $customizationVars->logo;
             $loginCustomization = $customizationVars->loginCustomization;
+            $loginBackgroundType = $loginCustomization->loginBackgroundType;
             $defaultImage1x = $customizationVars->defaultImage1x;
             $defaultImage2x = $customizationVars->defaultImage2x;
+
+            if ($loginBackgroundType === 'october_ai_images') {
+                $aiImageIndex = rand(0, 8);
+                $generatedImageData = Backend\Classes\LoginCustomization::getGeneratedImageData();
+            }
         ?>
     </head>
     <body class="outer <?= $this->bodyClass ?> message-outer-layout">
@@ -70,19 +76,28 @@
                         </div>
                     </div>
 
-                    <div class="layout-cell theme-cell">
-                        <?php if ($loginCustomization->loginImageType == 'autumn_images'): ?>
+                    <div class="layout-cell theme-cell" <?php if ($loginBackgroundType === 'october_ai_images'): ?>style="<?= e($generatedImageData->background)  ?>"<?php endif?>>
+                        <?php if ($loginBackgroundType === 'october_ai_images'): ?>
                             <img
-                                src="<?= Url::asset('/modules/backend/assets/images/october-login-theme/'.$defaultImage1x) ?>"
-                                srcset="<?= Url::asset('/modules/backend/assets/images/october-login-theme/'.$defaultImage1x) ?>,
-                                <?= Url::asset('/modules/backend/assets/images/october-login-theme/'.$defaultImage2x) ?> 2x"
+                                width="512"
+                                height="512"
+                                src="<?= Url::asset('/modules/backend/assets/images/october-login-ai-generated/'.$generatedImageData->img) ?>"
                                 alt=""
                             />
-                        <?php elseif ($loginCustomization->loginCustomImage): ?>
-                            <img
-                                src="<?= e($loginCustomization->loginCustomImage) ?>"
-                                alt=""
-                            />
+                        <?php else: ?>
+                            <?php if ($loginCustomization->loginImageType == 'autumn_images'): ?>
+                                <img
+                                    src="<?= Url::asset('/modules/backend/assets/images/october-login-theme/'.$defaultImage1x) ?>"
+                                    srcset="<?= Url::asset('/modules/backend/assets/images/october-login-theme/'.$defaultImage1x) ?>,
+                                    <?= Url::asset('/modules/backend/assets/images/october-login-theme/'.$defaultImage2x) ?> 2x"
+                                    alt=""
+                                />
+                            <?php elseif ($loginCustomization->loginCustomImage): ?>
+                                <img
+                                    src="<?= e($loginCustomization->loginCustomImage) ?>"
+                                    alt=""
+                                />
+                            <?php endif ?>
                         <?php endif ?>
                     </div>
                 </div>

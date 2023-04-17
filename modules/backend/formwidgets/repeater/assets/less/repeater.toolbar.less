@@ -1,13 +1,13 @@
 .field-repeater > .field-repeater-builder > .field-repeater-toolbar,
 .field-repeater > .field-repeater-toolbar {
     position: relative;
-    border: 1px dashed #bcc3c7;
+    border: 1px dashed @dropdown-trigger-border;
     border-radius: 5px;
-    background: #fff;
+    background: @dropdown-trigger-bg;
     display: inline-block;
 
     > a {
-        color: @color-text-grey-1;
+        color: @dropdown-trigger-color;
         text-align: center;
         text-decoration: none;
         padding: 7px 15px;
@@ -24,19 +24,20 @@
     }
 
     &:hover, &:focus {
-        background-color: @highlight-hover-bg;
+        background-color: @dropdown-hover-bg;
         border-color: transparent;
 
         > a, > a > i {
-            color: @highlight-hover-text;
+            color: @dropdown-hover-color;
         }
     }
 
     &:active {
-        background: @highlight-active-bg;
+        background-color: @dropdown-active-bg;
         border-color: transparent;
+
         > a, > a > i {
-            color: @highlight-active-text;
+            color: @dropdown-hover-color;
         }
     }
 

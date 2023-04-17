@@ -54,7 +54,7 @@
         margin-right: 15px;
         margin-left: -20px;
         font-size: @label-font-size;
-        .user-select(none);
+        user-select: none;
 
         &:before {
             content: "";
@@ -73,10 +73,10 @@
             .box-shadow(none);
         }
         &:hover:before {
-            border-color: darken(@color-checkbox-border, 10%);
+            border-color: @input-border-focus;
         }
         &:active:before {
-            border-color: darken(@color-checkbox-border, 20%);
+            border-color: @input-border-fade;
             border-width: 2px;
         }
     }
@@ -274,7 +274,7 @@
         background-color: @color-checkbox-switch-off;
         font-size: 12px;
         font-weight: 600;
-        .user-select(none);
+        user-select: none;
         .border-radius(20px);
 
         span {

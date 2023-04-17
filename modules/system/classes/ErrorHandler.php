@@ -3,12 +3,14 @@
 use App;
 use View;
 use Lang;
+use Config;
 use System;
 use October\Rain\Exception\ErrorHandler as ErrorHandlerBase;
 use October\Rain\Exception\ApplicationException;
 use October\Rain\Exception\ForbiddenException;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
+use Illuminate\Validation\ValidationException;
 use Illuminate\Contracts\Debug\ExceptionHandler;
 use Exception;
 
@@ -173,19 +175,34 @@ class ErrorHandler extends ErrorHandlerBase
             return $exception->getMessage();
         }
 
+        // ValidationException should be shown to user
+        if ($exception instanceof ValidationException) {
+            return $exception->getMessage();
+        }
+
+        // Safe message interface
+        if (method_exists($exception, 'getSafeMessage')) {
+            return $exception->{'getSafeMessage'}();
+        }
+
         // Debug mode is on
         if (System::checkDebugMode()) {
             return parent::getDetailedMessage($exception);
         }
 
-        // Prevent PHP and database exceptions from leaking
-        if (
-            $exception instanceof \Illuminate\Database\QueryException ||
-            $exception instanceof \ErrorException
-        ) {
-            return Lang::get('system::lang.page.custom_error.help');
+        // Legacy exception logic
+        // @deprecated Change default value to false in v4
+        if (Config::get('cms.exception_policy_v1', true)) {
+            if (
+                $exception instanceof \Illuminate\Database\QueryException ||
+                $exception instanceof \ErrorException
+            ) {
+                return Lang::get('system::lang.page.custom_error.help');
+            }
+
+            return $exception->getMessage();
         }
 
-        return $exception->getMessage();
+        return Lang::get('system::lang.page.custom_error.help');
     }
 }

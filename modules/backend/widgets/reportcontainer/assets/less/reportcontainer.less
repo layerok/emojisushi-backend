@@ -52,7 +52,7 @@
 
                 .edit-widget {
                     text-indent: -10000em;
-                    right: 40px;
+                    right: 12px;
                     top: 15px;
 
                     &:before {
@@ -73,6 +73,12 @@
                         display: block;
                     }
                 }
+            }
+
+            &.is-removable {
+                .edit-widget {
+                    right: 40px;
+                }
 
                 .btn-close {
                     right: 12px;
@@ -81,17 +87,21 @@
                 }
             }
 
+            &.is-sortable {
+                &:hover, &.dragged {
+                    .report-widget h3 {
+                        padding-left: 18px;
+                    }
+
+                    .drag-handle {
+                        opacity: 1;
+                    }
+                }
+            }
+
             &:hover, &.dragged {
                 .widget-control {
                     display: block;
-                }
-
-                .report-widget h3 {
-                    padding-left: 18px;
-                }
-
-                .drag-handle {
-                    opacity: 1;
                 }
             }
 
@@ -138,11 +148,12 @@
 
     .manage-widgets {
         display: inline-block;
-        color: @color-text-grey-1;
+        color: @dropdown-trigger-color;
+        background-color: @dropdown-trigger-bg;
+        border: 1px dashed @dropdown-trigger-border;
         padding: 7px 15px;
         font-size: @font-size-base;
         font-weight: normal;
-        border: 1px dashed #bcc3c7;
         border-radius: @border-radius-base;
         margin-left: 5px;
 
@@ -153,9 +164,9 @@
 
     .manage-widgets:hover,
     .manage-widgets.show {
-        background-color: @highlight-hover-bg;
+        background-color: @dropdown-hover-bg;
         border-color: transparent;
-        color: @highlight-hover-text;
+        color: @dropdown-hover-color;
         text-decoration: none;
     }
 

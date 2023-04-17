@@ -14,13 +14,17 @@
 
 +function ($) { "use strict";
     var Base = $.oc.foundation.base,
-        BaseProto = Base.prototype;
+        BaseProto = Base.prototype,
+        instanceCounter = 0;
 
     var MediaFinder = function (element, options) {
+        instanceCounter++;
         this.$el = $(element);
         this.options = options || {};
+        this.instanceNumber = instanceCounter;
 
         $.oc.foundation.controlUtils.markDisposable(element);
+
         Base.call(this);
         this.init();
     }
@@ -65,6 +69,7 @@
         this.$el.on('click', '.find-remove-button', this.proxy(this.onClickRemoveButton));
         this.$el.on('click', '.toolbar-delete-selected', this.proxy(this.onDeleteSelectedClick));
 
+        this.$el.on('click', 'input[data-record-selector]', this.proxy(this.onClickCheckbox));
         this.$el.on('change', 'input[data-record-selector]', this.proxy(this.onSelectionChanged));
 
         this.initToolbarExtensionPoint();
@@ -83,6 +88,7 @@
         this.$el.off('click', '.find-remove-button', this.proxy(this.onClickRemoveButton));
         this.$el.off('click', '.toolbar-delete-selected', this.proxy(this.onDeleteSelectedClick));
 
+        this.$el.off('click', 'input[data-record-selector]', this.proxy(this.onClickCheckbox));
         this.$el.off('change', 'input[data-record-selector]', this.proxy(this.onSelectionChanged));
 
         this.$el.off('dispose-control', this.proxy(this.dispose));
@@ -156,7 +162,7 @@
     }
 
     MediaFinder.prototype.onToolbarExternalCommand = function (ev) {
-        var cmdPrefix = 'mediafinder-toolbar-';
+        var cmdPrefix = 'mediafinder-toolbar-' + this.instanceNumber + '-';
 
         if (ev.command.substring(0, cmdPrefix.length) != cmdPrefix) {
             return;
@@ -192,7 +198,7 @@
                     type: 'button',
                     icon: $icon.attr('class'),
                     label: $button.find('.button-label').text(),
-                    command: 'mediafinder-toolbar-' + $button.attr('class'),
+                    command: 'mediafinder-toolbar-' + that.instanceNumber + '-' + $button.attr('class'),
                     disabled: $button.attr('disabled') !== undefined
                 }
             );
@@ -225,6 +231,10 @@
 
         this.updateDeleteSelectedState();
         this.extendExternalToolbar();
+    }
+
+    MediaFinder.prototype.onClickCheckbox = function(ev) {
+        $.oc.checkboxRangeRegisterClick(ev, '.item-object', 'input[data-record-selector]');
     }
 
     MediaFinder.prototype.updateDeleteSelectedState = function () {

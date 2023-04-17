@@ -3,7 +3,7 @@
         href="javascript:;"
         class="manage-widgets"
         data-toggle="dropdown">
-        <i class="icon-cogs"></i> <?= e(trans('backend::lang.dashboard.manage_widgets')) ?>
+        <i class="icon-cogs"></i> <?= __('Manage Widgets') ?>
     </a>
 
     <ul class="dropdown-menu" role="menu">
@@ -16,21 +16,21 @@
                 data-handler="<?= $this->getEventHandler('onLoadAddPopup') ?>"
                 tabindex="-1">
                 <i class="icon-plus"></i>
-                <?= e(trans('backend::lang.dashboard.add_widget')) ?>
+                <?= __('Add Widget') ?>
             </a>
         </li>
         <li role="separator" class="dropdown-divider"></li>
-        <?php if (BackendAuth::userHasAccess('dashboard.defaults')): ?>
+        <?php if ($this->showMakeDefault): ?>
             <li role="presentation">
                 <a
                     role="menuitem"
                     href="javascript:;"
                     class="dropdown-item"
                     data-request="<?= $this->getEventHandler('onMakeLayoutDefault') ?>"
-                    data-request-confirm="<?= e(trans('backend::lang.dashboard.make_default_confirm')) ?>"
+                    data-request-confirm="<?= __('Set the current layout as the default?') ?>"
                     tabindex="-1">
                     <i class="icon-floppy-o"></i>
-                    <?= e(trans('backend::lang.dashboard.make_default')) ?>
+                    <?= __('Make Default') ?>
                 </a>
             </li>
         <?php endif ?>
@@ -41,10 +41,10 @@
                 class="dropdown-item"
                 data-request-success="$(window).trigger('oc.reportWidgetRefresh')"
                 data-request="<?= $this->getEventHandler('onResetWidgets') ?>"
-                data-request-confirm="<?= e(trans('backend::lang.dashboard.reset_layout_confirm')) ?>"
+                data-request-confirm="<?= __('Reset layout back to default?') ?>"
                 tabindex="-1">
                 <i class="icon-repeat"></i>
-                <?= e(trans('backend::lang.dashboard.reset_layout')) ?>
+                <?= __('Reset Layout') ?>
             </a>
         </li>
     </ul>

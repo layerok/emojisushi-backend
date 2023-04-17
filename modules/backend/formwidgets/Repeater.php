@@ -33,7 +33,7 @@ class Repeater extends FormWidgetBase
     /**
      * @var string prompt text for adding new items
      */
-    public $prompt = 'backend::lang.repeater.add_new_item';
+    public $prompt = "Add New Item";
 
     /**
      * @var bool showReorder allows the user to reorder the items
@@ -117,9 +117,9 @@ class Repeater extends FormWidgetBase
     protected $formWidgets = [];
 
     /**
-     * @var bool onAddItemCalled stops nested repeaters populating from previous sibling.
+     * @var bool onAddItemCalled sets the create context for default values
      */
-    protected static $onAddItemCalled = false;
+    protected static $onAddItemCalled;
 
     /**
      * @var bool useGroups
@@ -179,11 +179,7 @@ class Repeater extends FormWidgetBase
 
         $this->processLegacyConfig();
 
-        // First pass will contain postback, then raw attributes
-        // This occurs to bind widgets to the controller early
-        if (!self::$onAddItemCalled) {
-            $this->processItems();
-        }
+        $this->processItems();
     }
 
     /**
@@ -200,13 +196,6 @@ class Repeater extends FormWidgetBase
      */
     public function prepareVars()
     {
-        // Second pass will contain filtered attributes, then postback
-        // This occurs to apply filtered values to the widget data
-        // @todo Replace with resetFormValue method
-        if (!self::$onAddItemCalled) {
-            $this->processItems();
-        }
-
         if ($this->previewMode) {
             foreach ($this->formWidgets as $widget) {
                 $widget->previewMode = true;
@@ -246,6 +235,20 @@ class Repeater extends FormWidgetBase
     public function getSaveValue($value)
     {
         return $this->processSaveValue($value);
+    }
+
+    /**
+     * resetFormValue from the form field
+     */
+    public function resetFormValue()
+    {
+        // Transfer approved config
+        $this->minItems = $this->formField->minItems;
+        $this->maxItems = $this->formField->maxItems;
+
+        // Reprocess widgets
+        $this->formWidgets = [];
+        $this->processItems();
     }
 
     /**
@@ -294,22 +297,6 @@ class Repeater extends FormWidgetBase
             return null;
         }
 
-        if ($this->minItems && count($value) < $this->minItems) {
-            throw new ApplicationException(Lang::get('backend::lang.repeater.min_items_failed', [
-                'name' => $this->fieldName,
-                'min' => $this->minItems,
-                'items' => count($value)
-            ]));
-        }
-
-        if ($this->maxItems && count($value) > $this->maxItems) {
-            throw new ApplicationException(Lang::get('backend::lang.repeater.max_items_failed', [
-                'name' => $this->fieldName,
-                'max' => $this->maxItems,
-                'items' => count($value)
-            ]));
-        }
-
         return $this->useRelation
             ? $this->processSaveForRelation($value)
             : $this->processSaveForJson($value);
@@ -327,7 +314,7 @@ class Repeater extends FormWidgetBase
         // This lets record finder work inside a repeater with some hacks
         // since record finder spawns outside the form and its AJAX calls
         // don't reinitialize this repeater's items. We a need better way
-        // remove if year >= 2023 -sg
+        // remove if year >= 2025 @deprecated -sg
         $handler = $this->controller->getAjaxHandler();
         if (!$this->isLoaded && starts_with($handler, $this->alias . 'Form')) {
             $handler = str_after($handler, $this->alias . 'Form');
@@ -336,6 +323,7 @@ class Repeater extends FormWidgetBase
             if (isset($matches[1])) {
                 $index = $matches[1];
                 $this->makeItemFormWidget($index);
+                unset($this->formWidgets[$index]);
             }
         }
 
@@ -351,9 +339,7 @@ class Repeater extends FormWidgetBase
             }
         }
 
-        // Repeater value is empty or invalid
-        if ($currentValue === null || !is_array($currentValue)) {
-            $this->formWidgets = [];
+        if (!is_array($currentValue)) {
             return;
         }
 
@@ -438,9 +424,7 @@ class Repeater extends FormWidgetBase
      */
     protected function getValueFromIndex($index)
     {
-        $data = $this->isLoaded
-            ? $this->getLoadedValueFromPost()
-            : $this->getLoadValue();
+        $data = $this->getLoadValue();
 
         return $data[$index] ?? [];
     }
@@ -549,9 +533,7 @@ class Repeater extends FormWidgetBase
      */
     protected function getNextIndex(): int
     {
-        $data = $this->isLoaded
-            ? $this->getLoadedValueFromPost()
-            : $this->getLoadValue();
+        $data = $this->getLoadValue();
 
         if (is_array($data) && count($data)) {
             return max(array_keys($data)) + 1;

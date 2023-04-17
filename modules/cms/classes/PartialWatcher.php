@@ -1,5 +1,7 @@
 <?php namespace Cms\Classes;
 
+use Throwable;
+
 /**
  * PartialWatcher instructs the controller to capture output and AJAX handlers
  * from a complete page cycle. Either set to a partial name to ensure the partial
@@ -29,6 +31,11 @@ class PartialWatcher
      * @var array handlerOutput
      */
     protected $handlerOutput;
+
+    /**
+     * @var Throwable handlerException
+     */
+    protected $handlerException;
 
     /**
      * startCapture begins capturing partial processes.
@@ -91,5 +98,21 @@ class PartialWatcher
     public function getHandlerResponse()
     {
         return $this->handlerOutput;
+    }
+
+    /**
+     * setHandlerException
+     */
+    public function setHandlerException(Throwable $exception)
+    {
+        $this->handlerException = $exception;
+    }
+
+    /**
+     * getHandlerException
+     */
+    public function getHandlerException(): ?Throwable
+    {
+        return $this->handlerException;
     }
 }

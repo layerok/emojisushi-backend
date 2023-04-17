@@ -41,7 +41,7 @@ class FilterWidgetTest extends PluginTestCase
 
         // Expect an exception
         $this->expectException(ApplicationException::class);
-        $this->expectExceptionMessage('No definition for scope email');
+        $this->expectExceptionMessage('No definition for scope [email] found');
         $filter->getScope('email');
     }
 
@@ -57,7 +57,7 @@ class FilterWidgetTest extends PluginTestCase
 
         // Expect an exception
         $this->expectException(ApplicationException::class);
-        $this->expectExceptionMessage('No definition for scope email');
+        $this->expectExceptionMessage('No definition for scope [email] found');
         $filter->getScope('email');
     }
 
@@ -123,7 +123,7 @@ class FilterWidgetTest extends PluginTestCase
 
         // Expect an exception
         $this->expectException(ApplicationException::class);
-        $this->expectExceptionMessage('No definition for scope email');
+        $this->expectExceptionMessage('No definition for scope [email] found');
         $filter->getScope('email');
     }
 

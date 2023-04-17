@@ -14,14 +14,16 @@
         width: 100%;
         box-sizing: border-box;
         outline: none;
+        background-color: transparent;
+        color: @input-color;
 
         &[readonly] {
-            color: @color-grey-6-darker !important;
+            color: @input-disabled-color !important;
         }
 
         &.clickable {
             cursor: pointer;
-            .user-select(none);
+            user-select: none;
 
             &[readonly] {
                 cursor: default;

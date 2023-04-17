@@ -43,11 +43,11 @@ class Select extends FoundationPlugin
             }
         };
 
+        // Adds support for vanilla JS and jQuery change event
         // Bind to native and prevent recursion with event once
-        var self = this;
-        this.triggerNativeChange = function(event) {
+        this.triggerNativeChange = (event) => {
             oc.Events.dispatch('change', { target: event.currentTarget });
-            $(event.currentTarget).one('change', self.triggerNativeChange);
+            $(event.currentTarget).one('change', this.triggerNativeChange);
         };
 
         // Destroy placeholder if it is still there

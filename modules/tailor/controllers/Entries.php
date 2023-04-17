@@ -166,6 +166,18 @@ class Entries extends WildcardController
                         $model->delete();
                         Flash::success(__('Entries have been deleted'));
                         break;
+
+                    case 'restore':
+                        $this->checkSourcePermission('delete');
+                        $model->restore();
+                        Flash::success(__('Entries have been restored'));
+                        break;
+
+                    case 'forceDelete':
+                        $this->checkSourcePermission('delete');
+                        $model->forceDelete();
+                        Flash::success(__('Entries have been deleted'));
+                        break;
                 }
             }
         }
@@ -437,6 +449,11 @@ class Entries extends WildcardController
             ] + ((array) $this->activeSource->structure);
         }
 
+        // Each source needs its own session store
+        $config->widgetAlias = camel_case(
+            $definition . '-' . $this->activeSource->handleSlug
+        );
+
         return $config;
     }
 
@@ -485,6 +502,14 @@ class Entries extends WildcardController
         $record = $record->newQueryWithoutScopes()->find($record->getKey());
 
         RecordIndexer::instance()->process($record);
+    }
+
+    /**
+     * listExtendRefreshResults updates bulk actions when the list changes
+     */
+    public function listExtendRefreshResults($filter, $result)
+    {
+        return ['#listBulkActions' => $this->makePartial('list_bulk_actions')];
     }
 
     /**

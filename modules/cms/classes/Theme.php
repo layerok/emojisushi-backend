@@ -5,9 +5,9 @@ use App;
 use File;
 use Lang;
 use Site;
-use Cache;
 use Event;
 use Config;
+use Session;
 use Exception;
 use BackendAuth;
 use SystemException;
@@ -19,6 +19,7 @@ use October\Rain\Halcyon\Datasource\DbDatasource;
 use October\Rain\Halcyon\Datasource\AutoDatasource;
 use October\Rain\Halcyon\Datasource\FileDatasource;
 use October\Rain\Halcyon\Datasource\DatasourceInterface;
+use October\Contracts\Twig\CallsMethods;
 
 /**
  * Theme class represents the CMS theme
@@ -28,10 +29,15 @@ use October\Rain\Halcyon\Datasource\DatasourceInterface;
  * @package october\cms
  * @author Alexey Bobkov, Samuel Georges
  */
-class Theme
+class Theme implements CallsMethods
 {
     use \Cms\Classes\Theme\HasCacheLayer;
     use \Cms\Classes\Theme\HasConfiguration;
+
+    /**
+     * @var const keys
+     */
+    const EDIT_KEY = 'cms::theme.edit';
 
     /**
      * @var string dirName specifies the theme directory name
@@ -47,8 +53,6 @@ class Theme
      * @var mixed editThemeCache in memory
      */
     protected static $editThemeCache = false;
-
-    const EDIT_KEY = 'cms::theme.edit';
 
     /**
      * load the theme
@@ -228,6 +232,7 @@ class Theme
         }
 
         Db::table($site->getTable())->where('id', $site->id)->update(['theme' => $code]);
+        Config::set('cms.active_theme', $code);
 
         self::resetCache();
 
@@ -312,13 +317,15 @@ class Theme
         }
 
         try {
-            $prefTheme = UserPreference::forUser()->get(Theme::EDIT_KEY, null);
+            $prefTheme = Session::remember(Theme::EDIT_KEY, function() {
+                return UserPreference::forUser()->get(Theme::EDIT_KEY, '');
+            });
         }
         catch (Exception $ex) {
             $prefTheme = null;
         }
 
-        if ($prefTheme !== null && static::exists($prefTheme)) {
+        if ($prefTheme && static::exists($prefTheme)) {
             return $prefTheme;
         }
 
@@ -349,6 +356,8 @@ class Theme
     public static function setEditTheme(string $code)
     {
         UserPreference::forUser()->set(Theme::EDIT_KEY, $code);
+        Session::put(Theme::EDIT_KEY, $code);
+        Config::set('cms.edit_theme', $code);
 
         self::resetCache();
 
@@ -372,6 +381,7 @@ class Theme
     public static function resetEditTheme()
     {
         UserPreference::forUser()->reset(Theme::EDIT_KEY);
+        Session::forget(Theme::EDIT_KEY);
 
         self::resetCache();
     }
@@ -626,5 +636,27 @@ class Theme
         }
 
         return false;
+    }
+
+    /**
+     * getTwigMethodNames returns a list of method names that can be called from Twig.
+     */
+    public function getTwigMethodNames(): array
+    {
+        return [
+            'getPath',
+            'getDirName',
+            'getId',
+            'isActiveTheme',
+            'getConfig',
+            'hasParentTheme',
+            'getParentTheme',
+            'getFormConfig',
+            'getConfigValue',
+            'getConfigArray',
+            'getPreviewImageUrl',
+            'getCustomData',
+            'hasCustomData'
+        ];
     }
 }

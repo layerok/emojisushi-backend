@@ -3,9 +3,9 @@
 // --------------------------------------------------
 
 @color-popup-header-bg:                      transparent;
-@color-popup-header-text:                    #2A3E51;
+@color-popup-header-text:                    @heading-color;
 @color-popup-footer-bg:                      transparent;
-@color-popup-content-bg:                     #ffffff;
+@color-popup-content-bg:                     @popup-bg;
 
 @popup-box-shadow: ~"0 27px 24px 0 rgba(0, 0, 0, 0.2), 0 40px 77px 0 rgba(0, 0, 0, 0.22)";
 
@@ -92,7 +92,7 @@
 
         &:focus {
             outline: none;
-            background-color: @background-color-focus;
+            background-color: @toolbar-focus-bg;
         }
 
     }
@@ -211,6 +211,7 @@
     opacity: 1;
 
     .popup-loading-indicator {
+        background: @color-popup-content-bg;
         display: block;
         width: 100px;
         height: 100px;
@@ -218,8 +219,8 @@
         top: 130px;
         left: 50%;
         margin-left: -50px;
-        .transition(~'all 0.3s, width 0s');
-        .transform(~'scale(0.7)');
+        transition: all 0.3s, width 0s;
+        transform: scale(0.7);
         opacity: 0;
 
         &:after {
@@ -229,7 +230,7 @@
             background-repeat: no-repeat;
             background-position: 50% 50%;
             background-image: url('../../images/loader-transparent.svg');
-            .animation(spin 1s linear infinite);
+            animation: spin 1s linear infinite;
             width: 50px;
             height: 50px;
             margin: 25px 0 0 25px;

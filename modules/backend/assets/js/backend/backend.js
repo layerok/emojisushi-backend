@@ -105,3 +105,26 @@ $.oc.isTouchEnabled = function() {
             (navigator.msMaxTouchPoints > 0);
     }
 })();
+
+// Color Modes
+//
+$.oc.setColorModeTheme = function(theme) {
+    if (theme === 'auto' && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        document.documentElement.setAttribute('data-bs-theme', 'dark');
+    }
+    else {
+        document.documentElement.setAttribute('data-bs-theme', theme);
+    }
+}
+
+;(function() {
+    if (document.documentElement.classList.contains('color-mode-auto')) {
+        var current = document.documentElement.getAttribute('data-bs-theme'),
+            preferred = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+
+        if (current === 'auto' || preferred !== Cookies.get('admin_color_mode')) {
+            Cookies.set('admin_color_mode', preferred, { expires: 365, path: '/' });
+            $.oc.setColorModeTheme(preferred);
+        }
+    }
+})();

@@ -27,6 +27,7 @@
     ChangeMonitor.prototype.init = function() {
         this.$el.on('change', this.proxy(this.change));
         this.$el.on('unchange.oc.changeMonitor', this.proxy(this.unchange));
+        this.$el.on('click ajaxSuccess', '[data-change-monitor-commit]', this.proxy(this.unchange));
         this.$el.on('pause.oc.changeMonitor', this.proxy(this.pause));
         this.$el.on('resume.oc.changeMonitor', this.proxy(this.resume));
         this.$el.on('pauseUnloadListener.oc.changeMonitor', this.proxy(this.pauseUnloadListener));
@@ -58,9 +59,21 @@
         BaseProto.dispose.call(this);
     }
 
+    // static
+    ChangeMonitor.globallyDisabled = false;
+
+    ChangeMonitor.disable = function() {
+        ChangeMonitor.globallyDisabled = true;
+    }
+
+    ChangeMonitor.enable = function() {
+        ChangeMonitor.globallyDisabled = false;
+    }
+
     ChangeMonitor.prototype.unregisterHandlers = function() {
         this.$el.off('change', this.proxy(this.change));
         this.$el.off('unchange.oc.changeMonitor', this.proxy(this.unchange));
+        this.$el.off('click ajaxSuccess', '[data-change-monitor-commit]', this.proxy(this.unchange));
         this.$el.off('pause.oc.changeMonitor ', this.proxy(this.pause));
         this.$el.off('resume.oc.changeMonitor ', this.proxy(this.resume));
         this.$el.off('keyup input paste', 'input:not(.ace_search_field), textarea:not(.ace_text-input)', this.proxy(this.onInputChange));
@@ -71,7 +84,7 @@
     }
 
     ChangeMonitor.prototype.change = function(ev, inputChange) {
-        if (this.paused) {
+        if (this.paused || ChangeMonitor.globallyDisabled) {
             return;
         }
 
@@ -93,7 +106,7 @@
     }
 
     ChangeMonitor.prototype.unchange = function() {
-        if (this.paused) {
+        if (this.paused || ChangeMonitor.globallyDisabled) {
             return;
         }
 
@@ -104,7 +117,7 @@
     }
 
     ChangeMonitor.prototype.onInputChange = function(ev) {
-        if (this.paused) {
+        if (this.paused || ChangeMonitor.globallyDisabled) {
             return;
         }
 
@@ -184,8 +197,11 @@
     // CHANGEMONITOR DATA-API
     // ===============================
 
-    $(document).render(function(){
+    $(document).render(function() {
         $('[data-change-monitor]').changeMonitor();
     });
+
+    // Used to globally disable change monitor by others
+    oc.changeMonitor = ChangeMonitor;
 
 }(window.jQuery);

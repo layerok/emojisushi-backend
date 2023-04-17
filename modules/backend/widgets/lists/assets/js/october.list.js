@@ -15,8 +15,6 @@
 
         this.$head = $('thead:first', this.$el);
         this.$body = $('tbody:first', this.$el);
-        this.$lastCheckbox = null;
-        this.isLastChecked = true;
 
         $.oc.foundation.controlUtils.markDisposable(element);
         Base.call(this);
@@ -35,7 +33,7 @@
         this.bindScrollableContent();
 
         this.$el.on('ajaxSetup', this.proxy(this.beforeAjaxRequest));
-        this.$body.on('click', '.list-checkbox > input[type=checkbox]', this.proxy(this.clickBodyCheckbox));
+        this.$body.on('click', '.list-checkbox > input[type=checkbox]', this.proxy(this.onClickCheckbox));
         this.$body.on('change', this.options.checkboxSelector, this.proxy(this.toggleBodyCheckbox));
         this.$head.on('change', this.options.checkboxSelector, this.proxy(this.toggleHeadCheckbox));
 
@@ -46,7 +44,7 @@
 
     ListWidget.prototype.dispose = function() {
         this.$el.off('ajaxSetup', this.proxy(this.beforeAjaxRequest));
-        this.$body.off('click', '.list-checkbox > input[type=checkbox]', this.proxy(this.clickBodyCheckbox));
+        this.$body.off('click', '.list-checkbox > input[type=checkbox]', this.proxy(this.onClickCheckbox));
         this.$body.off('change', this.options.checkboxSelector, this.proxy(this.toggleBodyCheckbox));
         this.$head.off('change', this.options.checkboxSelector, this.proxy(this.toggleHeadCheckbox));
 
@@ -129,56 +127,11 @@
             $el.closest('tr').removeClass('active');
         }
 
-        this.$lastCheckbox = $el;
-        this.isLastChecked = checked;
-
         this.checkIndeterminate();
     }
 
-    ListWidget.prototype.clickBodyCheckbox = function(ev) {
-        var $el = $(ev.target);
-
-        if (this.$lastCheckbox && this.$lastCheckbox.length && ev.shiftKey) {
-            this.selectCheckboxRange($el, this.$lastCheckbox);
-        }
-    }
-
-    ListWidget.prototype.selectCheckboxesIn = function(rows, isChecked) {
-        var self = this;
-        $.each(rows, function() {
-            $(self.options.checkboxSelector, this)
-                .prop('checked', isChecked)
-                .trigger('change');
-        });
-    }
-
-    ListWidget.prototype.selectCheckboxRange = function($el, $prevEl) {
-        var $tr = $el.closest('tr'),
-            $prevTr = $prevEl.closest('tr'),
-            toSelect = [];
-
-        var $nextRow = $tr;
-        while ($nextRow.length) {
-            if ($nextRow.get(0) === $prevTr.get(0)) {
-                this.selectCheckboxesIn(toSelect, this.isLastChecked);
-                return;
-            }
-
-            toSelect.push($nextRow);
-            $nextRow = $nextRow.next();
-        }
-
-        toSelect = [];
-        var $prevRow = $tr;
-        while ($prevRow.length) {
-            if ($prevRow.get(0) === $prevTr.get(0)) {
-                this.selectCheckboxesIn(toSelect, this.isLastChecked);
-                return;
-            }
-
-            toSelect.push($prevRow);
-            $prevRow = $prevRow.prev();
-        }
+    ListWidget.prototype.onClickCheckbox = function(ev) {
+        $.oc.checkboxRangeRegisterClick(ev, 'tr', this.options.checkboxSelector);
     }
 
     ListWidget.prototype.getAllChecked = function() {
@@ -352,10 +305,11 @@
             $input = ev.target.querySelector('input[data-chooser-input]'),
             handler = ev.target.dataset.handler,
             pageName = $input.name,
-            pageNumber = $input.value;
+            pageNumber = $input.value,
+            transportMethod = pageName === '_page' ? 'data' : 'query';
 
         oc.request($chooser, handler, {
-            query: { [pageName]: pageNumber }
+            [transportMethod]: { [pageName]: pageNumber }
         });
     });
 

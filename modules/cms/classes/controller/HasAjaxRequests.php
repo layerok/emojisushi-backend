@@ -118,6 +118,10 @@ trait HasAjaxRequests
                 // Execute the handler
                 $result = null;
                 if ($this->partialWatcher) {
+                    if ($exception = $this->partialWatcher->getHandlerException()) {
+                        throw $exception;
+                    }
+
                     $result = $this->partialWatcher->getHandlerResponse();
                 }
                 if (!$result) {

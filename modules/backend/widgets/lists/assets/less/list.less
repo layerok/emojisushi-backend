@@ -64,31 +64,32 @@ table.table.data {
     }
 
     font-size: @font-size-base;
-    border-bottom: 1px solid @color-list-border;
+    border-bottom: 1px solid @border-color;
 
     &.no-offset-bottom {
         margin-bottom: 0 !important;
     }
 
     thead {
-        background: @color-list-head-bg;
+        background: @tertiary-bg;
 
         td, th {
             border-width: 1px;
-            border-top: 1px solid @color-list-border !important;
-            border-bottom: 1px solid @color-list-head-border !important;
-            border-color: @color-list-border;
+            border-top: 1px solid @border-color !important;
+            border-bottom: 1px solid @border-color !important;
+            border-color: @border-color;
             padding: 0;
             font-weight: normal;
             font-size: @font-size-base;
             white-space: nowrap;
+            background-color: inherit;
 
             > a, > span {
                 display: block;
                 padding: 10px 15px;
-                color: @color-list-text-head;
+                color: @text-color;
                 text-decoration: none;
-                &:hover { color: @color-list-text-active; }
+                &:hover { color: var(--bs-emphasis-color) }
             }
 
             &.explicit-left-padding {
@@ -101,8 +102,8 @@ table.table.data {
             &.sort-asc { .list-head-icon(@angle-up); }
 
             &.active {
-                background-color: inherit;
                 text-decoration: underline;
+                color: @emphasis-color;
 
                 &:hover {
                     text-decoration: none;
@@ -134,13 +135,15 @@ table.table.data {
 
     tbody {
         tr:nth-child(even) {
-            td, th { background-color: @color-list-accent; }
+            td, th {
+                background-color: var(--bs-table-striped-bg);
+            }
         }
 
         td, th {
             padding: 10px 15px;
-            color: @color-list-text;
-            border-top: 1px solid @color-list-row-border;
+            color: var(--bs-table-color);
+            border-top: 1px solid var(--bs-table-border-color);
 
             div.progress {
                 position: relative;
@@ -185,16 +188,16 @@ table.table.data {
         tr.active,
         tr.selected {
             &:not(.no-data) td {
-                color: @color-list-text-active;
-                background-color: @table-bg-active;
+                color: var(--bs-table-hover-color);
+                background-color: var(--bs-table-hover-bg);
             }
         }
 
         &:not(.tree-drag-mode) {
             tr.rowlink:not(.nolink):not(.active):hover td,
             tr:not(.no-data):not(.active).selected td {
-                color: @color-list-text-active;
-                background-color: @table-bg-active;
+                color: var(--bs-table-hover-color);
+                background-color: var(--bs-table-hover-bg);
 
                 // When hover is white, this targets common objects
                 // a:not(.btn), span, i[class^="icon-"] {
@@ -204,7 +207,7 @@ table.table.data {
 
             tr.rowlink:not(.nolink).active:hover td,
             tr:not(.no-data).active.selected td {
-                background: @color-list-hover-bg-active;
+                background: var(--oc-table-active-bg);
             }
         }
 
@@ -213,8 +216,8 @@ table.table.data {
             z-index: 1;
 
             td {
-                color: @color-list-text-active;
-                background-color: @table-bg-active;
+                color: var(--bs-table-hover-color);
+                background-color: var(--bs-table-hover-bg);
             }
         }
 
@@ -319,7 +322,7 @@ table.table.data {
 
         &.clickable {
             cursor: pointer;
-            .user-select(none);
+            user-select: none;
         }
     }
 
@@ -335,7 +338,7 @@ table.table.data {
             text-decoration: none;
         }
         td, th {
-            border-color: @color-list-border;
+            border-color: @border-color;
             padding: 10px 15px;
         }
     }
@@ -363,6 +366,11 @@ table.table.data {
     th.list-cell-align-center,
     td.list-cell-align-center {
         text-align: center;
+    }
+
+    th.list-cell-type-selectable,
+    td.list-cell-type-selectable {
+        white-space: nowrap;
     }
 
     //
@@ -417,13 +425,14 @@ table.table.data {
         display: inline-block;
         width: 20px;
         height: 20px;
-        color: #fff;
         text-align: center;
         &.is-true {
             background-color: @brand-success;
+            color: #fff;
         }
         &.is-false {
-            background-color: @gray-light;
+            background-color: @secondary-bg;
+            color: @text-color;
         }
     }
 
@@ -505,8 +514,8 @@ table.table.data {
     //
 
     .list-selectable {
-        background: #fff;
-        border: 1px solid #ecf0f1;
+        background: @toolbar-bg;
+        border: 1px solid @toolbar-border;
         border-radius: 6px;
         display: inline-block;
         padding: 0 8px;
@@ -570,7 +579,7 @@ table.table.data {
     .list-checkbox {
         width: 42px;
         vertical-align: top;
-        border-right: 1px solid @color-list-border-light;
+        border-right: 1px solid var(--bs-table-border-color);
     }
 
     tbody tr td.list-checkbox {
@@ -590,7 +599,7 @@ table.table.data {
     padding: 0;
     margin-bottom: 20px;
     background: white;
-    border: 1px solid @color-list-border;
+    border: 1px solid @border-color;
 
     .list-header:first-child {
         padding-top: 20px;
@@ -617,7 +626,7 @@ table.table.data {
 // List with sidebar
 .list-with-sidebar {
     table.table.data {
-        border-left: 1px solid @color-list-border;
+        border-left: 1px solid @border-color;
     }
 }
 
@@ -648,8 +657,8 @@ table.table.data {
                 padding: 8px 15px;
                 > span {
                     display: block;
-                    color: #333333;
-                    background: white;
+                    color: @toolbar-color;
+                    background: @toolbar-bg;
                     width: 24px;
                     height: 24px;
                     text-align: center;
@@ -665,7 +674,8 @@ table.table.data {
                 }
 
                 &:hover > span {
-                    background: rgba(215,225,234,.7);
+                    color: @toolbar-hover-color;
+                    background: @toolbar-hover-bg;
                 }
             }
         }
@@ -685,12 +695,12 @@ table.table.data {
 
 .list-widget-container {
     border-radius: @border-radius-large;
-    background-color: @color-list-container-bg;
-    border: 1px solid @color-grey-3;
+    background-color: var(--bs-table-bg);
+    border: 1px solid @border-color;
     overflow: hidden;
 
     > .control-filter {
-        background-color: transparent;
+        background-color: var(--oc-form-control-bg);
         border-top: none;
 
         > .filter-group > .filter-scope {

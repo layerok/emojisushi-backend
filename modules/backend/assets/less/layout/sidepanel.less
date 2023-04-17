@@ -3,7 +3,7 @@
 // --------------------------------------------------
 
 #layout-side-panel {
-    border-right: 1px solid @color-grey-3;
+    border-right: 1px solid @primary-border;
 
     .sidepanel-content-header {
         background: @color-grey-3;
@@ -23,5 +23,11 @@ body.display-side-panel {
         width: 350px;
         border-right: none;
         .box-shadow(3px 0px 3px 0 rgba(0, 0, 0, 0.1));
+    }
+}
+
+[data-bs-theme="dark"] {
+    #layout-side-panel .sidepanel-content-header {
+        background: @secondary-bg;
     }
 }

@@ -1,5 +1,7 @@
 <?php namespace Backend\Classes;
 
+use Str;
+use October\Rain\Html\Helper as HtmlHelper;
 use October\Rain\Element\Form\FieldsetDefinition;
 
 /**
@@ -159,5 +161,28 @@ class FormTabs extends FieldsetDefinition
         }
 
         return false;
+    }
+
+    /**
+     * getPaneId returns a value suitable for the pane id property.
+     * @param  string $suffix Specify a suffix string
+     * @return string
+     */
+    public function getPaneId($index = null, $label = null, $suffix = null)
+    {
+        $id = $this->section . 'tab';
+
+        if ($this->linkable) {
+            $id .= '-' . (Str::slug(__($label)) ?: $index);
+        }
+        else {
+            $id .= '-' . $index;
+        }
+
+        if ($suffix) {
+            $id .= '-'.$suffix;
+        }
+
+        return HtmlHelper::nameToId($id);
     }
 }

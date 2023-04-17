@@ -31,7 +31,7 @@
                 <?php if (count($records)): ?>
                     <?= $this->makePartial('list_body_rows') ?>
                 <?php else: ?>
-                    <tr class="no-data">
+                    <tr class="no-data no-sort">
                         <td colspan="<?= $columnTotal ?>" class="nolink">
                             <p class="no-data"><?= $noRecordsMessage ?></p>
                         </td>

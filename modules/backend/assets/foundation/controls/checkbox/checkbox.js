@@ -65,4 +65,68 @@
         }
     });
 
+    //
+    // Checkbox Ranges
+    //
+
+    if ($.oc === undefined) {
+        $.oc = {};
+    }
+
+    $.oc.checkboxRangeDetail = {
+        lastCheckbox: null,
+        isLastChecked: true
+    };
+
+    $.oc.checkboxRangeRegisterClick = function(ev, containerSelector, checkboxSelector) {
+        var el = ev.target,
+            detail = $.oc.checkboxRangeDetail;
+
+        var selectCheckboxesIn = function(rows, isChecked) {
+            rows.forEach(function(row) {
+                row.querySelectorAll(checkboxSelector).forEach(function(el) {
+                    el.checked = isChecked;
+                    $(el).trigger('change'); // @todo needs triggerNativeChange?
+                });
+            });
+        }
+
+        var selectCheckboxRange = function($el, $prevEl) {
+            var $item = $el.closest(containerSelector),
+                $prevItem = $prevEl.closest(containerSelector),
+                toSelect = [];
+
+            var $nextRow = $item;
+            while ($nextRow) {
+                if ($nextRow === $prevItem) {
+                    selectCheckboxesIn(toSelect, detail.isLastChecked);
+                    return;
+                }
+
+                toSelect.push($nextRow);
+                $nextRow = $nextRow.nextElementSibling;
+            }
+
+            toSelect = [];
+            var $prevRow = $item;
+            while ($prevRow) {
+                if ($prevRow === $prevItem) {
+                    selectCheckboxesIn(toSelect, detail.isLastChecked);
+                    return;
+                }
+
+                toSelect.push($prevRow);
+                $prevRow = $prevRow.previousElementSibling;
+            }
+        }
+
+        if (detail.lastCheckbox && ev.shiftKey) {
+            selectCheckboxRange(el, detail.lastCheckbox);
+        }
+        else {
+            detail.lastCheckbox = el;
+            detail.isLastChecked = el.checked;
+        }
+    }
+
 })(jQuery);

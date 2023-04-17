@@ -1,11 +1,11 @@
 <?php namespace Cms\Models;
 
-use Model;
 use System;
 use BackendAuth;
 use Cms\Classes\Page;
 use Cms\Classes\Theme;
 use ApplicationException;
+use System\Models\SettingModel;
 use Exception;
 
 /**
@@ -14,16 +14,9 @@ use Exception;
  * @package october\cms
  * @author Alexey Bobkov, Samuel Georges
  */
-class MaintenanceSetting extends Model
+class MaintenanceSetting extends SettingModel
 {
     use \October\Rain\Database\Traits\Validation;
-
-    /**
-     * @var array implement behaviors
-     */
-    public $implement = [
-        \System\Behaviors\SettingsModel::class
-    ];
 
     /**
      * @var string settingsCode is a unique code
@@ -105,9 +98,9 @@ class MaintenanceSetting extends Model
             throw new ApplicationException('Unable to find the active theme.');
         }
 
-        $themeMap = $this->getSettingsValue('theme_map', []);
-        $themeMap[$theme->getDirName()] = $this->getSettingsValue('cms_page');
-        $this->setSettingsValue('theme_map', $themeMap);
+        $themeMap = (array) $this->theme_map;
+        $themeMap[$theme->getDirName()] = $this->cms_page;
+        $this->theme_map = $themeMap;
     }
 
     /**

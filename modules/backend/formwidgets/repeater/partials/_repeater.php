@@ -1,10 +1,9 @@
 <div
     class="field-repeater repeater-mode-<?= $displayMode ?> <?= $useGroups ? 'is-grouped' : 'is-singular' ?>"
-    data-control="fieldrepeater"
+    data-control="repeater<?= $displayMode ?>"
     <?= $titleFrom ? 'data-title-from="'.$titleFrom.'"' : '' ?>
     <?= $minItems ? 'data-min-items="'.$minItems.'"' : '' ?>
     <?= $maxItems ? 'data-max-items="'.$maxItems.'"' : '' ?>
-    data-display-mode="<?= $displayMode ?>"
     data-use-reorder="<?= $showReorder ?>"
     data-items-expanded="<?= $itemsExpanded ?>"
     data-sortable-handle=".<?= $this->getId('items') ?>-handle"

@@ -7,7 +7,7 @@ use Backend\Classes\Controller;
 use System\Models\MailTemplate;
 use System\Classes\SettingsManager;
 use ApplicationException;
-use Exception;
+use Throwable;
 
 /**
  * Mail templates controller
@@ -88,7 +88,7 @@ class MailTemplates extends Controller
 
             Flash::success(trans('system::lang.mail_templates.test_success'));
         }
-        catch (Exception $ex) {
+        catch (Throwable $ex) {
             throw new ApplicationException($ex->getMessage());
         }
     }

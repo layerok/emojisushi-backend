@@ -2,17 +2,24 @@
 // Date Picker
 // --------------------------------------------------
 
-@import "datepicker.variables.less";
+@datepicker-bg:             @popup-bg;
+@datepicker-color:          @text-color;
+@datepicker-border:         @popup-border;
+@datepicker-selected-bg:    @brand-selection;
+@datepicker-selected-color: #fff;
+@datepicker-hover-bg:       @secondary-bg;
+@datepicker-hover-text:     @emphasis-color;
+
+@datepicker-today-text:     #fff;
+@datepicker-today-bg:       @brand-secondary;
+
 @import "datepicker.date.less";
 @import "datepicker.time.less";
 
-.field-datepicker {
-
-}
-
 .pika-single {
-    border: @popup-border!important;
-    background: white;
+    border: @datepicker-border !important;
+    background: @datepicker-bg;
+    color: @text-color;
     border-radius: 8px;
 
     font-size: 12px;
@@ -28,6 +35,7 @@
     abbr {
         border-bottom: none;
     }
+
     .pika-button {
         border-radius: 999px !important;
         text-align: center;
@@ -35,21 +43,24 @@
         height: 29px;
         margin: 3px;
         background: transparent;
+        color: @datepicker-color;
     }
+
     .is-today .pika-button {
-        background: #ddd;
+        background: @datepicker-today-bg;
+        color: @datepicker-today-text;
         font-weight: bold;
-        color: @color-datepicker-today-text;
     }
 
     .is-selected .pika-button {
         box-shadow: none;
-        background: @color-datepicker-selected-bg;
+        background: @datepicker-selected-bg;
+        color: @datepicker-selected-color;
     }
 
     .pika-button:hover {
-        color: @color-datepicker-hover-text !important;
-        background: @color-datepicker-hover-bg !important;
+        color: @datepicker-hover-text !important;
+        background: @datepicker-hover-bg !important;
     }
 
     .pika-label {
@@ -61,6 +72,7 @@
         font-weight: normal;
         line-height: 30px;
         font-size: @font-size-base - 3;
+        color: @primary-color;
     }
 
     .pika-footer {
@@ -74,12 +86,18 @@
     z-index: @zindex-datepicker;
     box-shadow: @box-shadow-z2;
     border-radius: 8px;
-    border: @popup-border!important;
+    border: @datepicker-border !important;
+    background-color: @datepicker-bg;
 
     .popover-title {
+        background-color: @datepicker-bg;
         font-size: 20px;
         font-weight: normal;
         border: none;
+    }
+
+    .popover-content {
+        background-color: @tertiary-bg;
     }
 
     &.top {
@@ -101,7 +119,25 @@
 }
 
 .clockpicker-plate {
-    border: none;
+    background-color: @datepicker-bg;
+    border: @datepicker-border;
+}
+
+.clockpicker-tick {
+    color: @datepicker-color;
+
+    &.active,
+    &:hover {
+        background-color: @datepicker-hover-bg;
+        color: @datepicker-hover-text;
+    }
+}
+
+.clockpicker-canvas-bg {
+    fill: @secondary-bg;
+}
+.clockpicker-canvas-bg-trans {
+    fill: rgba(0, 149, 221, .25);
 }
 
 .clockpicker-hours .clockpicker-tick {
@@ -113,4 +149,11 @@
 }
 .clockpicker-minutes .clockpicker-tick {
     font-size: 16px;
+}
+
+[data-bs-theme="dark"] {
+    .pika-prev,
+    .pika-next {
+        filter: invert(100%);
+    }
 }

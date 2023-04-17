@@ -18,7 +18,7 @@ class ColorPicker extends FormWidgetBase
     //
 
     /**
-     * @var array Default available colors
+     * @var array availableColors by default
      */
     public $availableColors = [
         '#1abc9c', '#16a085',
@@ -49,6 +49,11 @@ class ColorPicker extends FormWidgetBase
     public $showAlpha = false;
 
     /**
+     * @var bool|null showInput displays an input and disables the available colors.
+     */
+    public $showInput;
+
+    /**
      * @var bool readOnly if true, the color picker is set to read-only mode
      */
     public $readOnly = false;
@@ -76,10 +81,17 @@ class ColorPicker extends FormWidgetBase
             'availableColors',
             'allowCustom',
             'allowEmpty',
+            'showInput',
             'showAlpha',
             'readOnly',
             'disabled',
         ]);
+
+        // @deprecated remove default colors with showInput true as default (v4)
+        // when colors provided, even as empty array, showInput becomes false -sg
+        if ($this->availableColors === false && $this->showInput === null) {
+            $this->showInput = true;
+        }
     }
 
     /**
@@ -102,37 +114,40 @@ class ColorPicker extends FormWidgetBase
         $this->vars['allowCustom'] = $this->allowCustom;
         $this->vars['allowEmpty'] = $this->allowEmpty;
         $this->vars['showAlpha'] = $this->showAlpha;
+        $this->vars['showInput'] = $this->showInput;
         $this->vars['readOnly'] = $this->readOnly;
         $this->vars['disabled'] = $this->disabled;
         $this->vars['isCustomColor'] = !in_array($value, $availableColors);
     }
 
     /**
-     * Gets the appropriate list of colors.
-     *
-     * @return array
+     * getAvailableColors as a list of available colors.
      */
-    protected function getAvailableColors()
+    protected function getAvailableColors(): array
     {
         $availableColors = $this->availableColors;
         if (is_array($availableColors)) {
             return $availableColors;
         }
-        elseif (is_string($availableColors) && !empty($availableColors)) {
-            if ($this->model->methodExists($availableColors)) {
-                return $this->availableColors = $this->model->{$availableColors}(
-                    $this->formField->fieldName,
-                    $this->formField->value,
-                    $this->formField->config
-                );
-            } else {
+
+        if (is_string($availableColors) && strlen($availableColors)) {
+            if (!$this->model->methodExists($availableColors)) {
                 throw new ApplicationException(Lang::get('backend::lang.field.colors_method_not_exists', [
-                    'model'  => get_class($this->model),
+                    'model' => get_class($this->model),
                     'method' => $availableColors,
-                    'field'  => $this->formField->fieldName
+                    'field' => $this->formField->fieldName
                 ]));
             }
+
+            // @deprecated just pass form field here -sg
+            return (array) $this->model->{$availableColors}(
+                $this->formField->fieldName,
+                $this->formField->value,
+                $this->formField->config
+            );
         }
+
+        return [];
     }
 
     /**

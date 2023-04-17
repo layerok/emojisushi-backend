@@ -13,9 +13,9 @@ div.autocomplete {
     ul.autocomplete-result-list {
         margin-top: 3px;
         border-radius: 4px;
-        border-color: @color-grey-3;
+        border-color: @primary-border;
         padding: 3px;
-        .user-select(none);
+        user-select: none;
         .box-shadow(@box-shadow-z1);
 
         li.autocomplete-result {
@@ -31,7 +31,7 @@ div.autocomplete {
             }
 
             &:hover {
-                background: @background-color-focus;
+                background: @toolbar-focus-bg;
             }
         }
     }

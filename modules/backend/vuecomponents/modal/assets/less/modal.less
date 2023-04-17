@@ -10,15 +10,15 @@
 
         .modal-dialog {
             opacity: 0;
-            .transition(~'all 0.15s, width 0s');
-            .transform(~'scale(0.95)');
+            transition: all 0.15s, width 0s;
+            transform: scale(0.95);
         }
     }
 
     &.fade.show {
         .modal-dialog {
             opacity: 1;
-            .transform( ~'scale(1)');
+            transform: scale(1);
         }
     }
 }
@@ -50,7 +50,7 @@
         border: @popup-border;
         border-radius: 8px;
         box-shadow: @box-shadow-z2;
-        background-color: white;
+        background-color: @popup-bg;
         overflow: visible;
         word-break: break-word;
 
@@ -78,7 +78,7 @@
 
                 &:focus {
                     outline: none;
-                    background-color: @background-color-focus;
+                    background-color: @toolbar-focus-bg;
                 }
 
                 &:before {
@@ -106,7 +106,7 @@
         }
 
         &.draggable .modal-header {
-            .user-select(none);
+            user-select: none;
         }
 
         &.animate-position {
@@ -185,7 +185,7 @@
 
 body.modal-dragging {
     * {
-        .user-select(none);
+        user-select: none;
     }
 }
 

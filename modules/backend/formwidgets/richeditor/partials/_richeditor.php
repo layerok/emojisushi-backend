@@ -32,10 +32,11 @@
         data-control="richeditor">
             <?php if (!$legacyMode): ?><div class="editor-write layout-cell"><?php endif ?>
                 <textarea
-                data-richeditor-textarea
-                placeholder="<?= e(__($field->placeholder)) ?>"
-                name="<?= $name ?>"
-                id="<?= $this->getId('textarea') ?>"
+                    data-richeditor-textarea
+                    placeholder="<?= e(__($field->placeholder)) ?>"
+                    name="<?= $name ?>"
+                    id="<?= $this->getId('textarea') ?>"
+                    style="display: none"
                 ><?= e($value) ?></textarea>
                 <div class="height-indicator"></div>
             <?php if (!$legacyMode): ?></div><?php endif ?>

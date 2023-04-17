@@ -6,141 +6,186 @@
  * - data-data-locker="input#locker" - Input element to store and restore the chosen color
  *
  * JavaScript API:
- * $('div#someElement').colorPicker({ dataLocker: 'input#locker' })
- *
- * Dependences:
- * - Some other plugin (filename.js)
+ * ColorPickerFormWidget.getOrCreateInstance(el, { dataLocker: 'input#locker' })
  */
 
-+function ($) { "use strict";
+'use strict';
 
-    // COLORPICKER CLASS DEFINITION
-    // ============================
+class ColorPickerFormWidget extends oc.FoundationPlugin
+{
+    constructor(element, config) {
+        super(element, config);
 
-    var ColorPicker = function(element, options) {
-        this.options = options;
         this.$el = $(element);
-
-        // Init
-        this.init();
-    }
-
-    ColorPicker.DEFAULTS = {
-        showAlpha: false,
-        allowEmpty: false,
-        dataLocker: null,
-        disabled: false
-    }
-
-    ColorPicker.prototype.init = function() {
-        var self = this;
-        this.$dataLocker  = $(this.options.dataLocker, this.$el);
-        this.$colorList = $('>ul', this.$el);
+        this.$dataLocker  = $(this.config.dataLocker, this.$el);
+        this.$colorList = $('> ul', this.$el);
         this.$customColor = $('[data-custom-color]', this.$el);
-        this.$customColorSpan = $('>span', this.$customColor);
+        this.$customColorSpan = $('> span', this.$customColor);
         this.originalColor = this.$customColor.data('hexColor');
 
-        if (!this.options.disabled) {
-            this.$colorList.on('click', '>li', function(){
-                self.selectColor(this);
-                self.$dataLocker.trigger('change');
-            });
+        if (!this.config.disabled) {
+            this.$colorList.on('click', '> li', this.proxy(this.onSelectColor));
         }
 
-        // Custom color
         if (this.$customColor.length) {
-            this.$customColor.spectrum({
-                preferredFormat: 'hex',
-                showInput: true,
-                showAlpha: this.options.showAlpha,
-                allowEmpty: this.options.allowEmpty,
-                color: this.$customColor.data('hexColor'),
-                chooseText: $.oc.lang.get('colorpicker.choose', 'Ok'),
-                cancelText: '⨯',
-                appendTo: 'parent',
-                disabled: this.options.disabled,
-                hide: function(color) {
-                    var hex = color ? color.toHexString() : '';
-                    self.$customColorSpan.css('background', hex);
-                },
-                show: function(color) {
-                    var hex = color ? color.toHexString() : '';
-                    self.showCustomColor(hex);
-                },
-                move: function(color) {
-                    var hex = color ? color.toHexString() : '';
-                    self.$customColorSpan.css('background', hex);
-                },
-                change: function(color) {
-                    var hex = color ? color.toHexString() : '';
-                    self.setCustomColor(hex);
-                }
-            });
+            this.initSpectrum();
+
+            if (!this.config.disabled) {
+                this.$dataLocker.on('click', this.proxy(this.onClickLocker));
+                this.$dataLocker.on('keyup', this.proxy(this.onKeyupLocker));
+                this.$dataLocker.on('change', this.proxy(this.onChangeLocker));
+            }
+        }
+
+        // Adds support for vanilla JS and jQuery change event
+        // Bind to native and prevent recursion with event once
+        this.triggerNativeChange = (event) => {
+            oc.Events.dispatch('change', { target: event.currentTarget });
+            $(event.currentTarget).one('change', this.triggerNativeChange);
+        };
+
+        this.$dataLocker.one('change', this.proxy(this.triggerNativeChange));
+
+        this.markDisposable();
+    }
+
+    dispose() {
+        if (!this.config.disabled) {
+            this.$colorList.off('click', '> li', this.proxy(this.onSelectColor));
+        }
+
+        if (this.$customColor.length) {
+            this.$customColor.spectrum('destroy');
+
+            if (!this.config.disabled) {
+                this.$dataLocker.off('click', this.proxy(this.onClickLocker));
+                this.$dataLocker.off('keyup', this.proxy(this.onKeyupLocker));
+                this.$dataLocker.off('change', this.proxy(this.onChangeLocker));
+            }
+        }
+
+        this.$dataLocker.off('change', this.proxy(this.triggerNativeChange));
+
+        super.dispose();
+    }
+
+    static get DATANAME() {
+        return 'ocColorPicker';
+    }
+
+    static get DEFAULTS() {
+        return {
+            showAlpha: false,
+            allowEmpty: false,
+            dataLocker: null,
+            disabled: false
         }
     }
 
-    ColorPicker.prototype.showCustomColor = function(hex) {
-        this.$customColor.data('hexColor', hex);
-        this.selectColor(this.$customColor);
+    onSelectColor(ev) {
+        this.$dataLocker.val(
+            $(ev.target).closest('li').data('hexColor')
+        ).trigger('change');
+
+        // Needed in case custom color is not used
+        this.updateChosenColor(ev.target);
     }
 
-    ColorPicker.prototype.setCustomColor = function(hexColor) {
-        if (this.$customColor.length) {
+    onClickLocker(ev) {
+        ev.stopPropagation();
+        ev.preventDefault();
+        this.$customColor.spectrum('show');
+    }
+
+    onKeyupLocker(ev) {
+        this.$customColor.spectrum('set', $(ev.target).val());
+    }
+
+    onChangeLocker(ev) {
+        this.setColor($(ev.target).val());
+    }
+
+    initSpectrum() {
+        var self = this;
+
+        this.$customColor.spectrum({
+            preferredFormat: this.config.showAlpha ? 'hex8' : 'hex',
+            showInput: true,
+            showAlpha: this.config.showAlpha,
+            allowEmpty: this.config.allowEmpty,
+            color: this.$customColor.data('hexColor'),
+            chooseText: $.oc.lang.get('colorpicker.choose', 'OK'),
+            cancelText: '⨯',
+            appendTo: 'parent',
+            disabled: this.config.disabled,
+            hide: function(color) {
+                self.$customColorSpan.css('background', self.evalHexValue(color));
+            },
+            show: function(color) {
+                self.onShowSpectrum(self.evalHexValue(color));
+            },
+            move: function(color) {
+                self.$customColorSpan.css('background', self.evalHexValue(color));
+            },
+            change: function(color) {
+                self.$dataLocker.val(self.evalHexValue(color)).trigger('change');
+            }
+        });
+    }
+
+    onShowSpectrum(hexColor) {
+        this.$customColor.data('hexColor', hexColor);
+        this.$dataLocker.val(hexColor);
+        this.updateChosenColor(this.$customColor);
+    }
+
+    //
+    // API
+    //
+
+    setColor(hexColor) {
+        var $listColor = $('[data-hex-color="'+hexColor+'"]:not(.custom-color)', this.$el);
+
+        // Locker is a custom value
+        if (!$listColor.length && this.$customColor.length) {
+            this.$customColorSpan.css('background', hexColor);
             this.$customColor.data('hexColor', hexColor);
             this.$customColor.spectrum('set', hexColor);
+            $listColor = this.$customColor;
         }
 
-        this.setColor(hexColor);
+        // Select the preset or custom
+        if ($listColor.length) {
+            this.updateChosenColor($listColor);
+        }
     }
 
-    ColorPicker.prototype.setColor = function(hexColor) {
-        this.$dataLocker.val(hexColor);
-    }
+    //
+    // Internals
+    //
 
-    ColorPicker.prototype.selectColor = function(el) {
-        var $item = $(el);
-
-        $item
+    updateChosenColor(el) {
+        $(el).closest('li')
             .addClass('active')
-            .siblings().removeClass('active');
-
-        this.setColor($item.data('hexColor'));
+            .siblings()
+            .removeClass('active');
     }
 
-    // COLORPICKER PLUGIN DEFINITION
-    // ============================
+    evalHexValue(color) {
+        if (!color) {
+            return '';
+        }
 
-    var old = $.fn.colorPicker
+        if (this.config.showAlpha) {
+            return color.toHex8String();
+        }
 
-    $.fn.colorPicker = function (option) {
-        var args = Array.prototype.slice.call(arguments, 1), result
-        this.each(function () {
-            var $this   = $(this)
-            var data    = $this.data('oc.colorpicker')
-            var options = $.extend({}, ColorPicker.DEFAULTS, $this.data(), typeof option == 'object' && option)
-            if (!data) $this.data('oc.colorpicker', (data = new ColorPicker(this, options)))
-            if (typeof option == 'string') result = data[option].apply(data, args)
-            if (typeof result != 'undefined') return false
-        })
-
-        return result ? result : this
+        return color.toHexString();
     }
+}
 
-    $.fn.colorPicker.Constructor = ColorPicker
-
-    // COLORPICKER NO CONFLICT
-    // =================
-
-    $.fn.colorPicker.noConflict = function () {
-        $.fn.colorPicker = old
-        return this
-    }
-
-    // COLORPICKER DATA-API
-    // ===============
-
-    $(document).render(function() {
-        $('[data-control="colorpicker"]').colorPicker()
-    })
-
-}(window.jQuery);
+addEventListener('render', function() {
+    document.querySelectorAll('[data-control=colorpicker]').forEach(function(el) {
+        ColorPickerFormWidget.getOrCreateInstance(el);
+    });
+});

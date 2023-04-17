@@ -9,23 +9,8 @@
 // `$body-color` or write more CSS that override's Bootstrap's CSS like so:
 // `body { color: red; }`.
 
-$body-color: #333;
-$body-bg: #FAFBFD;
-$link-color: #3498db;
-
-$link-decoration: none;
-$link-hover-decoration: underline;
-
-$border-radius: .3rem;
-$border-radius-sm: .25rem;
-$border-radius-lg: .35rem;
-
-$primary: #6a6cf7;
-$secondary: #e67e22;
-$success: #86cB43;
-$info: #5bc0de;
-$warning: #f0ad4e;
-$danger: #ff3e1d;
+@import "variables";
+@import "variables-dark";
 
 @import "bootstrap/scss/functions"; // Required
 @import "bootstrap/scss/variables"; // Required

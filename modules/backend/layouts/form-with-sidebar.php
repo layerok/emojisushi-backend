@@ -4,9 +4,9 @@
         <div class="layout">
             <?php if ($breadcrumbContent = Block::placeholder('breadcrumb')): ?>
                 <!-- Breadcrumb -->
-                <div class="control-breadcrumb breadcrumb-flush">
+                <nav class="control-breadcrumb breadcrumb-flush">
                     <?= $breadcrumbContent ?>
-                </div>
+                </nav>
             <?php endif ?>
 
             <!-- Content -->

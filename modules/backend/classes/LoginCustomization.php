@@ -1,11 +1,18 @@
 <?php namespace Backend\Classes;
 
+use Url;
 use Backend\Models\BrandSetting;
 use Exception;
-use Url;
+use File;
 
+/**
+ * LoginCustomization
+ */
 class LoginCustomization
 {
+    /**
+     * getCustomizationVariables
+     */
     public static function getCustomizationVariables($controller)
     {
         $result = [];
@@ -28,5 +35,18 @@ class LoginCustomization
         $result['defaultImage2x'] = $defaultImageNum.'@2x.png';
 
         return (object)$result;
+    }
+
+    public static function getGeneratedImageData()
+    {
+        $index = rand(1, 7);
+
+        $basePath = base_path() . '/modules/backend/assets/images/october-login-ai-generated/';
+        $backgroundPath = $basePath . $index . '/background.css';
+
+        return (object)[
+            'img' => $index.'/image.png',
+            'background' => File::get($backgroundPath)
+        ];
     }
 }

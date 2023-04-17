@@ -62,6 +62,7 @@
         this.$el.on('click', '.toolbar-clear-file', this.proxy(this.onClearFileClick));
         this.$el.on('click', '.toolbar-delete-selected', this.proxy(this.onDeleteSelectedClick));
 
+        this.$el.on('click', 'input[data-record-selector]', this.proxy(this.onClickCheckbox));
         this.$el.on('change', 'input[data-record-selector]', this.proxy(this.onSelectionChanged));
 
         this.initToolbarExtensionPoint();
@@ -84,6 +85,7 @@
         this.$el.off('click', '.toolbar-clear-file', this.proxy(this.onClearFileClick));
         this.$el.off('click', '.toolbar-delete-selected', this.proxy(this.onDeleteSelectedClick));
 
+        this.$el.off('click', 'input[data-record-selector]', this.proxy(this.onClickCheckbox));
         this.$el.off('change', 'input[data-record-selector]', this.proxy(this.onSelectionChanged));
 
         this.$el.off('dispose-control', this.proxy(this.dispose));
@@ -407,6 +409,10 @@
         this.extendExternalToolbar();
     }
 
+    FileUpload.prototype.onClickCheckbox = function(ev) {
+        $.oc.checkboxRangeRegisterClick(ev, '.upload-object', 'input[data-record-selector]');
+    }
+
     /*
      * Trigger change event (Compatibility with october.form.js)
      */
@@ -486,8 +492,24 @@
                 orderData[id] = index + 1
             });
 
+        // Already sorting, queue the request
+        if (this.sorting) {
+            this.sortAgain = true;
+            return;
+        }
+
+        this.sorting = true;
+
         this.$el.request(this.options.sortHandler, {
             data: { sortOrder: orderData }
+        }).done(() => {
+            this.sorting = false;
+
+            // Capture the final state
+            if (this.sortAgain) {
+                this.sortAgain = false;
+                this.onSortAttachments();
+            }
         });
     }
 

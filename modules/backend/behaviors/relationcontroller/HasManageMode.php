@@ -89,6 +89,7 @@ trait HasManageMode
         $config->showSorting = $this->getConfig('manage[showSorting]', !$isPivot);
         $config->defaultSort = $this->getConfig('manage[defaultSort]');
         $config->recordsPerPage = $this->getConfig('manage[recordsPerPage]');
+        $config->customPageName = $this->getConfig('manage[customPageName]', false);
 
         if ($this->viewMode === 'single') {
             $config->showCheckboxes = false;
@@ -104,10 +105,11 @@ trait HasManageMode
         }
         elseif ($isPivot) {
             $config->recordOnClick = sprintf(
-                "$.oc.relationBehavior.clickManagePivotListRecord(':%s', '%s', '%s')",
+                "$.oc.relationBehavior.clickManagePivotListRecord(':%s', '%s', '%s', '%s')",
                 $this->relationModel->getKeyName(),
                 $this->relationGetId(),
-                $this->relationGetSessionKey()
+                $this->relationGetSessionKey(),
+                $this->popupSize
             );
         }
 

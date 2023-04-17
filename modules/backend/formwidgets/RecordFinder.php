@@ -339,7 +339,7 @@ class RecordFinder extends FormWidgetBase
         if (in_array($relationType, ['hasMany', 'belongsTo', 'hasOne'])) {
             $primaryKeyName = $relationObject->getOtherKey();
         }
-        elseif ($relationType === 'belongsToMany') {
+        elseif (in_array($relationType, ['belongsToMany', 'morphedByMany', 'morphToMany'])) {
             $primaryKeyName = $relationObject->getRelatedKeyName();
         }
         else {

@@ -1,7 +1,8 @@
 <?php namespace System\Console;
 
 use Illuminate\Console\Command;
-use System\Classes\UpdateManager;
+use System\Helpers\Cache as CacheHelper;
+use October\Rain\Composer\Manager as ComposerManager;
 use Exception;
 
 /**
@@ -29,27 +30,26 @@ class OctoberUpdate extends Command
      */
     public function handle()
     {
-        $composerBin = env('COMPOSER_BIN', 'composer');
+        $composer = ComposerManager::instance();
+        $composer->setOutputCommand($this, $this->input);
 
-        $this->line('Updating October CMS...');
-
-        $this->comment("Executing: {$composerBin} update");
-        $this->newLine();
-
-        // Composer update
-        $errCode = null;
-        passthru("$composerBin update", $errCode);
-        $this->newLine();
-
-        if ($errCode !== 0) {
-            $this->output->error('Update failed. Check output above');
-            exit(1);
+        $this->output->section(__('Updating package manager'));
+        try {
+            $composer->update(['composer/composer']);
+        }
+        catch (Exception $ex) {
         }
 
-        // Migrate database
-        $this->comment("Executing: php artisan october:migrate");
-        $this->newLine();
+        $this->output->section(__('Updating application files'));
+        $composer->update();
 
+        CacheHelper::instance()->clearMeta();
+
+        $this->output->section(__('Setting build number'));
+        static::passthruArtisan('october:util set build');
+        $this->newLine()->newLine();
+
+        $this->output->section(__('Finishing update process'));
         $errCode = null;
         static::passthruArtisan('october:migrate', $errCode);
         $this->newLine();
@@ -59,12 +59,7 @@ class OctoberUpdate extends Command
             exit(1);
         }
 
-        try {
-            $this->output->success('System Update Complete');
-        }
-        catch (Exception $ex) {
-            // ...
-        }
+        $this->output->success(__('Update process complete'));
     }
 
     /**

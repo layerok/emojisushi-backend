@@ -4,7 +4,6 @@ use Redirect;
 use BackendAuth;
 use BackendMenu;
 use Backend\Classes\Controller;
-use Backend\Widgets\ReportContainer;
 
 /**
  * Index controller for the dashboard
@@ -73,7 +72,15 @@ class Index extends Controller
      */
     protected function initReportContainer()
     {
-        new ReportContainer($this, 'config_dashboard.yaml');
+        $widgetConfig = $this->makeConfig('config_dashboard.yaml');
+
+        $widgetConfig->showConfigure = BackendAuth::userHasAccess('dashboard.manage');
+        $widgetConfig->showAddRemove = BackendAuth::userHasAccess('dashboard.create');
+        $widgetConfig->showReorder = $widgetConfig->showConfigure || $widgetConfig->showAddRemove;
+        $widgetConfig->showMakeDefault = BackendAuth::userHasAccess('dashboard.defaults');
+
+        $reportWidget = $this->makeWidget(\Backend\Widgets\ReportContainer::class, $widgetConfig);
+        $reportWidget->bindToController();
     }
 
     /**

@@ -11,6 +11,7 @@ use Cms\Classes\ComponentPartial;
 use Cms\Classes\ComponentManager;
 use System\Helpers\View as ViewHelper;
 use October\Rain\Parse\Bracket as TextParser;
+use Exception;
 
 /**
  * HasRenderers
@@ -242,8 +243,13 @@ trait HasRenderers
             // the page action call found in backend ajax. Often we will want the
             // state accessible after everything runs, instead of reverting state
             if ($this->partialWatcher && $this->partialWatcher->isWatchingHandler($name)) {
-                if ($result = $this->runAjaxHandler($this->getAjaxHandler())) {
-                    $this->partialWatcher->setHandlerResponse($result);
+                try {
+                    if ($result = $this->runAjaxHandler($this->getAjaxHandler())) {
+                        $this->partialWatcher->setHandlerResponse($result);
+                    }
+                }
+                catch (Exception $ex) {
+                    $this->partialWatcher->setHandlerException($ex);
                 }
             }
         }

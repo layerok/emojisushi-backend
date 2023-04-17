@@ -1,5 +1,6 @@
 <?php namespace Backend\Classes;
 
+use Arr;
 use Lang;
 use October\Rain\Html\Helper as HtmlHelper;
 use October\Rain\Element\Filter\ScopeDefinition;
@@ -144,7 +145,7 @@ class FilterScope extends ScopeDefinition
         }
 
         // Numerical array
-        if (array_keys($defaults) === range(0, count($defaults) - 1)) {
+        if (Arr::isList($defaults)) {
             return ['value' => $defaults];
         }
 

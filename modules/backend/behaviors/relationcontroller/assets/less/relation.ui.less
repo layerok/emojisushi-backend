@@ -2,8 +2,8 @@
     &.relation-view-multi, &.relation-view-single {
         margin-bottom: 20px;
         border-radius: @input-border-radius;
-        border: 1px solid @color-form-field-border;
-        background: white;
+        border: 1px solid @input-border;
+        background: @input-bg;
         overflow: hidden;
 
         .relation-toolbar .control-toolbar {
@@ -44,8 +44,8 @@
         background: transparent;
 
         .relation-toolbar .control-toolbar {
-            background: white;
-            border-bottom: 1px solid @color-grey-3;
+            background: @input-bg;
+            border-bottom: 1px solid @toolbar-border;
         }
 
         > .relation-manager {

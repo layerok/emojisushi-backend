@@ -16,6 +16,8 @@ module.exports = (mix) => {
     // Backend LESS
     mix.less('modules/backend/assets/less/october.less', 'modules/backend/assets/css/');
     mix.less('modules/backend/behaviors/relationcontroller/assets/less/relation.less', 'modules/backend/behaviors/relationcontroller/assets/css/');
+    mix.less('modules/backend/behaviors/importexportcontroller/assets/less/export.less', 'modules/backend/behaviors/importexportcontroller/assets/css/');
+    mix.less('modules/backend/behaviors/importexportcontroller/assets/less/import.less', 'modules/backend/behaviors/importexportcontroller/assets/css/');
 
     // Component LESS
     mix.lessList('modules/backend/vuecomponents');

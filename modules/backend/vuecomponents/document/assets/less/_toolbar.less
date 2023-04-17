@@ -1,6 +1,7 @@
 .component-backend-document {
     .document-toolbar-container {
-        border-bottom: 1px solid @color-grey-3;
+        background-color: @document-toolbar-bg;
+        border-bottom: 1px solid @primary-border;
 
         > div {
             font-size: 0;
@@ -21,11 +22,11 @@
     .document-toolbar-element {
         display: inline-block;
         font-size: @font-size-base;
-        color: @color-text-grey-1;
+        color: @toolbar-color;
         line-height: 33px;
         margin-right: 8px;
         vertical-align: top;
-        .user-select(none);
+        user-select: none;
 
         &.button-icon-only {
             + .button-icon-only {
@@ -44,7 +45,7 @@
         }
 
         &.element-type-separator {
-            border-right: 1px solid @color-grey-3;
+            border-right: 1px solid @primary-border;
             height: 25px;
             position: relative;
             top: 5px;
@@ -83,7 +84,7 @@
                 &:before {
                     content: '';
                     display: block;
-                    border-right: 1px solid @color-grey-3;
+                    border-right: 1px solid @primary-border;
                     height: 15px;
                     position: absolute;
                     top: 10px;
@@ -92,7 +93,7 @@
                 }
 
                 &.pressed:before {
-                    border-right-color: darken(@brand-selection, 20%);
+                    border-right-color: @brand-selection-text;
                     opacity: 0.5;
                 }
 
@@ -107,8 +108,8 @@
             }
 
             &.pressed {
-                background: fadeout(@brand-selection, 80%) !important;
-                color: darken(@brand-selection, 20%);
+                background: rgba(var(--oc-selection-rgb), .2) !important;
+                color: @brand-selection-text;
             }
 
             .button-label {
@@ -118,7 +119,7 @@
 
         &:hover {
             .backend-toolbar-button {
-                background: @background-color-focus;
+                background: @toolbar-focus-bg;
 
                 &.menu-trigger:before {
                     border-right: 1px solid @color-grey-6;

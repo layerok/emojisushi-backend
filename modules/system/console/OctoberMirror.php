@@ -36,6 +36,7 @@ class OctoberMirror extends Command
      */
     protected $files = [
         '.htaccess',
+        'web.config',
         'index.php',
         'favicon.ico',
         'robots.txt',

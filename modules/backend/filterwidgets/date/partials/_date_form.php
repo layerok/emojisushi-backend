@@ -7,6 +7,7 @@
         'firstDay' => $scope->firstDay,
         'yearRange' => $scope->yearRange,
         'showWeekNumber' => $scope->showWeekNumber,
+        'useTimezone' => $scope->useTimezone,
     ])) ?>"
 >
     <?php if (is_array($scope->conditions) && count($scope->conditions) === 1): ?>

@@ -57,7 +57,15 @@
             self.onConditionChanged();
         });
 
+        if (oc.changeMonitor) {
+            oc.changeMonitor.disable();
+        }
+
         self.onConditionChanged();
+
+        if (oc.changeMonitor) {
+            oc.changeMonitor.enable();
+        }
     }
 
     TriggerOn.prototype.onConditionChanged = function() {

@@ -7,9 +7,9 @@
 @color-chart-tooltip-bg:                     #000000;
 @color-chart-tooltip-text:                   #ffffff;
 
-@color-scoreboard-title:                     @color-grey-1;
-@color-scoreboard-description:               @color-grey-2;
-@color-scoreboard-body:                      @color-grey-1;
+@color-scoreboard-title:                     var(--bs-emphasis-color);
+@color-scoreboard-description:               var(--bs-secondary-color);
+@color-scoreboard-body:                      var(--bs-body-color);
 @color-scoreboard-icon:                      #e5a91a;
 @color-scoreboard-positive:                  #95b753;
 @color-scoreboard-negative:                  #cc3300;
@@ -93,7 +93,7 @@
 
         table {
             font-size: 12px;
-            color: @color-scoreboard-title;
+            color: @color-scoreboard-body;
 
             tr {
                 td {
@@ -103,13 +103,14 @@
                     &.value {
                         padding-left: 10px;
                         font-weight: 600;
+                        color: @color-scoreboard-description;
                     }
 
                     i {
                         display: inline-block;
                         width: 13px;
                         height: 13px;
-                        .border-radius(@border-radius-base);
+                        border-radius: @border-radius-base;
                         text-indent: -100000em;
                         margin-right: 5px;
                         position: relative;
@@ -173,7 +174,6 @@
         font-size: 12px;
         font-weight: 400;
         text-transform: uppercase;
-        color: @color-scoreboard-title;
         margin: 0;
     }
 
@@ -307,7 +307,7 @@
         display: block;
         font-size: @font-size-base - 1;
         color: @color-status-list-text;
-        border-bottom: 1px solid #f0f0f0;
+        border-bottom: 1px solid @border-color;
 
         &:last-child {
             border-bottom: none;
@@ -330,11 +330,11 @@
             margin: 0 5px;
 
             &.muted { color: @text-muted; }
-            &.primary { .text-emphasis-variant(@brand-primary); }
-            &.success { .text-emphasis-variant(@state-success-text); }
-            &.info { .text-emphasis-variant(@state-info-text); }
-            &.warning { .text-emphasis-variant(@state-warning-text); }
-            &.danger { .text-emphasis-variant(@state-danger-text); }
+            &.primary { color: @brand-primary; }
+            &.success { color: @state-success-text; }
+            &.info { color: @state-info-text; }
+            &.warning { color: @state-warning-text; }
+            &.danger { color: @state-danger-text; }
         }
 
         .status-label {

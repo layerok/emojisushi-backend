@@ -57,11 +57,13 @@
                 top: 1px;
                 display: inline-block;
                 vertical-align: baseline;
+                text-align: center;
+                border-radius: 100px;
             }
 
             &:hover {
                 background-color: @color-filter-items-bg-hover;
-                color: #FFFFFF;
+                color: white;
             }
         }
     }
@@ -69,8 +71,6 @@
     .filter-items {
         max-height: 200px;
         overflow: auto;
-
-        background-color: @color-filter-items-bg;
         a:before {
             content: @octo-icon-plus;
         }
@@ -92,10 +92,6 @@
 
             &.animate-enter { animation: fadeInUp .3s; }
         }
-
-        li:last-child {
-            border-bottom: 1px solid @color-filter-border;
-        }
     }
 
     .filter-buttons {
@@ -103,12 +99,26 @@
     }
 
     .filter-active-items {
-        a:before {
-            content: @octo-icon-cross;
-            left: -1px;
+        font-weight: 600;
+        border-top: 1px solid @color-filter-border;
+
+        a {
+            &:before {
+                background-color: @secondary-bg;
+                color: @text-color;
+                content: @octo-icon-cross;
+                left: -1px;
+            }
+
+            &:hover:before {
+                color: #c63e26;
+                background-color: white;
+            }
         }
 
-        li.animate-enter { animation: fadeInDown .3s; }
+        li.animate-enter {
+            animation: fadeInDown .3s;
+        }
 
         li:last-child {
             border-bottom: 1px solid @color-filter-border;

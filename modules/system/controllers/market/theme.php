@@ -1,9 +1,9 @@
 <?php Block::put('breadcrumb') ?>
-    <ul>
-        <li><a href="<?= Backend::url('system/updates') ?>"><?= e(__('System Updates')) ?></a></li>
-        <li><a href="<?= Backend::url('system/market') ?>"><?= e(__('Marketplace')) ?></a></li>
-        <li><?= e(__($this->pageTitle)) ?></li>
-    </ul>
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="<?= Backend::url('system/updates') ?>"><?= e(__('System Updates')) ?></a></li>
+        <li class="breadcrumb-item"><a href="<?= Backend::url('system/market') ?>"><?= e(__('Marketplace')) ?></a></li>
+        <li class="breadcrumb-item active" aria-current="page"><?= e(__($this->pageTitle)) ?></li>
+    </ol>
 <?php Block::endPut() ?>
 
 <?php if (!$this->fatalError): ?>

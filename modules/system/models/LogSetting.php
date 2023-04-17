@@ -1,6 +1,6 @@
 <?php namespace System\Models;
 
-use Model;
+use System\Models\SettingModel;
 
 /**
  * System log settings
@@ -8,32 +8,28 @@ use Model;
  * @package october\system
  * @author Alexey Bobkov, Samuel Georges
  */
-class LogSetting extends Model
+class LogSetting extends SettingModel
 {
     use \October\Rain\Database\Traits\Validation;
 
     /**
-     * @var array Behaviors implemented by this model.
-     */
-    public $implement = [
-        \System\Behaviors\SettingsModel::class
-    ];
-
-    /**
-     * @var string Unique code
+     * @var string settingsCode
      */
     public $settingsCode = 'system_log_settings';
 
     /**
-     * @var mixed Settings form field defitions
+     * @var mixed settingsFields definitions
      */
     public $settingsFields = 'fields.yaml';
 
     /**
-     * Validation rules
+     * @var array rules for validation
      */
     public $rules = [];
 
+    /**
+     * filterSettingItems
+     */
     public static function filterSettingItems($manager)
     {
         if (!self::isConfigured()) {
@@ -56,9 +52,8 @@ class LogSetting extends Model
     }
 
     /**
-     * Initialize the seed data for this model. This only executes when the
+     * IinitSettingsData for this model. This only executes when the
      * model is first created or reset to default.
-     * @return void
      */
     public function initSettingsData()
     {

@@ -15,6 +15,7 @@ use Exception;
 class Date extends FilterWidgetBase
 {
     const CONDITION_EQUALS = 'equals';
+    const CONDITION_NOT_EQUALS = 'notEquals';
     const CONDITION_BETWEEN = 'between';
     const CONDITION_BEFORE = 'before';
     const CONDITION_AFTER = 'after';
@@ -29,6 +30,7 @@ class Date extends FilterWidgetBase
         if (!$scope->conditions) {
             $scope->conditions = [
                 self::CONDITION_EQUALS => true,
+                self::CONDITION_NOT_EQUALS => true,
                 self::CONDITION_BETWEEN => true,
                 self::CONDITION_BEFORE => true,
                 self::CONDITION_AFTER => true
@@ -49,6 +51,10 @@ class Date extends FilterWidgetBase
 
         if (!$scope->yearRange) {
             $scope->yearRange = 10;
+        }
+
+        if ($scope->useTimezone === null) {
+            $scope->useTimezone = true;
         }
     }
 
@@ -162,6 +168,17 @@ class Date extends FilterWidgetBase
                 ->where($this->valueFrom, '<=', $this->parseDate($scope->value, ['returnObject' => true, 'isEndOfDay' => true]));
             return;
         }
+
+        if ($activeCondition === self::CONDITION_NOT_EQUALS) {
+            $query
+                ->where(function($query) use ($scope) {
+                    $query
+                        ->where($this->valueFrom, '>', $this->parseDate($scope->value, ['returnObject' => true, 'isEndOfDay' => true]))
+                        ->orWhere($this->valueFrom, '<', $this->parseDate($scope->value, ['returnObject' => true]));
+                });
+            return;
+        }
+
         if ($activeCondition === self::CONDITION_BETWEEN) {
             $query
                 ->where($this->valueFrom, '>=', $this->parseDate($scope->after, ['returnObject' => true]))
@@ -227,6 +244,9 @@ class Date extends FilterWidgetBase
         switch ($condition) {
             case self::CONDITION_EQUALS:
                 return __('is equal to');
+
+            case self::CONDITION_NOT_EQUALS:
+                return __('not equal to');
 
             case self::CONDITION_BETWEEN:
                 return __('is between');

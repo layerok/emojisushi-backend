@@ -29,11 +29,8 @@
     DatePicker.prototype.constructor = DatePicker;
 
     DatePicker.prototype.init = function() {
-        var $form = this.$el.closest('form'),
-            changeMonitor = $form.data('oc.changeMonitor');
-
-        if (changeMonitor !== undefined) {
-            changeMonitor.pause();
+        if (oc.changeMonitor) {
+            oc.changeMonitor.disable();
         }
 
         this.dbDateTimeFormat = 'YYYY-MM-DD HH:mm:ss';
@@ -58,8 +55,8 @@
             this.initTimePicker();
         }
 
-        if (changeMonitor !== undefined) {
-            changeMonitor.resume();
+        if (oc.changeMonitor) {
+            oc.changeMonitor.enable();
         }
 
         this.$timePicker.on('change.oc.datepicker', this.proxy(this.onChangePicker));

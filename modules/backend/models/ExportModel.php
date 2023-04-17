@@ -1,5 +1,6 @@
 <?php namespace Backend\Models;
 
+use Arr;
 use File;
 use Lang;
 use Model;
@@ -93,7 +94,7 @@ abstract class ExportModel extends Model
      */
     protected function processColumnKeys(array $columns): array
     {
-        if (array_keys($columns) === range(0, count($columns) - 1)) {
+        if (Arr::isList($columns)) {
             $columns = array_combine($columns, $columns);
         }
 

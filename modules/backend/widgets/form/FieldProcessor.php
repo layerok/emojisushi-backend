@@ -56,7 +56,7 @@ trait FieldProcessor
                     $field->size = 'adaptive';
                     $field->stretch = true;
                     $tabs->stretch = true;
-                    $tabs->addAdaptive($field->tab);
+                    $tabs->addAdaptive($field->tab ?: $tabs->defaultTab);
                 }
             }
         }

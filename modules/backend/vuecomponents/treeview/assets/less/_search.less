@@ -1,6 +1,7 @@
 .treeview-search-control {
     height: 40px;
-    background: white;
+    background: @primary-bg;
+    color: @text-color;
     position: relative;
 
     &:before {
@@ -18,8 +19,9 @@
         border: none;
         height: 40px;
         width: 100%;
-        border-top: 1px solid @color-grey-3;
+        border-top: 1px solid @primary-border;
         background: transparent;
+        color: @input-color;
         outline: none;
         -webkit-appearance: none;
         padding-left: 10px;
@@ -48,7 +50,7 @@
         outline: none;
 
         &:focus {
-            background: @background-color-focus;
+            background: @toolbar-focus-bg;
         }
 
         &:before {

@@ -1,3 +1,17 @@
+@filelist-active:                      @brand-selection;
+@filelist-active-text:                 #ffffff;
+@filelist-active-border:               @brand-primary;
+@filelist-norecords-text:              #666666;
+@filelist-norecords-bg:                #eeeeee;
+@filelist-cb-border:                   #cccccc;
+@filelist-title-hero:                  @primary-color;
+@filelist-hero-item-bg:                @primary-bg;
+@filelist-hero-item-border:            @toolbar-border;
+@filelist-hero-hover-bg:               @dropdown-hover-bg;
+@filelist-hero-hover-text:             @dropdown-hover-color;
+@filelist-hero-active-bg:              @dropdown-active-bg;
+@filelist-hero-active-text:            @dropdown-hover-color;
+
 //
 // File list control
 // --------------------------------------------------
@@ -20,11 +34,11 @@
     p.no-data {
         padding: 22px 0;
         margin: 0;
-        color: @color-filelist-norecords-text;
+        color: @filelist-norecords-text;
         font-size: @font-size-base;
         text-align: center;
         font-weight: normal;
-        .border-radius(@border-radius-base);
+        border-radius: @border-radius-base;
     }
 
     ul {
@@ -38,15 +52,15 @@
             list-style: none;
 
             a:hover {
-                background: @color-filelist-hover;
+                background: @toolbar-hover-bg;
             }
 
             &.active > a {
-                background: @color-filelist-active;
+                background: @filelist-active;
                 position: relative;
 
                 span.title, span.description {
-                    color: @color-filelist-active-text;
+                    color: @filelist-active-text;
                 }
             }
 
@@ -62,12 +76,12 @@
 
                     &.title {
                         font-weight: normal;
-                        color: @color-text-title;
+                        color: @toolbar-color;
                         font-size: @font-size-base;
                     }
 
                     &.description {
-                        color: @color-text-description;
+                        color: @primary-color;
                         font-size: @font-size-base - 2;
                         white-space: nowrap;
                         font-weight: normal;
@@ -75,7 +89,7 @@
                         text-overflow: ellipsis;
 
                         strong {
-                            color: @color-text-title;
+                            color: @toolbar-color;
                             font-weight: normal;
                         }
                     }
@@ -92,7 +106,7 @@
 
                     a {
                         padding: 10px 20px 10px 53px;
-                        color: @color-text-title;
+                        color: @toolbar-color;
                         position: relative;
                         outline: none;
 
@@ -119,8 +133,8 @@
                             top: 9px;
                             color: @color-list-arrow;
                             .icon(@caret-right);
-                            .transform( ~'rotate(90deg) translate(5px, 0)' );
-                            .transition(all 0.1s ease);
+                            transform: rotate(90deg) translate(5px, 0);
+                            transition: all 0.1s ease;
                         }
                     }
                 }
@@ -139,7 +153,7 @@
 
                 &[data-status=collapsed] {
                     > h4 a:before, > div.group > h4 a:before {
-                        .transform(~'rotate(0deg) translate(3px, 0)');
+                        transform: rotate(0deg) translate(3px, 0);
                     }
 
                     & > ul, & > div.subitems {
@@ -167,7 +181,7 @@
                 }
 
                 a.control {
-                    color: @color-text-title;
+                    color: @toolbar-color;
                     font-size: @font-size-base;
                     visibility: hidden;
                     overflow: hidden;
@@ -209,7 +223,7 @@
                     margin-right: 0;
 
                     &:before {
-                        border-color: @color-filelist-cb-border;
+                        border-color: @filelist-cb-border;
                     }
                 }
             }
@@ -232,43 +246,44 @@
 
     &.filelist-hero {
         .a-hover() {
-            background: @color-filelist-hero-hover-bg;
-            border-bottom: 1px solid @color-filelist-hero-hover-bg !important;
+            background: @filelist-hero-hover-bg;
+            border-bottom: 1px solid @filelist-hero-hover-bg !important;
             span.title, span.description {
-                color: @color-filelist-hero-hover-text !important;
+                color: @filelist-hero-hover-text !important;
             }
 
             .list-icon {
-                color: @color-filelist-hero-hover-text !important;
+                color: @filelist-hero-hover-text !important;
             }
         }
 
         .a-active() {
-            background: @color-filelist-hero-active-bg;
-            border-bottom: 1px solid @color-filelist-hero-active-bg !important;
+            background: @filelist-hero-active-bg;
+            border-bottom: 1px solid @filelist-hero-active-bg !important;
+
             span.title, span.description {
-                color: @color-filelist-hero-active-text !important;
+                color: @filelist-hero-active-text !important;
             }
 
             .list-icon {
-                color: @color-filelist-hero-active-text !important;
+                color: @filelist-hero-active-text !important;
             }
         }
 
         ul {
             li {
-                background: @color-filelist-hero-item-bg;
+                background: @filelist-hero-item-bg;
                 border-bottom: none;
 
                 > a {
                     padding: 11px 45px 10px 50px;
                     font-size: @font-size-base - 1;
-                    border-bottom: 1px solid @color-panel-light;
+                    border-bottom: 1px solid @filelist-hero-item-border;
 
                     span.title {
                         font-size: @font-size-base;
                         font-weight: normal;
-                        color: @color-filelist-title-hero;
+                        color: @filelist-title-hero;
                     }
 
                     span.description {
@@ -305,7 +320,7 @@
 
                 &.active {
                     > a {
-                        border-bottom: 1px solid @color-filelist-active;
+                        border-bottom: 1px solid @filelist-active;
 
                         &:after {
                             display: none;
@@ -319,26 +334,26 @@
                                 height: 1px;
                                 display: block;
                                 left: 0;
-                                background-color: @color-filelist-active;
+                                background-color: @filelist-active;
                             }
 
                             &:before {top: -1px;}
                         }
 
                         &:hover > span.borders:before {
-                            background-color: @color-filelist-hero-hover-bg;
+                            background-color: @filelist-hero-hover-bg;
                         }
 
                         &:active > span.borders:before {
-                            background-color: @color-filelist-hero-active-bg;
+                            background-color: @filelist-hero-active-bg;
                         }
 
                         span.title, span.description {
-                            color: @color-filelist-hero-active-text !important;
+                            color: @filelist-hero-active-text !important;
                         }
 
                         .list-icon {
-                            color: @color-filelist-hero-active-text !important;
+                            color: @filelist-hero-active-text !important;
                         }
                     }
                 }
@@ -346,7 +361,7 @@
                 > h4 {
                     padding-top: 7px;
                     padding-bottom: 6px;
-                    border-bottom: 1px solid @color-panel-light;
+                    border-bottom: 1px solid @filelist-hero-item-border;
                 }
 
                 > div.controls {
@@ -361,7 +376,7 @@
                         background: transparent;
                         overflow: hidden;
                         display: inline-block;
-                        color: @color-filelist-hero-hover-text!important;
+                        color: @filelist-hero-hover-text!important;
                         padding: 0;
 
                         &:before {
@@ -376,12 +391,12 @@
 
                 &.separator {
                     position: relative;
-                    border-bottom: 1px solid #95a5a6;
+                    border-bottom: 1px solid @border-color;
                     padding: 12px 15px 13px 15px;
 
                     &:before {
                         z-index: 31;
-                        .triangle(down, 19px, 11px, white);
+                        .triangle(down, 19px, 11px, @primary-bg);
                         position: absolute;
                         left: 13px;
                         bottom: -8px;
@@ -389,14 +404,14 @@
 
                     &:after {
                         z-index: 30;
-                        .triangle(down, 17px, 9px, #95a5a6);
+                        .triangle(down, 17px, 9px, @border-color);
                         position: absolute;
                         left: 14px;
                         bottom: -9px;
                     }
 
                     h5 {
-                        color: #2b3e50;
+                        color: @heading-color;
                         font-size: @font-size-base;
                         margin: 0;
                         font-weight: normal;
@@ -414,14 +429,14 @@
 
         &.single-level {
             ul li:hover {
-                background: @color-filelist-hero-hover-bg;
+                background: @filelist-hero-hover-bg;
 
                 > a {
                     .a-hover();
                 }
             }
             ul li:active {
-                background: @color-filelist-hero-active-bg;
+                background: @filelist-hero-active-bg;
 
                 > a {
                     .a-active();

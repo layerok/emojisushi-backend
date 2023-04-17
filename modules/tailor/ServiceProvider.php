@@ -153,13 +153,13 @@ class ServiceProvider extends ModuleServiceProvider
         });
 
         Event::listen(['cms.pageLookup.getTypeInfo', 'pages.menuitem.getTypeInfo'], function ($type) {
-            if (starts_with($type, 'entry-')) {
+            if (starts_with($type, ['entry-', 'list-entry-'])) {
                 return BlueprintIndexer::instance()->getPageManagerTypeInfo($type);
             }
         });
 
         Event::listen(['cms.pageLookup.resolveItem', 'pages.menuitem.resolveItem'], function ($type, $item, $url, $theme) {
-            if (starts_with($type, 'entry-')) {
+            if (starts_with($type, ['entry-', 'list-entry-'])) {
                 return BlueprintIndexer::instance()->resolvePageManagerItem($type, $item, $url, $theme);
             }
         });

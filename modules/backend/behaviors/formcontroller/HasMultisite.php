@@ -22,11 +22,7 @@ trait HasMultisite
      */
     public function makeMultisiteRedirect($context = null, $model = null)
     {
-        if (!$model) {
-            return;
-        }
-
-        if (!$this->controller->formHasMultisite($model)) {
+        if (!$model || !$this->controller->formHasMultisite($model)) {
             return;
         }
 
@@ -46,12 +42,14 @@ trait HasMultisite
     public function onSwitchSite($recordId = null)
     {
         $result = [];
+
+        $siteId = post('site_id');
         $model = $this->controller->formFindModelObject($recordId);
-        if (!$model) {
+        if (!$siteId || !$model) {
             return $result;
         }
 
-        $otherModel = $model->findForSite(post('site_id'));
+        $otherModel = $model->findForSite($siteId);
 
         // Model missing or trashed
         $showConfirm = !$otherModel || (

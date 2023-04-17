@@ -359,6 +359,23 @@ class Form extends WidgetBase implements FormElement
      */
     public function setFormValues($data = null)
     {
+        $data = $this->setFormValuesInternal($data);
+
+        // Notify form widgets new form field values
+        foreach ($this->formWidgets as $widget) {
+            $widget->resetFormValue();
+        }
+
+        return $data;
+    }
+
+    /**
+     * setFormValuesInternal method delays resetting form widgets
+     * @param array $data
+     * @return array
+     */
+    protected function setFormValuesInternal($data = null)
+    {
         if ($data === null) {
             $data = $this->getSaveData();
         }
@@ -376,11 +393,6 @@ class Form extends WidgetBase implements FormElement
         // Set field values from data source
         foreach ($this->allFields as $field) {
             $field->value = $this->getFieldValue($field);
-        }
-
-        // Notify form widgets of the change
-        foreach ($this->formWidgets as $widget) {
-            $widget->resetFormValue();
         }
 
         return $data;
@@ -419,7 +431,7 @@ class Form extends WidgetBase implements FormElement
         $saveData = $dataHolder->data;
 
         // Set the form variables and prepare the widget
-        $this->setFormValues($saveData);
+        $this->setFormValuesInternal($saveData);
         $this->applyFiltersFromModel();
         $this->prepareVars();
 
@@ -1217,6 +1229,13 @@ class Form extends WidgetBase implements FormElement
              *
              */
             $targetModel->fireEvent('model.form.filterFields', [$this, $holder, $this->getContext()]);
+        }
+
+        // Reset widgets if they have been accessed
+        foreach ($holder->getTouchedElements() as $name => $field) {
+            if (isset($this->formWidgets[$name])) {
+                $this->formWidgets[$name]->resetFormValue();
+            }
         }
     }
 

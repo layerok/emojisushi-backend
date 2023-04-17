@@ -38,6 +38,7 @@ oc.Module.register('tailor.app.base', function () {
             removeEventListener('before-render', this.proxy(this.refreshToolbars));
             $(window).off('oc.updateUi', this.proxy(this.refreshToolbars));
             $(window).off('shown.bs.tab', this.proxy(this.refreshToolbars));
+            this.state.publishingStateChanged = false;
         }
 
         registerMethods() {

@@ -1,20 +1,28 @@
 @import "../../../../../backend/assets/less/core/boot.less";
 
+@updatelist-border-color: @border-color;
+@updatelist-header-color: @heading-color;
+@updatelist-header-bg: @tertiary-bg;
+
+@updatelist-color: @text-color;
+@updatelist-label-color: @primary-color;
+
 .important-update-label {
     margin: 7px 0;
 }
 
 .control-updatelist {
     margin-bottom: @line-height-computed;
-    border: 1px solid #ccc;
+    border: 1px solid @updatelist-border-color;
     border-radius: 4px;
 
     .update-item {
-        border-bottom: 1px solid #ccc;
+        border-bottom: 1px solid @updatelist-border-color;
 
         .item-header {
-            background-color: #f5f5f5;
-            border-bottom: 1px solid #ccc;
+            color: @updatelist-header-color;
+            background-color: @updatelist-header-bg;
+            border-bottom: 1px solid @updatelist-border-color;
             padding: 0 10px;
 
             h5 {
@@ -25,7 +33,7 @@
 
                 i {
                     margin-right: 7px;
-                    color: @color-text-title;
+                    color: @updatelist-header-color;
                 }
 
                 small {
@@ -46,14 +54,14 @@
         dl {
             padding: 10px;
             margin-bottom: 0;
-            .clearfix;
+            .clearfix();
 
             dt, dd {
                 float: left;
                 padding: 5px 0;
                 line-height: 20px;
                 &.text-muted {
-                    color: #999 !important;
+                    color: @text-muted !important;
                 }
             }
 
@@ -62,12 +70,12 @@
                 clear: left;
                 font-size: 14px;
                 font-weight: 400;
-                color: #2b3e50;
+                color: @updatelist-label-color;
             }
             dd {
                 width: 85%;
                 font-size: 13px;
-                color: #455152;
+                color: @updatelist-color;
             }
 
             .important-update-label {

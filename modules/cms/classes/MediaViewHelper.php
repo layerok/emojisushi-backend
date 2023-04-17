@@ -3,7 +3,7 @@
 use ApplicationException;
 
 /**
- * Helper class for processing video and audio tags inserted by the Media Manager.
+ * MediaViewHelper class for processing video and audio tags inserted by the Media Manager.
  *
  * @method static MediaViewHelper instance()
  *
@@ -17,16 +17,12 @@ class MediaViewHelper
     protected $playerPartialFlags = [];
 
     /**
-     * Replaces audio and video tags inserted by the Media Manager with players markup.
+     * processHtml replaces audio and video tags inserted by the Media Manager with players markup.
      * @param string $html Specifies the HTML string to process.
      * @return string Returns the processed HTML string.
      */
     public function processHtml($html)
     {
-        if (!is_string($html)) {
-            return $html;
-        }
-
         $mediaTags = $this->extractMediaTags($html);
         foreach ($mediaTags as $tagInfo) {
             $pattern = preg_quote($tagInfo['declaration']);
@@ -37,6 +33,9 @@ class MediaViewHelper
         return $html;
     }
 
+    /**
+     * extractMediaTags
+     */
     protected function extractMediaTags($html)
     {
         $result = [];
@@ -65,6 +64,9 @@ class MediaViewHelper
         return $result;
     }
 
+    /**
+     * generateMediaTagMarkup
+     */
     protected function generateMediaTagMarkup($type, $src)
     {
         $partialName = $type == 'audio' ? 'oc-audio-player' : 'oc-video-player';
@@ -76,6 +78,9 @@ class MediaViewHelper
         return $this->getDefaultPlayerMarkup($type, $src);
     }
 
+    /**
+     * playerPartialExists
+     */
     protected function playerPartialExists($name)
     {
         if (array_key_exists($name, $this->playerPartialFlags)) {
@@ -92,6 +97,9 @@ class MediaViewHelper
         return $this->playerPartialFlags[$name] = !!$partial;
     }
 
+    /**
+     * getDefaultPlayerMarkup
+     */
     protected function getDefaultPlayerMarkup($type, $src)
     {
         switch ($type) {

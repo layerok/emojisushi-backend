@@ -27,8 +27,8 @@
     FilterWidget.prototype.constructor = FilterWidget;
 
     FilterWidget.prototype.init = function() {
+        oc.Events.on(this.$el.get(0), 'change', '.filter-scope select', this.proxy(this.onToggleDropdown));
         this.$el.on('change', '.filter-scope input[type="checkbox"]', this.proxy(this.onToggleCheckbox));
-        this.$el.on('change', '.filter-scope select', this.proxy(this.onToggleDropdown));
         this.$el.on('click', 'a.filter-scope', this.proxy(this.onClickScopePopover));
         this.$el.on('hide.oc.popover', 'a.filter-scope', this.proxy(this.onHideScopePopover));
         this.$el.on('click', '.filter-scope [data-filter-action="apply"]', this.proxy(this.onClickInlineScopeApply));
@@ -39,8 +39,8 @@
     }
 
     FilterWidget.prototype.dispose = function() {
+        oc.Events.off(this.$el.get(0), 'change', '.filter-scope select', this.proxy(this.onToggleDropdown));
         this.$el.off('change', '.filter-scope input[type="checkbox"]', this.proxy(this.onToggleCheckbox));
-        this.$el.off('change', '.filter-scope select', this.proxy(this.onToggleDropdown));
         this.$el.off('click', 'a.filter-scope', this.proxy(this.onClickScopePopover));
         this.$el.off('hide.oc.popover', 'a.filter-scope', this.proxy(this.onHideScopePopover));
         this.$el.off('click', '.filter-scope [data-filter-action="apply"]', this.proxy(this.onClickInlineScopeApply));

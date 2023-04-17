@@ -1,18 +1,18 @@
 .top-ruler {
-    background-color: @color-grey-3;
+    background-color: @document-ruler-bg;
     height: 14px;
-    border-bottom: @color-grey-3 1px solid;
+    border-bottom: @document-ruler-bg 1px solid;
 
     .width-indicator {
         height: 13px;
         max-width: 100% !important;
-        background: white;
+        background: @document-ruler-color;
         position: relative;
 
         .width-tick {
             position: absolute;
             width: 1px;
-            background: #bdc3c7;
+            background: @document-ruler-tick;
 
             &.tick-major {
                 top: 2px;
@@ -39,12 +39,13 @@
 
 &.resizing-ui {
     .fr-box.fr-basic .fr-wrapper {
-        background-color: @color-panel-light;
+        background-color: @body-bg;
     }
 
     .fr-element.fr-view {
-        background: white;
-        box-shadow: 0 0 5px 3px rgba(0, 0, 0, 0.05);
+        background: @input-bg;
+        color: @text-color;
+        box-shadow: 0 0 5px 3px rgba(var(--bs-body-color-rgb), 0.05);
         margin: 0 auto;
         display: block;
         max-width: 100% !important;

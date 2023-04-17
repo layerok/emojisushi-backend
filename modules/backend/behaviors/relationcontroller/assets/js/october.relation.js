@@ -9,14 +9,14 @@
             $(el).closest('.control-list').listWidget('toggleChecked', [el]);
         }
 
-        this.clickViewListRecord = function(recordId, relationId, sessionKey) {
+        this.clickViewListRecord = function(recordId, relationId, sessionKey, popupSize) {
             var newPopup = $('<a />'),
                 $container = $('#'+relationId),
                 requestData = paramToObj('data-request-data', $container.data('request-data'));
 
             newPopup.popup({
                 handler: 'onRelationClickViewList',
-                size: 'huge',
+                size: popupSize,
                 extraData: $.extend({}, requestData, {
                     'manage_id': recordId,
                     '_session_key': sessionKey
@@ -45,7 +45,7 @@
             oldPopup.popup('hide');
         }
 
-        this.clickManagePivotListRecord = function(foreignId, relationId, sessionKey) {
+        this.clickManagePivotListRecord = function(foreignId, relationId, sessionKey, popupSize) {
             var oldPopup = $('#relationManagePivotPopup'),
                 newPopup = $('<a />'),
                 $container = $('#'+relationId),
@@ -57,7 +57,7 @@
 
             newPopup.popup({
                 handler: 'onRelationClickManageListPivot',
-                size: 'huge',
+                size: popupSize,
                 extraData: $.extend({}, requestData, {
                     'foreign_id': foreignId,
                     '_session_key': sessionKey

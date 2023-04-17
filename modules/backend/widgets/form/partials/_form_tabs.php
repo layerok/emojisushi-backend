@@ -1,6 +1,4 @@
 <?php
-    $type = $tabs->section;
-
     $navCss = '';
     $contentCss = '';
     $paneCss = '';
@@ -17,14 +15,13 @@
         <?php
             $isActive = $tabs->isPaneActive($index, $name);
             $isLazy = !$isActive && $tabs->isLazy($name);
-            $tName = trans($name);
+            $paneId = $tabs->getPaneId($index, $name);
         ?>
             <li class="<?= $isActive ? 'active' : '' ?> <?= $isLazy ? 'tab-lazy' : '' ?>">
-                <a
-                    href="#<?= $type . 'tab-' . ($tabs->linkable ? str_slug($tName) : $index) ?>"
+                <a href="#<?= e($paneId) ?>" name="<?= e($paneId) ?>"
                     <?php if ($isLazy): ?>
                         data-tab-name="<?= e($name) ?>"
-                        data-tab-section="<?= $type ?>"
+                        data-tab-section="<?= $tabs->section ?>"
                         data-tab-lazy-handler="<?= $this->getEventHandler('onLazyLoadTab') ?>"
                     <?php endif ?>
                 >
@@ -33,7 +30,7 @@
                             <?php if ($tabs->getIcon($name)): ?>
                                 <span class="<?= $tabs->getIcon($name) ?>"></span>
                             <?php endif ?>
-                            <?= e($tName) ?>
+                            <?= e(trans($name)) ?>
                         </span>
                     </span>
                 </a>
@@ -49,9 +46,7 @@
             $isLazy = !$isActive && $tabs->isLazy($name);
             $isAdaptive = $tabs->isAdaptive($name);
         ?>
-            <div
-                class="tab-pane <?= $isLazy ? 'is-lazy' : '' ?> <?= $isAdaptive ? 'is-adaptive' : '' ?> <?= e($tabs->getPaneCssClass($index, $name)) ?> <?= $isActive ? 'active' : '' ?> <?= $paneCss ?>"
-                id="<?= $type . 'tab-' . $index ?>">
+            <div class="tab-pane <?= $isLazy ? 'is-lazy' : '' ?> <?= $isAdaptive ? 'is-adaptive' : '' ?> <?= e($tabs->getPaneCssClass($index, $name)) ?> <?= $isActive ? 'active' : '' ?> <?= $paneCss ?>">
                 <?php if ($isLazy): ?>
                     <?= $this->makePartial('form_fields_lazy', ['fields' => $fields]) ?>
                 <?php else: ?>

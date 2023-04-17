@@ -2,12 +2,11 @@
 
 use App;
 use Str;
-use Model;
-use Event;
 use Cache;
 use Less_Parser;
-use Exception;
 use File as FileHelper;
+use System\Models\SettingModel;
+use Exception;
 
 /**
  * MailBrandSetting
@@ -15,17 +14,10 @@ use File as FileHelper;
  * @package october\system
  * @author Alexey Bobkov, Samuel Georges
  */
-class MailBrandSetting extends Model
+class MailBrandSetting extends SettingModel
 {
     use \System\Traits\ViewMaker;
     use \October\Rain\Database\Traits\Validation;
-
-    /**
-     * @var array implement behaviors
-     */
-    public $implement = [
-        \System\Behaviors\SettingsModel::class
-    ];
 
     /**
      * @var string settingsCode
@@ -78,19 +70,21 @@ class MailBrandSetting extends Model
     }
 
     /**
-     * afterSave
+     * clearCache
      */
-    public function afterSave()
+    public function clearCache()
     {
-        $this->resetCache();
+        parent::clearCache();
+
+        Cache::forget($this->cacheKey);
     }
 
     /**
-     * resetCache
+     * @deprecated see clearCache
      */
     public function resetCache()
     {
-        Cache::forget(self::instance()->cacheKey);
+        $this->clearCache();
     }
 
     /**

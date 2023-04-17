@@ -1,6 +1,6 @@
 <a
     data-control="popup"
-    data-size="huge"
+    data-size="<?= $this->popupSize ?>"
     data-handler="onRelationButtonAdd"
     href="javascript:;"
     class="btn btn-sm btn-secondary"

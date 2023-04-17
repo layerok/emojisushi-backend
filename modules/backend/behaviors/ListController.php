@@ -131,7 +131,7 @@ class ListController extends ControllerBehavior
         //
         $widgetConfig = $this->makeConfig($listConfig->list);
         $widgetConfig->model = $model;
-        $widgetConfig->alias = $definition;
+        $widgetConfig->alias = $listConfig->widgetAlias ?? $definition;
 
         // Prepare the columns configuration
         //
@@ -203,6 +203,10 @@ class ListController extends ControllerBehavior
             return $this->controller->listAfterReorder($record, $definition);
         });
 
+        $widget->bindEvent('list.refresh', function ($result) use ($widget, $definition) {
+            return $this->controller->listExtendRefreshResults($widget, $result, $definition);
+        });
+
         $widget->bindToController();
 
         // Prepare the toolbar widget (optional)
@@ -248,17 +252,17 @@ class ListController extends ControllerBehavior
             $filterWidget = $this->makeWidget(\Backend\Widgets\Filter::class, $filterConfig);
 
             // Filter the list when the scopes are changed
-            $filterWidget->bindEvent('filter.update', function () use ($widget, $filterWidget) {
+            $filterWidget->bindEvent('filter.update', function() use ($widget, $filterWidget) {
                 return $widget->onFilter();
             });
 
             // Filter Widget with extensibility
-            $filterWidget->bindEvent('filter.extendScopes', function () use ($filterWidget) {
+            $filterWidget->bindEvent('filter.extendScopes', function() use ($filterWidget) {
                 $this->controller->listFilterExtendScopes($filterWidget);
             });
 
             // Extend the query of the list of options
-            $filterWidget->bindEvent('filter.extendQuery', function ($query, $scope) {
+            $filterWidget->bindEvent('filter.extendQuery', function($query, $scope) {
                 $this->controller->listFilterExtendQuery($query, $scope);
             });
 
@@ -489,6 +493,19 @@ class ListController extends ControllerBehavior
     }
 
     /**
+     * listGetFilterWidget returns the filter widget used by this behavior.
+     * @return \Backend\Classes\WidgetBase
+     */
+    public function listGetFilterWidget($definition = null)
+    {
+        if (!$definition) {
+            $definition = $this->primaryDefinition;
+        }
+
+        return array_get($this->filterWidgets, $definition);
+    }
+
+    /**
      * listGetId returns a unique ID for the list widget used by this behavior.
      * This is useful for dealing with identifiers in the markup.
      *
@@ -643,6 +660,18 @@ class ListController extends ControllerBehavior
      * @param string|null $definition List definition (optional)
      */
     public function listAfterReorder($record, $definition = null)
+    {
+    }
+
+    /**
+     * listExtendRefreshResults is called when the list is refreshed using AJAX,
+     * and should return an array of additional partial updates.
+     * @param Backend\Widgets\List $host
+     * @param array $result
+     * @param  string $definition List definition (optional)
+     * @return array
+     */
+    public function listExtendRefreshResults($host, $result, $definition = null)
     {
     }
 

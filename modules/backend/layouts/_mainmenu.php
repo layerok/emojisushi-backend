@@ -4,14 +4,28 @@
     $navbarMode = BrandSetting::get('menu_mode', BrandSetting::MENU_INLINE);
     $context = BackendMenu::getContext();
     $isVerticalMenu = isset($isVerticalMenu) ? $isVerticalMenu : false;
+    $navLogo = BrandSetting::getNavLogo();
 ?>
 <div class="main-menu-container">
-    <nav class="navbar control-toolbar navbar-mode-<?= $navbarMode ?> flex" role="navigation">
+    <nav class="navbar control-toolbar navbar-mode-<?= $navbarMode ?> <?= $navLogo ? 'has-logo' : '' ?> flex" role="navigation">
+        <?php if (!$isVerticalMenu && $navLogo): ?>
+            <div class="toolbar-item toolbar-logo fix-width">
+                <a href="<?= Backend::url() ?>" class="mainmenu-logo <?= BackendMenu::isDashboardItemActive() ? 'active' : '' ?>">
+                    <img
+                        src="<?= e($navLogo) ?>"
+                        alt=""
+                        class="nav-logo"
+                        loading="lazy"
+                    />
+                </a>
+            </div>
+        <?php endif ?>
         <div class="toolbar-item toolbar-primary">
             <div data-control="toolbar" <?= $isVerticalMenu ? 'data-vertical="true"' : '' ?>>
                 <ul class="mainmenu-items mainmenu-general" data-main-menu>
                     <?= $this->makeLayoutPartial('mainmenu_items', [
-                        'context' => $context
+                        'context' => $context,
+                        'hideDashitem' => !!$navLogo
                     ]) ?>
                 </ul>
             </div>

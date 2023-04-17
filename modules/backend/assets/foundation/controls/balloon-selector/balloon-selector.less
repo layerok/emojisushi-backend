@@ -3,24 +3,25 @@
 // --------------------------------------------------
 
 @color-balloon-control-default-text:         @input-color;
-@color-balloon-control-hover-bg:             @background-color-focus;
+@color-balloon-control-hover-bg:             @toolbar-hover-bg;
 @color-balloon-control-active-bg:            @brand-selection;
 
 body .control-balloon-selector {
     ul {
         padding: 0;
         display: inline-block;
-        background: white;
+        // background: white;
         font-size: 0;
 
         li {
             list-style: none;
             line-height: 36px;
             display: inline-block;
+            background-color: @input-bg;
             color: @color-balloon-control-default-text;
             font-size: @input-font-size;
             padding: 0 14px;
-            border: 1px solid @color-form-field-border;
+            border: 1px solid @input-border;
 
             &:first-child {
                 border-top-left-radius: @border-radius-base;

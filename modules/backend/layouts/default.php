@@ -3,7 +3,7 @@
     $navbarMode = BrandSetting::get('menu_mode', BrandSetting::MENU_INLINE);
 ?>
 <!DOCTYPE html>
-<html lang="<?= App::getLocale() ?>" class="no-js <?= $this->makeLayoutPartial('browser_detector') ?> <?= $this->makeLayoutPartial('touch_detector') ?>">
+<html lang="<?= App::getLocale() ?>" class="no-js <?= $this->makeLayoutPartial('browser_detector') ?> <?= $this->makeLayoutPartial('touch_detector') ?>" data-bs-theme="<?= e(Backend\Models\BrandSetting::getColorMode()) ?>">
     <head>
         <?= $this->makeLayoutPartial('head') ?>
         <?= $this->fireViewEvent('backend.layout.extendHead', ['default']) ?>
@@ -71,9 +71,9 @@
 
                                                 <?php if ($breadcrumbContent = Block::placeholder('breadcrumb')): ?>
                                                     <!-- Breadcrumb -->
-                                                    <div class="control-breadcrumb">
+                                                    <nav class="control-breadcrumb">
                                                         <?= $breadcrumbContent ?>
-                                                    </div>
+                                                    </nav>
                                                 <?php endif ?>
 
                                                 <!-- Content -->

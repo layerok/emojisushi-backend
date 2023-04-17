@@ -2,7 +2,7 @@
     .navbar {
         padding: 0 20px 0 0;
         height: @mainmenu-mode-inline-height;
-        background-color: @color-mainmenu;
+        background-color: @mainnav-bg;
 
         [data-control="toolbar"] {
             position: absolute;
@@ -25,9 +25,19 @@
                     padding: 15px 10px 0 38px;
                 }
 
-                &.has-subitems > a:after {
-                    .backend-icon-sprite-pseudo(11px, 6px, 82px, 3px);
-                    margin-left: 6px;
+                &.has-subitems {
+                    .nav-label {
+                        padding-right: 17px;
+                    }
+
+                    > a:after {
+                        .icon-OctoFont();
+                        content: @octo-icon-angle-down;
+                        position: absolute;
+                        right: 6px;
+                        top: 19.4px;
+                        font-size: 19.5px;
+                    }
                 }
 
                 .nav-label {
@@ -73,7 +83,7 @@
                         width: 20px;
                         height: 20px;
                         position: absolute;
-                        box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .2);
+                        box-shadow: inset 0 0 0 1px rgba(var(--bs-body-bg-rgb), 0.2);
                         border-radius: 20px;
                     }
                 }
@@ -84,6 +94,9 @@
 
                 &.mainmenu-preview:not(.has-nolabel) > a {
                     padding-right: 15px;
+                    &:after {
+                        right: 11px;
+                    }
                 }
 
                 &.mainmenu-taskbar > a {
@@ -168,13 +181,6 @@
                         padding: 11px 15px 10px;
                         height: auto;
                         display: block;
-
-                        &:after {
-                            margin: 0;
-                            position: absolute;
-                            right: 15px;
-                            bottom: 15px;
-                        }
                     }
 
                     .nav-label {
@@ -186,6 +192,13 @@
                     &.has-subitems {
                         .nav-label {
                             padding-right: 17px;
+                        }
+
+                        a:after {
+                            margin: 0;
+                            top: auto;
+                            right: 11px;
+                            bottom: 8.9px
                         }
                     }
 

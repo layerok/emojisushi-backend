@@ -1,7 +1,7 @@
 <?php namespace System\Models;
 
 use App;
-use Model;
+use System\Models\SettingModel;
 
 /**
  * MailSetting model
@@ -9,7 +9,7 @@ use Model;
  * @package october\system
  * @author Alexey Bobkov, Samuel Georges
  */
-class MailSetting extends Model
+class MailSetting extends SettingModel
 {
     use \October\Rain\Database\Traits\Validation;
 
@@ -19,13 +19,6 @@ class MailSetting extends Model
     const MODE_MAILGUN = 'mailgun';
     const MODE_SES = 'ses';
     const MODE_POSTMARK = 'postmark';
-
-    /**
-     * @var array Behaviors implemented by this model.
-     */
-    public $implement = [
-        \System\Behaviors\SettingsModel::class
-    ];
 
     /**
      * @var string settingsCode is a unique code for these settings
@@ -147,7 +140,6 @@ class MailSetting extends Model
         return [
             '' => 'system::lang.mail.smtp_encryption_none',
             'tls' => 'system::lang.mail.smtp_encryption_tls',
-            'ssl' => 'system::lang.mail.smtp_encryption_ssl',
         ];
     }
 }

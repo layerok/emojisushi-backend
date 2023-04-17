@@ -16,6 +16,8 @@ use System\Classes\ModelBehavior;
  *     public $settingsCode = 'author_plugin_code';
  *     public $settingsFields = 'fields.yaml';
  *
+ * @todo This class will be deprecated soon
+ * @see System\Models\SettingModel
  */
 class SettingsModel extends ModelBehavior
 {

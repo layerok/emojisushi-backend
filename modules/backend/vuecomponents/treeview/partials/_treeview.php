@@ -44,7 +44,7 @@
                         @nodedrop="$emit('nodedrop', $event)"
                         @externaldrop="$emit('externaldrop', $event)"
                         @nodecontextmenudisplay="$emit('nodecontextmenudisplay', $event)"
-                        
+
                         @nodemenutriggerclick="onNodeMenuTriggerClick"
                     >
                     </backend-component-treeview-section>
@@ -80,7 +80,12 @@
         class="flex-layout-item fix treeview-search-control backend-icon-background-pseudo"
         :class="{'search-enabled': searchQuery.length > 0}"
     >
-        <input type="text" v-model="searchQuery" aria-label="<?= e(trans('backend::lang.treeview.search')) ?>">
+        <input
+            v-model="searchQuery"
+            type="text"
+            aria-label="<?= e(trans('backend::lang.treeview.search')) ?>"
+            data-default-focus
+        />
 
         <button class="backend-icon-background-pseudo" @click="searchQuery=''" aria-label="<?= e(trans('backend::lang.treeview.clear_search')) ?>">×</button>
     </div>

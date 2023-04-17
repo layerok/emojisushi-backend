@@ -1,5 +1,8 @@
 @import "../../../../assets/less/core/boot.less";
 
+@nestedform-bg: @body-bg;
+@nestedform-border: @primary-border;
+
 .nested-form {
     position: relative;
     min-height: 30px;
@@ -12,8 +15,8 @@
 }
 
 .nested-form.is-paneled {
-    background: @color-grey-4;
-    border: 1px solid @input-border;
+    background: @nestedform-bg;
+    border: 1px solid @nestedform-border;
     border-radius: @border-radius-base;
     box-shadow: @input-box-shadow;
     margin-top: 5px;
@@ -24,13 +27,13 @@
         margin-right: -15px !important;
 
         > li.active > a:before {
-            background-color: @color-grey-4;
-            border-color: @color-grey-4;
+            background-color: @nestedform-bg;
+            border-color: @nestedform-bg;
         }
 
         > li > a > span.title {
             &:before, &:after {
-                background-color: @color-grey-4;
+                background-color: @nestedform-bg;
             }
         }
     }

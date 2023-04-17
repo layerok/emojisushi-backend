@@ -159,11 +159,11 @@ class Router
     }
 
     /**
-     * findByFile finds a URL by it's page. Returns the URL route for linking to the page and
-     * uses the supplied parameters in it's address.
+     * findByFile finds a URL by its page. Returns the URL route for linking to the page and
+     * uses the supplied parameters in its address.
      * @param string $fileName Page file name.
      * @param array $parameters Route parameters to consider in the URL.
-     * @return string A built URL matching the page route.
+     * @return string|null
      */
     public function findByFile($fileName, $parameters = [])
     {

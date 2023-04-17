@@ -1,8 +1,10 @@
 <?php namespace Backend\Widgets;
 
 use Backend;
+use BackendAuth;
 use October\Rain\Database\Model;
 use ApplicationException;
+use ForbiddenException;
 
 /**
  * ListStructure
@@ -54,6 +56,11 @@ class ListStructure extends Lists
     public $dragRow = true;
 
     /**
+     * @var array permissions needed to modify the structure.
+     */
+    protected $permissions;
+
+    /**
      * __construct the widget
      * @param \Backend\Classes\Controller $controller
      * @param array $configuration Proactive configuration definition.
@@ -72,7 +79,7 @@ class ListStructure extends Lists
      */
     public function init()
     {
-        // Defaults
+        // Defaults needed for reinit
         $this->useStructure = true;
         $this->showReorder = true;
         $this->showPagination = false;
@@ -85,6 +92,7 @@ class ListStructure extends Lists
             'showReorder',
             'treeExpanded',
             'includeSortOrders',
+            'permissions'
         ]);
 
         parent::init();
@@ -99,6 +107,11 @@ class ListStructure extends Lists
         }
         else {
             $this->maxDepth = 1;
+        }
+
+        // Hide reorder without permission
+        if (!$this->hasStructurePermission()) {
+            $this->showReorder = false;
         }
     }
 
@@ -195,13 +208,11 @@ class ListStructure extends Lists
      */
     public function setSearchTerm($term, $resetState = false)
     {
-        if ($resetState) {
-            if (!empty($term)) {
-                $this->disableStructure();
-            }
-            else {
-                $this->enableStructure();
-            }
+        if (!empty($term)) {
+            $this->disableStructure();
+        }
+        elseif ($resetState) {
+            $this->enableStructure();
         }
 
         parent::setSearchTerm($term, $resetState);
@@ -286,8 +297,9 @@ class ListStructure extends Lists
     public function validateTree()
     {
         if (!$this->model->isClassInstanceOf(\October\Contracts\Database\TreeInterface::class)) {
+            $modelClass = get_class($this->model);
             throw new ApplicationException(
-                'To display list as a tree, the specified model must implement methods found in October\Contracts\Database\TreeInterface'
+                "To display list as a tree, the model {$modelClass} must implement methods found in October\Contracts\Database\TreeInterface"
             );
         }
     }
@@ -305,7 +317,19 @@ class ListStructure extends Lists
      */
     public function onReorder()
     {
-        $item = $this->model->newQueryWithoutScopes()->find(post('record_id'));
+        if (!$this->hasStructurePermission()) {
+            throw new ForbiddenException;
+        }
+
+        $itemId = post('record_id');
+        if (!$itemId) {
+            return;
+        }
+
+        $item = $this->model->newQueryWithoutScopes()->find($itemId);
+        if (!$item) {
+            return;
+        }
 
         if ($this->model->isClassInstanceOf(\October\Contracts\Database\NestedSetInterface::class)) {
             $this->reorderForNestedTree($item);
@@ -372,10 +396,22 @@ class ListStructure extends Lists
     /**
      * isTreeNodeExpanded checks if a node (model) is expanded in the session.
      * @param  Model $node
-     * @return boolean
+     * @return bool
      */
     public function isTreeNodeExpanded($node)
     {
         return $this->getSession('tree_node_status_' . $node->getKey(), $this->treeExpanded);
+    }
+
+    /**
+     * hasStructurePermission checks if the user has permissions to modify the structure.
+     */
+    protected function hasStructurePermission(): bool
+    {
+        if (!$this->permissions) {
+            return true;
+        }
+
+        return BackendAuth::userHasAccess($this->permissions, false);
     }
 }

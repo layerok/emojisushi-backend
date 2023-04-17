@@ -1,5 +1,5 @@
 <?php if (!$this->fatalError): ?>
-    <?= Form::open(['class'=>'layout stretch', 'data-change-monitor'=>1, 'data-window-close-confirm'=>"There is unsaved data", 'id'=>'tailor-form']) ?>
+    <?= Form::open(['id' => 'tailor-form', 'class' => 'layout stretch', 'data-change-monitor' => true]) ?>
         <div class="layout-row">
             <div class="padded-container layout form-document-layout">
                 <div class="layout-row min-size">

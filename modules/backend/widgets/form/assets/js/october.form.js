@@ -74,6 +74,7 @@
             isDisabled = $field.hasClass('control-disabled');
 
         $('input[type=checkbox]', $field).prop('disabled', isDisabled);
+        $('.checkboxlist-controls > .control-button', $field).attr('disabled', isDisabled);
     }
 
     FormWidget.prototype.clearCheckboxlist = function(ev) {
@@ -84,11 +85,15 @@
         var self = this;
 
         this.$el.on('click', '[data-field-checkboxlist-all]', function() {
-            self.checkAllCheckboxlist($(this).closest('.field-checkboxlist'), true);
+            if (!$(this).is('[disabled]')) {
+                self.checkAllCheckboxlist($(this).closest('.field-checkboxlist'), true);
+            }
         });
 
         this.$el.on('click', '[data-field-checkboxlist-none]', function() {
-            self.checkAllCheckboxlist($(this).closest('.field-checkboxlist'), false);
+            if (!$(this).is('[disabled]')) {
+                self.checkAllCheckboxlist($(this).closest('.field-checkboxlist'), false);
+            }
         });
 
         this.toggleCheckboxlist();

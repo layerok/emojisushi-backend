@@ -242,6 +242,7 @@ class ServiceProvider extends ModuleServiceProvider
         $this->registerConsoleCommand('october.fresh', \System\Console\OctoberFresh::class);
         $this->registerConsoleCommand('october.passwd', \System\Console\OctoberPasswd::class);
         $this->registerConsoleCommand('october.optimize', \System\Console\OctoberOptimize::class);
+        $this->registerConsoleCommand('october.about', \System\Console\OctoberAbout::class);
 
         $this->registerConsoleCommand('plugin.install', \System\Console\PluginInstall::class);
         $this->registerConsoleCommand('plugin.remove', \System\Console\PluginRemove::class);
@@ -250,6 +251,7 @@ class ServiceProvider extends ModuleServiceProvider
         $this->registerConsoleCommand('plugin.refresh', \System\Console\PluginRefresh::class);
         $this->registerConsoleCommand('plugin.list', \System\Console\PluginList::class);
         $this->registerConsoleCommand('plugin.check', \System\Console\PluginCheck::class);
+        $this->registerConsoleCommand('plugin.test', \System\Console\PluginTest::class);
 
         $this->registerConsoleCommand('project.sync', \System\Console\ProjectSync::class);
     }

@@ -98,14 +98,24 @@ class ServiceProvider extends ModuleServiceProvider
 
             // Dashboard
             'dashboard' => [
-                'label' => 'system::lang.permissions.view_the_dashboard',
+                'label' => 'View the Dashboard',
                 'tab' => 'Dashboard',
                 'order' => 200
             ],
-            'dashboard.defaults' => [
-                'label' => 'system::lang.permissions.manage_default_dashboard',
+            'dashboard.create' => [
+                'label' => 'Create Widgets',
                 'tab' => 'Dashboard',
                 'order' => 300,
+            ],
+            'dashboard.manage' => [
+                'label' => 'Manage Widgets',
+                'tab' => 'Dashboard',
+                'order' => 400,
+            ],
+            'dashboard.defaults' => [
+                'label' => 'Set the Default Dashboard',
+                'tab' => 'Dashboard',
+                'order' => 500,
                 'roles' => UserRole::CODE_DEVELOPER,
             ],
 

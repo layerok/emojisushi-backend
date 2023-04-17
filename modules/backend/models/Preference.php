@@ -2,12 +2,12 @@
 
 use App;
 use Lang;
-use Model;
 use Config;
 use Session;
 use BackendAuth;
 use System\Helpers\LocaleHelper;
 use System\Helpers\DateTimeHelper;
+use Backend\Models\UserPreferenceModel;
 
 /**
  * Preference model for the backend user
@@ -15,18 +15,11 @@ use System\Helpers\DateTimeHelper;
  * @package october\backend
  * @author Alexey Bobkov, Samuel Georges
  */
-class Preference extends Model
+class Preference extends UserPreferenceModel
 {
     use \October\Rain\Database\Traits\Validation;
 
     const DEFAULT_THEME = 'twilight';
-
-    /**
-     * @var array Behaviors implemented by this model.
-     */
-    public $implement = [
-        \Backend\Behaviors\UserPreferencesModel::class
-    ];
 
     /**
      * @var string Unique code

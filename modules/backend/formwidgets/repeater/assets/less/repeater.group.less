@@ -6,7 +6,7 @@
     position: relative;
     min-height: 95px;
     display: block;
-    background: @color-grey-4;
+    background: @repeater-item-bg;
     border: 1px solid @input-border;
     border-radius: @border-radius-base;
     box-shadow: @input-box-shadow;
@@ -17,11 +17,11 @@
     }
 
     &.is-selected {
-        background: #fff;
+        background: @repeater-item-bg;
     }
 
     > .group-controls {
-        background: #fff;
+        background: @repeater-menu-bg;
         padding: 5px;
         padding-right: 3px;
 
@@ -60,7 +60,7 @@
         left: 11px;
         top: 11px;
         font-size: 20px;
-        color: @color-text-grey-1;
+        color: @toolbar-color;
     }
 
     > .group-title,
@@ -73,7 +73,7 @@
     > .group-title {
         padding-left: 40px;
         padding-top: 10px;
-        color: @color-text-grey-1;
+        color: @toolbar-color;
     }
 
     > .group-description {

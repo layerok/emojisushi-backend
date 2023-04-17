@@ -270,23 +270,36 @@ class TranslatableModel extends TranslatableBehavior
      */
     protected function storeTranslatableBasicData($locale = null)
     {
-        $data = json_encode($this->translatableAttributes[$locale], JSON_UNESCAPED_UNICODE);
+        $data = $this->translatableAttributes[$locale];
+
+        // Only store attributes where values differ from the parent
+        $data = array_intersect_key($data, $this->model->getDirty());
 
         $obj = Db::table('rainlab_translate_attributes')
             ->where('locale', $locale)
             ->where('model_id', $this->model->getKey())
             ->where('model_type', $this->getClass());
 
-        if ($obj->count() > 0) {
-            $obj->update(['attribute_data' => $data]);
+        $hasRecord = $obj->count() > 0;
+
+        // Remove database entry if data is empty
+        if (empty($data) && $hasRecord) {
+            $obj->delete();
         }
         else {
-            Db::table('rainlab_translate_attributes')->insert([
-                'locale' => $locale,
-                'model_id' => $this->model->getKey(),
-                'model_type' => $this->getClass(),
-                'attribute_data' => $data
-            ]);
+            $encodedData = json_encode($data, JSON_UNESCAPED_UNICODE);
+
+            if ($hasRecord) {
+                $obj->update(['attribute_data' => $encodedData]);
+            }
+            else {
+                Db::table('rainlab_translate_attributes')->insert([
+                    'locale' => $locale,
+                    'model_id' => $this->model->getKey(),
+                    'model_type' => $this->getClass(),
+                    'attribute_data' => $encodedData
+                ]);
+            }
         }
     }
 

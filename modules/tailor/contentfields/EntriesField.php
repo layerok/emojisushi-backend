@@ -234,7 +234,7 @@ class EntriesField extends FallbackField
                 'table' => $this->getSourceBlueprint()->getJoinTableName(),
                 'name' => $this->inverse,
                 'relationClass' => CustomMultiJoinRelation::class,
-                'relatedKey' => $useMultisite ? 'site_root_id' : 'id'
+                'parentKey' => $useMultisite ? 'site_root_id' : 'id'
             ];
         }
     }

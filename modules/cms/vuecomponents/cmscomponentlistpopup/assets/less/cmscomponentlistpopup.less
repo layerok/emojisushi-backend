@@ -4,7 +4,12 @@
     .component-backend-treeview {
         &,
         .scrollable-panel-container {
-            background-color: white;
+            background-color: @popup-bg;
+        }
+
+        &,
+        .treeview-search-control {
+            .border-bottom-radius(8px);
         }
     }
 
@@ -17,7 +22,7 @@
             .item-label-container {
                 cursor: pointer !important;
                 padding: 0px 5px 5px;
-                background: @color-grey-4;
+                background: @editor-bg;
                 margin-bottom: 5px;
                 border-radius: 4px;
 

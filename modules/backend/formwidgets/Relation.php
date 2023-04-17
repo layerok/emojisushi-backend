@@ -145,7 +145,7 @@ class Relation extends FormWidgetBase
         $relationModel = $model->makeRelation($attribute);
         $query = $relationModel->newQuery();
 
-        if (in_array($relationType, ['belongsToMany', 'morphToMany', 'morphedByMany', 'hasMany'])) {
+        if (in_array($relationType, ['belongsToMany', 'morphedByMany', 'morphToMany', 'hasMany'])) {
             $field->type = 'checkboxlist';
         }
         elseif (in_array($relationType, ['belongsTo', 'hasOne', 'morphOne'])) {
@@ -167,7 +167,7 @@ class Relation extends FormWidgetBase
         }
 
         if ($sqlConditions = $this->conditions) {
-            $query->whereRaw($sqlConditions);
+            $query->whereRaw(DbDongle::parseParams($sqlConditions, $model->attributes));
         }
         elseif ($scopeMethod = $this->scope) {
             if (
@@ -210,7 +210,7 @@ class Relation extends FormWidgetBase
         if (in_array($relationType, ['hasMany', 'belongsTo', 'hasOne'])) {
             $primaryKeyName = $relationObject->getOtherKey();
         }
-        elseif ($relationType === 'belongsToMany') {
+        elseif (in_array($relationType, ['belongsToMany', 'morphedByMany', 'morphToMany'])) {
             $primaryKeyName = $relationObject->getRelatedKeyName();
         }
         else {

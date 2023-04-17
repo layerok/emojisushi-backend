@@ -156,7 +156,7 @@ class Extension extends TwigExtension
      */
     public function pagerFunction($paginator, $options = [])
     {
-        return new PagerElement($paginator, $options);
+        return $paginator ? new PagerElement($paginator, $options) : null;
     }
 
     /**
@@ -164,7 +164,7 @@ class Extension extends TwigExtension
      */
     public function ajaxPagerFunction($paginator, $options = [])
     {
-        return new PagerElement($paginator, ['template' => 'ajax'] + $options);
+        return $paginator ? new PagerElement($paginator, ['template' => 'ajax'] + $options) : null;
     }
 
     /**

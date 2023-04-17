@@ -25,7 +25,7 @@ trait OctoberUtilRefitLang
         $input = $this->option('value');
         if (!$input) {
             $this->comment('Missing language key.');
-            $input = $this->ask('Enter language key');
+            $input = $this->ask('Enter JSON language key');
         }
 
         $modules = System::listModules();
@@ -47,7 +47,7 @@ trait OctoberUtilRefitLang
         $input = $this->option('value');
         if (!$input) {
             $this->comment('Missing language key.');
-            $input = $this->ask('Enter language key');
+            $input = $this->ask('Enter PHP language key');
         }
 
         $this->refitLangInternal($input, false);
@@ -61,7 +61,7 @@ trait OctoberUtilRefitLang
         $input = $this->option('value');
         if (!$input) {
             $this->comment('Missing language key.');
-            $input = $this->ask('Enter language key');
+            $input = $this->ask('Enter PHP language key');
         }
 
         $this->refitLangInternal($input);
@@ -157,12 +157,7 @@ trait OctoberUtilRefitLang
 
         if ($lang === 'en') {
             $this->comment(PHP_EOL);
-            if (strpos($english, "'") !== false) {
-                $this->refitFinalMessage = "<?= __(\"{$english}\") ?>";
-            }
-            else {
-                $this->refitFinalMessage = "<?= __('{$english}') ?>";
-            }
+            $this->refitFinalMessage = "<?= __(\"{$english}\") ?>";
         }
     }
 

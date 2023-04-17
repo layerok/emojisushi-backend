@@ -9,14 +9,15 @@
  */
 
 $ua = isset($_SERVER['HTTP_USER_AGENT']) ? strtolower($_SERVER['HTTP_USER_AGENT']) : null;
-if (!$ua)
+if (!$ua) {
     return;
+}
 
 $g = 'gecko';
 $w = 'webkit';
 $s = 'safari';
 $m = 'mobile';
-$b = array();
+$b = [];
 
 // browser
 if(!preg_match('/opera|webtv/i', $ua) && preg_match('/msie\s(\d)/', $ua, $array)) {

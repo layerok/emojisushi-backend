@@ -1,3 +1,6 @@
+@color-sidebarnav-counter-bg:                #ff3e1d;
+@color-sidebarnav-counter-text:              #ffffff;
+
 ul.mainmenu-items {
     padding: 0;
     margin: 0;
@@ -26,15 +29,15 @@ ul.mainmenu-items {
         .align-items(baseline);
         text-decoration: none!important;
         outline: none;
-        color: @color-mainmenu-active;
+        color: @mainnav-color;
 
         &:after {
-            opacity: 0.5;
+            opacity: .5;
         }
     }
 
     .nav-label {
-        opacity: 0.5;
+        opacity: .5;
         font-size: @font-size-base;
         white-space: nowrap;
         text-overflow: ellipsis;
@@ -48,6 +51,7 @@ ul.mainmenu-items {
 
         display: inline-block;
         height: 100%;
+        color: @mainnav-icon-color;
 
         // line-height: define in subclass;
         // left: define in subclass;
@@ -77,14 +81,6 @@ ul.mainmenu-items {
         }
     }
 
-    &.has-subitems {
-        > a:after,
-        > .mainmenu-item-container:after {
-            // .backend-icon-sprite-pseudo(define in subclass);
-            display: inline-block;
-        }
-    }
-
     span.counter {
         .flex-fix();
         position: relative;
@@ -107,6 +103,20 @@ ul.mainmenu-items {
             margin-left: 0!important;
         }
     }
+
+
+    &.has-subitems {
+        > a:after,
+        > .mainmenu-item-container:after {
+            // .backend-icon-sprite-pseudo(define in subclass);
+            display: inline-block;
+        }
+
+        span.counter {
+            right: 17px
+        }
+    }
+
 
     &.mainmenu-account {
         .nav-icon {
@@ -137,6 +147,7 @@ body:not(.drag) {
         li > a {
             &:hover {
                 background: @brand-primary;
+                color: white;
             }
         }
     }

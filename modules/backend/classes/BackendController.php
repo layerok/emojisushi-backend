@@ -3,7 +3,6 @@
 use App;
 use File;
 use View;
-use Event;
 use System;
 use Response;
 use Illuminate\Routing\Controller as ControllerBase;
@@ -60,19 +59,6 @@ class BackendController extends ControllerBase
     }
 
     /**
-     * runCmsPage passses unhandled URLs to the CMS Controller, if it exists
-     */
-    protected function runCmsPage($url)
-    {
-        if (System::hasModule('Cms')) {
-            return App::make(\Cms\Classes\Controller::class)->run($url);
-        }
-        else {
-            return Response::make(View::make('backend::404'), 404);
-        }
-    }
-
-    /**
      * run finds and serves the requested backend controller
      * If the controller cannot be found, returns the Cms page with the URL /404.
      * If the /404 page doesn't exist, returns the system 404 page.
@@ -88,7 +74,7 @@ class BackendController extends ControllerBase
         if (!App::hasDatabase()) {
             return System::checkDebugMode()
                 ? Response::make(View::make('backend::no_database'), 200)
-                : $this->runCmsPage($url);
+                : $this->runPageNotFound();
         }
 
         // Look for App or Module controller
@@ -134,7 +120,20 @@ class BackendController extends ControllerBase
         }
 
         // Fall back to CMS controller
-        return $this->runCmsPage($url);
+        return $this->runPageNotFound();
+    }
+
+    /**
+     * runPageNotFound display a CMS 404 page, if one is available
+     */
+    protected function runPageNotFound()
+    {
+        if (System::hasModule('Cms')) {
+            return \Cms::pageNotFound();
+        }
+        else {
+            return Response::make(View::make('backend::404'), 404);
+        }
     }
 
     /**

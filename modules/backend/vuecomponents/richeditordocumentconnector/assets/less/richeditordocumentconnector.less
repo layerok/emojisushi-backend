@@ -56,10 +56,10 @@
 }
 
 body .fr-popup {
-    border: @popup-border!important;
+    border: @popup-border !important;
     border-radius: 8px;
-    box-shadow: @box-shadow-z2!important;
-    background-color: white;
+    box-shadow: @box-shadow-z2 !important;
+    background-color: @popup-bg;
 
     .fr-buttons {
         border-bottom: none !important;
@@ -76,25 +76,12 @@ body .fr-popup {
     .fr-action-buttons {
         padding: 5px 0;
         height: auto;
-
-        button {
-            &.fr-command {
-                padding: 8px 20px;
-                border-radius: 4px;
-                margin-top: 0;
-
-                &.fr-submit {
-                    font-weight: 500;
-                    .button-variant(@btn-primary-color; lighten(@btn-primary-bg, 5%); @btn-primary-border; @btn-primary-bg; @btn-primary-bg);
-                }
-            }
-        }
     }
 }
 
 body.richeditor-document-connector-resizing {
     * {
-        .user-select(none);
+        user-select: none;
         cursor: col-resize !important;
     }
 }

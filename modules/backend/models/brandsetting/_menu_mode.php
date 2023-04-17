@@ -7,7 +7,7 @@
             <a href="javascript:;">
                 <div class="menu-mode-box menu-mode-box-inline">
                     <span class="mode-image"></span>
-                    <h5 class="heading"><?= e(trans('backend::lang.branding.menu_mode_inline')) ?></h5>
+                    <h5 class="heading"><?= __("Inline") ?></h5>
                 </div>
             </a>
         </li>
@@ -15,7 +15,7 @@
             <a href="javascript:;">
                 <div class="menu-mode-box menu-mode-box-text">
                     <span class="mode-image"></span>
-                    <h5 class="heading"><?= e(trans('backend::lang.branding.menu_mode_text')) ?></h5>
+                    <h5 class="heading"><?= __("Text") ?></h5>
                 </div>
             </a>
         </li>
@@ -23,7 +23,7 @@
             <a href="javascript:;">
                 <div class="menu-mode-box menu-mode-box-tiles">
                     <span class="mode-image"></span>
-                    <h5 class="heading"><?= e(trans('backend::lang.branding.menu_mode_tile')) ?></h5>
+                    <h5 class="heading"><?= __("Tiles") ?></h5>
                 </div>
             </a>
         </li>
@@ -31,7 +31,7 @@
             <a href="javascript:;">
                 <div class="menu-mode-box menu-mode-box-collapsed">
                     <span class="mode-image"></span>
-                    <h5 class="heading"><?= e(trans('backend::lang.branding.menu_mode_collapsed')) ?></h5>
+                    <h5 class="heading"><?= __("Collapsed") ?></h5>
                 </div>
             </a>
         </li>
@@ -39,7 +39,7 @@
             <a href="javascript:;">
                 <div class="menu-mode-box menu-mode-box-icons">
                     <span class="mode-image"></span>
-                    <h5 class="heading"><?= e(trans('backend::lang.branding.menu_mode_icon')) ?></h5>
+                    <h5 class="heading"><?= __("Icons") ?></h5>
                 </div>
             </a>
         </li>
@@ -47,7 +47,7 @@
             <a href="javascript:;">
                 <div class="menu-mode-box menu-mode-box-left">
                     <span class="mode-image"></span>
-                    <h5 class="heading"><?= e(trans('backend::lang.branding.menu_mode_left')) ?></h5>
+                    <h5 class="heading"><?= __("Left Side") ?></h5>
                 </div>
             </a>
         </li>

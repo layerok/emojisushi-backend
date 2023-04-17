@@ -82,6 +82,7 @@
 
         var sortableOptions = {
             // forceFallback: true,
+            filter: '.no-sort',
             animation: 150,
             setData: function setData(dataTransfer, dragEl) {
                 self.dragGhost = dragEl.cloneNode(true);

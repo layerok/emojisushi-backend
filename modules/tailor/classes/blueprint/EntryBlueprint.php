@@ -70,7 +70,7 @@ class EntryBlueprint extends Blueprint
     }
 
     /**
-     * useMultisiteSync
+     * useMultisiteSync defaults to false.
      */
     public function useMultisiteSync(): bool
     {
@@ -83,6 +83,22 @@ class EntryBlueprint extends Blueprint
         }
 
         return (bool) array_get($this->multisite, 'sync', false);
+    }
+
+    /**
+     * usePageFinder in a specific context, either item or list. Defaults to true.
+     */
+    public function usePageFinder(string $context = 'item')
+    {
+        if (!$this->pagefinder && $this->pagefinder !== null) {
+            return false;
+        }
+
+        if (is_string($this->pagefinder)) {
+            return in_array($context, explode('|', $this->pagefinder));
+        }
+
+        return true;
     }
 
     /**

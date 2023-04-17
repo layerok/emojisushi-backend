@@ -1,9 +1,9 @@
 .report-widget {
     padding: 15px;
-    background: white;
-    .box-sizing(border-box);
-    .border-radius(@border-radius-large);
-    box-shadow: 0 0 2px rgba(0, 0, 0, 0.1);
+    background: @popup-bg;
+    box-sizing: border-box;
+    border-radius: @border-radius-large;
+    box-shadow: 0 0 2px rgba(var(--bs-body-color-rgb), 0.1);
     font-size: @font-size-base;
 
     h3 {

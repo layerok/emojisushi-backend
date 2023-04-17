@@ -1,5 +1,6 @@
 <?php namespace System\Controllers;
 
+use Site;
 use Lang;
 use Flash;
 use Backend;
@@ -93,6 +94,7 @@ class Settings extends Controller
             }
 
             $model = $this->createModel($item);
+
             $this->initWidgets($model);
         }
         catch (Exception $ex) {
@@ -113,7 +115,13 @@ class Settings extends Controller
         foreach ($saveData as $attribute => $value) {
             $model->{$attribute} = $value;
         }
-        $model->save(null, $this->formWidget->getSessionKey());
+
+        // Multisite
+        if ($this->formHasMultisite($model)) {
+            $this->tagMultisiteModel($model);
+        }
+
+        $model->save(['propagate' => true, 'sessionKey' => $this->formWidget->getSessionKey()]);
 
         Flash::success(__(':name settings updated', ['name' => e(Lang::get($item->label))]));
 
@@ -170,7 +178,7 @@ class Settings extends Controller
     }
 
     /**
-     * Internal method, prepare the list model object
+     * createModel is an internal method to prepare the form model object
      */
     protected function createModel($item)
     {
@@ -183,7 +191,7 @@ class Settings extends Controller
     }
 
     /**
-     * Locates a setting item for a module or plugin
+     * findSettingItem locates a setting item for a module or plugin
      */
     protected function findSettingItem($author, $plugin, $code)
     {
@@ -200,5 +208,56 @@ class Settings extends Controller
         }
 
         return $item;
+    }
+
+    /**
+     * formHasMultisite
+     */
+    protected function formHasMultisite($model)
+    {
+        return $model &&
+            $model->isClassInstanceOf(\October\Contracts\Database\MultisiteInterface::class) &&
+            $model->isMultisiteEnabled();
+    }
+
+    /**
+     * tagMultisiteModel
+     */
+    public function tagMultisiteModel($model)
+    {
+        if ($model->site_root_id) {
+            return;
+        }
+
+        $rootModel = $this->findMultisiteRootModel($model);
+        if (!$rootModel) {
+            return;
+        }
+
+        $model->site_root_id = $rootModel->id;
+    }
+
+    /**
+     * findMultisiteRootModel
+     */
+    public function findMultisiteRootModel($model)
+    {
+        // Find nearest existing model
+        if (!$model->exists) {
+            $model = $model->newQuery()->withSites()->first();
+            if (!$model) {
+                return;
+            }
+        }
+
+        // Model is root
+        if ((int) $model->site_root_id === (int) $model->id) {
+            return $model;
+        }
+
+        // Find root model
+        return $model->newQuery()->withSites()
+            ->where('id', $model->site_root_id)
+            ->first();
     }
 }

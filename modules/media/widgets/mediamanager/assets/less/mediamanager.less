@@ -1,13 +1,18 @@
 @import "../../../../../backend/assets/less/core/boot.less";
 
-@mediamanager-active-text: #000000;
-@mediamanager-hover-bg-active: darken(#FFF5CB, 5%);
-@mediamanager-hover-bg: #4ea5e0;
+@mediamanager-hover-color: var(--oc-accent-text);
+@mediamanager-hover-bg: var(--oc-accent);
+@mediamanager-active-color: var(--bs-table-color);
+@mediamanager-active-bg: var(--oc-table-active-bg);
+
+@mediamanager-item-color: var(--oc-primary-color);
+@mediamanager-item-bg: var(--bs-table-striped-bg);
+@mediamanager-item-border: var(--bs-table-border-color);
 
 .media-selected-tiles() {
     .icon-container {
         background: @mediamanager-hover-bg !important;
-        border-color: #2581b8;
+        border-color: @mediamanager-hover-color;
 
         i, p {
             color: #ecf0f1;
@@ -15,7 +20,7 @@
     }
 
     h4 {
-        color: #2581b8;
+        color: @mediamanager-hover-color;
     }
 }
 
@@ -44,7 +49,7 @@ div[data-control="media-manager"] {
         background-image: url('../../../../../../modules/backend/assets/images/loader-transparent.svg');
         background-position: 50% 50%;
         content: ' ';
-        .animation(spin 1s linear infinite);
+        animation: spin 1s linear infinite;
 
         background-size: @size @size;
         position: absolute;
@@ -96,7 +101,7 @@ div[data-control="media-manager"] {
     .media-list {
         padding: 0 0 0 20px;
         margin: 0;
-        .user-select(none);
+        user-select: none;
 
         li {
             display: inline-block;
@@ -104,7 +109,7 @@ div[data-control="media-manager"] {
             margin: 0 20px 20px 0;
             overflow: hidden;
             cursor: pointer;
-            .border-radius(3px);
+            border-radius: 3px;
 
             &:focus {
                 outline: none;
@@ -134,14 +139,14 @@ div[data-control="media-manager"] {
             h4 {
                 font-weight: 600;
                 font-size: 13px;
-                color: #2b3e50;
+                color: @mediamanager-item-color;
                 white-space: nowrap;
                 overflow: hidden;
                 text-overflow: ellipsis;
                 line-height: 150%;
                 margin: 15px 0 5px 0;
                 padding-right: 0;
-                .transition(padding 0.1s);
+                transition: padding 0.1s;
 
                 position: relative;
 
@@ -150,7 +155,7 @@ div[data-control="media-manager"] {
                     right: 0;
                     top: 0;
                     font-size: 15px;
-                    color: #2b3e50;
+                    color: @mediamanager-item-color;
                     display: none;
 
                     &:hover {
@@ -198,13 +203,13 @@ div[data-control="media-manager"] {
             li {
                 height: 75px;
                 width: 260px;
-                border: 1px solid #ecf0f1;
-                background: #f6f8f9;
+                border: 1px solid @mediamanager-item-border;
+                background: @mediamanager-item-bg;
                 box-sizing: content-box;
             }
 
             li .icon-container {
-                border-right: 1px solid #f6f8f9;
+                border-right: 1px solid @mediamanager-item-bg;
                 width: 75px;
                 height: 75px;
                 float: left;
@@ -218,7 +223,7 @@ div[data-control="media-manager"] {
                 }
 
                 &.image {
-                    border-right: 1px solid #ecf0f1!important;
+                    border-right: 1px solid @mediamanager-item-border!important;
                 }
 
                 p.thumbnail-error-message {
@@ -278,10 +283,10 @@ div[data-control="media-manager"] {
             li .icon-container {
                 width: 165px;
                 height: 165px;
-                .border-radius(3px);
-                border: 1px solid #ecf0f1;
+                border-radius: 3px;
+                border: 1px solid @mediamanager-item-border;
                 overflow: hidden;
-                background: #f6f8f9;
+                background: @mediamanager-item-bg;
                 box-sizing: content-box;
 
                 img {
@@ -330,11 +335,11 @@ div[data-control="media-manager"] {
         position: relative;
         vertical-align: middle;
         text-align: center;
-        border-bottom: 1px solid #ecf0f1;
+        border-bottom: 1px solid @primary-border;
         box-sizing: content-box;
 
         &[data-loading] {
-            background: #ecf0f1;
+            background: @primary-border;
             &:after {
                 .loading-indicator-pseudo-absolute(62px);
             }
@@ -387,8 +392,8 @@ div[data-control="media-manager"] {
             }
 
             tbody tr:not(.no-data):active td {
-                background: @mediamanager-hover-bg-active !important;
-                color: @mediamanager-active-text;
+                background: @mediamanager-active-bg !important;
+                color: @mediamanager-active-color;
             }
         }
     }
@@ -425,9 +430,10 @@ div[data-control="media-manager"] {
         div.item-title {
             position: relative;
             padding-right: 0;
-            .transition(padding 0.1s);
+            transition: padding 0.1s;
 
             a {
+                text-decoration: none;
                 position: absolute;
                 right: 0;
                 top: 0;
@@ -466,7 +472,7 @@ div[data-control="media-manager"] {
         h5 {
             margin: 0 0 10px 0;
             font-size: 13px;
-            color: #2b3e50;
+            color: @mediamanager-item-color;
             font-weight: 600;
 
             span {
@@ -510,7 +516,7 @@ div[data-control="media-manager"] {
 
     button[data-command="toggle-sidebar"] {
         &.sidebar-hidden {
-            .transform( ~'rotate(180deg) translate(0, 0)' );
+            transform: rotate(180deg) translate(0, 0);
         }
     }
 }
@@ -577,7 +583,7 @@ div[data-control="media-manager"] {
                 display: inline-block;
                 width: 24px;
                 margin: 0px -10px 0px -14px;
-                .box-sizing(content-box);
+                box-sizing: content-box;
                 text-align: left;
                 position: relative;
                 font-size: 10px;
@@ -610,8 +616,8 @@ div[data-control="media-manager"] {
         }
 
         .ruler[data-control=v-ruler] {
-            .transform(~'rotateZ(90deg)');
-            .transform-origin(~'left top');
+            transform: rotateZ(90deg);
+            transform-origin: left top;
             left: 23px;
             top: -23px;
 

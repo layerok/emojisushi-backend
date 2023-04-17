@@ -45,7 +45,11 @@
     DateTimeConverter.prototype.init = function() {
         this.initDefaults();
 
+        this.datetime = this.$el.attr('datetime');
+
         this.$el.text(this.getDateTimeValue());
+
+        this.$el.attr('title', this.datetime);
 
         this.$el.one('dispose-control', this.proxy(this.dispose));
     }
@@ -56,6 +60,7 @@
 
         this.$el = null;
         this.options = null;
+        this.datetime = null;
 
         BaseProto.dispose.call(this);
     }
@@ -84,8 +89,6 @@
     }
 
     DateTimeConverter.prototype.getDateTimeValue = function() {
-        this.datetime = this.$el.attr('datetime');
-
         if (this.$el.get(0).hasAttribute('data-ignore-timezone')) {
             this.appTimezone = 'UTC';
             this.options.timezone = 'UTC';

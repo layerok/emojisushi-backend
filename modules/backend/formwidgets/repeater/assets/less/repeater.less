@@ -1,9 +1,15 @@
+@repeater-icon-size: 24px;
+@repeater-body-bg: @body-bg;
+@repeater-body-border: @border-color;
+@repeater-body-inner-bg: @body-bg;
+@repeater-item-bg: @input-bg;
+@repeater-menu-bg: @tertiary-bg;
+
 @import "../../../../assets/less/core/boot.less";
 @import "repeater.item.less";
 @import "repeater.group.less";
 @import "repeater.toolbar.less";
 
-@repeater-icon-size: 24px;
 
 .field-repeater {
     padding-top: 5px;
@@ -27,7 +33,7 @@
         width: @repeater-icon-size;
         height: @repeater-icon-size;
         line-height: @repeater-icon-size;
-        color: #536061;
+        color: @toolbar-color;
         display: block;
         margin: -2px 2px;
     }
@@ -44,8 +50,7 @@
         height: @repeater-icon-size;
         line-height: @repeater-icon-size;
         display: block;
-        background: #F7F9FB;
-        color: #536061;
+        color: @toolbar-color;
         text-decoration: none;
         border-radius: 3px;
         text-align: center;
@@ -64,13 +69,14 @@
     a.repeater-item-handle {
         cursor: move;
         &:active {
-            background: @background-color-focus;
+            background: @toolbar-hover-bg;
         }
     }
 
     .repeater-item-dropdown.open a.repeater-item-menu,
     a.repeater-item-menu:hover {
-        background: @background-color-focus;
+        color: @toolbar-hover-color;
+        background: @toolbar-hover-bg;
     }
 
     .repeater-item-dropdown {
@@ -83,7 +89,7 @@
         position: absolute;
         height: 100%;
         width: 100%;
-        background: white;
+        // background: @primary-bg;
         padding: @padding-standard;
         overflow: auto;
 

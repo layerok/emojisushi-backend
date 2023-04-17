@@ -11,8 +11,8 @@
 .form-preview {
     padding: @padding-standard;
     margin-bottom: 20px;
-    background: white;
-    border: 1px solid #eee;
+    background: @primary-bg;
+    border: 1px solid @primary-border;
 
     > .form-group:last-child {
         padding-bottom: 0;
@@ -35,12 +35,12 @@
             > li a > span.title {
                 &:before,
                 &:after {
-                    background: white;
+                    background: @primary-bg;
                 }
             }
             > li.active a {
                 &:before {
-                    background-color: white;
+                    background-color: @primary-bg;
                 }
             }
         }
@@ -59,10 +59,10 @@
 .form-control {
     position: relative;
     -webkit-appearance: none;
-    border: 1px solid @input-border;
+    // border: 1px solid @input-border;
 
     &:focus {
-        border: 1px solid @color-form-field-border-focus; // gray-800
+        border: 1px solid @input-border-focus; // gray-800
         box-shadow: none;
     }
 
@@ -140,8 +140,8 @@
         height: 20px;
         width: 25px;
         border-radius: 5px;
-        background-color: #EBF0FB;
-        color: #75809B;
+        background-color: @input-translatable-bg;
+        color: @input-translatable-color;
 
         // Alignment
         margin-bottom: -5px;
@@ -241,6 +241,7 @@
         padding-left: 23px;
     }
 
+    // @deprecated (used by sitemap and pages)
     &.input-sidebar-control {
         padding-right: 35px;
 
@@ -249,7 +250,7 @@
             right: 8px;
             top: 34px;
             font-size: 16px;
-            color: @color-input-sidebar-control;
+            color: #C4C4C4;
             &:hover,
             &:focus {
                 text-decoration: none;
@@ -262,8 +263,7 @@
 
 .form-group-preview {
     .form-control {
-        background-color: @color-form-field-preview-bg;
-        color: @color-form-field-preview-text;
+        background-color: @input-disabled-bg;
         height: auto;
         min-height: 38px;
         word-break: break-word;
@@ -333,12 +333,11 @@
 }
 
 .field-section {
-    border-bottom: 1px solid @color-form-field-border;
+    border-bottom: 1px solid var(--bs-border-color);
     padding-top: 3px;
     padding-bottom: 7px;
 
     > h4 {
-        color: @color-grey-1;
         font-weight: 400;
         font-size: 1.3rem;
     }
@@ -367,7 +366,7 @@
         }
 
         &:hover {
-            border-bottom: 1px solid darken(@color-form-field-border, 10%);
+            border-bottom: 1px solid @input-border-fade;
             > h4:before {
                 color: inherit;
             }
@@ -376,7 +375,7 @@
 }
 
 .field-action {
-    border-bottom: 1px solid @color-form-field-border;
+    border-bottom: 1px solid @input-border;
     padding: 10px 0 5px;
     margin-top: -20px;
 
@@ -388,7 +387,7 @@
     }
 
     p {
-        color: @color-form-text;
+        color: @secondary-color;
         margin-bottom: 0;
         font-size: .9rem;
     }
@@ -438,8 +437,8 @@
 .field-checkboxlist {
     .field-checkboxlist-inner {
         border-radius: @border-radius-base;
-        background: @color-form-checkboxlist-background;
-        border: 1px solid @color-form-checkboxlist-border;
+        background: @input-bg;
+        border: 1px solid @input-border;
     }
 
     &:not(.is-scrollable) {
@@ -452,16 +451,17 @@
         padding: 3px;
         font-size: 0;
         white-space: nowrap;
-        background: white;
-        border-top: 1px solid @color-form-checkboxlist-border;
-        border-left: 1px solid @color-form-checkboxlist-border;
-        border-right: 1px solid @color-form-checkboxlist-border;
+        background: @input-bg;
+        border-top: 1px solid @input-border;
+        border-left: 1px solid @input-border;
+        border-right: 1px solid @input-border;
         border-top-left-radius: @border-radius-base;
         border-top-right-radius: @border-radius-base;
 
         + .field-checkboxlist-inner {
             border-top-left-radius: 0;
             border-top-right-radius: 0;
+            border-top-color: @toolbar-border;
         }
     }
 

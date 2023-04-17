@@ -5,7 +5,6 @@ namespace OFFLINE\Mall\Classes\Customer;
 use Event;
 use Exception;
 use Flash;
-use Layerok\PosterPos\Models\Spot;
 use October\Rain\Auth\AuthException;
 use October\Rain\Exception\ValidationException;
 use OFFLINE\Mall\Models\Cart;

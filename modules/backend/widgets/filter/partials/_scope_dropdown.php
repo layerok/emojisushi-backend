@@ -8,7 +8,11 @@
 <div
     class="filter-scope scope-dropdown"
     data-scope-name="<?= $scope->scopeName ?>">
-    <select id="<?= $scope->getId() ?>" class="select custom-select select-no-search select-dropdown-auto-width">
+    <select
+        id="<?= $scope->getId() ?>"
+        class="select custom-select select-no-search select-dropdown-auto-width"
+        style="opacity:0"
+    >
         <?php foreach ($scopeOptions as $value => $option): ?>
             <?php
                 if (!is_array($option)) $option = [$option];
@@ -16,7 +20,7 @@
             <option
                 <?= (string) $activeValue === (string) $value ? 'selected="selected"' : '' ?>
                 <?php if (isset($option[1])): ?>
-                    <?php if (substr($option[1], 0, 1) === '#'): ?>
+                    <?php if (Html::isValidColor($option[1])): ?>
                         data-status="<?= $option[1] ?>"
                     <?php elseif (strpos($option[1], '.')): ?>
                         data-image="<?= $option[1] ?>"

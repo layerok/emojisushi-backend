@@ -1,9 +1,9 @@
 <?php namespace Tailor\Models;
 
-use Model;
 use Tailor\Classes\Fieldset;
 use Tailor\Classes\FieldManager;
 use October\Contracts\Element\FormElement;
+use October\Rain\Database\ExpandoModel;
 use SystemException;
 
 /**
@@ -12,7 +12,7 @@ use SystemException;
  * @package october\tailor
  * @author Alexey Bobkov, Samuel Georges
  */
-class RepeaterItem extends Model
+class RepeaterItem extends ExpandoModel
 {
     use \Tailor\Traits\DeferredContentModel;
     use \October\Rain\Database\Traits\Sortable;
@@ -24,32 +24,15 @@ class RepeaterItem extends Model
     public $rules = [];
 
     /**
-     * @var array guarded fields
+     * @var string expandoColumn name to store the data
      */
-    protected $guarded = [];
+    protected $expandoColumn = 'content_value';
 
     /**
-     * @var array fillable fields
+     * @var array expandoPassthru attributes that should not be serialized
      */
-    protected $fillable = [];
-
-    /**
-     * @var array jsonable fields
-     */
-    protected $jsonable = ['content_value'];
-
-    /**
-     * @var array fieldValues
-     */
-    protected $fieldValues = [];
-
-    /**
-     * @var array staticAttrs
-     */
-    protected $staticAttrs = [
-        'id',
+    protected $expandoPassthru = [
         'content_group',
-        'content_value',
         'content_spawn_path',
         'host_id',
         'host_type',
@@ -108,9 +91,6 @@ class RepeaterItem extends Model
      */
     protected function afterFetch()
     {
-        $this->fieldValues = $this->content_value ?: [];
-        $this->attributes = array_merge($this->fieldValues, $this->attributes);
-
         if ($this->fieldsetConfig) {
             $this->extendWithBlueprint();
         }
@@ -136,28 +116,9 @@ class RepeaterItem extends Model
      */
     protected function beforeSave()
     {
-        foreach ($this->attributes as $key => $value) {
-            if (!$this->isKeyAllowed($key)) {
-                $this->fieldValues[$key] = $value;
-                unset($this->attributes[$key]);
-            }
-        }
-
-        if ($this->fieldValues) {
-            $this->content_value = $this->fieldValues;
-        }
-
         if (!$this->content_spawn_path) {
             $this->content_spawn_path = $this->buildSpawnPath();
         }
-    }
-
-    /**
-     * afterSave
-     */
-    protected function afterSave()
-    {
-        $this->attributes = array_merge($this->fieldValues, $this->attributes);
     }
 
     /**
@@ -216,25 +177,6 @@ class RepeaterItem extends Model
         $this->bindEvent('model.newInstance', function($instance) use ($parentModel, $tableName, $fieldName, $fieldConfig, $useGroups) {
             $instance->setBlueprintFieldConfig($parentModel, $tableName, $fieldName, $fieldConfig, $useGroups);
         });
-    }
-
-    /**
-     * isKeyAllowed checks if a key is legitimate or should be added to
-     * the field value collection
-     */
-    protected function isKeyAllowed($key)
-    {
-        // Let the core columns through
-        if (in_array($key, $this->staticAttrs)) {
-            return true;
-        }
-
-        // Let relations through
-        if ($this->hasRelation($key)) {
-            return true;
-        }
-
-        return false;
     }
 
     /**

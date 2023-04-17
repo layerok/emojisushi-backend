@@ -56,7 +56,7 @@
 }
 
 .responsive-sidebar-toolbar {
-    background: @color-grey-3-light;
+    background: @sidebar-bg;
 
     &:before, &:after {
         display: none !important;
@@ -74,7 +74,7 @@
 body:not(.drag) {
     .layout-sidenav.sidenav-responsive {
         ul > li.mainmenu-item:not(.sidebar-button) > a:hover {
-            background: white;
+            background: @sidebar-hover-bg;
         }
     }
 }

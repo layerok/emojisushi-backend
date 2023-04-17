@@ -4,13 +4,13 @@
     'data-popup-load-indicator' => true
 ]) ?>
     <div class="modal-header">
-        <h4 class="modal-title"><?= e(trans('backend::lang.dashboard.add_widget')) ?></h4>
+        <h4 class="modal-title"><?= __('Add Widget') ?></h4>
         <button type="button" class="btn-close" data-dismiss="popup"></button>
     </div>
     <div class="modal-body">
         <div class="form-group">
-            <label><?= e(trans('backend::lang.dashboard.widget_label')) ?></label>
-            <select class="form-control custom-select" name="className" data-placeholder="<?= e(trans('backend::lang.form.select_placeholder')) ?>">
+            <label><?= __('Widget') ?></label>
+            <select class="form-control custom-select" name="className" data-placeholder="<?= __('please select') ?>">
                 <option></option>
                 <?php foreach ($widgets as $className => $widgetInfo):?>
                     <option value="<?= e($className) ?>"><?= isset($widgetInfo['label']) ? e(__($widgetInfo['label'])) : $className ?></option>
@@ -19,7 +19,7 @@
         </div>
 
         <div class="form-group">
-            <label><?= e(trans('backend::lang.dashboard.widget_width')) ?></label>
+            <label><?= __('Width') ?></label>
             <select class="form-control custom-select" name="size">
                 <option></option>
                 <?php foreach ($sizes as $size => $name):?>

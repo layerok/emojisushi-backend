@@ -29,19 +29,19 @@ ul li {
             left: 3px;
             top: 12px;
             background-position: -182px 0;
-            .transform(~'rotate(-90deg)');
-            .transition(transform @treeview-transition-duration);
+            transform: rotate(-90deg);
+            transition: transform @treeview-transition-duration;
         }
 
         &.no-child-nodes {
-            .opacity(0);
+            opacity: 0;
             cursor: inherit;
         }
     }
 
     &.expanded-node > .item-label-outer-container > .item-label-container .node-toggle-control {
         &:before {
-            .transform(~'rotate(0)');
+            transform: rotate(0);
         }
     }
 

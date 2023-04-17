@@ -1,5 +1,6 @@
+@panel-border-color: @primary-border;
+
 div.panel {
-    @panel-border-color: #e8eaeb;
 
     padding: 20px;
 
@@ -39,33 +40,13 @@ div.panel {
         border-top: 1px solid @panel-border-color;
     }
 
-    &.triangle-down {
-        position: relative;
-
-        &:after {
-            .triangle(down, 15px, 8px, white);
-            position: absolute;
-            left: 15px;
-            bottom: -8px;
-            z-index: 101;
-        }
-
-        &:before {
-            .triangle(down, 17px, 9px, #e8eaeb);
-            position: absolute;
-            left: 14px;
-            bottom: -9px;
-            z-index: 100;
-        }
-    }
-
     /*
      * Panel sections
      */
 
     h3.section, > label {
         text-transform: uppercase;
-        color: #95a5a6;
+        color: @primary-color;
         font-size: 13px;
         font-weight: 600;
         margin: 0 0 15px 0;

@@ -1,6 +1,6 @@
 <?php if (Site::hasMultiEditSite()): ?>
     <ul
-        class="mainmenu-items mainmenu-submenu-dropdown hover-effects"
+        class="mainmenu-items mainmenu-submenu-dropdown hover-effects siteswitcher-dropdown"
         data-submenu-index="sites"
         data-control="siteswitcher">
         <li class="mainmenu-item section-title">

@@ -4,13 +4,12 @@
 // Filters
 // --------------------------------------------------
 
-@color-filter-bg:              #fff;
-@color-filter-bg-active:       @brand-success;
-@color-filter-border:          rgba(149, 165, 166, 0.2);
-@color-filter-text:            rgba(0,0,0,.6);
-@color-filter-text-active:     #000000;
-@color-filter-items-bg:        #fafafa;
-@color-filter-items-bg-hover:  @brand-selection;
+@color-filter-text:            var(--bs-secondary-color);
+@color-filter-text-active:     var(--bs-emphasis-color);
+@color-filter-border:          var(--bs-border-color);
+@color-filter-bg:              var(--bs-body-bg);
+@color-filter-bg-active:       var(--bs-success);
+@color-filter-items-bg-hover:  var(--oc-selection);
 
 //
 // Filters
@@ -46,7 +45,7 @@
                 margin-left: -2px;
                 margin-right: -2px;
                 display: block;
-                color: rgba(0,0,0,.5);
+                color: @toolbar-color;
                 width: 24px;
                 height: 24px;
                 text-align: center;
@@ -58,7 +57,8 @@
             }
 
             &:hover > span {
-                background: @background-color-focus;
+                color: @toolbar-hover-color;
+                background: @toolbar-hover-bg;
             }
         }
     }
@@ -157,8 +157,12 @@
 
         &:hover {
             color: #000;
-            .filter-label { color: @color-filter-text; }
-            &.active .filter-setting { background-color: darken(@color-filter-bg-active, 5%); }
+            .filter-label {
+                color: @color-filter-text;
+            }
+            &.active .filter-setting {
+                background-color: darken(#86cB43, 5%);
+            }
         }
     }
 }

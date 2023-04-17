@@ -219,8 +219,10 @@ class Controller
             $result = $this->runPage($page);
         }
 
-        // Post-processing
-        $result = $this->postProcessResult($page, $url, $result);
+        // Post-processing raw content
+        if (is_string($result)) {
+            $result = $this->postProcessResult($page, $url, $result);
+        }
 
         /**
          * @event cms.page.display
@@ -306,7 +308,7 @@ class Controller
             'param' => $this->router->getParameters(),
             'environment' => fn() => App::environment(),
             'request' => fn() => App::make('request'),
-            'session' => fn() => App::make('session'),
+            'session' => fn() => App::make('session')->driver(),
             'site' => fn() => Site::getActiveSite(),
             'locale' => fn() => App::getLocale(),
 

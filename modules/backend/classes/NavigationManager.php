@@ -555,6 +555,15 @@ class NavigationManager
     }
 
     /**
+     * isDashboardItemActive determines if the dashboard is active.
+     * @return bool
+     */
+    public function isDashboardItemActive()
+    {
+        return $this->contextOwner === 'October.Backend' && $this->contextMainMenuItemCode === 'dashboard';
+    }
+
+    /**
      * getActiveMainMenuItem returns the currently active main menu item
      * @return null|MainMenuItem $item Returns the item object or null.
      * @throws SystemException

@@ -66,7 +66,7 @@
     padding: 20px 20px 2px 20px;
     margin-bottom: @padding-standard;
     border: 1px solid @input-border;
-    background: @color-form-checkboxlist-background;
+    background: @input-bg;
     .border-radius(@border-radius-base);
 
     ul { padding-left: 15px; }
@@ -130,9 +130,8 @@
             height: 24px;
             cursor: move;
             text-align: center;
-            color: #536061;
-
-            background: white;
+            color: @toolbar-color;
+            background: @toolbar-bg;
             border-radius: 3px;
             text-decoration: none;
 
@@ -148,7 +147,7 @@
         li.sortable-chosen.sortable-ghost {
             position: relative;
             .drag-handle {
-                background: @background-color-focus;
+                background: @toolbar-focus-bg;
             }
         }
     }
@@ -182,7 +181,7 @@
     &.is-selectable {
         li {
             padding: 5px 10px;
-            border-bottom: 1px solid @color-list-border;
+            border-bottom: 1px solid @border-color;
 
             &:last-child {
                 border-bottom: none;
@@ -245,7 +244,7 @@
                     height: 155px;
                     border: 3px solid rgba(0,0,0,.1);
                     position: relative;
-                    background: @color-form-checkboxlist-background;
+                    background: @input-bg;
                     .transition(border .3s ease);
                 }
 

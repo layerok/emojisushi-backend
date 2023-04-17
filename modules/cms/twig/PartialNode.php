@@ -53,9 +53,9 @@ class PartialNode extends TwigNode
 
         $isAjax = $options['isAjax'] ?? false;
         if ($isAjax) {
-            $compiler->write("echo '<div data-ajax-partial=")
+            $compiler->write("echo '<div data-ajax-partial=\"'.")
                 ->subcompile($this->getNode('nodes')->getNode(0))
-                ->write(">';".PHP_EOL);
+                ->write(".'\">';".PHP_EOL);
         }
 
         $isLazy = $options['hasLazy'] ?? false;

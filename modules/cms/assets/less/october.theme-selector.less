@@ -3,13 +3,13 @@
 .theme-selector-layout {
     .layout-cell {
         padding: 24px;
-        .box-sizing(border-box);
+        box-sizing: border-box;
     }
 
     .theme-thumbnail {
         width: 288px;
-        background: #ecf0f1;
-        border-top: 1px solid #e3e7e9;
+        background: @secondary-bg;
+        border-top: 1px solid @border-color;
 
         img {
             opacity: .6;
@@ -18,7 +18,7 @@
     }
 
     .theme-description {
-        border-top: 1px solid #f2f3f4;
+        border-top: 1px solid @primary-border;
 
         h3, p {
             opacity: .6;
@@ -28,18 +28,18 @@
             margin: 0 0 25px 0;
             font-size: 28px;
             font-weight: 400;
-            color: #2b3e50;
+            color: @text-color;
             display: inline-block;
         }
 
         p.author {
             font-size: 13px;
             display: inline-block;
-            color: #808c8d;
+            color: @primary-color;
         }
 
         p.description {
-            color: #2b3e50;
+            color: @primary-color;
             font-size: 14px;
             line-height: 180%;
             margin-bottom: 30px;
@@ -65,15 +65,15 @@
 
     .layout-row.active {
         .theme-thumbnail {
-            background: #bdc3c7;
-            border-top-color: #bdc3c7;
+            background: @brand-secondary;
+            border-top-color: @border-color;
        }
 
        .thumbnail-container {
             position: relative;
 
             &:after {
-                .triangle(right, 15px, 28px, #bdc3c7);
+                .triangle(right, 15px, 28px, @brand-secondary);
                 position: absolute;
                 right: -35px;
                 top: 50%;
@@ -105,10 +105,10 @@
 
         &.links {
             .theme-thumbnail {
-                border-bottom: 1px solid #e3e7e9;
+                border-bottom: 1px solid @border-color;
             }
             .theme-description {
-                border-bottom: 1px solid #f2f3f4;
+                border-bottom: 1px solid @primary-border;
             }
         }
     }
@@ -119,15 +119,15 @@
 
     .create-new-theme,
     .find-more-themes {
-        background: #ecf0f1;
-        color: #2b3e50;
+        background: var(--oc-secondary-bg);
+        color: @emphasis-color;
         text-decoration: none;
         display: block;
         padding: 20px;
-        .border-radius(4px);
+        border-radius: 4px;
 
         &:hover {
-            background: @link-color;
+            background: @brand-selection;
             color: white;
         }
     }

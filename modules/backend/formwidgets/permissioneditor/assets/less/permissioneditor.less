@@ -1,13 +1,13 @@
 @import "../../../../assets/less/core/boot.less";
 
-@color-permissioneditor-section-border: #DBE1E3;
-@color-permissioneditor-permission-border: #ECF0F1;
+@color-permissioneditor-section-border: @primary-border;
+@color-permissioneditor-permission-border: @primary-border;
 
 .permissioneditor {
     position: relative;
     border-radius: @border-radius-base;
-    background: @color-form-checkboxlist-background;
-    border: 1px solid @color-form-checkboxlist-border;
+    background: @input-bg;
+    border: 1px solid @input-border;
 
     &.control-disabled {
         .permissions-overlay {
@@ -27,7 +27,7 @@
 
     li.permission-section {
         .section-content {
-            color: @color-label;
+            color: @heading-color;
             font-weight: normal;
             display: flex;
         }
@@ -53,10 +53,11 @@
             padding: .6rem .4rem;
 
             &:hover {
-                background: @color-list-hover-bg;
+                color: var(--bs-table-hover-color);
+                background-color: var(--bs-table-hover-bg);
 
                 &.item-name {
-                    color: #000 !important;
+                    color: var(--bs-table-hover-color) !important;
                 }
             }
         }
@@ -74,7 +75,7 @@
 
         .item-name {
             cursor: pointer;
-            color: @color-form-text;
+            color: @secondary-color;
             width: 100%;
         }
     }
@@ -116,7 +117,7 @@
 
         > li.permission-item {
             vertical-align: top;
-            border-bottom-color: @color-permissioneditor-permission-border;
+            border-bottom-color: transparent;
             user-select: none;
 
             ul.child-items {
@@ -130,7 +131,7 @@
                     &:before {
                         content: "└─";
                         font-size: 12px;
-                        color: rgba(0, 0, 0, 0.6);
+                        color: rgba(var(--bs-body-color-rgb), 0.6);
                         position: relative;
                         top: 1px;
                     }
@@ -151,7 +152,7 @@
         }
 
         ul.child-items > li > .item-content:before {
-            color: rgba(0, 0, 0, 0.2);
+            color: rgba(var(--bs-body-color-rgb), 0.2);
         }
 
         > .item-content > .item-name {

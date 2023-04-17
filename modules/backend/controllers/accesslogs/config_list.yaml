@@ -8,6 +8,9 @@ modelClass: Backend\Models\AccessLog
 noRecordsMessage: backend::lang.list.no_records
 recordsPerPage: 30
 showSetup: true
+defaultSort:
+    column: created_at
+    direction: desc
 
 toolbar:
     buttons: list_toolbar

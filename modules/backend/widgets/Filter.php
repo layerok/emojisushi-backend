@@ -564,7 +564,7 @@ class Filter extends WidgetBase implements FilterElement
     public function getScope($scope)
     {
         if (!isset($this->allScopes[$scope])) {
-            throw new ApplicationException('No definition for scope ' . $scope);
+            throw new ApplicationException("No definition for scope [{$scope}] found");
         }
 
         return $this->allScopes[$scope];

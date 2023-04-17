@@ -1,13 +1,13 @@
 @import "../../../../assets/less/core/boot.less";
 
 
-@color-colorpicker-border: rgba(53, 66, 91, 0.1);
-@color-colorpicker-active-border: rgba(255, 255, 255, 0.7);
+@color-colorpicker-border: rgba(var(--bs-body-color-rgb), 0.1);
+@color-colorpicker-active-border: rgba(var(--bs-body-bg-rgb), 0.7);
 @color-colorpicker-active: #5fb6f5;
 
 .field-colorpicker {
 
-    > ul {
+    ul.picker-options {
         list-style-type: none;
         padding: 0;
         margin: 0;
@@ -71,7 +71,7 @@
     }
 
     &.disabled {
-        > ul {
+        ul.picker-options {
             li {
                 &:hover {
                     cursor: not-allowed;
@@ -125,6 +125,17 @@
         }
     }
 
+    .input-group > ul.picker-options {
+        margin: 0;
+
+        li {
+            margin: 0;
+            padding: 6px;
+            border-top-right-radius: 0;
+            border-bottom-right-radius: 0;
+        }
+    }
+
 }
 
 //
@@ -139,8 +150,8 @@
 .sp-color { right: 15%; }
 
 .sp-container {
-    border: @popup-border!important;
-    background: white;
+    border: @border-color !important;
+    background: @primary-bg;
     border-radius: 8px;
     z-index: @zindex-datepicker;
     box-shadow: @box-shadow-z2;
@@ -152,18 +163,18 @@
 }
 
 .sp-alpha-handle {
-    background-color: #ccc;
-    border: 1px solid #666;
+    background-color: @border-color;
+    border: 1px solid @emphasis-color;
     width: 4px;
 }
 
 .sp-color, .sp-hue {
-    border: 1px solid #ccc;
+    border: 1px solid @border-color;
 }
 
 .sp-slider {
-    background-color: #ccc;
-    border: 1px solid #666;
+    background-color: @border-color;
+    border: 1px solid @emphasis-color;
     height: 3px;
     left: -4px;
     width: 22px;
@@ -176,12 +187,15 @@
 .sp-input {
     outline: none !important;
     -webkit-appearance: none;
+    background-color: @input-bg;
     border: 1px solid @input-border;
-    .box-shadow(@input-box-shadow);
-    .border-radius(@input-border-radius);
+    box-shadow: @input-box-shadow;
+    border-radius: @input-border-radius;
+    color: @input-color;
 
     &:focus {
-        border: 1px solid @color-form-field-border-focus;
+        border: 1px solid @input-border-focus;
+        transition: border-color .15s ease-in-out, box-shadow .15s ease-in-out;
     }
 }
 
@@ -192,22 +206,8 @@
     padding-top: 4px;
 }
 
-.sp-container button,
-.sp-container button:hover,
-.sp-container button:active {
-    text-shadow: none;
-    font-size: @font-size-base - 1;
-    text-align: left;
-    outline: none !important;
-    font-weight: @btn-font-weight;
-    .box-shadow(~"inset 0 -2px 0 rgba(0,0,0,.15)");
-    border: 1px solid transparent;
-    .button-variant(@btn-default-color; @btn-default-bg; @btn-default-border; @btn-primary-bg; @btn-primary-bg);
-    .button-size(@padding-xs-vertical; @padding-xs-horizontal; @font-size-small; @line-height-small; @border-radius-small);
-}
-
 .sp-cancel {
-    bottom: -3px;
+    bottom: 0;
     left: 0;
     position: absolute;
     text-decoration: none;

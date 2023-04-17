@@ -1,6 +1,6 @@
 <?php namespace Cms\Classes;
 
-use Lang;
+use Arr;
 
 /**
  * ComponentHelpers defines some component helpers for the CMS UI.
@@ -24,11 +24,11 @@ class ComponentHelpers
         if ($addAliasProperty) {
             $property = [
                 'property' => 'oc.alias',
-                'title' => Lang::get('cms::lang.component.alias'),
-                'description' => Lang::get('cms::lang.component.alias_description'),
+                'title' => __("Alias"),
+                'description' => __("A unique name given to this component when using it in the page or layout code."),
                 'type' => 'string',
                 'validationPattern' => '^[a-zA-Z]+[0-9a-z\_]*$',
-                'validationMessage' => Lang::get('cms::lang.component.validation_message'),
+                'validationMessage' => __("Component aliases are required and can contain only Latin symbols, digits, and underscores. The aliases should start with a Latin symbol."),
                 'required' => true,
                 'showExternalParam' => false
             ];
@@ -52,23 +52,41 @@ class ComponentHelpers
                     $property[$name] = $value;
                 }
 
-                /*
-                 * Translate human values
-                 */
-                $translate = ['title', 'description', 'options', 'group', 'validationMessage'];
+                // Translate human values
+                $toTranslate = ['title', 'description', 'options', 'group', 'validationMessage'];
                 foreach ($property as $name => $value) {
-                    if (!in_array($name, $translate)) {
+                    if (!in_array($name, $toTranslate)) {
                         continue;
                     }
 
                     if (is_array($value)) {
                         array_walk($property[$name], function (&$_value, $key) {
-                            $_value = Lang::get($_value);
+                            $_value = __($_value);
                         });
                     }
                     else {
-                        $property[$name] = Lang::get($value);
+                        $property[$name] = __($value);
                     }
+                }
+
+                // Convert nested properties
+                $toNestProperty = ['itemProperties', 'properties'];
+                foreach ($property as $name => $value) {
+                    if (!in_array($name, $toNestProperty)) {
+                        continue;
+                    }
+
+                    if (!is_array($value) || Arr::isList($value)) {
+                        continue;
+                    }
+
+                    $newValue = [];
+                    foreach ($value as $_name => $_props) {
+                        $newValue[] = [
+                            'property' => $_name
+                        ] + $_props;
+                    }
+                    $property[$name] = $newValue;
                 }
 
                 $result[] = $property;
@@ -115,10 +133,7 @@ class ComponentHelpers
      */
     public static function getComponentName($component)
     {
-        $details = $component->componentDetails();
-        $name = $details['name'] ?? 'cms::lang.component.unnamed';
-
-        return Lang::get($name);
+        return __($component->componentDetails()['name'] ?? "Unnamed");
     }
 
     /**
@@ -128,9 +143,6 @@ class ComponentHelpers
      */
     public static function getComponentDescription($component)
     {
-        $details = $component->componentDetails();
-        $name = $details['description'] ?? 'cms::lang.component.no_description';
-
-        return Lang::get($name);
+        return __($component->componentDetails()['description'] ?? "No description provided");
     }
 }

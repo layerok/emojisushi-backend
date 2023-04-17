@@ -80,6 +80,11 @@
                         > a {
                             padding-left: 0;
 
+                            &:after {
+                                top: 27px;
+                                right: 15px;
+                            }
+
                             .nav-label {
                                 padding-left: 13px;
                             }
@@ -113,17 +118,19 @@
                         }
 
                         &.mainmenu-account {
-                            > a:after {
-                                display: inline-block;
-                            }
-
                             .nav-label {
+                                position: relative;
+                                top: 5px;
                                 padding-left: 11px;
                             }
 
+                            > a:after {
+                                top: 17px;
+                                right: 15px;
+                            }
+
                             .nav-label, > a:after {
-                                position: relative;
-                                top: 4px;
+                                display: none;
                             }
                         }
 
@@ -147,8 +154,7 @@
                             }
 
                             &:after {
-                                margin-left: 10px;
-                                height: 10px;
+                                top: 18.4px;
                                 // visibility: hidden;
                                 display: none;
                             }
@@ -166,7 +172,7 @@
     &.width-check {
         .layout-mainmenu .main-menu-container .navbar.control-toolbar {
             div[data-control="toolbar"] {
-                width: auto!important;
+                width: auto !important;
             }
 
             ul.mainmenu-items[data-main-menu] > li.mainmenu-item {
@@ -203,7 +209,7 @@ body.reveal-left-side-menu {
                         }
 
                         > a > span.counter {
-                            left: 0;
+                            left: -10px;
                         }
                     }
                 }

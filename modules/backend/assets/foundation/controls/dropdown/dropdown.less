@@ -33,18 +33,22 @@
             text-decoration: none;
 
             &:hover, &:active, &:focus:active {
-                color: @color-dropdown-hover-text;
-                background-color: @color-dropdown-hover-bg !important;
+                color: @dropdown-hover-color;
+                background-color: @dropdown-hover-bg !important;
                 i {
-                    color: @color-dropdown-hover-text;
+                    color: @dropdown-hover-color;
                 }
 
                 &[class^="oc-icon-"],
                 &[class*=" oc-icon-"] {
                     &:before {
-                        color: @color-dropdown-hover-text;
+                        color: @dropdown-hover-color;
                     }
                 }
+            }
+
+            &:active, &:focus:active {
+                background-color: @dropdown-active-bg !important;
             }
 
             &[class^="oc-icon-"],
@@ -56,12 +60,12 @@
                     font-size: 14px;
                     left: 9px;
                     top: 8px;
-                    color: fade(@dropdown-link-color, 60%);
+                    color: @dropdown-link-color-fade;
                 }
             }
 
             > i {
-                color: fade(@dropdown-link-color, 60%);
+                color: @dropdown-link-color-fade;
                 font-size: 14px;
                 margin-right: 4px;
                 margin-left: -2px;
@@ -102,14 +106,14 @@
                 background-color: @dropdown-bg !important;
                 color: @dropdown-link-disabled-color;
                 > i {
-                    color: fade(@dropdown-link-color, 60%);
+                    color: @dropdown-link-color-fade;
                 }
             }
 
             &[class^="oc-icon-"],
             &[class*=" oc-icon-"] {
                 &:before {
-                    color: fade(@dropdown-link-color, 60%);
+                    color: @dropdown-link-color-fade;
                 }
             }
         }
@@ -132,7 +136,7 @@ html:not(.user-touch) {
     .control-dropdown.dropdown-menu > li {
         a, button {
             &:focus {
-                background: @background-color-focus;
+                background: @toolbar-focus-bg;
             }
         }
     }

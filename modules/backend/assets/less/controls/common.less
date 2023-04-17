@@ -2,13 +2,17 @@
 // Common control styles
 // --------------------------------------------------
 
+.oc-progress-bar {
+    background-color: var(--oc-accent, #0076ff);
+}
+
 //
 // The scroll panel can host a scrollbar control. It has a right border that covers
 // the scrollbar to satisfy the design requirements.
 //
 .control-scrollpanel {
     position: relative;
-    background: @color-panel-light;
+    background: @tertiary-bg;
 
     .control-scrollbar {
         &.vertical > .scrollbar-scrollbar {
@@ -38,7 +42,7 @@
     border-radius: 20px;
     display: inline-block;
     margin-right: 3px;
-    border: 1px solid #ffffff;
+    border: 1px solid rgba(var(--bs-body-bg-rgb), 0.9);
 }
 
 //

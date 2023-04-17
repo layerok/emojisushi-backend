@@ -13,6 +13,8 @@ use Backend\Models\UserPreference;
  *     public $settingsCode = 'author.plugin::code';
  *     public $settingsFields = 'fields.yaml';
  *
+ * @todo This class will be deprecated soon
+ * @see Backend\Models\UserPreferenceModel
  */
 class UserPreferencesModel extends SettingsModel
 {

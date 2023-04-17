@@ -156,6 +156,11 @@ class RelationController extends ControllerBehavior
     public $deferredBinding = false;
 
     /**
+     * @var string popupSize as, either giant, huge, large, small, tiny or adaptive
+     */
+    public $popupSize = 'huge';
+
+    /**
      * @var array customMessages contains default messages that you can override
      */
     protected $customMessages = [
@@ -335,6 +340,7 @@ class RelationController extends ControllerBehavior
         $this->manageId = post('manage_id');
         $this->foreignId = post('foreign_id');
         $this->readOnly = $this->getConfig('readOnly');
+        $this->popupSize = $this->getConfig('popupSize', $this->popupSize);
         $this->eventTarget = $this->evalEventTarget();
         $this->deferredBinding = $this->evalDeferredBinding();
         $this->viewMode = $this->evalViewMode();
@@ -773,9 +779,9 @@ class RelationController extends ControllerBehavior
             case 'morphMany':
                 return ['create', 'delete'];
 
-            case 'morphToMany':
-            case 'morphedByMany':
             case 'belongsToMany':
+            case 'morphedByMany':
+            case 'morphToMany':
                 return ['create', 'add', 'delete', 'remove'];
 
             case 'hasOne':

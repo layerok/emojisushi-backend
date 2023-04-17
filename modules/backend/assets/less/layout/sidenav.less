@@ -10,9 +10,9 @@ nav.layout-sidenav {
     position: absolute;
     height: 100%;
     width: 100%;
-    .box-sizing(border-box);
+    box-sizing: border-box;
     font-size: @font-size-base;
-    background: @color-grey-3-light;
+    background: @sidebar-bg;
 
     ul {
         position: relative;
@@ -55,12 +55,12 @@ nav.layout-sidenav {
                     i {
                         font-size: 20px;
                         line-height: inherit;
-                        color: @color-text-grey-1;
+                        color: @sidebar-color;
                     }
                 }
 
                 .nav-label {
-                    color: @color-text-grey-1;
+                    color: @sidebar-color;
                     font-size: @font-size-base;
                     opacity: 1;
                     overflow: hidden;
@@ -85,12 +85,12 @@ nav.layout-sidenav {
 
             &.active {
                 > a {
-                    background: white;
-                    border-left: 3px solid @brand-primary;
+                    background: @sidebar-active-bg !important;
+                    border-left: 3px solid @sidebar-active-border;
                     padding-left: 55px;
 
                     .nav-label {
-                        color: @text-color;
+                        color: @sidebar-active-color;
                         font-weight: 500;
                     }
 
@@ -98,7 +98,7 @@ nav.layout-sidenav {
                         opacity: 1;
 
                         i {
-                            color: @text-color;
+                            color: @sidebar-active-color;
                         }
                     }
                 }
@@ -238,7 +238,7 @@ nav.layout-sidenav {
 body:not(.drag) {
     #layout-sidenav {
         ul > li.mainmenu-item:not(.sidebar-button) > a:hover {
-            background: white;
+            background: @sidebar-hover-bg;
         }
     }
 }

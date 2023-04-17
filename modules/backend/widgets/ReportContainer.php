@@ -13,8 +13,7 @@ use ApplicationException;
 use ForbiddenException;
 
 /**
- * Report Container Widget
- * Creates an area hosting report widgets.
+ * ReportContainer Widget creates an area hosting report widgets.
  *
  * @package october\backend
  * @author Alexey Bobkov, Samuel Georges
@@ -26,8 +25,7 @@ class ReportContainer extends WidgetBase
     //
 
     /**
-     * @var string The unique report context name
-     * Defines the context where the container is used.
+     * @var string context is a unique name that defines the context where the container is used.
      * Widget settings are saved in a specific context. This allows to
      * have multiple report containers on different pages that have
      * different widgets and widget settings. Context names can contain
@@ -36,14 +34,29 @@ class ReportContainer extends WidgetBase
     public $context = 'dashboard';
 
     /**
-     * @var string Determines whether widgets could be added and deleted.
+     * @var bool showReorder allows the user to reorder the widgets.
      */
-    public $canAddAndDelete = true;
+    public $showReorder = true;
 
     /**
-     * @var array A list of default widgets to load.
-     * This structure could be defined in the widget configuration file (for example config_report_container.yaml).
-     * Example YAML structure:
+     * @var bool showConfigure allows the user to configure the widgets.
+     */
+    public $showConfigure = true;
+
+    /**
+     * @var bool showAddRemove determines whether widgets could be added and deleted.
+     */
+    public $showAddRemove = true;
+
+    /**
+     * @var bool showMakeDefault displays the "Make Default" button.
+     */
+    public $showMakeDefault = true;
+
+    /**
+     * @var array defaultWidgets to load.
+     * This structure could be defined in the widget configuration file,
+     * (for example config_report_container.yaml), example YAML structure:
      *
      * defaultWidgets:
      *     trafficOverview:
@@ -55,6 +68,11 @@ class ReportContainer extends WidgetBase
      */
     public $defaultWidgets = [];
 
+    /**
+     * @deprecated use showAddRemove
+     */
+    public $canAddAndDelete;
+
     //
     // Object properties
     //
@@ -65,42 +83,38 @@ class ReportContainer extends WidgetBase
     protected $defaultAlias = 'reportContainer';
 
     /**
-     * @var array Collection of all report widgets used by this container.
+     * @var array reportWidgets used by this container.
      */
     protected $reportWidgets = [];
 
     /**
-     * @var boolean Determines if report widgets have been created.
+     * @var boolean reportsDefined determines if report widgets have been created.
      */
     protected $reportsDefined = false;
 
     /**
-     * Constructor.
+     * @inheritDoc
      */
-    public function __construct($controller, $configuration = null)
+    public function init()
     {
-        if (!$configuration) {
-            $configuration = 'config_report_container.yaml';
+        $this->fillFromConfig([
+            'context',
+            'showReorder',
+            'showConfigure',
+            'showAddRemove',
+            'showMakeDefault',
+            'defaultWidgets',
+            'canAddAndDelete', // @deprecated
+        ]);
+
+        // @deprecated
+        if ($this->canAddAndDelete !== null) {
+            $this->showAddRemove = (bool) $this->canAddAndDelete;
         }
-
-        if (!is_array($configuration)) {
-            $path = $controller->getConfigPath($configuration);
-            if (File::isFile($path)) {
-                $configuration = $this->makeConfig($path);
-            }
-            else {
-                $configuration = [];
-            }
-        }
-
-        parent::__construct($controller, $configuration);
-
-        $this->fillFromConfig();
-        $this->bindToController();
     }
 
     /**
-     * Ensure report widgets are registered so they can also be bound to
+     * bindToController ensures report widgets are registered so they can also be bound to
      * the controller this allows their AJAX features to operate.
      * @return void
      */
@@ -111,7 +125,7 @@ class ReportContainer extends WidgetBase
     }
 
     /**
-     * Renders this widget along with its collection of report widgets.
+     * render this widget along with its collection of report widgets.
      */
     public function render()
     {
@@ -131,11 +145,18 @@ class ReportContainer extends WidgetBase
     }
 
     //
-    // Event handlers
+    // AJAX handlers
     //
 
+    /**
+     * onResetWidgets
+     */
     public function onResetWidgets()
     {
+        if (!$this->showAddRemove) {
+            throw new ForbiddenException;
+        }
+
         $this->resetWidgets();
 
         $this->vars['widgets'] = $this->reportWidgets;
@@ -145,9 +166,12 @@ class ReportContainer extends WidgetBase
         return ['#'.$this->getId('container-list') => $this->makePartial('widget_list')];
     }
 
+    /**
+     * onMakeLayoutDefault
+     */
     public function onMakeLayoutDefault()
     {
-        if (!BackendAuth::userHasAccess('dashboard.defaults')) {
+        if (!$this->showMakeDefault) {
             throw new ForbiddenException;
         }
 
@@ -158,8 +182,15 @@ class ReportContainer extends WidgetBase
         Flash::success(Lang::get('backend::lang.dashboard.make_default_success'));
     }
 
+    /**
+     * onUpdateWidget
+     */
     public function onUpdateWidget()
     {
+        if (!$this->showConfigure) {
+            throw new ForbiddenException;
+        }
+
         $alias = Request::input('alias');
 
         $widget = $this->findWidgetByAlias($alias);
@@ -173,18 +204,32 @@ class ReportContainer extends WidgetBase
         ];
     }
 
+    /**
+     * onRemoveWidget
+     */
     public function onRemoveWidget()
     {
+        if (!$this->showAddRemove) {
+            throw new ForbiddenException;
+        }
+
         $alias = Request::input('alias');
 
         $this->removeWidget($alias);
     }
 
+    /**
+     * onLoadAddPopup
+     */
     public function onLoadAddPopup()
     {
+        if (!$this->showAddRemove) {
+            throw new ForbiddenException;
+        }
+
         $sizes = [];
         for ($i = 1; $i <= 12; $i++) {
-            $sizes[$i] = $i < 12 ? $i : $i.' (' . Lang::get('backend::lang.dashboard.full_width') . ')';
+            $sizes[$i] = $i < 12 ? $i : $i.' (' . __("full width") . ')';
         }
 
         $this->vars['sizes'] = $sizes;
@@ -193,78 +238,51 @@ class ReportContainer extends WidgetBase
         return $this->makePartial('new_widget_popup');
     }
 
+    /**
+     * onAddWidget
+     */
     public function onAddWidget()
     {
+        if (!$this->showAddRemove) {
+            throw new ForbiddenException;
+        }
+
         $className = trim(Request::input('className'));
         $size = trim(Request::input('size'));
 
         if (!$className) {
-            throw new ApplicationException('Please select a widget to add.');
+            throw new ApplicationException("Please select a widget to add.");
         }
 
         if (!class_exists($className)) {
-            throw new ApplicationException('The selected class doesn\'t exist.');
+            throw new ApplicationException("The selected class doesn't exist.");
         }
 
         $widget = new $className($this->controller);
         if (!($widget instanceof \Backend\Classes\ReportWidgetBase)) {
-            throw new ApplicationException('The selected class is not a report widget.');
+            throw new ApplicationException("The selected class is not a report widget.");
         }
 
         $widgetInfo = $this->addWidget($widget, $size);
 
         return [
             '@#'.$this->getId('container-list') => $this->makePartial('widget', [
-                'widget'      => $widget,
+                'widget' => $widget,
                 'widgetAlias' => $widgetInfo['alias'],
-                'sortOrder'   => $widgetInfo['sortOrder']
+                'sortOrder' => $widgetInfo['sortOrder']
             ])
         ];
     }
 
-    public function addWidget($widget, $size)
-    {
-        if (!$this->canAddAndDelete) {
-            throw new ApplicationException('Access denied.');
-        }
-
-        $widgets = $this->getWidgetsFromUserPreferences();
-
-        $num = count($widgets);
-        do {
-            $num++;
-            $alias = 'report_container_'.$this->context.'_'.$num;
-        }
-        while (array_key_exists($alias, $widgets));
-
-        // Ensure that the widget's alias is correctly set for this request
-        $widget->alias = $alias;
-
-        $sortOrder = 0;
-        foreach ($widgets as $widgetInfo) {
-            $sortOrder = max($sortOrder, $widgetInfo['sortOrder']);
-        }
-
-        $sortOrder++;
-
-        $widget->setProperty('ocWidgetWidth', $size);
-
-        $widgets[$alias] = [
-            'class'         => get_class($widget),
-            'configuration' => $widget->getProperties(),
-            'sortOrder'     => $sortOrder
-        ];
-
-        $this->setWidgetsToUserPreferences($widgets);
-
-        return [
-            'alias'     => $alias,
-            'sortOrder' => $widgets[$alias]['sortOrder']
-        ];
-    }
-
+    /**
+     * onSetWidgetOrders
+     */
     public function onSetWidgetOrders()
     {
+        if (!$this->showReorder) {
+            throw new ForbiddenException;
+        }
+
         $aliases = trim(Request::input('aliases'));
         $orders = trim(Request::input('orders'));
 
@@ -294,11 +312,69 @@ class ReportContainer extends WidgetBase
     }
 
     //
+    // Widget API
+    //
+
+    /**
+     * addWidget
+     */
+    public function addWidget($widget, $size)
+    {
+        $widgets = $this->getWidgetsFromUserPreferences();
+
+        $num = count($widgets);
+        do {
+            $num++;
+            $alias = 'report_container_'.$this->context.'_'.$num;
+        }
+        while (array_key_exists($alias, $widgets));
+
+        // Ensure that the widget's alias is correctly set for this request
+        $widget->alias = $alias;
+
+        $sortOrder = 0;
+        foreach ($widgets as $widgetInfo) {
+            $sortOrder = max($sortOrder, $widgetInfo['sortOrder']);
+        }
+
+        $sortOrder++;
+
+        $widget->setProperty('ocWidgetWidth', $size);
+
+        $widgets[$alias] = [
+            'class' => get_class($widget),
+            'configuration' => $widget->getProperties(),
+            'sortOrder' => $sortOrder
+        ];
+
+        $this->setWidgetsToUserPreferences($widgets);
+
+        return [
+            'alias' => $alias,
+            'sortOrder' => $widgets[$alias]['sortOrder']
+        ];
+    }
+
+    /**
+     * removeWidget
+     */
+    protected function removeWidget($alias)
+    {
+        $widgets = $this->getWidgetsFromUserPreferences();
+
+        if (isset($widgets[$alias])) {
+            unset($widgets[$alias]);
+        }
+
+        $this->setWidgetsToUserPreferences($widgets);
+    }
+
+    //
     // Methods for internal use
     //
 
     /**
-     * Registers the report widgets that will be included in this container.
+     * defineReportWidgets registers the report widgets that will be included in this container.
      * The chosen widgets are based on the user preferences.
      */
     protected function defineReportWidgets()
@@ -326,7 +402,7 @@ class ReportContainer extends WidgetBase
     }
 
     /**
-     * Makes a single report widget object, returned array index:
+     * makeReportWidget makes a single report widget object, returned array index:
      * - widget: The widget object (Backend\Classes\ReportWidgetBase)
      * - sortOrder: The current sort order
      *
@@ -351,6 +427,9 @@ class ReportContainer extends WidgetBase
         return ['widget' => $widget, 'sortOrder' => $widgetInfo['sortOrder']];
     }
 
+    /**
+     * resetWidgets
+     */
     protected function resetWidgets()
     {
         $this->resetWidgetsUserPreferences();
@@ -360,21 +439,9 @@ class ReportContainer extends WidgetBase
         $this->defineReportWidgets();
     }
 
-    protected function removeWidget($alias)
-    {
-        if (!$this->canAddAndDelete) {
-            throw new ApplicationException('Access denied.');
-        }
-
-        $widgets = $this->getWidgetsFromUserPreferences();
-
-        if (isset($widgets[$alias])) {
-            unset($widgets[$alias]);
-        }
-
-        $this->setWidgetsToUserPreferences($widgets);
-    }
-
+    /**
+     * findWidgetByAlias
+     */
     protected function findWidgetByAlias($alias)
     {
         $this->defineReportWidgets();
@@ -387,18 +454,21 @@ class ReportContainer extends WidgetBase
         return $widgets[$alias]['widget'];
     }
 
+    /**
+     * getWidgetPropertyConfig
+     */
     protected function getWidgetPropertyConfig($widget)
     {
         $properties = $widget->defineProperties();
 
         $property = [
-            'property'          => 'ocWidgetWidth',
-            'title'             => Lang::get('backend::lang.dashboard.widget_columns_label', ['columns' => '(1-12)']),
-            'description'       => Lang::get('backend::lang.dashboard.widget_columns_description'),
-            'type'              => 'dropdown',
+            'property' => 'ocWidgetWidth',
+            'title' => Lang::get('backend::lang.dashboard.widget_columns_label', ['columns' => '(1-12)']),
+            'description' => Lang::get('backend::lang.dashboard.widget_columns_description'),
+            'type' => 'dropdown',
             'validationPattern' => '^[0-9]+$',
             'validationMessage' => Lang::get('backend::lang.dashboard.widget_columns_error'),
-            'options'           => [
+            'options' => [
                 1  => '1 ' . Lang::choice('backend::lang.dashboard.columns', 1),
                 2  => '2 ' . Lang::choice('backend::lang.dashboard.columns', 2),
                 3  => '3 ' . Lang::choice('backend::lang.dashboard.columns', 3),
@@ -416,10 +486,10 @@ class ReportContainer extends WidgetBase
         $result[] = $property;
 
         $property = [
-            'property'    => 'ocWidgetNewRow',
-            'title'       => Lang::get('backend::lang.dashboard.widget_new_row_label'),
+            'property' => 'ocWidgetNewRow',
+            'title' => Lang::get('backend::lang.dashboard.widget_new_row_label'),
             'description' => Lang::get('backend::lang.dashboard.widget_new_row_description'),
-            'type'        => 'checkbox'
+            'type' => 'checkbox'
         ];
 
         $result[] = $property;
@@ -444,6 +514,9 @@ class ReportContainer extends WidgetBase
         return json_encode($result);
     }
 
+    /**
+     * getWidgetPropertyValues
+     */
     protected function getWidgetPropertyValues($widget)
     {
         $result = [];
@@ -467,6 +540,9 @@ class ReportContainer extends WidgetBase
     // User and system value storage
     //
 
+    /**
+     * getWidgetsFromUserPreferences
+     */
     protected function getWidgetsFromUserPreferences()
     {
         $defaultWidgets = SystemParameters::get($this->getSystemParametersKey(), $this->defaultWidgets);
@@ -481,16 +557,25 @@ class ReportContainer extends WidgetBase
         return $widgets;
     }
 
+    /**
+     * setWidgetsToUserPreferences
+     */
     protected function setWidgetsToUserPreferences($widgets)
     {
         UserPreference::forUser()->set($this->getUserPreferencesKey(), $widgets);
     }
 
+    /**
+     * resetWidgetsUserPreferences
+     */
     protected function resetWidgetsUserPreferences()
     {
         UserPreference::forUser()->reset($this->getUserPreferencesKey());
     }
 
+    /**
+     * saveWidgetProperties
+     */
     protected function saveWidgetProperties($alias, $properties)
     {
         $widgets = $this->getWidgetsFromUserPreferences();
@@ -502,11 +587,17 @@ class ReportContainer extends WidgetBase
         }
     }
 
+    /**
+     * getUserPreferencesKey
+     */
     protected function getUserPreferencesKey()
     {
         return 'backend::reportwidgets.'.$this->context;
     }
 
+    /**
+     * getSystemParametersKey
+     */
     protected function getSystemParametersKey()
     {
         return 'backend::reportwidgets.default.'.$this->context;

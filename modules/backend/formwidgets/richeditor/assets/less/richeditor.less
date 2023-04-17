@@ -39,22 +39,6 @@
 // Modifications
 @import "_froala.less";
 
-@font-family: @font-family-sans-serif;
-@border-radius: @input-border-radius;
-@tooltip-bg: #34495e; // Taken from toolbar.variables.less
-@tooltip-font-size: @font-size-small;
-@arrow-size: 7px;
-@ui-bg: #f9f9f9;
-@ui-border-color: @input-border-color;
-@ui-border-top: 1px solid @ui-border-color;
-@editor-padding: 20px;
-@btn-hover-bg: #ddd;
-@btn-text: @color-text-grey-1;
-@btn-hover-text: @color-text-grey-1;
-@btn-font-size: 14;
-@btn-active-text: #000;
-@input-label-color: @color-label;
-
 //
 // Make the focus ring and textarea fill the whole rich editor container
 //
@@ -100,7 +84,7 @@
     }
 
     &.editor-focus {
-        border-color: @color-form-field-border-focus;
+        border-color: @input-border-focus;
     }
 
     &.size-tiny {
@@ -142,12 +126,12 @@
         position: relative;
         height: 100% !important;
         width: 100% !important;
-        .border-radius(0) !important;
+        border-radius: 0 !important;
         overflow: hidden;
 
         .fr-toolbar {
-            .border-radius(0) !important;
-            border-top-color: white;
+            border-radius: 0 !important;
+            border-top-color: transparent;
         }
 
         .fr-wrapper {

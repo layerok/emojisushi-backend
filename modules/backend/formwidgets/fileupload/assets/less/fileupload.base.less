@@ -40,7 +40,7 @@
         position: absolute;
         height: 100%;
         width: 100%;
-        background: white;
+        background: @body-bg;
 
         .uploader-control-container {
             border: none!important;
@@ -79,7 +79,7 @@
         }
 
         h4.filename, p {
-            color: @color-text-grey-1;
+            color: @toolbar-color;
             font-size: @font-size-base;
             word-break: break-all;
 
@@ -108,7 +108,7 @@
             border-radius: @border-radius-base;
 
             &:hover {
-                background: @background-color-focus;
+                background: @toolbar-focus-bg;
             }
 
             .file-data-container-inner {

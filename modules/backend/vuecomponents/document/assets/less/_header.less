@@ -2,7 +2,7 @@
     .document-header-container {
         opacity: 1;
         padding: (@document-ui-base-padding/2) @document-ui-base-padding;
-        border-bottom: 1px solid @color-grey-3;
+        border-bottom: 1px solid @primary-border;
 
         .document-header {
             position: relative;
@@ -33,7 +33,7 @@
 
             &:focus {
                 outline: none;
-                background-color: @background-color-focus;
+                background-color: @toolbar-focus-bg;
             }
 
             &:before {
@@ -75,6 +75,7 @@
 
         input.header-title, input.header-subtitle {
             border: 1px solid @body-bg;
+            color: @input-color;
             outline: none;
             background: transparent;
             border-radius: 4px;
@@ -82,7 +83,7 @@
             -webkit-appearance: none;
 
             &[disabled] {
-                color: @color-text-grey-4;
+                color: @input-disabled-color;
             }
         }
 
@@ -94,7 +95,7 @@
         }
 
         .subtitle-label {
-            color: @color-text-grey-4;
+            color: @primary-color;
             margin-right: 3px;
         }
     }
@@ -121,7 +122,7 @@ html:not(.user-touch) {
         .document-header-container {
             input.header-title, input.header-subtitle {
                 &:not([disabled]):hover {
-                    border: 1px solid @color-grey-3;
+                    border: 1px solid @input-border;
                 }
             }
         }

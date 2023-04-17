@@ -90,6 +90,9 @@ class Group extends FilterWidgetBase
 
         // Active value
         $activeValue = (array) $scope->value;
+        if (!count($activeValue)) {
+            return;
+        }
 
         // Raw SQL query
         $sqlCondition = $scope->conditions;
@@ -168,7 +171,7 @@ class Group extends FilterWidgetBase
      * filterActiveOptions removes any already selected options from the available options,
      * returns a newly built array
      */
-    protected function filterActiveOptions(array $activeKeys, array &$availableOptions): array
+    protected function filterActiveOptions(array $activeKeys, array $availableOptions): array
     {
         $active = [];
         foreach ($availableOptions as $id => $option) {
@@ -177,7 +180,6 @@ class Group extends FilterWidgetBase
             }
 
             $active[$id] = $option;
-            unset($availableOptions[$id]);
         }
 
         return $active;

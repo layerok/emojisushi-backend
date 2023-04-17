@@ -118,5 +118,22 @@
   "Password has been reset. You may now sign in.": "Kata sandi Anda telah diatur ulang. Anda dapat mengakses kembali sekarang.",
   "Restore": "Memulihkan",
   "Reset": "Reset",
-  "Forgot password?": "Anda lupa kata sandi?"
+  "Forgot password?": "Anda lupa kata sandi?",
+  "Add Widget": "Tambah Widget",
+  "Widget": "Widget",
+  "please select": "silakan pilih",
+  "Width": "Lebar Widget",
+  "full width": "Layar Lebar",
+  "Primary Color": "Warna Primer",
+  "Secondary Color": "Warna Sekunder",
+  "This name is shown in the title area of the back-end.": "Nama ini ditampilkan pada area judul back-end.",
+  "App Name": "Nama Apl",
+  "This name is shown on the sign in screen for the back-end.": "Tagline ini akan ditampilkan pada layar masuk back-end.",
+  "App Tagline": "Tagline Aplikasi",
+  "Brand": "Brand",
+  "Upload a custom logo to use in the back-end.": "Unggah kustomisasi logo untuk digunakan pada back-end.",
+  "Logo": "Logo",
+  "Colors": "Warna",
+  "Custom Stylesheet": "Kustomisasi Stylesheet",
+  "Styles": "Gaya"
 }
