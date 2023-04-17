@@ -5,6 +5,7 @@ namespace Layerok\Restapi\Http\Controllers;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Routing\Controller;
 use Illuminate\Support\Collection;
+use Layerok\PosterPos\Classes\RootCategory;
 use Layerok\Restapi\Classes\Index\MySQL\MySQL;
 use OFFLINE\Mall\Classes\CategoryFilter\QueryString;
 use OFFLINE\Mall\Classes\CategoryFilter\SetFilter;
@@ -149,7 +150,15 @@ class ProductController extends Controller
 
     protected function getSortOrder(): SortOrder
     {
-        $key = input('sort', null ?? SortOrder::default());
+        // todo: I don't like this code because
+        // 1. Slug of root category may change
+        // 2. Products are sorted by category only in Root category, but another categories can
+        // have nested categories too
+        $defaultKey = $this->category->slug === RootCategory::SLUG_KEY ?
+            SortOrder::options()['category']->key() :
+            SortOrder::default();
+
+        $key = input('sort', $defaultKey);
 
         return SortOrder::fromKey($key);
     }
