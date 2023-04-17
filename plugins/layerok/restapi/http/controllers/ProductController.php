@@ -33,7 +33,7 @@ class ProductController extends Controller
         $this->offset = input('offset');
         $this->limit = input('limit') ?? 25;
         $this->category = $this->getCategory();
-        $this->filter = input('filter');
+        $this->filter = input('filter'); // it can look like 'category_id=1.3.4.6&price=100-200'
         $this->perPage = $this->limit;
         /*$this->includeChildren = input('include_children');*/
 
@@ -125,7 +125,14 @@ class ProductController extends Controller
 
     protected function getFilters(): Collection
     {
-        $filter = request()->all();
+        // $filter = request()->all();
+        // the problem with line above is that, we have search query params like 'offset', 'limit', 'session_id', etc.
+        // and if some 'Property' will have the same slug, then it will lead to filtering products by that property,
+        // which was not intended
+        // why that code was here in a first place?, because when I was building REST API, I was copying code from
+        // OFFLINE.MALL components, and such code made sense there, but here it doesn't, because special query params
+        // and property slugs may collide, which will lead to errors
+        $filter = [];
         if ($this->filter) {
             parse_str($this->filter, $filter);
         }
