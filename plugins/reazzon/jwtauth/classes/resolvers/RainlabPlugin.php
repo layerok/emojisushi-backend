@@ -7,19 +7,17 @@ use RainLab\User\Models\User as RainlabUserModel;
 use ReaZzon\JWTAuth\Classes\Contracts\Plugin;
 use ReaZzon\JWTAuth\Classes\Exception\PluginModelResolverException;
 use PHPOpenSourceSaver\JWTAuth\Contracts\JWTSubject;
-use Model;
-
 /**
  *
  */
 final class RainlabPlugin implements Plugin
 {
     /**
-     * @param Model $model
+     * @param $model
      * @return JWTSubject
      * @throws PluginModelResolverException
      */
-    public function resolve(Model $model): JWTSubject
+    public function resolve($model): JWTSubject
     {
         if (!$model instanceof RainlabUserModel) {
             throw new PluginModelResolverException;
