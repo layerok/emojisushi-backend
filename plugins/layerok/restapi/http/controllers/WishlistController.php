@@ -54,7 +54,9 @@ class WishlistController extends Controller
         // todo: optimize that
         $wishlists = Wishlist::byUser($user);
 
-        return response()->json($wishlists);
+        return response()->json($wishlists->first() ? [
+            $wishlists->first()
+        ]: []);
 
     }
 
@@ -64,6 +66,8 @@ class WishlistController extends Controller
 
         $wishlists = Wishlist::byUser($user);
 
-        return response()->json($wishlists);
+        return response()->json($wishlists->first()? [
+            $wishlists->first()
+        ]: []);
     }
 }

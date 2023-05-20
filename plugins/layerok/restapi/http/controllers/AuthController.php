@@ -68,7 +68,6 @@ class AuthController extends Controller
         }
 
         Cart::transferSessionCartToCustomer($user->customer);
-        Wishlist::transferToCustomer($user->customer);
 
 
         $tokenDto = new TokenDto([
