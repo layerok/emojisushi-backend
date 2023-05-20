@@ -29,7 +29,9 @@ Route::group([
     Route::get('products', [ProductController::class, 'fetch']);
     Route::get('categories', [CategoryController::class, 'fetch']);
     Route::get('spots', [SpotController::class, 'fetch']);
+    Route::get('spot', [SpotController::class, 'one']);
     Route::get('cities', [CityController::class, 'fetch']);
+    Route::get('city', [CityController::class, 'one']);
     Route::get('shipping', [ShippingMethodController::class, 'all']);
     Route::get('payments', [PaymentMethodController::class, 'all']);
     Route::get('ingredients', [IngredientController::class, 'all']);

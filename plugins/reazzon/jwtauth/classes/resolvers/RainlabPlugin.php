@@ -54,11 +54,11 @@ final class RainlabPlugin implements Plugin
 
     public function initActivation($model): string
     {
-        // TODO: Implement initActivation() method.
+        return 'on';
     }
 
     public function activateByCode($code)
     {
-        // TODO: Implement activateByCode() method.
+        return 'on';
     }
 }

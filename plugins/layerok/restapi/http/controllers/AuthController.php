@@ -28,6 +28,12 @@ use ApplicationException;
  */
 class AuthController extends Controller
 {
+
+    public function __invoke(LoginRequest $loginRequest)
+    {
+        return $this->login($loginRequest);
+    }
+
     /**
      * @param LoginRequest $loginRequest
      * @return array

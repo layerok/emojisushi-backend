@@ -35,8 +35,15 @@ class SpotController extends Controller
         ]);
     }
 
-    public function saveSpotId()
-    {
+    public function one(): JsonResponse {
+        $slug_or_id = input('slug_or_id');
 
+        $record = Spot::findBySlugOrId($slug_or_id);
+
+        if(!$record) {
+            return response()->json(['error' => 'Not Found!'], 404);
+        }
+
+        return response()->json($record);
     }
 }

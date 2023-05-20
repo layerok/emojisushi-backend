@@ -5,6 +5,7 @@ namespace Layerok\Restapi\Http\Controllers;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Routing\Controller;
 use Layerok\PosterPos\Models\City;
+use Layerok\PosterPos\Models\Spot;
 
 class CityController extends Controller
 {
@@ -38,5 +39,17 @@ class CityController extends Controller
                 'limit' => $limit
             ]
         ]);
+    }
+
+    public function one(): JsonResponse {
+        $slug_or_id = input('slug_or_id');
+
+        $record = City::findBySlugOrId($slug_or_id);
+
+        if(!$record) {
+           return response()->json(['error' => 'Not Found!'], 404);
+        }
+
+        return response()->json($record);
     }
 }

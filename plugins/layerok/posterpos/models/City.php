@@ -42,4 +42,10 @@ class City extends Model
      */
     public $table = 'layerok_posterpos_cities';
 
+    // todo: extend Model class with this method
+    public static function findBySlugOrId($slug_or_id) {
+        $key = is_numeric($slug_or_id) ? 'id': 'slug';
+        return self::where($key, $slug_or_id)->first();
+    }
+
 }

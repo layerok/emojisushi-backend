@@ -38,6 +38,10 @@ class ProductController extends Controller
         $this->perPage = $this->limit;
         /*$this->includeChildren = input('include_children');*/
 
+        if(!$this->category) {
+            return response()->json(null, 404);
+        }
+
         if ($this->category) {
             $this->categories = collect([$this->category]);
             if ($this->includeChildren) {
