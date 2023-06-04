@@ -1,13 +1,9 @@
 <?php
 
-use Layerok\PosterPos\Classes\Exports\PosterProductsExport;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Route;
 use Layerok\PosterPos\Classes\PosterTransition;
-use Maatwebsite\Excel\Facades\Excel;
 use poster\src\PosterApi;
-
-
 
 Route::post('/posterpos/webhook/handle', function () {
     //Log::info("Пришел хук от постера");
@@ -47,7 +43,13 @@ Route::post('/posterpos/webhook/handle', function () {
     $transition = new PosterTransition;
 
     if ($postData['action'] == "added" || $postData['action'] == "changed") {
-        PosterApi::init();
+        $config = [
+            'access_token' => config('poster.access_token'),
+            'application_secret' => config('poster.application_secret'),
+            'application_id' => config('poster.application_id'),
+            'account_name' => config('poster.account_name')
+        ];
+        PosterApi::init($config);
         $result = (object)PosterApi::menu()->getProduct([
             'product_id' => $postData['object_id']
         ]);
@@ -81,7 +83,13 @@ Route::post('/posterpos/webhook/handle', function () {
 
 /*Route::get('/update/photos', function() {
 
-    PosterApi::init();
+    $config = [
+        'access_token' => config('poster.access_token'),
+        'application_secret' => config('poster.application_secret'),
+        'application_id' => config('poster.application_id'),
+        'account_name' => config('poster.account_name')
+    ];
+    PosterApi::init($config);
     $products = (object)PosterApi::menu()->getProducts();
 
     foreach ($products->response as $value) {

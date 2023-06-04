@@ -42,7 +42,7 @@ class ImportData extends Command {
         $this->output->newLine();
         $this->output->writeln('Create uah currency...');
         $this->output->newLine();
-        Artisan::call('poster:create-uah-hryvna');
+        Artisan::call('poster:create-uah-currency');
         $this->output->newLine();
         $this->output->writeln('Create payment and delivery methods...');
         $this->output->newLine();

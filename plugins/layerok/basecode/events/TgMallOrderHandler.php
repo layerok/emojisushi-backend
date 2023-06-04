@@ -205,7 +205,13 @@ class TgMallOrderHandler {
 
     public function sendPoster($data)
     {
-        PosterApi::init();
+        $config = [
+            'access_token' => config('poster.access_token'),
+            'application_secret' => config('poster.application_secret'),
+            'application_id' => config('poster.application_id'),
+            'account_name' => config('poster.account_name')
+        ];
+        PosterApi::init($config);
         return (object)PosterApi::incomingOrders()
             ->createIncomingOrder($data);
     }

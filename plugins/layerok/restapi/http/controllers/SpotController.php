@@ -13,7 +13,7 @@ class SpotController extends Controller
         $offset = input('offset');
         $limit = input('limit');
 
-        $query = Spot::where('published', '=', '1');
+        $query = Spot::with('city')->where('published', '=', '1');
 
         if($limit) {
             $query->limit($limit);

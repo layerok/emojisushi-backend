@@ -17,6 +17,7 @@ use Layerok\Restapi\Http\Controllers\ActivationController;
 use Layerok\Restapi\Http\Controllers\AuthController;
 use Layerok\Restapi\Http\Controllers\RefreshController;
 use \Layerok\Restapi\Http\Controllers\CityController;
+use \Layerok\Restapi\Http\Controllers\PromotionController;
 
 Route::group([
     'middleware' => [
@@ -42,9 +43,9 @@ Route::group([
 
     Route::prefix('cart')->group(function() {
         Route::get('products', [CartController::class, 'all']);
-        Route::get('add', [CartController::class, 'add']);
-        Route::get('remove', [CartController::class, 'remove']);
-        Route::get('clear', [CartController::class, 'clear']);
+        Route::post('add', [CartController::class, 'add']);
+        Route::post('remove', [CartController::class, 'remove']);
+        Route::post('clear', [CartController::class, 'clear']);
     });
 
     Route::prefix('wishlist')->group(function() {
@@ -61,6 +62,10 @@ Route::group([
 
         Route::post('refresh', RefreshController::class);
         Route::post('activate', ActivationController::class);
+    });
+
+    Route::prefix('clients')->group(function() {
+        Route::get('promotions', [PromotionController::class, 'list']);
     });
 
     Route::group([

@@ -4,12 +4,9 @@ namespace Layerok\Restapi\Http\Middleware;
 
 use App;
 use Closure;
-use Illuminate\Http\Exceptions\HttpResponseException;
 use Illuminate\Http\Request;
 use Exception;
 use October\Rain\Exception\ValidationException;
-use Log;
-use Config;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 
 class ExceptionsMiddleware
@@ -29,11 +26,13 @@ class ExceptionsMiddleware
 
             $code = 500;
 
-            if ($exception instanceof ValidationException) {
+            if($exception instanceof \October\Rain\Database\ModelException) {
                 $response['errors'] = $exception->getErrors();
                 $code = 422;
-            }
-            if ($exception instanceof  \Illuminate\Validation\ValidationException) {
+            } else if ($exception instanceof ValidationException) {
+                $response['errors'] = $exception->getErrors();
+                $code = 422;
+            } else if ($exception instanceof  \Illuminate\Validation\ValidationException) {
                 $response['errors'] = $exception->errors();
                 $code = $exception->status;
             }

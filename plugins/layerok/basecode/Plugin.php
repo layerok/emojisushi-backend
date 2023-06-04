@@ -12,8 +12,8 @@ use Layerok\BaseCode\Events\TgMallStartCommandStarting;
 use Layerok\BaseCode\Events\TgMallStateCreated;
 
 use OFFLINE\Mall\Classes\Utils\Money;
-use OFFLINE\Mall\Models\Cart;
-use OFFLINE\Mall\Models\CartProduct;
+use Layerok\PosterPos\Models\Cart;
+use Layerok\PosterPos\Models\CartProduct;
 use OFFLINE\Mall\Models\Currency;
 use System\Classes\PluginBase;
 use Event;
