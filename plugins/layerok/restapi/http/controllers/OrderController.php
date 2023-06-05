@@ -74,10 +74,10 @@ class OrderController extends Controller
             throw new ValidationException([trans('layerok.restapi::validation.cart_empty')]);
         }
 
-        $spots = Spot::all();
         $spot = Spot::findBySlugOrId(input('spot_slug_or_id'));
 
         if(!$spot) {
+            $spots = Spot::all();
             $spot = $spots->first();
         }
 
