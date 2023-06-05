@@ -59,3 +59,6 @@
 1.1.20:
     - 'add cover field to spots table'
     - add_cover_field_to_spots_table.php
+1.1.21:
+    - 'add address_id field to spots table'
+    - add_address_id_to_spots_table.php

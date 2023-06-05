@@ -21,6 +21,7 @@ fields:
         span: auto
     address:
         label: Address
+        type: relation
         span: auto
     google_map_url:
         label: Google map url
