@@ -5,11 +5,10 @@ namespace Layerok\Restapi\Http\Controllers;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Routing\Controller;
 use Layerok\PosterPos\Models\Cart;
-use Layerok\PosterPos\Models\Spot;
 use October\Rain\Exception\ValidationException;
 use OFFLINE\Mall\Classes\Exceptions\OutOfStockException;
 
-use OFFLINE\Mall\Models\CartProduct;
+use Layerok\PosterPos\Models\CartProduct;
 use OFFLINE\Mall\Models\Product;
 use OFFLINE\Mall\Models\Variant;
 

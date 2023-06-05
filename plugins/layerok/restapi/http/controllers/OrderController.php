@@ -5,7 +5,6 @@ namespace Layerok\Restapi\Http\Controllers;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\Validator;
-use Layerok\PosterPos\Classes\PosterProducts;
 use Layerok\PosterPos\Classes\PosterUtils;
 use Layerok\PosterPos\Models\Cart;
 use Layerok\PosterPos\Models\Spot;
@@ -31,8 +30,8 @@ class OrderController extends Controller
             'firstname'         => 'min:2|nullable',
             'lastname'          => 'min:2|nullable',
             'email'             => 'email|nullable',
-            'shipping_method_id' => 'exists:offline_mall_payment_methods,id',
-            'payment_method_id' => 'exists:offline_mall_shipping_methods,id'
+            'shipping_method_id' => 'exists:offline_mall_shipping_methods,id',
+            'payment_method_id' => 'exists:offline_mall_payment_methods,id'
         ], [
             'email.required'          => trans('offline.mall::lang.components.signup.errors.email.required'),
             'email.email'             => trans('offline.mall::lang.components.signup.errors.email.email'),
@@ -40,6 +39,8 @@ class OrderController extends Controller
             'email.non_existing_user' => trans('layerok.restapi::validation.customer_exists'),
             'shipping_method_id' => trans('layerok.restapi::validation.shipping_method_exists'),
             'payment_method_id' => trans('layerok.restapi::validation.payment_method_exists'),
+            'firstname.min' => trans('layerok.restapi::validation.firstname_min'),
+            'lastname.min' => trans('layerok.restapi::validation.lastname_min'),
         ]);
 
         if ($validation->fails()) {
