@@ -12,7 +12,7 @@ use October\Rain\Database\Traits\SoftDelete;
 use October\Rain\Database\Traits\Validation;
 use Layerok\PosterPos\Classes\Totals\TotalsCalculator;
 use Layerok\PosterPos\Classes\Totals\TotalsCalculatorInput;
-use OFFLINE\Mall\Classes\Traits\Cart\CartActions;
+use Layerok\PosterPos\Classes\Traits\Cart\CartActions;
 use OFFLINE\Mall\Classes\Traits\Cart\Discounts;
 use Layerok\PosterPos\Classes\Traits\ShippingMethods;
 use OFFLINE\Mall\Models\Customer;
