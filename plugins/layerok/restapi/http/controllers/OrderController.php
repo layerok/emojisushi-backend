@@ -87,26 +87,29 @@ class OrderController extends Controller
 
         $customer = $user->customer;
 
-        if(!empty($data['address_id'])) {
-            $shippingAddress = Address::find($data['address_id']);
+        if($shippingMethod->code === 'courier') {
+            if(!empty($data['address_id'])) {
+                $shippingAddress = Address::find($data['address_id']);
+            } else {
+                $zip = '65125';
+                $city = 'Одеса';
+                $country_code = 'UA';
+                $name = $customer['firstname'] . ' ' . $customer['lastname'];
+                $lines = $data['address'];
+                $country_id = Country::where('code', $country_code)->first()->id;
+
+                $shippingAddress = new Address();
+
+                $shippingAddress->name = $name;
+                $shippingAddress->lines = $lines;
+                $shippingAddress->customer_id = $customer->id;
+                $shippingAddress->zip = $zip;
+                $shippingAddress->city = $city;
+                $shippingAddress->country_id = $country_id;
+                $shippingAddress->save();
+            }
         } else {
-            $zip = '65125';
-            $city = 'Одеса';
-            $country_code = 'UA';
-            $name = $customer['firstname'] . ' ' . $customer['lastname'];
-            // todo: if spot doesn't have address, then you will get validation error
-            $lines = $shippingMethod->code === 'courier' ? $data['address']: $spot->address;
-            $country_id = Country::where('code', $country_code)->first()->id;
-
-            $shippingAddress = new Address();
-
-            $shippingAddress->name = $name;
-            $shippingAddress->lines = $lines;
-            $shippingAddress->customer_id = $customer->id;
-            $shippingAddress->zip = $zip;
-            $shippingAddress->city = $city;
-            $shippingAddress->country_id = $country_id;
-            $shippingAddress->save();
+            $shippingAddress = $spot->address;
         }
 
         $customer->default_billing_address_id = $shippingAddress->id;
