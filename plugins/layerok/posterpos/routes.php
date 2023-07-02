@@ -5,16 +5,6 @@ use Illuminate\Support\Facades\Route;
 use Layerok\PosterPos\Classes\PosterTransition;
 use poster\src\PosterApi;
 
-Route::get('/test-logs', function() {
-    try {
-        throw new \RuntimeException('exception');
-    } catch (\Exception $exception) {
-        Log::error($exception->getTraceAsString());
-    }
-
-
-});
-
 Route::post('/posterpos/webhook/handle', function () {
     //Log::info("Пришел хук от постера");
     // Секретный ключ вашего приложения
