@@ -127,6 +127,7 @@ class UserController extends Controller
 
 
         $customer->addresses()->save($shippingAddress);
+        return response()->json($shippingAddress);
     }
 
     public function deleteAddress() {
