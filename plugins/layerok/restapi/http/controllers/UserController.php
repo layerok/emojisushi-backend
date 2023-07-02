@@ -56,6 +56,11 @@ class UserController extends Controller
 
         $customer->save();
         $user->save();
+        return response()->json($user->with([
+            'customer.addresses',
+            'customer.orders.products.product.image_sets',
+            'customer.orders.order_state'
+        ])->first());
     }
 
     public function updatePassword() {
