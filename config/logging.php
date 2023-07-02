@@ -34,7 +34,7 @@ return [
 
         'stack' => [
             'driver' => 'stack',
-            'channels' => ['daily'],
+            'channels' => ['daily', 'telegram'],
             'ignore_exceptions' => false,
         ],
 
@@ -89,6 +89,16 @@ return [
             'driver' => 'errorlog',
             'level' => 'debug',
         ],
+
+        'telegram' => [
+            'driver' => 'monolog',
+            'level'  => 'error',
+            'handler' => \Monolog\Handler\TelegramBotHandler::class,
+            'with'    => [
+                'apiKey' => env('MY_LOG_BOT_TOKEN'),
+                'channel' => env('MY_LOG_BOT_CHAT_ID')
+            ],
+        ]
 
     ],
 

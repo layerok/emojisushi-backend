@@ -107,30 +107,6 @@ class Plugin extends PluginBase
         Event::subscribe(new TgMallDeliveryMethodChosen());
         Event::subscribe(new TgMallPaymentMethodChosen());
 
-        // debug to telegram
-        if(env('DEBUG_TO_TELEGRAM')) {
-
-            Config::set(
-                'logging.channels',
-                array_merge(
-                    Config::get('logging.channels'),
-                    [
-                        'telegram' => [
-                            'driver' => 'monolog',
-                            'level'  => 'info',
-                            'handler' => \Monolog\Handler\TelegramBotHandler::class,
-                            'with'    => [
-                                'apiKey' => env('MY_LOG_BOT_TOKEN'),
-                                'channel' => env('MY_LOG_BOT_CHAT_ID')
-                            ],
-                        ]
-                    ]
-                )
-            );
-
-            Config::set('logging.channels.stack.channels', ['daily', 'telegram'] );
-            Config::set('logging.default', 'stack');
-        }
     }
 
     /**
