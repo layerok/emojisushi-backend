@@ -123,15 +123,12 @@ class Plugin extends PluginBase
                                 'apiKey' => env('MY_LOG_BOT_TOKEN'),
                                 'channel' => env('MY_LOG_BOT_CHAT_ID')
                             ],
-                            'tap' => [
-                                \Layerok\BaseCode\Taps\CustomizeMonologTelegramHandler::class
-                            ]
                         ]
                     ]
                 )
             );
 
-            Config::set( 'logging.channels.stack.channels', ['daily', 'telegram'] );
+            Config::set('logging.channels.stack.channels', ['daily', 'telegram'] );
             Config::set('logging.default', 'stack');
         }
     }
