@@ -4,13 +4,6 @@ namespace Layerok\PosterPos\Classes;
 
 class PosterUtils
 {
-    public static function parseProducts($products): array
-    {
-        $posterProducts = new PosterProducts();
-        $posterProducts->addCartProducts($products);
-        return $posterProducts->all();
-    }
-
     /**
      * @param $params $params [
      * @var mixed $comment - Опциональный параметр

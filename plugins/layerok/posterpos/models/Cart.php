@@ -269,4 +269,12 @@ class Cart extends Model
     {
         Session::forget('mall.shipping.enforced');
     }
+
+    public function getTotalQuantity(): int {
+        $total = $this->products()->get()->reduce(function($carry, $item) {
+            return $carry + $item->quantity;
+        }) ;
+
+        return $total ?: 0;
+    }
 }

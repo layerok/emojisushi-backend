@@ -9,6 +9,8 @@ use October\Rain\Exception\ValidationException;
 use OFFLINE\Mall\Classes\Exceptions\OutOfStockException;
 
 use Layerok\PosterPos\Models\CartProduct;
+use OFFLINE\Mall\Classes\Utils\Money;
+use OFFLINE\Mall\Models\Currency;
 use OFFLINE\Mall\Models\Product;
 use OFFLINE\Mall\Models\Variant;
 
@@ -21,10 +23,15 @@ class CartController extends Controller
         $user = $jwtGuard->user();
         $cart = Cart::byUser($user);
         $records = $this->prepareProducts($cart);
+        $money = app()->make(Money::class);
 
         return response()->json([
             'data' => $records,
-            'total' => $cart->getTotalFormattedPrice(),
+            'total' => $money->format(
+                $cart->totals()->totalPostTaxes(),
+                null,
+                Currency::$defaultCurrency
+            ),
             'totalQuantity' => $cart->getTotalQuantity()
         ]);
     }
@@ -68,10 +75,15 @@ class CartController extends Controller
 
         $records = $this->prepareProducts($cart);
 
+        $money = app()->make(Money::class);
 
         return response()->json([
             'data' => $records,
-            'total' => $cart->getTotalFormattedPrice(),
+            'total' => $money->format(
+                $cart->totals()->totalPostTaxes(),
+                null,
+                Currency::$defaultCurrency
+            ),
             'totalQuantity' => $cart->getTotalQuantity()
         ]);
     }
@@ -98,11 +110,15 @@ class CartController extends Controller
         $cart->refresh();
 
         $records = $this->prepareProducts($cart);
-
+        $money = app()->make(Money::class);
 
         return response()->json([
             'data' => $records,
-            'total' => $cart->getTotalFormattedPrice(),
+            'total' => $money->format(
+                $cart->totals()->totalPostTaxes(),
+                null,
+                Currency::$defaultCurrency
+            ),
             'totalQuantity' => $cart->getTotalQuantity()
         ]);
     }
@@ -113,10 +129,16 @@ class CartController extends Controller
         $cart = Cart::byUser($user);
         $cart->products()->delete();
         $cart->refresh();
+        $money = app()->make(Money::class);
+
 
         return response()->json([
             'data' => $cart->products()->get()->toArray(),
-            'total' => $cart->getTotalFormattedPrice(),
+            'total' => $money->format(
+                $cart->totals()->totalPostTaxes(),
+                null,
+                Currency::$defaultCurrency
+            ),
             'totalQuantity' => $cart->getTotalQuantity()
         ]);
     }

@@ -1,23 +1,7 @@
 <?php namespace Layerok\BaseCode;
 
 use Backend;
-use Layerok\BaseCode\Events\TgMallCategoriesQuery;
-use Layerok\BaseCode\Events\TgMallDeliveryMethodChosen;
-use Layerok\BaseCode\Events\TgMallHandlersExtend;
-use Layerok\BaseCode\Events\TgMallKeyboardMainBeforeBuild;
-use Layerok\BaseCode\Events\TgMallOrderHandler;
-use Layerok\BaseCode\Events\TgMallPaymentMethodChosen;
-use Layerok\BaseCode\Events\TgMallProductsQuery;
-use Layerok\BaseCode\Events\TgMallStartCommandStarting;
-use Layerok\BaseCode\Events\TgMallStateCreated;
-
-use OFFLINE\Mall\Classes\Utils\Money;
-use Layerok\PosterPos\Models\Cart;
-use Layerok\PosterPos\Models\CartProduct;
-use OFFLINE\Mall\Models\Currency;
 use System\Classes\PluginBase;
-use Event;
-use Config;
 use Validator;
 /**
  * BaseCode Plugin Information File
@@ -48,36 +32,6 @@ class Plugin extends PluginBase
      */
     public function register()
     {
-        $money = $this->app->make(Money::class);
-        CartProduct::extend(function($model) use ($money) {
-            $model->addDynamicMethod('getTotalFormattedPrice', function() use ($model, $money) {
-                return $money->format(
-                    $model->price()->price * $model->quantity,
-                    null,
-                    Currency::$defaultCurrency
-                );
-            });
-        });
-        Cart::extend(function($model) use ($money) {
-            $model->addDynamicMethod('getTotalFormattedPrice', function() use ($model, $money) {
-                return $money->format(
-                    $model->totals()->totalPostTaxes(),
-                    null,
-                    Currency::$defaultCurrency
-                );
-            });
-
-            $model->addDynamicMethod('getTotalQuantity', function () use ($model) {
-                $total = $model->products()->get()->reduce(function($carry, $item) {
-                    return $carry + $item->quantity;
-                }) ;
-
-                return $total ?: 0;
-            });
-        });
-
-
-
 
     }
 
@@ -95,18 +49,6 @@ class Plugin extends PluginBase
 
             return preg_match($regex, $value);
         });
-
-
-        Event::subscribe(new TgMallOrderHandler());
-        Event::subscribe(new TgMallStateCreated());
-        Event::subscribe(new TgMallStartCommandStarting());
-        Event::subscribe(new TgMallHandlersExtend());
-        Event::subscribe(new TgMallKeyboardMainBeforeBuild());
-        Event::subscribe(new TgMallCategoriesQuery());
-        Event::subscribe(new TgMallProductsQuery());
-        Event::subscribe(new TgMallDeliveryMethodChosen());
-        Event::subscribe(new TgMallPaymentMethodChosen());
-
     }
 
     /**

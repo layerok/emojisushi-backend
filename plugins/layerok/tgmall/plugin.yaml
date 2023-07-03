@@ -1,6 +1,0 @@
-plugin:
-    name: 'layerok.tgmall::lang.plugin.name'
-    description: 'layerok.tgmall::lang.plugin.description'
-    author: Layerok
-    icon: oc-icon-magic
-    homepage: ''
