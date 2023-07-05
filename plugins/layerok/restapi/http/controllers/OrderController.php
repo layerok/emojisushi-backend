@@ -6,6 +6,8 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\Validator;
 use Layerok\Basecode\Classes\Receipt;
+use Layerok\PosterPos\Classes\ServiceMode;
+use Layerok\PosterPos\Classes\ShippingMethodCode;
 use Layerok\PosterPos\Models\Cart;
 use Layerok\PosterPos\Models\CartProduct;
 use Layerok\PosterPos\Models\Spot;
@@ -51,11 +53,7 @@ class OrderController extends Controller
             $cart->addProduct($sticks, $data['sticks']);
         }
 
-        $posterProducts = [];
-
-        $products = $cart->products()->get();
-
-        foreach($products as $cartProduct) {
+        $posterProducts = $cart->products()->get()->map(function(CartProduct $cartProduct) {
             $item = [];
             $product = $cartProduct->product()->first();
             $item['name'] = $product['name'];
@@ -65,10 +63,8 @@ class OrderController extends Controller
                 $variant = $cartProduct->getItemDataAttribute();
                 $item['modificator_id'] = $variant['poster_id'];
             }
-            $posterProducts[] = $item;
-        }
-
-        $tablet_id = $spot->tablet->tablet_id ?? env('POSTER_FALLBACK_TABLET_ID');
+            return $item;
+        });
 
         PosterApi::init([
             'access_token' => config('poster.access_token'),
@@ -79,29 +75,37 @@ class OrderController extends Controller
 
         $posterComment = "";
 
-        if (isset($data['comment']) && !empty($data['comment'])) {
-            $posterComment .= $data['comment'] . " || ";
+        if (!empty($data['comment'])) {
+            $posterComment .= sprintf("%s || ", $data['comment']);
         }
 
-        if (isset($data['change']) && !empty($data['change'])) {
-            $posterComment .= 'Підготувати решту з' . ": ".$data['change'] . " || ";
+        if (!empty($data['change'])) {
+            $posterComment .= sprintf("Підготувати решту з: %s || ", $data['change']);
         }
 
-        $posterComment .=  'Спосіб оплати' . ": " . $paymentMethod->name . " || ";
+        $posterComment .=  sprintf("Спосіб оплати: %s", $paymentMethod->name);
 
-        $posterComment .= 'Спосіб доставки' . ": " . $shippingMethod->name;
+        $incomingOrder = [
+            'spot_id' => $spot->tablet->tablet_id ?? env('POSTER_FALLBACK_TABLET_ID'),
+            'phone' => $data['phone'],
+            'comment' => $posterComment,
+            'products' => $posterProducts,
+            'first_name' => $data['firstname'] ?? null,
+            'last_name' => $data['lastname'] ?? null,
+            'service_mode' => ServiceMode::ON_SITE,
+        ];
 
+        if($shippingMethod->code === ShippingMethodCode::COURIER) {
+            $incomingOrder['service_mode'] = ServiceMode::COURIER;
+            $incomingOrder['address'] = $data['address'] ?? null;
+        }
+
+        if($shippingMethod->code === ShippingMethodCode::TAKEAWAY) {
+            $incomingOrder['service_mode'] = ServiceMode::TAKEAWAY;
+        }
 
         $result = (object)PosterApi::incomingOrders()
-            ->createIncomingOrder([
-                'spot_id' => $tablet_id,
-                'phone' => $data['phone'],
-                'address' => $data['address'],
-                'comment' => $posterComment,
-                'products' => $posterProducts,
-                'first_name' => $data['firstname'] ?? null,
-                'last_name' => $data['lastname'] ?? null,
-            ]);
+            ->createIncomingOrder($incomingOrder);
 
         if(isset($result->error)) {
             $key = 'layerok.restapi::lang.poster.errors.' . $result->error;
