@@ -2,8 +2,6 @@
 
 use Layerok\Restapi\Classes\Sort\Category;
 use Layerok\RestApi\Classes\Customer\DefaultSignUpHandler;
-use Layerok\Restapi\Events\RestApiSendOrderToPoster;
-use Layerok\Restapi\Events\RestApiSendOrderToTelegram;
 use OFFLINE\Mall\Classes\CategoryFilter\SortOrder\Bestseller;
 use OFFLINE\Mall\Classes\Customer\SignUpHandler;
 use System\Classes\PluginBase;
@@ -44,9 +42,6 @@ class Plugin extends PluginBase
                 'category' => new Category(),
             ];
         });
-
-       Event::subscribe(RestApiSendOrderToPoster::class);
-       Event::subscribe(RestApiSendOrderToTelegram::class);
 
         $this->app->bind(SignUpHandler::class, function () {
             return new DefaultSignUpHandler();
