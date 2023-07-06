@@ -70,8 +70,7 @@ class Spot extends Model
     public $belongsTo = [
         'chat' => Chat::class,
         'bot' => Bot::class,
-        'city' => City::class,
-        'address' => Address::class,
+        'city' => City::class
     ];
 
     public $hasOne = [
