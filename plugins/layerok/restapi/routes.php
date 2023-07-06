@@ -40,7 +40,6 @@ Route::group([
         Route::post('place', [OrderController::class, 'place']);
     });
 
-
     Route::prefix('cart')->group(function() {
         Route::get('products', [CartController::class, 'all']);
         Route::post('add', [CartController::class, 'add']);
@@ -82,8 +81,11 @@ Route::group([
         Route::post('user/address/default', [UserController::class, 'setDefaultAddress']);
 
         Route::post('user/customer', [CustomerController::class, 'save']);
+    });
 
-
+    Route::post('/log', function() {
+       $content =  \Illuminate\Support\Facades\Request::getContent();
+       \Illuminate\Support\Facades\Log::error($content);
     });
 
 });

@@ -11,6 +11,7 @@ use Layerok\PosterPos\Classes\ShippingMethodCode;
 use Layerok\PosterPos\Models\Cart;
 use Layerok\PosterPos\Models\CartProduct;
 use Layerok\PosterPos\Models\Spot;
+use Maksa988\WayForPay\Facades\WayForPay;
 use October\Rain\Exception\ValidationException;
 use OFFLINE\Mall\Classes\Utils\Money;
 use OFFLINE\Mall\Models\Currency;
@@ -19,6 +20,9 @@ use Layerok\PosterPos\Models\ShippingMethod;
 use OFFLINE\Mall\Models\Product;
 use poster\src\PosterApi;
 use Telegram\Bot\Api;
+use WayForPay\SDK\Domain\Product as WayForPayProduct;
+use Maksa988\WayForPay\Collection\ProductCollection;
+use Maksa988\WayForPay\Domain\Client;
 
 class OrderController extends Controller
 {
@@ -66,12 +70,7 @@ class OrderController extends Controller
             return $item;
         });
 
-        PosterApi::init([
-            'access_token' => config('poster.access_token'),
-            'application_secret' => config('poster.application_secret'),
-            'application_id' => config('poster.application_id'),
-            'account_name' => config('poster.account_name')
-        ]);
+        PosterApi::init(config('poster'));
 
         $posterComment = "";
 
@@ -104,22 +103,22 @@ class OrderController extends Controller
             $incomingOrder['service_mode'] = ServiceMode::TAKEAWAY;
         }
 
-        $result = (object)PosterApi::incomingOrders()
+        $posterResult = (object)PosterApi::incomingOrders()
             ->createIncomingOrder($incomingOrder);
 
-        if(isset($result->error)) {
-            $key = 'layerok.restapi::lang.poster.errors.' . $result->error;
+        if(isset($posterResult->error)) {
+            $key = 'layerok.restapi::lang.poster.errors.' . $posterResult->error;
             if(\Lang::has($key)) {
                 $err_text = \Lang::get(
-                    'layerok.restapi::lang.poster.errors.' . $result->error
+                    'layerok.restapi::lang.poster.errors.' . $posterResult->error
                 );
             } else {
                 $err_text =
-                    $result->message;
+                    $posterResult->message;
             }
 
             throw new ValidationException([
-                $result->error => $err_text
+                $posterResult->error => $err_text
             ]);
         }
 
@@ -168,17 +167,51 @@ class OrderController extends Controller
             ->field('target', 'site');
 
 
-
         $api->sendMessage([
             'text' => $receipt->getText(),
             'parse_mode' => "html",
             'chat_id' => $chat_id
         ]);
 
+        if($paymentMethod->code === 'wayforpay') {
+            $way_products = $cart->products()->get()->map(function(CartProduct $cartProduct) {
+                return new WayForPayProduct(
+                    $cartProduct->product->name,
+                    ($cartProduct->price()->price / 100),
+                    $cartProduct->quantity
+                );
+            });
+
+            $way_products = new ProductCollection($way_products);
+            $client = new Client(
+                optional($data)['first_name'],
+                optional($data)['last_name'],
+                optional($data)['email'],
+                optional($data)['phone']
+            );
+            $total = $cart->totals()->totalPostTaxes() / 100;
+
+            $order_id = $posterResult->response->incoming_order_id + 4324234234;
+
+            $form = WayForPay::purchase(
+                $order_id, $total, $client, $way_products,
+                'UAH', null, 'UA', null,
+                config('wayforpay.returnUrl') . "?order_id={$order_id}",
+                config('wayforpay.serviceUrl') . "?spot_id={$spot->id}",
+
+            )->getAsString(); // Get html form as string
+            $cart->delete();
+            return response()->json([
+                'success' => true,
+                'form' => $form,
+                'poster_order' => $posterResult->response
+            ]);
+        }
         $cart->delete();
 
         return response()->json([
             'success' => true,
+            'poster_order' => $posterResult->response
         ]);
     }
 

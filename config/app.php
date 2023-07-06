@@ -115,6 +115,7 @@ return [
         // Illuminate\Html\HtmlServiceProvider::class, // Example
 
         System\ServiceProvider::class,
+        Maksa988\WayForPay\WayForPayServiceProvider::class,
     ]),
 
     /*
@@ -131,6 +132,7 @@ return [
     'aliases' => array_merge(include(base_path('modules/system/aliases.php')), [
 
         // 'Str' => Illuminate\Support\Str::class, // Example
+        'WayForPay' => Maksa988\WayForPay\Facades\WayForPay::class,
 
     ]),
 
