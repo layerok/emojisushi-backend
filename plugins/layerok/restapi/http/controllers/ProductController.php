@@ -6,6 +6,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Routing\Controller;
 use Illuminate\Support\Collection;
 use Layerok\PosterPos\Classes\RootCategory;
+use Layerok\PosterPos\Models\Spot;
 use Layerok\Restapi\Classes\Index\MySQL\MySQL;
 use OFFLINE\Mall\Classes\CategoryFilter\QueryString;
 use OFFLINE\Mall\Classes\CategoryFilter\SetFilter;
@@ -13,8 +14,6 @@ use OFFLINE\Mall\Classes\CategoryFilter\SortOrder\SortOrder;
 use OFFLINE\Mall\Models\Category;
 use OFFLINE\Mall\Models\Product;
 use OFFLINE\Mall\Models\PropertyGroup;
-use OFFLINE\Mall\Models\Variant;
-use Session;
 
 class ProductController extends Controller
 {
@@ -24,10 +23,8 @@ class ProductController extends Controller
     public $includeChildren = true;
     public $perPage = 25;
     public $pageNumber = 1;
-    public $includeVariants = false;
     public $offset;
     public $limit;
-    public $totalCount;
 
     public function fetch(): JsonResponse
     {
@@ -36,6 +33,7 @@ class ProductController extends Controller
         $this->category = $this->getCategory();
         $this->filter = input('filter'); // it can look like 'category_id=1.3.4.6&price=100-200'
         $this->perPage = $this->limit;
+        $spot = Spot::findBySlugOrId(input('spot_slug_or_id'));
         /*$this->includeChildren = input('include_children');*/
 
         if(!$this->category) {
@@ -54,10 +52,16 @@ class ProductController extends Controller
         $group = PropertyGroup::where('id', 1)->first(); // 1 - id группы "Ингридиенты"
         $filters = $group->properties()->get();
 
+        $items = $items->filter(function(Product $product) use($spot) {
+            $isHidden = $spot->hideProducts()->get()->search(function(Product $hiddenProduct) use($product) {
+                return $hiddenProduct->id === $product->id;
+            });
+            return $isHidden === false && $product->published;
+        })->values();
 
         return response()->json([
             'data' => $items->toArray(),
-            'total' => $this->totalCount,
+            'total' => $items->count(),
             'sort_options' => $this->getSortOptions(),
             'filters' => $filters
         ]);
@@ -72,35 +76,25 @@ class ProductController extends Controller
         $filters   = $this->getFilters();
         $sortOrder = $this->getSortOrder();
 
-        $model    = $this->includeVariants ? new Variant() : new Product();
-        $useIndex = $this->includeVariants ? 'variants' : 'products';
-
         $sortOrder->setFilters(clone $filters);
 
         $index  = new MySQL();
         $result = $index->fetch(
-            $useIndex,
+            "products",
             $filters,
             $sortOrder,
             $this->perPage,
             $this->pageNumber,
         );
 
-        $this->totalCount = $result->totalCount;
         // Every id that is not an int is a "ghosted" variant, with an id like
         // product-1. These ids have to be fetched separately. This enables us to
         // query variants and products that don't have any variants from the same index.
         $itemIds  = array_filter($result->ids, 'is_int');
         $ghostIds = array_diff($result->ids, $itemIds);
 
-        $models = $model->with($this->productIncludes())->find($itemIds);
+        $models = Product::with($this->productIncludes())->find($itemIds);
         $ghosts = $this->getGhosts($ghostIds);
-
-        // Preload all pricing information for related products. This is used in case a Variant
-        // is inheriting it's parent product's pricing information.
-        if ($model instanceof Variant) {
-            $models->load(['product.customer_group_prices', 'product.prices', 'product.additional_prices']);
-        }
 
         // Insert the Ghost models back at their old position so the sort order remains.
         $items = collect($result->ids)->map(function ($id) use ($models, $ghosts) {

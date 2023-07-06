@@ -5,7 +5,6 @@ namespace Layerok\Restapi\Http\Controllers;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Routing\Controller;
 use Layerok\PosterPos\Classes\RootCategory;
-use Layerok\PosterPos\Models\HideCategory;
 use Layerok\PosterPos\Models\Spot;
 use OFFLINE\Mall\Models\Category;
 
@@ -34,7 +33,7 @@ class CategoryController extends Controller
             $isHidden = $spot->hideCategories()->get()->search(function(Category $hiddenCategory) use($category) {
                 return $hiddenCategory->id === $category->id;
             });
-            return $isHidden === false;
+            return $isHidden === false && $category->published;
         })
             ->values()
             ->toArray();
