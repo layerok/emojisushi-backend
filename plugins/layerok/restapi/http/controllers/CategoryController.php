@@ -15,6 +15,8 @@ class CategoryController extends Controller
     {
         $offset = input('offset');
         $limit = input('limit');
+        $spot_slug_or_id = input('spot_slug_or_id');
+        $spot = Spot::findBySlugOrId($spot_slug_or_id);
 
         $root = Category::where('slug', RootCategory::SLUG_KEY)->first();
 
@@ -28,12 +30,20 @@ class CategoryController extends Controller
             $query->offset($offset);
         }
 
-        $records = $query->get();
+        $records = $query->get()->filter(function(Category $category) use($spot) {
+            $isHidden = $spot->hideCategories()->get()->search(function(Category $hiddenCategory) use($category) {
+                return $hiddenCategory->id === $category->id;
+            });
+            return $isHidden === false;
+        })
+            ->values()
+            ->toArray();
+
 
         return response()->json([
-            'data' => $records->toArray(),
+            'data' => $records,
             'meta' => [
-                'total' => $records->count(),
+                'total' => count($records),
                 'offset' => $offset,
                 'limit' => $limit
             ]
