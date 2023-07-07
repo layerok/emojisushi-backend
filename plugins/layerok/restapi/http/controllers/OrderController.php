@@ -125,6 +125,10 @@ class OrderController extends Controller
             ]);
         }
 
+        //todo: don't forget to delete order number
+        $poster_order_id = $posterResult->response->incoming_order_id + 4324234234;
+
+
         $receiptProducts = $cart->products()->get()->map(function (CartProduct $cartProduct) {
             $item = [];
             $product = $cartProduct->product()->first();
@@ -143,7 +147,7 @@ class OrderController extends Controller
         $receipt = new Receipt();
 
         $receipt
-            ->headline(\Lang::get('layerok.restapi::lang.receipt.new_order'))
+            ->headline(\Lang::get('layerok.restapi::lang.receipt.new_order') . ' #' . $poster_order_id)
             ->field(\Lang::get('layerok.restapi::lang.receipt.first_name'), $data['firstname'] ?? null)
             ->field(\Lang::get('layerok.restapi::lang.receipt.last_name'), $data['lastname'] ?? null)
             ->field(\Lang::get('layerok.restapi::lang.receipt.phone'), $data['phone'])
@@ -195,16 +199,13 @@ class OrderController extends Controller
             );
             $total = $cart->totals()->totalPostTaxes() / 100;
 
-            //todo: don't forget to delete order number
-            $order_id = $posterResult->response->incoming_order_id + 4324234234;
-
             $form = WayForPay::purchase(
-                $order_id, $total, $client, $way_products,
+                $poster_order_id, $total, $client, $way_products,
                 WayforpaySettings::get('currency'),
                 null,
                 WayforpaySettings::get('language'),
                 null,
-                WayforpaySettings::get('return_url') . "?order_id={$order_id}",
+                WayforpaySettings::get('return_url') . "?order_id={$poster_order_id}",
                 WayforpaySettings::get('service_url'),
             )->getAsString(); // Get html form as string
 
