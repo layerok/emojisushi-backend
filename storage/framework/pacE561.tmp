@@ -1,0 +1,89 @@
+<?php return array (
+  'barryvdh/laravel-dompdf' => 
+  array (
+    'providers' => 
+    array (
+      0 => 'Barryvdh\\DomPDF\\ServiceProvider',
+    ),
+    'aliases' => 
+    array (
+      'PDF' => 'Barryvdh\\DomPDF\\Facade\\Pdf',
+    ),
+  ),
+  'fruitcake/laravel-cors' => 
+  array (
+    'providers' => 
+    array (
+      0 => 'Fruitcake\\Cors\\CorsServiceProvider',
+    ),
+  ),
+  'irazasyed/telegram-bot-sdk' => 
+  array (
+    'aliases' => 
+    array (
+      'Telegram' => 'Telegram\\Bot\\Laravel\\Facades\\Telegram',
+    ),
+    'providers' => 
+    array (
+      0 => 'Telegram\\Bot\\Laravel\\TelegramServiceProvider',
+    ),
+  ),
+  'laravel/tinker' => 
+  array (
+    'providers' => 
+    array (
+      0 => 'Laravel\\Tinker\\TinkerServiceProvider',
+    ),
+  ),
+  'maatwebsite/excel' => 
+  array (
+    'providers' => 
+    array (
+      0 => 'Maatwebsite\\Excel\\ExcelServiceProvider',
+    ),
+    'aliases' => 
+    array (
+      'Excel' => 'Maatwebsite\\Excel\\Facades\\Excel',
+    ),
+  ),
+  'maksa988/laravel-wayforpay' => 
+  array (
+    'providers' => 
+    array (
+      0 => 'Maksa988\\WayForPay\\WayForPayServiceProvider',
+    ),
+    'aliases' => 
+    array (
+      'WayForPay' => 'Maksa988\\WayForPay\\Facades\\WayForPay',
+    ),
+  ),
+  'nesbot/carbon' => 
+  array (
+    'providers' => 
+    array (
+      0 => 'Carbon\\Laravel\\ServiceProvider',
+    ),
+  ),
+  'nunomaduro/termwind' => 
+  array (
+    'providers' => 
+    array (
+      0 => 'Termwind\\Laravel\\TermwindServiceProvider',
+    ),
+  ),
+  'october/rain' => 
+  array (
+    'providers' => 
+    array (
+      0 => 'October\\Rain\\Foundation\\Providers\\AppSupportServiceProvider',
+      1 => 'October\\Rain\\Foundation\\Providers\\AppDeferSupportServiceProvider',
+    ),
+  ),
+  'reazzon/jwtauth-plugin' => 
+  array (
+    'dont-discover' => 
+    array (
+      0 => 'php-open-source-saver/jwt-auth',
+    ),
+  ),
+);

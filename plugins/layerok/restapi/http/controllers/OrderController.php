@@ -138,17 +138,17 @@ class OrderController extends Controller
         $receipt = new Receipt();
 
         $receipt
-            ->headline('Нове замовлення')
-            ->field('first_name', $data['firstname'] ?? null)
-            ->field('last_name', $data['lastname'] ?? null)
-            ->field('phone', $data['phone'])
-            ->field('delivery_method_name', $shippingMethod->name)
-            ->field('address', $data['address'])
-            ->field('payment_method_name', $paymentMethod->name)
-            ->field('change', $data['change'] ?? null)
-            ->field('comment', $data['comment'] ?? null)
+            ->headline(\Lang::get('layerok.restapi::lang.receipt.new_order'))
+            ->field(\Lang::get('layerok.restapi::lang.receipt.first_name'), $data['firstname'] ?? null)
+            ->field(\Lang::get('layerok.restapi::lang.receipt.last_name'), $data['lastname'] ?? null)
+            ->field(\Lang::get('layerok.restapi::lang.receipt.phone'), $data['phone'])
+            ->field(\Lang::get('layerok.restapi::lang.receipt.delivery_method'), $shippingMethod->name)
+            ->field(\Lang::get('layerok.restapi::lang.receipt.address'), $data['address'])
+            ->field(\Lang::get('layerok.restapi::lang.receipt.payment_method'), $paymentMethod->name)
+            ->field(\Lang::get('layerok.restapi::lang.receipt.change'), $data['change'] ?? null)
+            ->field(\Lang::get('layerok.restapi::lang.receipt.comment'), $data['comment'] ?? null)
             ->newLine()
-            ->b('order_items')
+            ->b(\Lang::get('layerok.restapi::lang.receipt.order_items'))
             ->colon()
             ->newLine()
             ->map($receiptProducts, function($item) {
@@ -158,13 +158,13 @@ class OrderController extends Controller
                 )->newLine();
             })
             ->newLine()
-            ->field('total', $money->format(
+            ->field(\Lang::get('layerok.restapi::lang.receipt.total'), $money->format(
                 $cart->totals()->totalPostTaxes(),
                 null,
                 Currency::$defaultCurrency
             ))
-            ->field('spot', $spot->name)
-            ->field('target', 'site');
+            ->field(\Lang::get('layerok.restapi::lang.receipt.spot'), $spot->name)
+            ->field(\Lang::get('layerok.restapi::lang.receipt.target'), 'site');
 
 
         $api->sendMessage([

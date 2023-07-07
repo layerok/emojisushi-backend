@@ -25,6 +25,7 @@ class ProductController extends Controller
     public $pageNumber = 1;
     public $offset;
     public $limit;
+    public $totalCount = 0;
 
     public function fetch(): JsonResponse
     {
@@ -56,12 +57,17 @@ class ProductController extends Controller
             $isHidden = $spot->hideProducts()->get()->search(function(Product $hiddenProduct) use($product) {
                 return $hiddenProduct->id === $product->id;
             });
-            return $isHidden === false && $product->published;
+
+            $shouldBeShown = $isHidden === false && $product->published;
+            if(!$shouldBeShown) {
+                $this->totalCount--;
+            }
+            return $shouldBeShown;
         })->values();
 
         return response()->json([
             'data' => $items->toArray(),
-            'total' => $items->count(),
+            'total' => $this->totalCount,
             'sort_options' => $this->getSortOptions(),
             'filters' => $filters
         ]);
@@ -86,6 +92,7 @@ class ProductController extends Controller
             $this->perPage,
             $this->pageNumber,
         );
+        $this->totalCount = $result->totalCount;
 
         // Every id that is not an int is a "ghosted" variant, with an id like
         // product-1. These ids have to be fetched separately. This enables us to
