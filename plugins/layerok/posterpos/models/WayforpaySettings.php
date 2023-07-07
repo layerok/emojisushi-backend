@@ -10,8 +10,5 @@ class WayforpaySettings extends Model
 
     // A unique code
     public $settingsCode = 'layerok_posterpos_wayfopay_settings';
-    public $settingsFields = '$\layerok/posterpos/models/settings/wayforpay_fields.yaml';
-
-
-
+    public $settingsFields = '$/layerok/posterpos/models/settings/wayforpay_fields.yaml';
 }

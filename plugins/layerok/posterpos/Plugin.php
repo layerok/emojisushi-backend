@@ -364,7 +364,7 @@ class Plugin extends PluginBase
                 'description' => 'Manage wayforpay settings.',
                 'category' => 'Wayforpay',
                 'icon' => 'icon-cog',
-                'class' => \Layerok\PosterPos\Models\WayforPaySettings::class,
+                'class' => \Layerok\PosterPos\Models\WayforpaySettings::class,
                 'order' => 500,
                 'keywords' => 'wayforpay',
             ]
