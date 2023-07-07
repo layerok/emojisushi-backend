@@ -1,13 +1,7 @@
 fields:
-    telegram_bot_token:
-        label: Bot token
-        span: auto
-    telegram_chat_id:
-        label: Chat id
-        span: auto
-    poster_tablet_id:
-        label: Tablet id
-        span: auto
+    test_mode:
+        label: Test mode
+        type: switch
 
 
 

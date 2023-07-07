@@ -4,14 +4,12 @@ namespace Layerok\Restapi\Http\Controllers;
 
 use Illuminate\Http\JsonResponse;
 use Illuminate\Routing\Controller;
-use Illuminate\Support\Facades\Request;
 use Illuminate\Support\Facades\Validator;
 use Layerok\Basecode\Classes\Receipt;
 use Layerok\PosterPos\Classes\ServiceMode;
 use Layerok\PosterPos\Classes\ShippingMethodCode;
 use Layerok\PosterPos\Models\Cart;
 use Layerok\PosterPos\Models\CartProduct;
-use Layerok\PosterPos\Models\Settings;
 use Layerok\PosterPos\Models\Spot;
 use Layerok\PosterPos\Models\WayforpaySettings;
 use Maksa988\WayForPay\Facades\WayForPay;
@@ -31,6 +29,8 @@ class OrderController extends Controller
 {
     public function place(): JsonResponse
     {
+        // to make wayforpay order unique
+        $add_to_poster_id = 0;
         $data = post();
         $this->validate($data);
 
@@ -38,6 +38,7 @@ class OrderController extends Controller
 
         $user = $jwtGuard->user();
         $cart = Cart::byUser($user);
+        $spot = Spot::getMain();
 
         if (!$cart->products()->get()->count()) {
             throw new ValidationException([trans('layerok.restapi::validation.cart_empty')]);
@@ -51,25 +52,18 @@ class OrderController extends Controller
             $cart->addProduct($sticks, $data['sticks']);
         }
 
-//        $posterProducts = $cart->products()->get()->map(function(CartProduct $cartProduct) {
-//            $item = [];
-//            $product = $cartProduct->product()->first();
-//            $item['name'] = $product['name'];
-//            $item['count'] = $cartProduct['quantity'];
-//            $item['product_id'] = $product['poster_id'];
-//            if (isset($cartProduct['variant_id'])) {
-//                $variant = $cartProduct->getItemDataAttribute();
-//                $item['modificator_id'] = $variant['poster_id'];
-//            }
-//            return $item;
-//        });
-
-        $posterProducts = [
-             [
-                 'product_id' => 1,
-                 'count' => 2,
-             ]
-        ];
+        $posterProducts = $cart->products()->get()->map(function(CartProduct $cartProduct) {
+            $item = [];
+            $product = $cartProduct->product()->first();
+            $item['name'] = $product['name'];
+            $item['count'] = $cartProduct['quantity'];
+            $item['product_id'] = $product['poster_id'];
+            if (isset($cartProduct['variant_id'])) {
+                $variant = $cartProduct->getItemDataAttribute();
+                $item['modificator_id'] = $variant['poster_id'];
+            }
+            return $item;
+        });
 
         PosterApi::init(config('poster'));
 
@@ -85,10 +79,10 @@ class OrderController extends Controller
 
         $posterComment .=  sprintf("Спосіб оплати: %s", $paymentMethod->name);
 
-        $tabletId = Settings::get('poster_tablet_id');
+        $spot_id = $spot->tablet->tablet_id;
 
         $incomingOrder = [
-            'spot_id' => $tabletId,
+            'spot_id' => $spot_id,
             'phone' => $data['phone'],
             'comment' => $posterComment,
             'products' => $posterProducts,
@@ -125,9 +119,7 @@ class OrderController extends Controller
             ]);
         }
 
-        //todo: don't forget to delete order number
-        $poster_order_id = $posterResult->response->incoming_order_id + 4324234234;
-
+        $poster_order_id = $posterResult->response->incoming_order_id + $add_to_poster_id;
 
         $receiptProducts = $cart->products()->get()->map(function (CartProduct $cartProduct) {
             $item = [];
@@ -137,11 +129,7 @@ class OrderController extends Controller
             return $item;
         });
 
-        $token = Settings::get('telegram_bot_token');
-
-        $chat_id = Settings::get('telegram_chat_id');
-
-        $api = new Api($token);
+        $api = new Api($spot->bot->token);
 
         $money = app()->make(Money::class);
         $receipt = new Receipt();
@@ -178,7 +166,7 @@ class OrderController extends Controller
         $api->sendMessage([
             'text' => $receipt->getText(),
             'parse_mode' => "html",
-            'chat_id' => $chat_id
+            'chat_id' => $spot->chat->internal_id
         ]);
 
         if($paymentMethod->code === 'wayforpay') {

@@ -16,10 +16,5 @@ class Settings extends Model
     // Reference to field configuration
     public $settingsFields = 'fields.yaml';
 
-    public $belongsTo = [
-        'chat' => Chat::class,
-        'bot' => Bot::class,
-    ];
-
 
 }

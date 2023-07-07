@@ -7,6 +7,10 @@ columns:
         searchable: true
     city[name]:
         label: City
+    is_main:
+        label: Основний
+        type: partial
+        path: $/layerok/posterpos/models/spot/_is_main.htm
     published:
           label: 'layerok.posterpos::lang.extend.published'
           type: partial

@@ -4,10 +4,10 @@ namespace Layerok\PosterPos\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
-use Layerok\PosterPos\Models\Settings;
 use Maksa988\WayForPay\Facades\WayForPay;
 use Telegram\Bot\Api;
 use WayForPay\SDK\Domain\TransactionService;
+use Layerok\PosterPos\Models\Spot;
 
 class WayForPayController {
     public $request;
@@ -25,10 +25,9 @@ class WayForPayController {
             $amount = $transaction->getAmount();
             $currency = $transaction->getCurrency();
             $status = $transaction->getStatus();
+            $spot = Spot::getMain();
 
-            $token =  Settings::get('telegram_bot_token');
-            $chat_id = Settings::get('telegram_chat_id');
-            $api = new Api($token);
+            $api = new Api($spot->bot->token);
 
             if($transaction->getReason()->isOK()) {
                 if($transaction->isStatusApproved()) {
@@ -45,7 +44,7 @@ class WayForPayController {
                 $api->sendMessage([
                     'text' => $message,
                     'parse_mode' => "html",
-                    'chat_id' => $chat_id
+                    'chat_id' => $spot->chat->internal_id
                 ]);
                 Log::channel('single')->debug('WayForPay transaction №' . $order_number . 'is ' . $status);
                 return $success();

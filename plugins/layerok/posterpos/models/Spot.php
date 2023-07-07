@@ -97,4 +97,8 @@ class Spot extends Model
         return self::where($key, $slug_or_id)->first();
     }
 
+    public static function getMain() {
+        return self::where('is_main', 1)->first();
+    }
+
 }

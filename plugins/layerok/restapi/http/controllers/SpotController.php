@@ -48,7 +48,7 @@ class SpotController extends Controller
     }
 
     public function main(): JsonResponse {
-        $spot = Spot::where('is_main', 1)->first();
+        $spot = Spot::getMain();
         if($spot) {
             return response()->json($spot);
         }
