@@ -6,7 +6,6 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Routing\Controller;
 use Illuminate\Support\Collection;
 use Layerok\PosterPos\Classes\RootCategory;
-use Layerok\PosterPos\Models\Spot;
 use Layerok\Restapi\Classes\Index\MySQL\MySQL;
 use OFFLINE\Mall\Classes\CategoryFilter\QueryString;
 use OFFLINE\Mall\Classes\CategoryFilter\SetFilter;
@@ -34,7 +33,6 @@ class ProductController extends Controller
         $this->category = $this->getCategory();
         $this->filter = input('filter'); // it can look like 'category_id=1.3.4.6&price=100-200'
         $this->perPage = $this->limit;
-        $spot = Spot::findBySlugOrId(input('spot_slug_or_id'));
         /*$this->includeChildren = input('include_children');*/
 
         if(!$this->category) {
@@ -52,18 +50,6 @@ class ProductController extends Controller
 
         $group = PropertyGroup::where('id', 1)->first(); // 1 - id группы "Ингридиенты"
         $filters = $group->properties()->get();
-
-        $items = $items->filter(function(Product $product) use($spot) {
-            $isHidden = $spot->hideProducts()->get()->search(function(Product $hiddenProduct) use($product) {
-                return $hiddenProduct->id === $product->id;
-            });
-
-            $shouldBeShown = $isHidden === false && $product->published;
-            if(!$shouldBeShown) {
-                $this->totalCount--;
-            }
-            return $shouldBeShown;
-        })->values();
 
         return response()->json([
             'data' => $items->toArray(),

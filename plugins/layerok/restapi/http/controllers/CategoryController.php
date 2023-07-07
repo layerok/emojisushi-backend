@@ -5,7 +5,6 @@ namespace Layerok\Restapi\Http\Controllers;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Routing\Controller;
 use Layerok\PosterPos\Classes\RootCategory;
-use Layerok\PosterPos\Models\Spot;
 use OFFLINE\Mall\Models\Category;
 
 class CategoryController extends Controller
@@ -14,12 +13,10 @@ class CategoryController extends Controller
     {
         $offset = input('offset');
         $limit = input('limit');
-        $spot_slug_or_id = input('spot_slug_or_id');
-        $spot = Spot::findBySlugOrId($spot_slug_or_id);
-
         $root = Category::where('slug', RootCategory::SLUG_KEY)->first();
 
-        $query = Category::query()->with(['hide_categories_in_spot', 'image']);
+        $query = Category::query()->with([ 'image']);
+        $query->where('published', '=', '1');
 
         if($limit) {
             $query->limit($limit);
@@ -29,20 +26,12 @@ class CategoryController extends Controller
             $query->offset($offset);
         }
 
-        $records = $query->get()->filter(function(Category $category) use($spot) {
-            $isHidden = $spot->hideCategories()->get()->search(function(Category $hiddenCategory) use($category) {
-                return $hiddenCategory->id === $category->id;
-            });
-            return $isHidden === false && $category->published;
-        })
-            ->values()
-            ->toArray();
-
+        $records = $query->get();
 
         return response()->json([
-            'data' => $records,
+            'data' => $records->toArray(),
             'meta' => [
-                'total' => count($records),
+                'total' => $records->count(),
                 'offset' => $offset,
                 'limit' => $limit
             ]

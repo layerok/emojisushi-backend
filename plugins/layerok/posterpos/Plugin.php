@@ -254,11 +254,6 @@ class Plugin extends PluginBase
             ];
         });
 
-        Products::extend(function($controller) {
-           $controller->addDynamicProperty('importExportConfig', 'plugins/layerok/posterpos/models/product/config_import_export.yaml');
-           $controller->implement[] =  \Backend\Behaviors\ImportExportController::class;
-        });
-
         Product::extend(function($model){
             $model->fillable[] = 'poster_id';
             $model->belongsToMany['hide_products_in_spot'] = [
