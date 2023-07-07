@@ -4,7 +4,7 @@ namespace Layerok\PosterPos\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
-use Layerok\PosterPos\Models\Spot;
+use Layerok\PosterPos\Models\Settings;
 use Maksa988\WayForPay\Facades\WayForPay;
 use Telegram\Bot\Api;
 use WayForPay\SDK\Domain\TransactionService;
@@ -15,22 +15,19 @@ class WayForPayController {
     public function __construct(Request $request) {
         $this->request = $request;
     }
+
     public function __invoke() {
         $content = $this->request->getContent();
         $data = json_decode($content);
 
-        $spot_id = 1;
-        $spot = Spot::where('id', $spot_id)->first();
-        $foo = [];
-
-        return WayForPay::handleServiceUrl($data, function (TransactionService $transaction, $success) use($spot, $data) {
+        return WayForPay::handleServiceUrl($data, function (TransactionService $transaction, $success) use($data) {
             $order_number = $transaction->getOrderReference();
             $amount = $transaction->getAmount();
             $currency = $transaction->getCurrency();
             $status = $transaction->getStatus();
 
-            $token = optional($spot->bot)->token ?? env('TELEGRAM_FALLBACK_BOT_TOKEN');
-            $chat_id = optional($spot->chat)->internal_id ?? env('TELEGRAM_FALLBACK_CHAT_ID');
+            $token =  Settings::get('telegram_bot_token');
+            $chat_id = Settings::get('telegram_chat_id');
             $api = new Api($token);
 
             if($transaction->getReason()->isOK()) {

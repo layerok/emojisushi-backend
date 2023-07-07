@@ -4,13 +4,16 @@ namespace Layerok\Restapi\Http\Controllers;
 
 use Illuminate\Http\JsonResponse;
 use Illuminate\Routing\Controller;
+use Illuminate\Support\Facades\Request;
 use Illuminate\Support\Facades\Validator;
 use Layerok\Basecode\Classes\Receipt;
 use Layerok\PosterPos\Classes\ServiceMode;
 use Layerok\PosterPos\Classes\ShippingMethodCode;
 use Layerok\PosterPos\Models\Cart;
 use Layerok\PosterPos\Models\CartProduct;
+use Layerok\PosterPos\Models\Settings;
 use Layerok\PosterPos\Models\Spot;
+use Layerok\PosterPos\Models\WayforpaySettings;
 use Maksa988\WayForPay\Facades\WayForPay;
 use October\Rain\Exception\ValidationException;
 use OFFLINE\Mall\Classes\Utils\Money;
@@ -40,15 +43,6 @@ class OrderController extends Controller
             throw new ValidationException([trans('layerok.restapi::validation.cart_empty')]);
         }
 
-        $spotSlug = input('spot_id_or_slug');
-        $spot = Spot::findBySlugOrId($spotSlug);
-
-        if(!$spot) {
-            // todo: throw validation error
-            $spots = Spot::all();
-            $spot = $spots->first();
-        }
-
         $shippingMethod = ShippingMethod::where('id', $data['shipping_method_id'])->first();
         $paymentMethod = PaymentMethod::where('id', $data['payment_method_id'])->first();
 
@@ -57,18 +51,25 @@ class OrderController extends Controller
             $cart->addProduct($sticks, $data['sticks']);
         }
 
-        $posterProducts = $cart->products()->get()->map(function(CartProduct $cartProduct) {
-            $item = [];
-            $product = $cartProduct->product()->first();
-            $item['name'] = $product['name'];
-            $item['count'] = $cartProduct['quantity'];
-            $item['product_id'] = $product['poster_id'];
-            if (isset($cartProduct['variant_id'])) {
-                $variant = $cartProduct->getItemDataAttribute();
-                $item['modificator_id'] = $variant['poster_id'];
-            }
-            return $item;
-        });
+//        $posterProducts = $cart->products()->get()->map(function(CartProduct $cartProduct) {
+//            $item = [];
+//            $product = $cartProduct->product()->first();
+//            $item['name'] = $product['name'];
+//            $item['count'] = $cartProduct['quantity'];
+//            $item['product_id'] = $product['poster_id'];
+//            if (isset($cartProduct['variant_id'])) {
+//                $variant = $cartProduct->getItemDataAttribute();
+//                $item['modificator_id'] = $variant['poster_id'];
+//            }
+//            return $item;
+//        });
+
+        $posterProducts = [
+             [
+                 'product_id' => 1,
+                 'count' => 2,
+             ]
+        ];
 
         PosterApi::init(config('poster'));
 
@@ -84,8 +85,10 @@ class OrderController extends Controller
 
         $posterComment .=  sprintf("Спосіб оплати: %s", $paymentMethod->name);
 
+        $tabletId = Settings::get('poster_tablet_id');
+
         $incomingOrder = [
-            'spot_id' => $spot->tablet->tablet_id ?? env('POSTER_FALLBACK_TABLET_ID'),
+            'spot_id' => $tabletId,
             'phone' => $data['phone'],
             'comment' => $posterComment,
             'products' => $posterProducts,
@@ -130,8 +133,10 @@ class OrderController extends Controller
             return $item;
         });
 
-        $token = optional($spot->bot)->token ?? env('TELEGRAM_FALLBACK_BOT_TOKEN');
-        $chat_id = optional($spot->chat)->internal_id ?? env('TELEGRAM_FALLBACK_CHAT_ID');
+        $token = Settings::get('telegram_bot_token');
+
+        $chat_id = Settings::get('telegram_chat_id');
+
         $api = new Api($token);
 
         $money = app()->make(Money::class);
@@ -163,7 +168,6 @@ class OrderController extends Controller
                 null,
                 Currency::$defaultCurrency
             ))
-            ->field(\Lang::get('layerok.restapi::lang.receipt.spot'), $spot->name)
             ->field(\Lang::get('layerok.restapi::lang.receipt.target'), 'site');
 
 
@@ -191,15 +195,19 @@ class OrderController extends Controller
             );
             $total = $cart->totals()->totalPostTaxes() / 100;
 
+            //todo: don't forget to delete order number
             $order_id = $posterResult->response->incoming_order_id + 4324234234;
 
             $form = WayForPay::purchase(
                 $order_id, $total, $client, $way_products,
-                'UAH', null, 'UA', null,
-                config('wayforpay.returnUrl') . "?order_id={$order_id}",
-                config('wayforpay.serviceUrl') . "?spot_id={$spot->id}",
-
+                WayforpaySettings::get('currency'),
+                null,
+                WayforpaySettings::get('language'),
+                null,
+                WayforpaySettings::get('return_url') . "?order_id={$order_id}",
+                WayforpaySettings::get('service_url'),
             )->getAsString(); // Get html form as string
+
             $cart->delete();
             return response()->json([
                 'success' => true,

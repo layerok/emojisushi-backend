@@ -15,10 +15,7 @@ fields:
     code:
         label: Code
         span: auto
-    tablet:
-        type: relation
-        label: Tablet
-        span: auto
+
     address:
         label: Address
         span: auto
@@ -28,6 +25,10 @@ fields:
     phones:
         label: Телефоны
         description: Введите телефоны через запятую
+        span: auto
+    tablet:
+        type: relation
+        label: Tablet
         span: auto
     bot:
         label: Bot

@@ -347,5 +347,29 @@ class Plugin extends PluginBase
         ];
     }
 
+    public function registerSettings()
+    {
+        return [
+            'settings' => [
+                'label' => 'Spot settings',
+                'description' => 'Manage spot settings.',
+                'category' => 'Spot',
+                'icon' => 'icon-cog',
+                'class' => \Layerok\PosterPos\Models\Settings::class,
+                'order' => 500,
+                'keywords' => 'spot',
+            ],
+            'wayforpay-settings' => [
+                'label' => 'Wayforpay settings',
+                'description' => 'Manage wayforpay settings.',
+                'category' => 'Wayforpay',
+                'icon' => 'icon-cog',
+                'class' => \Layerok\PosterPos\Models\WayforPaySettings::class,
+                'order' => 500,
+                'keywords' => 'wayforpay',
+            ]
+        ];
+    }
+
 
 }

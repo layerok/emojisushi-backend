@@ -20,7 +20,4 @@ return [
      * Merchant Secret key
      */
     'merchantSecretKey' => env('WAYFORPAY_SECRET_KEY', 'flk3409refn54t54t*FNJRET'),
-
-    'returnUrl' => env('WAYFORPAY_RETURN_URL'),
-    'serviceUrl' => env('WAYFORPAY_SERVICE_URL')
 ];
