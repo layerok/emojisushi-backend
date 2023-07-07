@@ -46,4 +46,12 @@ class SpotController extends Controller
 
         return response()->json($record);
     }
+
+    public function main(): JsonResponse {
+        $spot = Spot::where('is_main', 1)->first();
+        if($spot) {
+            return response()->json($spot);
+        }
+        return response()->json(['error' => 'Not Found!'], 404);
+    }
 }

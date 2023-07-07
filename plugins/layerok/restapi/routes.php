@@ -31,6 +31,7 @@ Route::group([
     Route::get('categories', [CategoryController::class, 'fetch']);
     Route::get('spots', [SpotController::class, 'fetch']);
     Route::get('spot', [SpotController::class, 'one']);
+    Route::get('spot-main', [SpotController::class, 'main']);
     Route::get('cities', [CityController::class, 'fetch']);
     Route::get('city', [CityController::class, 'one']);
     Route::get('shipping', [ShippingMethodController::class, 'all']);
