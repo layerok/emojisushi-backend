@@ -28,11 +28,12 @@ class ProductController extends Controller
 
     public function fetch(): JsonResponse
     {
-        $this->offset = input('offset');
+        $this->offset = input('offset') ?? 0;
         $this->limit = input('limit') ?? 25;
         $this->category = $this->getCategory();
         $this->filter = input('filter'); // it can look like 'category_id=1.3.4.6&price=100-200'
-        $this->perPage = $this->limit;
+        $this->pageNumber = ($this->offset + $this->limit) / $this->limit;
+        $this->perPage =  $this->limit;
         /*$this->includeChildren = input('include_children');*/
 
         if(!$this->category) {
