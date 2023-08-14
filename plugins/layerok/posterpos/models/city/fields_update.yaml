@@ -12,3 +12,16 @@ fields:
     spots:
         label: Spots
         type: relation
+    frontend_url:
+        label: Frontend url
+        span: auto
+    google_map_url:
+        label: Google map url
+        span: auto
+    phones:
+        label: Phones
+        span: auto
+    is_main:
+        label: Основний
+        span: auto
+        type: switch

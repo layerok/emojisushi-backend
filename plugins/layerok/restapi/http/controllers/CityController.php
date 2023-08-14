@@ -5,7 +5,6 @@ namespace Layerok\Restapi\Http\Controllers;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Routing\Controller;
 use Layerok\PosterPos\Models\City;
-use Layerok\PosterPos\Models\Spot;
 
 class CityController extends Controller
 {
@@ -51,5 +50,13 @@ class CityController extends Controller
         }
 
         return response()->json($record);
+    }
+
+    public function main(): JsonResponse {
+        $city = City::where('is_main', 1)->first();
+        if($city) {
+            return response()->json($city);
+        }
+        return response()->json(['error' => 'Not Found!'], 404);
     }
 }
