@@ -77,3 +77,6 @@
 1.1.26:
     - 'add field to cities table'
     - add_field_to_cities_table.php
+1.1.27:
+    - 'add html_content field to cities table'
+    - add_html_content_field_to_cities_table.php
