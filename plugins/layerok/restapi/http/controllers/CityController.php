@@ -77,7 +77,8 @@ class CityController extends Controller
             $q->where('published', 1);
         }, 'districts' => function ($q) {
             $q->with(['spots' => function ($q) {
-                $q->where('published', 1);
+                // we are sending an order to a first spot of a district
+//                $q->where('published', 1);
             }]);
         }])
             ->where('is_main', 1)

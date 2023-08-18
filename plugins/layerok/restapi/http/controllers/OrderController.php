@@ -220,7 +220,7 @@ class OrderController extends Controller
             'email'                 => 'email|nullable',
             'shipping_method_id'    => 'exists:offline_mall_shipping_methods,id',
             'payment_method_id'     => 'exists:offline_mall_payment_methods,id',
-            'spot_id'               => 'exists:layerok_posterpos_cities,id'
+            'spot_id'               => 'exists:layerok_posterpos_spots,id'
         ];
 
         if(isset($data['shipping_method_id'])) {
