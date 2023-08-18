@@ -38,6 +38,7 @@ class OrderController extends Controller
 
         $user = $jwtGuard->user();
         $cart = Cart::byUser($user);
+
         $spot = Spot::find($data['spot_id']);
 
         if (!$cart->products()->get()->count()) {

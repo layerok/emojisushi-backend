@@ -26,7 +26,7 @@ class CityController extends Controller
         if ($includeDistricts) {
             $query->with(['districts' => function ($q) {
                 $q->with(['spots' => function ($q) {
-                    $q->where('published', 1);
+                    //$q->where('published', 1);
                 }]);
             }]);
         }
@@ -60,7 +60,8 @@ class CityController extends Controller
             $q->where('published', 1);
         }, 'districts' => function ($q) {
             $q->with(['spots' => function ($q) {
-                $q->where('published', 1);
+                // we are sending an order to a first spot of a district
+                //$q->where('published', 1);
             }]);
         }])->where($key, $slug_or_id)->first();
 
