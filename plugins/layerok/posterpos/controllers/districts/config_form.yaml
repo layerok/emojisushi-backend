@@ -1,0 +1,33 @@
+# ===================================
+#  Form Behavior Config
+# ===================================
+
+# Record name
+name: District
+
+# Model Form Field configuration
+form: $/layerok/posterpos/models/district/fields.yaml
+
+# Model Class name
+modelClass: Layerok\PosterPos\Models\District
+
+# Default redirect location
+defaultRedirect: layerok/posterpos/districts
+
+# Create page
+create:
+    title: backend::lang.form.create_title
+    redirect: layerok/posterpos/districts/update/:id
+    redirectClose: layerok/posterpos/districts
+    form: $/layerok/posterpos/models/district/fields_create.yaml
+
+# Update page
+update:
+    title: backend::lang.form.update_title
+    redirect: layerok/posterpos/districts
+    redirectClose: layerok/posterpos/districts
+    form: $/layerok/posterpos/models/district/fields_update.yaml
+
+# Preview page
+preview:
+    title: backend::lang.form.preview_title

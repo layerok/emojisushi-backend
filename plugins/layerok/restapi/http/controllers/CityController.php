@@ -13,11 +13,16 @@ class CityController extends Controller
         $offset = input('offset');
         $limit = input('limit');
         $includeSpots = input('includeSpots');
+        $includeDistricts = input('includeDistricts');
 
         $query = City::query();
 
         if($includeSpots) {
-            $query->with(['spots.photos']);
+            $query->with(['spots.photos', 'districts']);
+        }
+
+        if($includeDistricts) {
+            $query->with(['districts.spots']);
         }
 
         if($limit) {
@@ -53,7 +58,7 @@ class CityController extends Controller
     }
 
     public function main(): JsonResponse {
-        $city = City::where('is_main', 1)->first();
+        $city = City::with(['spots', 'districts.spots'])->where('is_main', 1)->first();
         if($city) {
             return response()->json($city);
         }

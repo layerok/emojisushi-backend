@@ -322,6 +322,11 @@ class Plugin extends PluginBase
                         'icon'   => 'icon-globe',
                         'url'    => Backend::url('layerok/posterpos/cities'),
                     ],
+                    'posterpos-districts' => [
+                        'label' => "Districts",
+                        'icon'   => 'icon-globe',
+                        'url'    => Backend::url('layerok/posterpos/districts'),
+                    ],
                     'posterpos-tablets' => [
                         'label' => "Tablets",
                         'icon'   => 'icon-tablet',

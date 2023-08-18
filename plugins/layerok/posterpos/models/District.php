@@ -5,14 +5,14 @@ use Model;
 /**
  * Tablet Model
  */
-class Tablet extends Model
+class District extends Model
 {
     use \October\Rain\Database\Traits\Validation;
 
     /**
      * @var string table associated with the model
      */
-    public $table = 'layerok_posterpos_tablets';
+    public $table = 'layerok_posterpos_districts';
 
     /**
      * @var array guarded attributes aren't mass assignable
@@ -22,13 +22,13 @@ class Tablet extends Model
     /**
      * @var array fillable attributes are mass assignable
      */
-    protected $fillable = ['name', 'spot_id', 'tablet_id'];
+    protected $fillable = ['name'];
 
     /**
      * @var array rules for validation
      */
     public $rules = [
-        'tablet_id' => 'required',
+        'name' => 'required',
     ];
 
     /**
@@ -63,9 +63,11 @@ class Tablet extends Model
      * @var array hasOne and other relations
      */
     public $hasOne = [];
-    public $hasMany = [];
+    public $hasMany = [
+        'spots' => Spot::class,
+    ];
     public $belongsTo = [
-        'spot' => \Layerok\PosterPos\Models\Spot::class,
+        'city' => City::class,
     ];
     public $belongsToMany = [];
     public $morphTo = [];

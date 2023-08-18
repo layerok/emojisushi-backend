@@ -9,9 +9,14 @@ fields:
     slug:
         label: Slug
         span: auto
+    districts:
+        type: relation
+        label: Districts
+        span: left
     spots:
         label: Spots
         type: relation
+        span: right
     frontend_url:
         label: Frontend url
         span: auto
@@ -29,3 +34,4 @@ fields:
         type: richeditor
         toolbarButtons: fullscreen, bold, italic, underline, strikeThrough, subscript, superscript, fontFamily, fontSize, |, color, emoticons, inlineStyle, paragraphStyle, |, paragraphFormat, align, formatOL, formatUL, outdent, indent, quote, insertHR, -, insertLink, insertImage, insertVideo, insertAudio, insertFile, insertTable, undo, redo, clearFormatting, selectAll, html
         size: huge
+

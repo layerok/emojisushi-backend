@@ -70,22 +70,10 @@ class Spot extends Model
     public $belongsTo = [
         'chat' => Chat::class,
         'bot' => Bot::class,
-        'city' => City::class
-    ];
-
-    public $hasOne = [
+        'city' => City::class,
         'tablet' => Tablet::class,
+        'district' => District::class,
     ];
-
-    public function getChatId()
-    {
-        return $this->telegram_chat_id;
-    }
-
-    public function getTabletId()
-    {
-        return $this->poster_spot_tablet_id;
-    }
 
     public function afterDelete() {
         $this->hideProducts()->delete();

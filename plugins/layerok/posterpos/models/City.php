@@ -35,7 +35,10 @@ class City extends Model
 
     public $hasMany = [
         'spots' => Spot::class,
+        'districts' => District::class
     ];
+
+
 
     /**
      * @var string table name
