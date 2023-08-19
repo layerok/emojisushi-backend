@@ -201,8 +201,8 @@ class OrderController extends Controller
                 null,
                 WayforpaySettings::get('language'),
                 null,
-                $this->getReturnUrl($spot) . "?order_id={$poster_order_id}",
-                WayforpaySettings::get('service_url'),
+                $this->getReturnUrl($spot) . "?order_id=$poster_order_id",
+                WayforpaySettings::get('service_url') . "?spot_id=$spot->id",
             )->getAsString(); // Get html form as string
 
             $cart->delete();
