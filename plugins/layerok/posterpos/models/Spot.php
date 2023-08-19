@@ -4,8 +4,6 @@ use Layerok\Telegram\Models\Bot;
 use Layerok\Telegram\Models\Chat;
 use October\Rain\Database\Model;
 use October\Rain\Database\Traits\Sluggable;
-use October\Rain\Database\Traits\Validation;
-use OFFLINE\Mall\Models\Address;
 use OFFLINE\Mall\Models\Category;
 use OFFLINE\Mall\Models\Product;
 

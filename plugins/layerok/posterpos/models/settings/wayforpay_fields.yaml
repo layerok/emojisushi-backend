@@ -1,7 +1,4 @@
 fields:
-    return_url:
-        label: Return url
-        span: auto
     service_url:
         label: Service url
         span: auto

@@ -66,6 +66,13 @@ class OrderController extends Controller
             return $item;
         });
 
+//        $posterProducts = [
+//            [
+//                'count' => 2,
+//                'product_id' => 1
+//            ]
+//        ];
+
         PosterApi::init(config('poster'));
 
         $posterComment = "";
@@ -194,7 +201,7 @@ class OrderController extends Controller
                 null,
                 WayforpaySettings::get('language'),
                 null,
-                WayforpaySettings::get('return_url') . "?order_id={$poster_order_id}",
+                $this->getReturnUrl($spot) . "?order_id={$poster_order_id}",
                 WayforpaySettings::get('service_url'),
             )->getAsString(); // Get html form as string
 
@@ -211,6 +218,14 @@ class OrderController extends Controller
             'success' => true,
             'poster_order' => $posterResult->response
         ]);
+    }
+
+    public function getReturnUrl(Spot $spot): string {
+        $frontend_url = $spot->city->frontend_url;
+        if(substr($frontend_url, -1) == '/') {
+            return $frontend_url . 'thankyou';
+        }
+        return $frontend_url . '/thankyou';
     }
 
     public function validate($data) {
