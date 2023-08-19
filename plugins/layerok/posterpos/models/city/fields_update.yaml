@@ -20,6 +20,9 @@ fields:
     frontend_url:
         label: Frontend url
         span: auto
+    thankyou_page_url:
+        label: Thankyou page url
+        span: auto
     google_map_url:
         label: Google map url
         span: auto

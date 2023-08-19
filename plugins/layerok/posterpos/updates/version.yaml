@@ -93,3 +93,6 @@
 1.1.31:
     - 'create districts table'
     - create_districts_table.php
+1.1.32:
+    - 'Add the thankyou_page_url field to the cities table'
+    - add_thankyou_page_url_field_to_cities_table.php

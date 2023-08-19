@@ -108,6 +108,7 @@ class OrderController extends Controller
             $incomingOrder['service_mode'] = ServiceMode::TAKEAWAY;
         }
 
+        // todo: create DTO for the poster order
         $posterResult = (object)PosterApi::incomingOrders()
             ->createIncomingOrder($incomingOrder);
 
@@ -171,7 +172,7 @@ class OrderController extends Controller
             ->field(\Lang::get('layerok.restapi::lang.receipt.target'), 'site');
 
 
-        $api->sendMessage([
+        $telegramRes = $api->sendMessage([
             'text' => $receipt->getText(),
             'parse_mode' => "html",
             'chat_id' => $spot->chat->internal_id
@@ -201,8 +202,8 @@ class OrderController extends Controller
                 null,
                 WayforpaySettings::get('language'),
                 null,
-                $this->getReturnUrl($spot) . "?order_id=$poster_order_id",
-                WayforpaySettings::get('service_url') . "?spot_id=$spot->id",
+                $spot->city->thankyou_page_url . "?order_id=$poster_order_id",
+                WayforpaySettings::get('service_url') . "?spot_id=$spot->id&telegram_message_id=$telegramRes->messageId",
             )->getAsString(); // Get html form as string
 
             $cart->delete();
@@ -218,14 +219,6 @@ class OrderController extends Controller
             'success' => true,
             'poster_order' => $posterResult->response
         ]);
-    }
-
-    public function getReturnUrl(Spot $spot): string {
-        $frontend_url = $spot->city->frontend_url;
-        if(substr($frontend_url, -1) == '/') {
-            return $frontend_url . 'thankyou';
-        }
-        return $frontend_url . '/thankyou';
     }
 
     public function validate($data) {

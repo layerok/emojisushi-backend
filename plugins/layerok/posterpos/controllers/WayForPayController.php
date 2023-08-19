@@ -84,11 +84,14 @@ class WayForPayController {
                 $transaction->getOrderReference()
             );
         }
-        // todo: don't simple send message, but reply to initial telegram message
-        $api->sendMessage([
+        $params = [
             'text' => $message,
             'parse_mode' => "html",
-            'chat_id' => $spot->chat->internal_id
-        ]);
+            'chat_id' => $spot->chat->internal_id,
+        ];
+        if(input('telegram_message_id')) {
+            $params['reply_to_message_id'] = input('telegram_message_id');
+        }
+        $api->sendMessage($params);
     }
 }
