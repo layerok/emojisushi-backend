@@ -14,7 +14,6 @@ use OFFLINE\Mall\Models\User;
 use poster\src\PosterApi;
 use RainLab\Location\Models\Country;
 use Symfony\Component\Console\Input\InputOption;
-use DB;
 
 class ImportSpots extends Command {
     protected $name = 'poster:import-spots';
@@ -36,14 +35,7 @@ class ImportSpots extends Command {
         $this->output->newLine();
         $this->output->writeln('Creating spots...');
         $this->output->newLine();
-        $config = [
-            'access_token' => config('poster.access_token'),
-            'application_secret' => config('poster.application_secret'),
-            'application_id' => config('poster.application_id'),
-            'account_name' => config('poster.account_name')
-        ];
-
-        PosterApi::init($config);
+        PosterApi::init(config('poster'));
 
         $records = (object)PosterApi::access()->getSpots();
 

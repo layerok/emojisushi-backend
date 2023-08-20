@@ -3,25 +3,13 @@ namespace Layerok\PosterPos\Console;
 
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Artisan;
-use Layerok\PosterPos\Classes\IngredientsGroup;
-use Layerok\PosterPos\Classes\PosterTransition;
-use Layerok\PosterPos\Classes\RootCategory;
 use OFFLINE\Mall\Classes\Index\Index;
 use OFFLINE\Mall\Classes\Index\Noop;
 use OFFLINE\Mall\Classes\Index\ProductEntry;
 use OFFLINE\Mall\Classes\Index\VariantEntry;
-use OFFLINE\Mall\Models\Category;
-use OFFLINE\Mall\Models\Currency;
-use OFFLINE\Mall\Models\ImageSet;
-use OFFLINE\Mall\Models\PaymentMethod;
-use OFFLINE\Mall\Models\Price;
-use OFFLINE\Mall\Models\Product;
-use OFFLINE\Mall\Models\ProductPrice;
 use OFFLINE\Mall\Models\Property;
 use OFFLINE\Mall\Models\PropertyGroup;
 use OFFLINE\Mall\Models\PropertyValue;
-use OFFLINE\Mall\Models\ShippingMethod;
-use OFFLINE\Mall\Models\Variant;
 use poster\src\PosterApi;
 use Symfony\Component\Console\Input\InputOption;
 use DB;
@@ -104,14 +92,7 @@ class ImportIngredients extends Command {
         $this->output->writeln('Creating ingredients...');
         $this->output->newLine();
 
-        $config = [
-            'access_token' => config('poster.access_token'),
-            'application_secret' => config('poster.application_secret'),
-            'application_id' => config('poster.application_id'),
-            'account_name' => config('poster.account_name')
-        ];
-
-        PosterApi::init($config);
+        PosterApi::init(config('poster'));
 
         $this->createIngredientCategories();
 

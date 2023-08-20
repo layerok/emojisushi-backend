@@ -15,13 +15,7 @@ class PromotionController extends Controller
 
     public function list(): JsonResponse
     {
-        $config = [
-            'access_token' => config('poster.access_token'),
-            'application_secret' => config('poster.application_secret'),
-            'application_id' => config('poster.application_id'),
-            'account_name' => config('poster.account_name')
-        ];
-        PosterApi::init($config);
+        PosterApi::init(config('poster'));
         $result = (object)PosterApi::makeApiRequest('clients.getPromotions', 'get');
         return response()->json($result->response);
     }

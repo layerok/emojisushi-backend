@@ -21,13 +21,7 @@ class PosterCategoriesExport extends StringValueBinder implements FromCollection
 
     public function collection()
     {
-        $config = [
-            'access_token' => config('poster.access_token'),
-            'application_secret' => config('poster.application_secret'),
-            'application_id' => config('poster.application_id'),
-            'account_name' => config('poster.account_name')
-        ];
-        PosterApi::init($config);
+        PosterApi::init(config('poster'));
         $records= (array)PosterApi::menu()->getCategories();
 
         return new Collection($records['response']);
