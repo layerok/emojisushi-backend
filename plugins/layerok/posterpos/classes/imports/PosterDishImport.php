@@ -26,13 +26,7 @@ class PosterDishImport implements ToModel
         }
 
         if($this->check && $newName) {
-            $config = [
-                'access_token' => config('poster.access_token'),
-                'application_secret' => config('poster.application_secret'),
-                'application_id' => config('poster.application_id'),
-                'account_name' => config('poster.account_name')
-            ];
-            PosterApi::init($config);
+            PosterApi::init(config('poster'));
 
             $res = (object)PosterApi::menu()->getProduct([
                 'product_id' => $id

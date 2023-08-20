@@ -346,6 +346,11 @@ class Plugin extends PluginBase
                         'label' => 'Sync',
                         'icon' => 'icon-upload',
                         'url' => Backend::url('layerok/posterpos/sync')
+                    ],
+                    'posterpos-diagnostics' => [
+                        'label' => 'Diagnostics',
+                        'icon' => 'icon-cog',
+                        'url' => Backend::url('layerok/posterpos/diagnostics')
                     ]
                 ]
             ],
