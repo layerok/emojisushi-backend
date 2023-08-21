@@ -14,7 +14,10 @@
 <?php if(count($missing_products) > 0): ?>
     <ul>
         <?php foreach($missing_products as $missing_product): ?>
-            <li><?= $missing_product->product_id ?> - <?= $missing_product->product_name ?></li>
+            <li>
+                <span><?= $missing_product->product_id ?> - <?= $missing_product->product_name ?></span>
+                <a href="/backend/layerok/posterpos/diagnostics/add?poster_id=<?= $missing_product->product_id ?>">Додати на сайт</a>
+            </li>
         <?php endforeach; ?>
     </ul>
 <?php  else: ?>

@@ -2,6 +2,7 @@
 
 use BackendMenu;
 use Backend\Classes\Controller;
+use Layerok\PosterPos\Classes\PosterTransition;
 use OFFLINE\Mall\Models\Product;
 use poster\src\PosterApi;
 
@@ -66,5 +67,16 @@ class Diagnostics extends Controller
         $this->vars['stale_products'] = $stale_products;
         $this->vars['missing_products'] = $missing_products;
         $this->vars['disconnected_products'] = $disconnected_products;
+    }
+
+    public function add() {
+        $id = input('poster_id');
+        PosterApi::init(config('poster'));
+        $product = PosterApi::menu()->getProduct([
+            'product_id' => $id
+        ])->response;
+        $transition = new PosterTransition;
+        $transition->createProduct($product);
+        return redirect('/backend/layerok/posterpos/diagnostics/index');
     }
 }
