@@ -7,3 +7,10 @@ fields:
         label: Name
     tablet_id:
         label: Tablet id
+    poster_account:
+        type: relation
+        nameFrom: account_name
+        label: Poster Account
+    spots:
+        type: relation
+        label: Spot

@@ -9,6 +9,8 @@ columns:
         label: District
     city[name]:
         label: City
+    tablet[name]:
+        label: Tablet
     is_main:
         label: Основний
         type: partial

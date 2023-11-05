@@ -7,7 +7,9 @@ use October\Rain\Database\Traits\Sluggable;
 use OFFLINE\Mall\Models\Category;
 use OFFLINE\Mall\Models\Product;
 
-
+/**
+ * @property Tablet|null $tablet
+ */
 class Spot extends Model
 {
     use Sluggable;

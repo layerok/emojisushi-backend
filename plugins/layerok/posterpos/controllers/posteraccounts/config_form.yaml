@@ -1,0 +1,33 @@
+# ===================================
+#  Form Behavior Config
+# ===================================
+
+# Record name
+name: Poster Account
+
+# Model Form Field configuration
+form: $/layerok/posterpos/models/posteraccount/fields.yaml
+
+# Model Class name
+modelClass: Layerok\PosterPos\Models\PosterAccount
+
+# Default redirect location
+defaultRedirect: layerok/posterpos/posteraccounts
+
+# Create page
+create:
+    title: backend::lang.form.create_title
+    redirect: layerok/posterpos/posteraccounts/update/:id
+    redirectClose: layerok/posterpos/posteraccounts
+    form: $/layerok/posterpos/models/posteraccount/fields_create.yaml
+
+# Update page
+update:
+    title: backend::lang.form.update_title
+    redirect: layerok/posterpos/posteraccounts
+    redirectClose: layerok/posterpos/posteraccounts
+    form: $/layerok/posterpos/models/posteraccount/fields_update.yaml
+
+# Preview page
+preview:
+    title: backend::lang.form.preview_title

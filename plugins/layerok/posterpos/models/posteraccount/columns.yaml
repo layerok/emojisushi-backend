@@ -6,12 +6,6 @@ columns:
     id:
         label: ID
         searchable: true
-    name:
+    account_name:
         label: Name
-        searchable: true
-    tablet_id:
-        label: Tablet ID
-        searchable: true
-    poster_account[account_name]:
-        label: Poster Account
         searchable: true

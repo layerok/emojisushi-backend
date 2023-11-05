@@ -39,6 +39,9 @@ class OrderController extends Controller
         $user = $jwtGuard->user();
         $cart = Cart::byUser($user);
 
+        /**
+         * @var Spot $spot
+         */
         $spot = Spot::find($data['spot_id']);
 
         if (!$cart->products()->get()->count()) {
@@ -53,7 +56,7 @@ class OrderController extends Controller
             $cart->addProduct($sticks, $data['sticks']);
         }
 
-        $posterProducts = $cart->products()->get()->map(function(CartProduct $cartProduct) {
+        $posterProducts = $cart->products()->get()->map(function (CartProduct $cartProduct) {
             $item = [];
             $product = $cartProduct->product()->first();
             $item['name'] = $product['name'];
@@ -73,24 +76,26 @@ class OrderController extends Controller
 //            ]
 //        ];
 
-        PosterApi::init(config('poster'));
+        $poster_account = $spot->tablet->poster_account;
 
-        $posterComment = "";
+        PosterApi::init([
+            'account_name' => $poster_account->account_name,
+            'application_id' => $poster_account->application_id,
+            'application_secrete' => $poster_account->application_secret,
+            'access_token' => $poster_account->access_token,
+        ]);
 
-        if (!empty($data['comment'])) {
-            $posterComment .= sprintf("%s || ", $data['comment']);
-        }
+        $posterComment = collect([
+            ['', $data['comment']],
+            ['Підготувати решту з', $data['change']],
+            ['Спосіб оплати', $paymentMethod->name]
+        ])->filter(fn($part) => !empty($part[1]))
+            ->map(fn($part) => ($part[0] ? $part[0] . ': ' : '') . $part[1])
+            ->join(' || ');
 
-        if (!empty($data['change'])) {
-            $posterComment .= sprintf("Підготувати решту з: %s || ", $data['change']);
-        }
-
-        $posterComment .=  sprintf("Спосіб оплати: %s", $paymentMethod->name);
-
-        $spot_id = $spot->tablet->tablet_id;
 
         $incomingOrder = [
-            'spot_id' => $spot_id,
+            'spot_id' => $spot->tablet->tablet_id,
             'phone' => $data['phone'],
             'comment' => $posterComment,
             'products' => $posterProducts,
@@ -99,12 +104,12 @@ class OrderController extends Controller
             'service_mode' => ServiceMode::ON_SITE,
         ];
 
-        if($shippingMethod->code === ShippingMethodCode::COURIER) {
+        if ($shippingMethod->code === ShippingMethodCode::COURIER) {
             $incomingOrder['service_mode'] = ServiceMode::COURIER;
             $incomingOrder['address'] = $data['address'] ?? null;
         }
 
-        if($shippingMethod->code === ShippingMethodCode::TAKEAWAY) {
+        if ($shippingMethod->code === ShippingMethodCode::TAKEAWAY) {
             $incomingOrder['service_mode'] = ServiceMode::TAKEAWAY;
         }
 
@@ -112,9 +117,9 @@ class OrderController extends Controller
         $posterResult = (object)PosterApi::incomingOrders()
             ->createIncomingOrder($incomingOrder);
 
-        if(isset($posterResult->error)) {
+        if (isset($posterResult->error)) {
             $key = 'layerok.restapi::lang.poster.errors.' . $posterResult->error;
-            if(\Lang::has($key)) {
+            if (\Lang::has($key)) {
                 $err_text = \Lang::get(
                     'layerok.restapi::lang.poster.errors.' . $posterResult->error
                 );
@@ -157,7 +162,7 @@ class OrderController extends Controller
             ->b(\Lang::get('layerok.restapi::lang.receipt.order_items'))
             ->colon()
             ->newLine()
-            ->map($receiptProducts, function($item) {
+            ->map($receiptProducts, function ($item) {
                 $this->product(
                     $item['name'],
                     $item['count']
@@ -178,8 +183,8 @@ class OrderController extends Controller
             'chat_id' => $spot->chat->internal_id
         ]);
 
-        if($paymentMethod->code === 'wayforpay') {
-            $way_products = $cart->products()->get()->map(function(CartProduct $cartProduct) {
+        if ($paymentMethod->code === 'wayforpay') {
+            $way_products = $cart->products()->get()->map(function (CartProduct $cartProduct) {
                 return new WayForPayProduct(
                     $cartProduct->product->name,
                     ($cartProduct->price()->price / 100),
@@ -221,21 +226,22 @@ class OrderController extends Controller
         ]);
     }
 
-    public function validate($data) {
+    public function validate($data)
+    {
         $rules = [
-            'phone'                 => 'required|phoneUa',
-            'firstname'             => 'min:2|nullable',
-            'lastname'              => 'min:2|nullable',
-            'email'                 => 'email|nullable',
-            'shipping_method_id'    => 'exists:offline_mall_shipping_methods,id',
-            'payment_method_id'     => 'exists:offline_mall_payment_methods,id',
-            'spot_id'               => 'exists:layerok_posterpos_spots,id'
+            'phone' => 'required|phoneUa',
+            'firstname' => 'min:2|nullable',
+            'lastname' => 'min:2|nullable',
+            'email' => 'email|nullable',
+            'shipping_method_id' => 'exists:offline_mall_shipping_methods,id',
+            'payment_method_id' => 'exists:offline_mall_payment_methods,id',
+            'spot_id' => 'exists:layerok_posterpos_spots,id'
         ];
 
-        if(isset($data['shipping_method_id'])) {
+        if (isset($data['shipping_method_id'])) {
             $shippingMethod = ShippingMethod::where('id', $data['shipping_method_id'])->first();
-            if($shippingMethod) {
-                if($shippingMethod->code === 'courier') {
+            if ($shippingMethod) {
+                if ($shippingMethod->code === 'courier') {
                     $rules['address'] = 'required';
                     $messages['address.required'] = trans('layerok.restapi::validation.address_required');
                 }
@@ -243,9 +249,9 @@ class OrderController extends Controller
         }
 
         $messages = [
-            'email.required'          => trans('offline.mall::lang.components.signup.errors.email.required'),
-            'email.email'             => trans('offline.mall::lang.components.signup.errors.email.email'),
-            'phone.phone_ua'          => trans('layerok.posterpos::lang.validation.phone.ua'),
+            'email.required' => trans('offline.mall::lang.components.signup.errors.email.required'),
+            'email.email' => trans('offline.mall::lang.components.signup.errors.email.email'),
+            'phone.phone_ua' => trans('layerok.posterpos::lang.validation.phone.ua'),
             'email.non_existing_user' => trans('layerok.restapi::validation.customer_exists'),
             'shipping_method_id' => trans('layerok.restapi::validation.shipping_method_exists'),
             'payment_method_id' => trans('layerok.restapi::validation.payment_method_exists'),

@@ -3,10 +3,7 @@
 use BackendMenu;
 use Backend\Classes\Controller;
 
-/**
- * Spot Backend Controller
- */
-class Spot extends Controller
+class PosterAccounts extends Controller
 {
     public $implement = [
         \Backend\Behaviors\FormController::class,
@@ -30,7 +27,6 @@ class Spot extends Controller
     {
         parent::__construct();
 
-        BackendMenu::setContext('Layerok.PosterPos', 'posterpos', 'spot');
+        BackendMenu::setContext('Layerok.PosterPos', 'posterpos', 'poster-accounts');
     }
-
 }

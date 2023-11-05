@@ -1,0 +1,20 @@
+# ===================================
+#  Form Field Definitions
+# ===================================
+
+fields:
+    account_name:
+        label: Account Name
+        span: auto
+    access_token:
+        label: Access Token
+        span: auto
+    url:
+        label: Url
+        span: auto
+    application_secret:
+        label: Application Secret
+        span: auto
+    application_id:
+        label: Application ID
+        span: auto
