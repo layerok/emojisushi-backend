@@ -4,6 +4,7 @@ use Model;
 
 /**
  * @property string $access_token
+ * @property int $id
  * @property string $account_name
  * @property string $url
  * @property string $application_secret

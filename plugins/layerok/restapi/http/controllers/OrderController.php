@@ -43,6 +43,7 @@ class OrderController extends Controller
          * @var Spot $spot
          */
         $spot = Spot::find($data['spot_id']);
+        $poster_account = $spot->tablet->poster_account;
 
         if (!$cart->products()->get()->count()) {
             throw new ValidationException([trans('layerok.restapi::validation.cart_empty')]);
@@ -56,12 +57,18 @@ class OrderController extends Controller
             $cart->addProduct($sticks, $data['sticks']);
         }
 
-        $posterProducts = $cart->products()->get()->map(function (CartProduct $cartProduct) {
+        $posterProducts = $cart->products()->get()->map(function (CartProduct $cartProduct) use($poster_account) {
             $item = [];
             $product = $cartProduct->product()->first();
             $item['name'] = $product['name'];
             $item['count'] = $cartProduct['quantity'];
-            $item['product_id'] = $product['poster_id'];
+
+            if($poster_account->account_name === 'emojisushikador' && $product['poster_id2']) {
+                $item['product_id'] = $product['poster_id2'];
+            } else {
+                $item['product_id'] = $product['poster_id'];
+            }
+
             if (isset($cartProduct['variant_id'])) {
                 $variant = $cartProduct->getItemDataAttribute();
                 $item['modificator_id'] = $variant['poster_id'];
@@ -76,7 +83,6 @@ class OrderController extends Controller
 //            ]
 //        ];
 
-        $poster_account = $spot->tablet->poster_account;
 
         PosterApi::init([
             'account_name' => $poster_account->account_name,

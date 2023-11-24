@@ -102,3 +102,6 @@
 1.1.34:
     - 'Update tablets table by adding poster_account_id field'
     - update_layerok_posterpos_tablets_table.php
+1.1.35:
+    - 'Update products table by adding poster_id2 field'
+    - add_poster_id2_field_to_products_table.php

@@ -153,6 +153,12 @@ class Plugin extends PluginBase
                     'span' => 'left',
                     'type' => 'text'
                 ];
+
+                $config['fields']['poster_id2'] = [
+                    'label'   => 'Poster ID (Kador)',
+                    'span' => 'right',
+                    'type' => 'text'
+                ];
                 return $config;
             }
 
