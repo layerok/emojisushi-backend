@@ -87,8 +87,9 @@ class OrderController extends Controller
 
         $posterComment = collect([
             ['', $data['comment']],
-            ['Підготувати решту з', $data['change']],
-            ['Спосіб оплати', $paymentMethod->name]
+            [\Lang::get('layerok.restapi::lang.receipt.change'), $data['change']],
+            [\Lang::get('layerok.restapi::lang.receipt.payment_method'), $paymentMethod->name],
+            [\Lang::get('layerok.restapi::lang.receipt.persons_amount'), $data['sticks']],
         ])->filter(fn($part) => !empty($part[1]))
             ->map(fn($part) => ($part[0] ? $part[0] . ': ' : '') . $part[1])
             ->join(' || ');
