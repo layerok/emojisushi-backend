@@ -18,7 +18,6 @@ use OFFLINE\Mall\Classes\Utils\Money;
 use OFFLINE\Mall\Models\Currency;
 use OFFLINE\Mall\Models\PaymentMethod;
 use Layerok\PosterPos\Models\ShippingMethod;
-use OFFLINE\Mall\Models\Product;
 use poster\src\PosterApi;
 use Telegram\Bot\Api;
 use WayForPay\SDK\Domain\Product as WayForPayProduct;
@@ -51,11 +50,6 @@ class OrderController extends Controller
 
         $shippingMethod = ShippingMethod::where('id', $data['shipping_method_id'])->first();
         $paymentMethod = PaymentMethod::where('id', $data['payment_method_id'])->first();
-
-        if (intval($data['sticks']) > 0) {
-            $sticks = Product::where('poster_id', 492)->first();
-            $cart->addProduct($sticks, $data['sticks']);
-        }
 
         $posterProducts = $cart->products()->get()->map(function (CartProduct $cartProduct) use($poster_account) {
             $item = [];
@@ -163,6 +157,7 @@ class OrderController extends Controller
             ->field(\Lang::get('layerok.restapi::lang.receipt.address'), $data['address'])
             ->field(\Lang::get('layerok.restapi::lang.receipt.payment_method'), $paymentMethod->name)
             ->field(\Lang::get('layerok.restapi::lang.receipt.change'), $data['change'] ?? null)
+            ->field(\Lang::get('layerok.restapi::lang.receipt.persons_amount'), $data['sticks'] ?? null)
             ->field(\Lang::get('layerok.restapi::lang.receipt.comment'), $data['comment'] ?? null)
             ->newLine()
             ->b(\Lang::get('layerok.restapi::lang.receipt.order_items'))

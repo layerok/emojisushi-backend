@@ -26,6 +26,7 @@ return [
         'payment_method' => 'Спосіб оплаты',
         'sticks_name' => 'Палички для суші',
         'target' => 'Джерело замовлення',
+        'persons_amount' => 'Кількість персон',
         'site' => 'сайт',
         'bot' => 'чат-бот',
         "confirm_order_question" => "Підтверджуєте замовлення?",
