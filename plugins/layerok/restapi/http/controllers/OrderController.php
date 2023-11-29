@@ -63,8 +63,8 @@ class OrderController extends Controller
             $item['name'] = $product['name'];
             $item['count'] = $cartProduct['quantity'];
 
-            if($poster_account->account_name === 'emojisushikador' && $product['poster_id2']) {
-                $item['product_id'] = $product['poster_id2'];
+            if($poster_account->account_name === 'emojisushikador') {
+                $item['product_id'] = $product['poster_id2'] ?? $product['poster_id'];
             } else {
                 $item['product_id'] = $product['poster_id'];
             }
@@ -93,8 +93,9 @@ class OrderController extends Controller
 
         $posterComment = collect([
             ['', $data['comment']],
-            ['Підготувати решту з', $data['change']],
-            ['Спосіб оплати', $paymentMethod->name]
+            [\Lang::get('layerok.restapi::lang.receipt.change'), $data['change']],
+            [\Lang::get('layerok.restapi::lang.receipt.payment_method'), $paymentMethod->name],
+            [\Lang::get('layerok.restapi::lang.receipt.persons_amount'), $data['sticks']],
         ])->filter(fn($part) => !empty($part[1]))
             ->map(fn($part) => ($part[0] ? $part[0] . ': ' : '') . $part[1])
             ->join(' || ');
