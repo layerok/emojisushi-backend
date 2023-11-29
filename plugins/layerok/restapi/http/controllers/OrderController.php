@@ -2,8 +2,10 @@
 
 namespace Layerok\Restapi\Http\Controllers;
 
+use http\Env\Response;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Routing\Controller;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Validator;
 use Layerok\Basecode\Classes\Receipt;
 use Layerok\PosterPos\Classes\ServiceMode;
@@ -49,14 +51,11 @@ class OrderController extends Controller
             throw new ValidationException([trans('layerok.restapi::validation.cart_empty')]);
         }
 
-        if (intval($data['sticks']) > 0) {
-            $sticks = Product::where('poster_id', 492)->first();
-            $cart->addProduct($sticks, $data['sticks']);
-        }
 
         $shippingMethod = ShippingMethod::where('id', $data['shipping_method_id'])->first();
         $paymentMethod = PaymentMethod::where('id', $data['payment_method_id'])->first();
 
+        /** @var Collection $posterProducts */
         $posterProducts = $cart->products()->get()->map(function (CartProduct $cartProduct) use($poster_account) {
             $item = [];
             $product = $cartProduct->product()->first();
@@ -75,6 +74,28 @@ class OrderController extends Controller
             }
             return $item;
         });
+
+        if (intval($data['sticks']) > 0) {
+            $product = Product::where('poster_id', 492)->first();
+
+            $posterSticks = $posterProducts->first(function($posterProduct) use($product) {
+                return $posterProduct['product_id'] === $product->poster_id;
+            });
+
+            if($posterSticks) {
+                $posterProducts = $posterProducts->filter(function($posterProduct) use($product) {
+                    return $posterProduct['product_id'] !== $product->poster_id;
+                });
+            }
+
+            $posterProducts->add([
+                'name' => $product->name,
+                'product_id' => $product->poster_id,
+                // merge sticks count from checkout form and from the cart
+                'count' => $data['sticks'] + ($posterSticks['count'] ?? 0)
+            ]);
+
+        }
 
 //        $posterProducts = [
 //            [
