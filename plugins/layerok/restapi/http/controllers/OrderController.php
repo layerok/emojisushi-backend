@@ -2,7 +2,6 @@
 
 namespace Layerok\Restapi\Http\Controllers;
 
-use http\Env\Response;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Routing\Controller;
 use Illuminate\Support\Collection;
