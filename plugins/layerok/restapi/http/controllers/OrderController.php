@@ -18,6 +18,7 @@ use OFFLINE\Mall\Classes\Utils\Money;
 use OFFLINE\Mall\Models\Currency;
 use OFFLINE\Mall\Models\PaymentMethod;
 use Layerok\PosterPos\Models\ShippingMethod;
+use OFFLINE\Mall\Models\Product;
 use poster\src\PosterApi;
 use Telegram\Bot\Api;
 use WayForPay\SDK\Domain\Product as WayForPayProduct;
@@ -46,6 +47,11 @@ class OrderController extends Controller
 
         if (!$cart->products()->get()->count()) {
             throw new ValidationException([trans('layerok.restapi::validation.cart_empty')]);
+        }
+
+        if (intval($data['sticks']) > 0) {
+            $sticks = Product::where('poster_id', 492)->first();
+            $cart->addProduct($sticks, $data['sticks']);
         }
 
         $shippingMethod = ShippingMethod::where('id', $data['shipping_method_id'])->first();
