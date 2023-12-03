@@ -62,7 +62,11 @@ class OrderController extends Controller
             $item['count'] = $cartProduct['quantity'];
 
             if($poster_account->account_name === 'emojisushikador') {
-                $item['product_id'] = $product['poster_id2'] ?? $product['poster_id'];
+                if(!!$product['poster_id2']) {
+                    $item['product_id'] = $product['poster_id2'];
+                } else {
+                    $item['product_id'] = $product['poster_id'];
+                }
             } else {
                 $item['product_id'] = $product['poster_id'];
             }
