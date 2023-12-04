@@ -173,9 +173,6 @@ class MySQL implements Index
 
     protected function search(string $index, Collection $filters, SortOrder $order, $params)
     {
-
-
-
         $idCol      = $index === 'products' ? 'product_id' : 'variant_id';
         $otherIdCol = $idCol === 'product_id' ? 'variant_id' : 'product_id';
 
@@ -185,6 +182,16 @@ class MySQL implements Index
             'is_ghost',
             'name'
         ]);
+
+        // todo: disable product category via admin panel
+        if($refererParts = explode('//', request()->header('referer'))) {
+            if(count($refererParts) > 1) {
+                if (explode('.', $refererParts[1])[0] === 'chorno') {
+                    $db->orWhereRaw('NOT JSON_CONTAINS(category_id, ?)', json_encode([2]));
+                }
+            }
+        }
+
 
         $db->where('index', $index)->where('published', true);
 

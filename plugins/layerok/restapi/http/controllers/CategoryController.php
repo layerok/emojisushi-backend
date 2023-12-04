@@ -22,6 +22,14 @@ class CategoryController extends Controller
             $query->limit($limit);
         }
 
+        if($refererParts = explode('//', request()->header('referer'))) {
+            if(count($refererParts) > 1) {
+                if(explode('.', $refererParts[1])[0] === 'chorno') {
+                    $query->where('id', '!=', 2);
+                }
+            }
+        }
+
         if($offset) {
             $query->offset($offset);
         }
