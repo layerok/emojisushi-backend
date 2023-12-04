@@ -214,7 +214,7 @@ class Order extends Model
 
             $cart->updateDiscountUsageCount();
 
-            // $cart->delete(); // We can empty the cart once the order is created.
+            $cart->delete(); // We can empty the cart once the order is created.
 
             return $order;
         });

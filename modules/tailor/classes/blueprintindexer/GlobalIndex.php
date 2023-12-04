@@ -11,9 +11,9 @@ use Tailor\Classes\Blueprint\GlobalBlueprint;
 trait GlobalIndex
 {
     /**
-     * @var string collectionsCacheKey
+     * @var string globalsCacheKey
      */
-    protected $collectionsCacheKey = 'collections';
+    protected $globalsCacheKey = 'globals';
 
     /**
      * listGlobals
@@ -34,7 +34,7 @@ trait GlobalIndex
      */
     protected function listGlobalsRaw(): array
     {
-        $records = $this->getCache($this->collectionsCacheKey);
+        $records = $this->getCache($this->globalsCacheKey);
 
         if (!$records) {
             $records = $this->indexGlobals();
@@ -87,7 +87,7 @@ trait GlobalIndex
             $newIndex[$section->uuid] = $section->toArray();
         }
 
-        $this->putCache($this->collectionsCacheKey, $newIndex);
+        $this->putCache($this->globalsCacheKey, $newIndex);
 
         return $newIndex;
     }

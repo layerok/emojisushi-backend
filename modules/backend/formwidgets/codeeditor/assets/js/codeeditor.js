@@ -23,15 +23,15 @@
     // ============================
 
     var CodeEditor = function(element, options) {
-        Base.call(this)
+        Base.call(this);
 
-        this.options   = options
-        this.$el       = $(element)
-        this.$textarea = this.$el.find('>textarea:first')
-        this.$toolbar  = this.$el.find('>.editor-toolbar:first')
-        this.$code     = null
-        this.editor    = null
-        this.$form     = null
+        this.options   = options;
+        this.$el       = $(element);
+        this.$textarea = this.$el.find('>textarea:first');
+        this.$toolbar  = this.$el.find('>.editor-toolbar:first');
+        this.$code     = null;
+        this.editor    = null;
+        this.$form     = null;
 
         // Toolbar links
         this.isFullscreen = false;

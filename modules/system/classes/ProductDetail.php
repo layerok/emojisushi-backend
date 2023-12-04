@@ -176,10 +176,10 @@ class ProductDetail
         // Markdown
         $readmeFiles = ['README.md', 'readme.md'];
         $upgradeFiles = ['UPGRADE.md', 'upgrade.md'];
-        $licenceFiles = ['LICENCE.md', 'licence.md', 'LICENSE.md', 'license.md'];
+        $licenseFiles = ['LICENCE.md', 'license.md', 'LICENSE.md', 'license.md'];
         $this->contentHtml = $this->getProductMarkdownFile($path, $readmeFiles);
         $this->upgradeHtml = $this->getProductMarkdownFile($path, $upgradeFiles);
-        $this->licenseHtml = $this->getProductMarkdownFile($path, $licenceFiles);
+        $this->licenseHtml = $this->getProductMarkdownFile($path, $licenseFiles);
 
         // Registration file
         $details = $plugin->pluginDetails();
@@ -268,10 +268,10 @@ class ProductDetail
         // Markdown
         $readmeFiles = ['README.md', 'readme.md'];
         $upgradeFiles = ['UPGRADE.md', 'upgrade.md'];
-        $licenceFiles = ['LICENCE.md', 'licence.md', 'LICENSE.md', 'license.md'];
+        $licenseFiles = ['LICENCE.md', 'licence.md', 'LICENSE.md', 'license.md'];
         $this->contentHtml = $this->getProductMarkdownFile($path, $readmeFiles);
         $this->upgradeHtml = $this->getProductMarkdownFile($path, $upgradeFiles);
-        $this->licenseHtml = $this->getProductMarkdownFile($path, $licenceFiles);
+        $this->licenseHtml = $this->getProductMarkdownFile($path, $licenseFiles);
 
         // Registration file
         $details = $theme->getConfig();

@@ -1,10 +1,10 @@
-oc.Module.register('cms.editor.extension.documentcontroller.page', function() {
+oc.Modules.register('cms.editor.extension.documentcontroller.page', function() {
     'use strict';
 
-    const DocumentControllerBase = oc.Module.import('editor.extension.documentcontroller.base');
+    const DocumentControllerBase = oc.Modules.import('editor.extension.documentcontroller.base');
 
     const treeviewUtils = $.oc.vueComponentHelpers.treeviewUtils;
-    const menuUtils = oc.Module.import('backend.component.dropdownmenu.utils');
+    const menuUtils = oc.Modules.import('backend.component.dropdownmenu.utils');
 
     class DocumentControllerPage extends DocumentControllerBase {
         constructor(editorExtension) {

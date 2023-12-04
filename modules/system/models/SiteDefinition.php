@@ -5,8 +5,9 @@ use Site;
 use Model;
 use Config;
 use Cms\Classes\Theme;
-use System\Helpers\LocaleHelper;
-use System\Helpers\DateTimeHelper;
+use Backend\Models\User;
+use Backend\Models\UserRole;
+use System\Helpers\Preset as PresetHelper;
 use ValidationException;
 
 /**
@@ -28,7 +29,7 @@ class SiteDefinition extends Model
     /**
      * @var array jsonable are json encoded attributes
      */
-    protected $jsonable = ['allow_hosts'];
+    protected $jsonable = ['allow_hosts', 'allow_roles'];
 
     /**
      * @var array Validation rules
@@ -36,6 +37,13 @@ class SiteDefinition extends Model
     public $rules = [
         'code' => 'required',
         'name' => 'required',
+    ];
+
+    /**
+     * @var array belongsTo
+     */
+    public $belongsTo = [
+        'group' => SiteGroup::class
     ];
 
     /**
@@ -74,7 +82,9 @@ class SiteDefinition extends Model
             'code' => 'english',
             'is_primary' => true,
             'is_enabled' => true,
-            'is_enabled_edit' => true
+            'is_enabled_edit' => true,
+            'group_id' => null,
+            'group' => null,
         ];
         $site->syncOriginal();
         return $site;
@@ -194,7 +204,7 @@ class SiteDefinition extends Model
             return '';
         }
 
-        return LocaleHelper::listLocalesWithFlags()[$this->locale][1] ?? '';
+        return PresetHelper::flags()[$this->locale][1] ?? '';
     }
 
     /**
@@ -230,7 +240,7 @@ class SiteDefinition extends Model
      */
     public function matchesHostname(string $hostname): bool
     {
-        if (!$this->is_restricted) {
+        if (!$this->is_host_restricted) {
             return true;
         }
 
@@ -364,7 +374,7 @@ class SiteDefinition extends Model
     {
         return [
             '' => '— '.__('Use Default').' —',
-        ] + LocaleHelper::listLocalesWithFlags() + [
+        ] + PresetHelper::flags() + [
             'custom' => '— '.__('Use Custom').' —'
         ];
     }
@@ -378,7 +388,7 @@ class SiteDefinition extends Model
             return false;
         }
 
-        return !isset(LocaleHelper::listLocalesWithFlags()[$locale]);
+        return !isset(PresetHelper::flags()[$locale]);
     }
 
     /**
@@ -389,6 +399,42 @@ class SiteDefinition extends Model
     {
         return [
             '' => '— '.__('Use Default').' —',
-        ] + DateTimeHelper::listTimezones();
+        ] + PresetHelper::timezones();
+    }
+
+    /**
+     * getAllowRolesOptions returns available role options
+     */
+    public function getAllowRolesOptions()
+    {
+        $result = [];
+
+        foreach (UserRole::all() as $role) {
+            $result[$role->id] = $role->name;
+        }
+
+        return $result;
+    }
+
+    /**
+     * matchesRole
+     */
+    public function matchesRole(?User $user): bool
+    {
+        if (!$this->is_role_restricted) {
+            return true;
+        }
+
+        if (!$user || !$user->role_id) {
+            return false;
+        }
+
+        foreach ((array) $this->allow_roles as $roleId) {
+            if ((int) $user->role_id === (int) $roleId) {
+                return true;
+            }
+        }
+
+        return false;
     }
 }

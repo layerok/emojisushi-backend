@@ -1,8 +1,8 @@
-oc.Module.register('editor.extension.documentcontroller.base', function() {
+oc.Modules.register('editor.extension.documentcontroller.base', function() {
     'use strict';
 
-    const EditorCommand = oc.Module.import('editor.command');
-    const DocumentUri = oc.Module.import('editor.documenturi');
+    const EditorCommand = oc.Modules.import('editor.command');
+    const DocumentUri = oc.Modules.import('editor.documenturi');
 
     class DocumentControllerBase {
         parentExtension;

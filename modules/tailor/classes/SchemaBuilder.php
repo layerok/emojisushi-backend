@@ -8,7 +8,6 @@ use Tailor\Models\ContentSchema;
 use Tailor\Classes\Blueprint\StreamBlueprint;
 use Tailor\Classes\Blueprint\StructureBlueprint;
 use October\Rain\Database\Schema\Blueprint as DbBlueprint;
-use Exception;
 
 /**
  * SchemaBuilder builds tables for tailor content
@@ -41,6 +40,11 @@ class SchemaBuilder
     protected $contentSchema;
 
     /**
+     * @var DbBlueprint tableBlueprint for managing the table
+     */
+    protected $tableBlueprint;
+
+    /**
      * @var string tableName for the blueprint content
      */
     protected $tableName;
@@ -56,14 +60,18 @@ class SchemaBuilder
     protected $tableColumns;
 
     /**
-     * @var int actionCount number of actions that occured.
+     * @var int actionCount number of actions that occurred.
      */
     protected $actionCount = 0;
 
     /**
-     * @var array reservedFieldNames are field names that cannot be used.
+     * @var array reservedFieldNames are field names that cannot be used as database columns.
+     * @see Tailor\Classes\FieldManager
      */
     protected $reservedFieldNames = [
+        // Properties
+        'attributes',
+
         // Columns
         'id',
         'site_id',
@@ -81,7 +89,6 @@ class SchemaBuilder
         'relation_id',
         'relation_type',
         'field_name',
-        'parent_id',
         'nest_left',
         'nest_right',
         'nest_depth',
@@ -89,12 +96,8 @@ class SchemaBuilder
         'is_version',
         'primary_id',
         'primary_attrs',
-        'blueprint_uuid',
         'content_group',
-        'is_version',
         'draft_mode',
-        'primary_id',
-        'primary_attrs',
         'published_at',
         'expired_at',
 
@@ -179,9 +182,28 @@ class SchemaBuilder
 
             // Increment actions
             if ($table->getColumns() || $table->getCommands()) {
+                $this->defineTableComment($table);
                 $this->actionCount++;
             }
         });
+    }
+
+    /**
+     * defineTableComment adds a comment to the table to make it easier to find
+     */
+    protected function defineTableComment($table, $message = null)
+    {
+        if ($message === null) {
+            $message = "Content for :name [:id].";
+        }
+
+        // Custom escaping since framework doesn't handle it
+        $blueprintId = str_replace('\\', '\\\\', $this->blueprint->handle ?: $this->blueprint->uuid);
+
+        $table->comment(__($message, [
+            'name' => $this->blueprint->name ?: 'Blueprint',
+            'id' => $blueprintId
+        ]));
     }
 
     /**

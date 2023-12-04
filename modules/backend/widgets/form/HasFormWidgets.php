@@ -66,7 +66,7 @@ trait HasFormWidgets
 
         // If options are defined by config but are in an unusable state
         if ($field->options !== null && !$field->hasOptions()) {
-            $fieldOptions = $field->options;
+            $fieldOptions = $field->optionsMethod ?: $field->options;
             $field->options(function () use ($field, $fieldOptions) {
                 return $field->getOptionsFromModel($this->model, $fieldOptions, $this->data);
             });

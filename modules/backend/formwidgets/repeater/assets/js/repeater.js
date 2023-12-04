@@ -3,7 +3,7 @@
  */
 'use strict';
 
-oc.Module.register('backend.formwidget.repeater.base', function() {
+oc.Modules.register('backend.formwidget.repeater.base', function() {
     class RepeaterFormWidgetBase extends oc.FoundationPlugin
     {
         constructor(element, config) {
@@ -61,14 +61,15 @@ oc.Module.register('backend.formwidget.repeater.base', function() {
 
             this.$el.one('dispose-control', this.proxy(this.dispose));
 
-            this.initToolbarExtensionPoint();
-            this.initExternalToolbarEventBus();
-            this.mountExternalToolbarEventBusEvents();
-
             this.countItems();
             this.togglePrompt();
 
-            this.extendExternalToolbar();
+            // External toolbar
+            setTimeout(() => {
+                this.initToolbarExtensionPoint();
+                this.mountExternalToolbarEventBusEvents();
+                this.extendExternalToolbar();
+            }, 0);
         }
 
         dispose() {
@@ -110,7 +111,12 @@ oc.Module.register('backend.formwidget.repeater.base', function() {
                 multiDrag: true,
                 avoidImplicitDeselect: true,
                 handle: this.config.sortableHandle,
-                onEnd: this.proxy(this.onSortableEnd)
+                onEnd: this.proxy(this.onSortableEnd),
+
+                // Auto scroll plugin
+                forceAutoScrollFallback: true,
+                scrollSensitivity: 60,
+                scrollSpeed: 20
             });
         }
 
@@ -181,7 +187,7 @@ oc.Module.register('backend.formwidget.repeater.base', function() {
 
             $.each($items, function(k, item) {
                 var $item = $(item);
-                self.diposeItem($item);
+                self.disposeItem($item);
                 $item.remove();
 
                 self.eventOnRemoveItem($item);
@@ -393,7 +399,7 @@ oc.Module.register('backend.formwidget.repeater.base', function() {
             return $(target).closest('.repeater-header').closest('li');
         }
 
-        diposeItem($item) {
+        disposeItem($item) {
             $('[data-disposable]', $item).each(function() {
                 var $el = $(this),
                     control = $el.data('control'),
@@ -440,29 +446,15 @@ oc.Module.register('backend.formwidget.repeater.base', function() {
                 return;
             }
 
-            // Expected format: tailor.app::toolbarExtensionPoint
-            const parts = this.config.externalToolbarAppState.split('::');
-            if (parts.length !== 2) {
-                throw new Error('Invalid externalToolbarAppState format. Expected format: module.name::stateElementName');
+            const point = $.oc.vueUtils.getToolbarExtensionPoint(
+                this.config.externalToolbarAppState,
+                this.$el.get(0)
+            );
+
+            if (point) {
+                this.toolbarExtensionPoint = point.state;
+                this.externalToolbarEventBusObj = point.bus;
             }
-
-            const app = oc.Module.import(parts[0]);
-            this.toolbarExtensionPoint = app.state[parts[1]];
-        }
-
-        initExternalToolbarEventBus() {
-            if (!this.config.externalToolbarEventBus) {
-                return;
-            }
-
-            // Expected format: tailor.app::eventBus
-            const parts = this.config.externalToolbarEventBus.split('::');
-            if (parts.length !== 2) {
-                throw new Error('Invalid externalToolbarEventBus format. Expected format: module.name::stateElementName');
-            }
-
-            const module = oc.Module.import(parts[0]);
-            this.externalToolbarEventBusObj = module.state[parts[1]];
         }
 
         mountExternalToolbarEventBusEvents() {

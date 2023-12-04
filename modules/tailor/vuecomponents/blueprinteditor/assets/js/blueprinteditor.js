@@ -1,7 +1,7 @@
 Vue.component('tailor-editor-component-blueprint-editor', {
-    extends: oc.Module.import('tailor.editor.extension.documentcomponent.base'),
+    extends: oc.Modules.import('tailor.editor.extension.documentcomponent.base'),
     data: function() {
-        const EditorModelDefinition = oc.Module.import('backend.vuecomponents.monacoeditor.modeldefinition');
+        const EditorModelDefinition = oc.Modules.import('backend.vuecomponents.monacoeditor.modeldefinition');
         const defMarkup = new EditorModelDefinition(
             'yaml',
             this.trans('tailor::lang.blueprint.editor_yaml'),

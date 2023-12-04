@@ -27,12 +27,12 @@
     <!-- Error template -->
     <script type="text/template" id="<?= $this->getId('errorTemplate') ?>">
         <div class="popover-head">
-            <h3><?= e(trans('backend::lang.fileupload.upload_error')) ?></h3>
+            <h3><?= __("Upload Error") ?></h3>
             <p>{{errorMsg}}</p>
             <button type="button" class="btn-close" data-dismiss="popover" aria-label="<?= __("Close") ?>"></button>
         </div>
         <div class="popover-body">
-            <button class="btn btn-secondary" data-remove-file><?= e(trans('backend::lang.fileupload.remove_file')) ?></button>
+            <button class="btn btn-secondary" data-remove-file><?= __("Remove File") ?></button>
         </div>
     </script>
 

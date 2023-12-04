@@ -107,6 +107,14 @@
                         self.triggerEvent('popupError');
                         self.triggerEvent('error.oc.popup');
                     });
+                },
+                cancel: function() {
+                    if (self.isLoading) {
+                        self.hideLoading();
+                    }
+                    else {
+                        self.hide();
+                    }
                 }
             });
 
@@ -167,6 +175,8 @@
             self.hide();
             return false;
         });
+
+        oc.Events.dispatch('popup:show');
     }
 
     Popup.prototype.dispose = function() {
@@ -416,7 +426,7 @@
         }
     }
 
-    $(document).on('click.oc.popup', '[data-control="popup"]', function(event) {
+    $(document).on('click.oc.popup', '[data-control~="popup"]', function(event) {
         event.preventDefault();
 
         $(this).popup();

@@ -418,23 +418,24 @@
 
     StringListAutocomplete.prototype.loadDynamicItems = function() {
         if (this.isDisposed()) {
-            return
+            return;
         }
 
         var data = this.getRootSurface().getValues(),
-            $form = $(this.popup).find('form')
+            $form = $(this.popup).find('form');
 
         if (this.triggerGetItems(data) === false) {
-            return
+            return;
         }
 
-        data['inspectorProperty'] = this.getPropertyPath()
-        data['inspectorClassName'] = this.inspector.options.inspectorClass
+        data['inspectorProperty'] = this.getPropertyPath();
+        data['inspectorClassName'] = this.inspector.options.inspectorClass;
 
-        $form.request('onInspectableGetOptions', {
+        $form.request(this.inspector.getEventHandler('onInspectableGetOptions'), {
             data: data,
+            progressBar: false
         })
-        .done(this.proxy(this.itemsRequestDone))
+        .done(this.proxy(this.itemsRequestDone));
     }
 
     StringListAutocomplete.prototype.triggerGetItems = function(values) {

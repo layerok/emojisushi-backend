@@ -186,7 +186,7 @@ abstract class ExportModel extends Model
      * encodeArrayValue prepares an array object for the file type.
      * @return mixed
      */
-    protected function encodeArrayValue($data, $delimeter = '|')
+    protected function encodeArrayValue($data, $delimiter = '|')
     {
         if (!is_array($data)) {
             return '';
@@ -196,7 +196,7 @@ abstract class ExportModel extends Model
             return $this->encodeArrayValueForJson($data);
         }
         else {
-            return $this->encodeArrayValueForCsv($data, $delimeter);
+            return $this->encodeArrayValueForCsv($data, $delimiter);
         }
     }
 }

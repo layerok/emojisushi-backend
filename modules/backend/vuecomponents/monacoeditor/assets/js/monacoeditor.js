@@ -1,4 +1,4 @@
-oc.Module.register('backend.component.monacoeditor', function () {
+oc.Modules.register('backend.component.monacoeditor', function () {
     let environmentInitialized = false;
     let emmetInitialized = false;
 
@@ -72,7 +72,7 @@ oc.Module.register('backend.component.monacoeditor', function () {
         component.timerId = setInterval(component.autoLayout, 100);
     }
 
-    const ModelDefinition = oc.Module.import('backend.vuecomponents.monacoeditor.modeldefinition');
+    const ModelDefinition = oc.Modules.import('backend.vuecomponents.monacoeditor.modeldefinition');
 
     /*
      * Vue Monaco editor implementation.

@@ -1,7 +1,7 @@
 /*
  * Vue Inspector object list control implementation
  */
-oc.Module.register('backend.component.inspector.control.objectlist', function () {
+oc.Modules.register('backend.component.inspector.control.objectlist', function () {
     Vue.component('backend-component-inspector-control-objectlist', {
         extends: $.oc.vueComponentHelpers.inspector.controlBase,
         props: {

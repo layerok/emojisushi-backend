@@ -145,6 +145,12 @@ trait OctoberUtilCommands
                 $contents .= PHP_EOL.File::get($selectPath).PHP_EOL;
             }
 
+            // Include the froala localization data
+            $froalaPath = base_path() . '/modules/backend/assets/vendor/froala/languages/'.str_replace('-', '_', strtolower($locale)).'.js';
+            if (File::exists($froalaPath)) {
+                $contents .= PHP_EOL.File::get($froalaPath).PHP_EOL;
+            }
+
             File::put($destPath, $contents);
 
             // Output notes

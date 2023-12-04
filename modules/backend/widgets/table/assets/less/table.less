@@ -96,13 +96,9 @@
             }
 
             &.active {
-                // border-bottom-color: @color-focus !important;
                 background: @input-bg;
 
                 .content-container {
-                    // padding: 0;
-                    // border: 1px solid @color-focus;
-
                     box-shadow: inset 0 0 1px 1px @color-focus;
 
                     input {
@@ -117,16 +113,11 @@
             background-color: @table-bg;
 
             &.error {
-                background-color: #fbecec!important;
+                background-color: var(--oc-table-active-bg, #fbecec)!important;
 
                 td.active.error {
-                    border-color: #ec0000!important;
-
                     .content-container {
-                        border-color: #ec0000!important;
-                        &:before, &:after {
-                            background-color: #ec0000!important;
-                        }
+                        box-shadow: inset 0 0 1px 1px #ec0000;
                     }
                 }
             }
@@ -294,11 +285,11 @@
 }
 
 ul.table-widget-autocomplete {
-    background: white;
+    background: @dropdown-bg;
     font-size: 13px;
     margin-top: 0;
-    border: 1px solid #808c8d;
-    border-top: 1px solid #ecf0f1;
+    border: 1px solid @table-active-border;
+    border-top: 1px solid @toolbar-border;
     .border-bottom-radius(4px);
 
     li a {
@@ -352,7 +343,7 @@ ul.table-widget-autocomplete {
         }
 
         [data-dropdown-open=true] {
-            background: white;
+            background: @primary-bg;
             [data-view-container]:after {
                 .icon(@angle-up);
             }
@@ -371,7 +362,7 @@ ul.table-widget-autocomplete {
         border-top: none;
         border-left: none;
         border-right: none;
-        .border-radius(0);
+        border-radius: 0;
     }
 
     .toolbar {
@@ -400,17 +391,17 @@ html.cssanimations {
 .table-control-dropdown-list {
     user-select: none;
     position: absolute;
-    background: white;
+    background: @dropdown-bg;
     border: 1px solid @table-active-border;
     border-top: none;
     padding-top: 1px;
     overflow: hidden;
     z-index: 1000;
-    .box-sizing(border-box);
+    box-sizing: border-box;
     .border-bottom-radius(4px);
 
     ul {
-        border-top: 1px solid #ecf0f1;
+        border-top: 1px solid @toolbar-border;
         padding: 0;
         margin: 0;
         max-height: 200px;
@@ -420,7 +411,7 @@ html.cssanimations {
     li {
         list-style: none;
         font-size: 13px;
-        color: #555555;
+        color: @text-color;
         padding: 5px 10px;
         cursor: pointer;
         outline: none;

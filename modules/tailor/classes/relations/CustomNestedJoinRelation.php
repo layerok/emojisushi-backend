@@ -5,7 +5,8 @@ use Illuminate\Database\Eloquent\Builder;
 use October\Rain\Database\Relations\BelongsToMany;
 
 /**
- * CustomNestedJoinRelation adds a field name, site identifier and relation morph.
+ * CustomNestedJoinRelation is used by tailor records, creating relationships
+ * to nested content joins via the "tailor_content_joins" table.
  *
  * @package october\tailor
  * @author Alexey Bobkov, Samuel Georges
@@ -121,14 +122,6 @@ class CustomNestedJoinRelation extends BelongsToMany
         ];
 
         return parent::attach($id, $attributes, $touch);
-    }
-
-    /**
-     * shouldSelect is modified to select all fields
-     */
-    protected function shouldSelect(array $columns = ['*'])
-    {
-        return array_merge($columns, $this->aliasedPivotColumns());
     }
 
     /**

@@ -432,7 +432,7 @@ class ThemeManager
             }
 
             foreach ($required as $require) {
-                if ($manager->hasPlugin($require)) {
+                if (!$require || $manager->hasPlugin($require)) {
                     continue;
                 }
 
@@ -492,7 +492,12 @@ class ThemeManager
         }
 
         // Lock theme
-        File::put($lockFile, 1);
+        try {
+            File::put($lockFile, 1);
+        }
+        catch (Exception $ex) {
+            return false;
+        }
 
         return true;
     }
@@ -511,7 +516,12 @@ class ThemeManager
         }
 
         // Unlock theme
-        File::delete($lockFile);
+        try {
+            File::delete($lockFile);
+        }
+        catch (Exception $ex) {
+            return false;
+        }
 
         return true;
     }

@@ -3,13 +3,112 @@
  */
 +function ($) { "use strict";
 
-    var RelationBehavior = function() {
+    class RelationBehavior extends oc.ControlBase
+    {
+        static instanceCounter = 0;
 
-        this.toggleListCheckbox = function(el) {
+        init() {
+            this.instanceNumber = ++this.constructor.instanceCounter;
+        }
+
+        connect() {
+            this.listen('trigger:after-update', this.extendExternalToolbar);
+
+            // External toolbar
+            oc.pageReady().then(() => {
+                this.initToolbarExtensionPoint();
+                this.mountExternalToolbarEventBusEvents();
+                this.extendExternalToolbar();
+            });
+        }
+
+        disconnect() {
+        }
+
+        initToolbarExtensionPoint() {
+            if (!this.config.externalToolbarAppState) {
+                return;
+            }
+
+            const point = $.oc.vueUtils.getToolbarExtensionPoint(
+                this.config.externalToolbarAppState,
+                this.element
+            );
+
+            if (point) {
+                this.toolbarExtensionPoint = point.state;
+                this.externalToolbarEventBusObj = point.bus;
+            }
+        }
+
+        mountExternalToolbarEventBusEvents() {
+            if (!this.externalToolbarEventBusObj) {
+                return;
+            }
+
+            this.externalToolbarEventBusObj.$on('toolbarcmd', this.proxy(this.onToolbarExternalCommand));
+            this.externalToolbarEventBusObj.$on('extendapptoolbar', this.proxy(this.extendExternalToolbar));
+        }
+
+        unmountExternalToolbarEventBusEvents() {
+            if (!this.externalToolbarEventBusObj) {
+                return;
+            }
+
+            this.externalToolbarEventBusObj.$off('toolbarcmd', this.proxy(this.onToolbarExternalCommand));
+            this.externalToolbarEventBusObj.$off('extendapptoolbar', this.proxy(this.extendExternalToolbar));
+        }
+
+        onToolbarExternalCommand(ev) {
+            var $el = $(this.element);
+            var cmdPrefix = 'relationcontroller-toolbar-' + this.instanceNumber + '-';
+
+            if (ev.command.substring(0, cmdPrefix.length) != cmdPrefix) {
+                return;
+            }
+
+            var buttonClassName = ev.command.substring(cmdPrefix.length),
+                $toolbar = $el.find('.relation-toolbar .control-toolbar'),
+                $button = $toolbar.find('[class="'+buttonClassName+'"]');
+
+            $button.get(0).click(ev.ev);
+        }
+
+        extendExternalToolbar() {
+            var $el = $(this.element);
+            if (!$el.is(":visible") || !this.toolbarExtensionPoint) {
+                return;
+            }
+
+            this.toolbarExtensionPoint.splice(0, this.toolbarExtensionPoint.length);
+
+            this.toolbarExtensionPoint.push({
+                type: 'separator'
+            });
+
+            var $buttons = $el.find('.relation-toolbar .control-toolbar .btn');
+
+            $buttons.each((index, button) => {
+                var $button = $(button),
+                    $icon = $button.find('i[class^=octo-icon]');
+
+                this.toolbarExtensionPoint.push(
+                    {
+                        type: 'button',
+                        icon: $icon.attr('class'),
+                        label: $button.text(),
+                        command: 'relationcontroller-toolbar-' + this.instanceNumber + '-' + $button.attr('class'),
+                        disabled: $button.attr('disabled') !== undefined
+                    }
+                );
+            });
+        }
+
+        static toggleListCheckbox(el) {
             $(el).closest('.control-list').listWidget('toggleChecked', [el]);
         }
 
-        this.clickViewListRecord = function(recordId, relationId, sessionKey, popupSize) {
+        static clickViewListRecord(recordId, relationId, sessionKey, popupSize) {
             var newPopup = $('<a />'),
                 $container = $('#'+relationId),
                 requestData = paramToObj('data-request-data', $container.data('request-data'));
@@ -24,7 +123,7 @@
             });
         }
 
-        this.clickManageListRecord = function(recordId, relationId, sessionKey) {
+        static clickManageListRecord(recordId, relationId, sessionKey) {
             var self = this,
                 oldPopup = $('#relationManagePopup'),
                 $container = $('#'+relationId),
@@ -45,7 +144,7 @@
             oldPopup.popup('hide');
         }
 
-        this.clickManagePivotListRecord = function(foreignId, relationId, sessionKey, popupSize) {
+        static clickManagePivotListRecord(foreignId, relationId, sessionKey, popupSize) {
             var oldPopup = $('#relationManagePivotPopup'),
                 newPopup = $('<a />'),
                 $container = $('#'+relationId),
@@ -68,15 +167,14 @@
         // This function is called every time a record is created, added, removed
         // or deleted using the relation widget. It triggers the change.oc.formwidget
         // event to notify other elements on the page about the changed form state.
-        this.changed = function(relationId, event) {
-            console.log(relationId+':'+event);
+        static changed(relationId, event) {
             $('[data-field-name="' + relationId + '"]').trigger('change.oc.formwidget', { event: event });
         }
 
         // This function transfers the supplied variables as hidden form inputs,
         // to any popup that is spawned within the supplied container. The spawned
         // popup must contain a form element.
-        this.bindToPopups = function(container, vars) {
+        static bindToPopups(container, vars) {
             $(container).on('show.oc.popup', function(event, $trigger, $modal){
                 var $form = $('form', $modal)
                 $.each(vars, function(name, value){
@@ -84,20 +182,25 @@
                 })
             })
         }
-
-        function paramToObj(name, value) {
-            if (value === undefined) value = ''
-            if (typeof value == 'object') return value
-
-            try {
-                return oc.parseJSON("{" + value + "}")
-            }
-            catch (e) {
-                throw new Error('Error parsing the '+name+' attribute value. '+e)
-            }
-        }
-
     }
 
-    $.oc.relationBehavior = new RelationBehavior;
+    function paramToObj(name, value) {
+        if (value === undefined) value = ''
+        if (typeof value == 'object') return value
+
+        try {
+            return oc.parseJSON("{" + value + "}")
+        }
+        catch (e) {
+            throw new Error('Error parsing the '+name+' attribute value. '+e)
+        }
+    }
+
+    oc.registerControl('relation-controller', RelationBehavior);
+
+    oc.relationBehavior = RelationBehavior;
+
+    // @deprecated
+    $.oc.relationBehavior = RelationBehavior;
+
 }(window.jQuery);

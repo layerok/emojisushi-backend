@@ -24,14 +24,14 @@ For every document type, a client-side extension code must provide at least two 
 Document controllers provide client-side features specific to a single document type supported by the extension. The client-side extension class must return the list of the supported document controllers using the `listDocumentControllerClasses()` method:
 
 ```
-oc.Module.register('editor.extension.cms.main', function() {
+oc.Modules.register('editor.extension.cms.main', function() {
     'use strict';
 
-    const { ExtensionBase } = oc.Module.import('editor.extension.base');
+    const { ExtensionBase } = oc.Modules.import('editor.extension.base');
 
     class CmsEditorExtension extends ExtensionBase {
         listDocumentControllerClasses() {
-            const { DocumentControllerPage } = oc.Module.import('cms.editor.extension.documentcontroller.page');
+            const { DocumentControllerPage } = oc.Modules.import('cms.editor.extension.documentcontroller.page');
 
             return [DocumentControllerPage];
         }
@@ -44,10 +44,10 @@ oc.Module.register('editor.extension.cms.main', function() {
 Document controller classes must extend the `editor.extension.documentcontroller.base`. Document controller classes must return the document type name they handle, and the name of the Vue component class. Example:
 
 ```
-oc.Module.register('cms.editor.extension.documentcontroller.layout', function() {
+oc.Modules.register('cms.editor.extension.documentcontroller.layout', function() {
     'use strict';
 
-    const DocumentControllerBase = oc.Module.import('editor.extension.documentcontroller.base');
+    const DocumentControllerBase = oc.Modules.import('editor.extension.documentcontroller.base');
 
     class DocumentControllerPage extends DocumentControllerBase {
         get documentType() {

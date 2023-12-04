@@ -1,4 +1,4 @@
-oc.Module.register('backend.component.documentmarkdowneditor.formwidgetconnector', function () {
+oc.Modules.register('backend.component.documentmarkdowneditor.formwidgetconnector', function () {
     Vue.component('backend-component-documentmarkdowneditor-formwidgetconnector', {
         props: {
             textarea: null,
@@ -37,8 +37,8 @@ oc.Module.register('backend.component.documentmarkdowneditor.formwidgetconnector
                 ]
             },
 
-            externalToolbarEventBus: function computeExternalToolbarEventBus() {
-                return this.options.externalToolbarEventBus;
+            externalToolbarAppState: function computeExternalToolbarAppState() {
+                return this.options.externalToolbarAppState;
             },
 
             toolbarExtensionPointProxy: function computeToolbarExtensionPointProxy() {
@@ -46,14 +46,12 @@ oc.Module.register('backend.component.documentmarkdowneditor.formwidgetconnector
                     return this.toolbarExtensionPoint;
                 }
 
-                // Expected format: tailor.app::toolbarExtensionPoint
-                const parts = this.options.externalToolbarAppState.split('::');
-                if (parts.length !== 2) {
-                    throw new Error('Invalid externalToolbarAppState format. Expected format: module.name::stateElementName');
-                }
+                const point = $.oc.vueUtils.getToolbarExtensionPoint(
+                    this.options.externalToolbarAppState,
+                    this.textarea
+                );
 
-                const app = oc.Module.import(parts[0]);
-                return app.state[parts[1]];
+                return point ? point.state : this.toolbarExtensionPoint;
             },
 
             hasExternalToolbar: function computeHasExternalToolbar() {

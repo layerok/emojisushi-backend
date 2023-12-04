@@ -44,11 +44,11 @@
 />
 
 <script>
-    // Always force a reload of the next page
-    oc.AjaxTurbo.controller.disable();
-
     $(document).on('click', '[data-color-mode]', function() {
         backendBrandSettingSetColorMode($(this).data('color-mode'));
+
+        // Always force a reload of the next page
+        oc.AjaxTurbo && oc.AjaxTurbo.controller.disable();
     });
 
     function backendBrandSettingSetColorMode(mode) {

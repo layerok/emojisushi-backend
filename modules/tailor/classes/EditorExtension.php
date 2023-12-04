@@ -118,6 +118,9 @@ class EditorExtension extends ExtensionBase
         }
     }
 
+    /**
+     * getNewDocumentsData
+     */
     public function getNewDocumentsData()
     {
         return [
@@ -125,6 +128,9 @@ class EditorExtension extends ExtensionBase
         ];
     }
 
+    /**
+     * hasAccessToDocType
+     */
     public static function hasAccessToDocType($user, $documentType)
     {
         if (!array_key_exists($documentType, EditorExtension::DOCUMENT_TYPE_PERMISSIONS)) {
@@ -151,7 +157,10 @@ class EditorExtension extends ExtensionBase
         ];
     }
 
-    private function getBlueprintTemplate($type)
+    /**
+     * getBlueprintTemplate
+     */
+    protected function getBlueprintTemplate($type)
     {
         $path = __DIR__.'/editorextension/templates/'.$type.'.yaml';
         if (!is_file($path)) {
@@ -161,7 +170,10 @@ class EditorExtension extends ExtensionBase
         return file_get_contents($path);
     }
 
-    private function addSectionMenuItems($section)
+    /**
+     * addSectionMenuItems
+     */
+    protected function addSectionMenuItems($section)
     {
         $user = BackendAuth::getUser();
 

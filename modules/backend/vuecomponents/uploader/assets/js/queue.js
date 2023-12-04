@@ -1,4 +1,4 @@
-oc.Module.register('backend.vuecomponents.uploader.queue', function() {
+oc.Modules.register('backend.vuecomponents.uploader.queue', function() {
     'use strict';
 
     function uploadAjaxRequest(handler, requestData, onProgress, cancelHolder) {

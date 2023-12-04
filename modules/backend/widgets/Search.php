@@ -14,41 +14,41 @@ use Backend\Classes\WidgetBase;
 class Search extends WidgetBase
 {
     //
-    // Configurable properties
+    // Configurable Properties
     //
 
     /**
-     * @var string Search placeholder text.
+     * @var string prompt is the search placeholder text.
      */
     public $prompt;
 
     /**
-     * @var bool Field show grow when selected.
+     * @var bool growable when selected.
      */
     public $growable = true;
 
     /**
-     * @var string Custom partial file definition, in context of the controller.
+     * @var string partial custom partial file definition, in context of the controller.
      */
     public $partial;
 
     /**
-     * @var string Defines the search mode. Commonly passed to the searchWhere() query.
+     * @var string mode defines the search mode. Commonly passed to the searchWhere() query.
      */
     public $mode;
 
     /**
-     * @var string Custom scope method name. Commonly passed to the query.
+     * @var string scope custom method name. Commonly passed to the query.
      */
     public $scope;
 
     /**
-     * @var bool Search on enter key instead of every key stroke.
+     * @var bool searchOnEnter searches on enter key instead of every key stroke.
      */
     public $searchOnEnter = false;
 
     //
-    // Object properties
+    // Object Properties
     //
 
     /**
@@ -90,6 +90,8 @@ class Search extends WidgetBase
      */
     protected function loadAssets()
     {
+        // @deprecated use controls\searchinput\searchinput.js
+        // update html to use searchinput instead of searchwidget
         $this->addJs('js/october.search.js');
     }
 

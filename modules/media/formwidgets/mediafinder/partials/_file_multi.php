@@ -6,7 +6,6 @@
     data-input-name="<?= $field->getName() ?>"
     <?php if ($maxItems): ?>data-max-items="<?= $maxItems ?>"<?php endif ?>
     <?php if ($externalToolbarAppState): ?>data-external-toolbar-app-state="<?= e($externalToolbarAppState)?>"<?php endif ?>
-    <?php if ($externalToolbarEventBus): ?>data-external-toolbar-event-bus="<?= e($externalToolbarEventBus)?>"<?php endif ?>
     <?= $field->getAttributes() ?>
 >
     <div class="empty-state">
@@ -25,7 +24,7 @@
                 disabled
             >
                 <i class="octo-icon-common-file-remove"></i>
-                <span class="button-label"><?= e(trans('backend::lang.fileupload.delete_selected')) ?> <span></span></span>
+                <span class="button-label"><?= __("Delete Selected") ?> <span></span></span>
             </button>
         </div>
 
@@ -53,4 +52,4 @@
     </div>
 </div>
 
-<?= $this->makePartial('file_item_template', ['modeMulti' => true]) ?>
+<?= $this->makePartial('template_file', ['modeMulti' => true]) ?>

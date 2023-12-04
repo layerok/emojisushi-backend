@@ -1,4 +1,4 @@
-oc.Module.register('editor.timeoutpromise', function() {
+oc.Modules.register('editor.timeoutpromise', function() {
     'use strict';
     // Guarantees a minimum time for executing an operation.
     //

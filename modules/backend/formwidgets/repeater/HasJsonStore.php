@@ -10,6 +10,10 @@ trait HasJsonStore
      */
     protected function processSaveForJson($value)
     {
+        if (!is_array($value) || !$value) {
+            return null;
+        }
+
         foreach ($value as $index => $data) {
             if (!isset($this->formWidgets[$index])) {
                 continue;

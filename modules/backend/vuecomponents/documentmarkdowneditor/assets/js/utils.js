@@ -1,4 +1,4 @@
-oc.Module.register('backend.vuecomponents.documentmarkdowneditor.utils', function() {
+oc.Modules.register('backend.vuecomponents.documentmarkdowneditor.utils', function() {
     'use strict';
 
     class Utils {

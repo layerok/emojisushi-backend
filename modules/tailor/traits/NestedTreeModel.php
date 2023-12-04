@@ -1,11 +1,11 @@
 <?php namespace Tailor\Traits;
 
-use Lang;
+use Exception;
 
 /**
  * NestedTreeModel is modified to allow disabling the trait
  *
- * @package october\database
+ * @package october\tailor
  * @author Alexey Bobkov, Samuel Georges
  */
 trait NestedTreeModel

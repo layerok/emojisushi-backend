@@ -5,6 +5,7 @@
 @color-inspector-bg:                         @input-bg;
 @color-inspector-color:                      @primary-color;
 @color-inspector-border:                     @primary-border;
+@color-inspector-label-bg:                   @input-bg;
 @color-inspector-value-bg:                   @input-bg;
 @color-inspector-value-color:                @input-color;
 @color-inspector-active-bg:                  @input-bg;
@@ -15,7 +16,7 @@
 // --------------------------------------------------
 
 .inspector-autocomplete-list() {
-    background: white;
+    background: @dropdown-bg;
     font-size: 12px;
     z-index: @zindex-inspector;
 
@@ -36,17 +37,18 @@
     td, th {
         padding: 5px 12px;
         font-size: 12px;
-        width: 50%;
         border-bottom: 1px solid @color-inspector-border;
         text-align: left;
     }
 
     th {
         color: @color-inspector-color;
+        width: 45%;
     }
 
     td {
         color: @color-inspector-value-color;
+        width: 55%;
     }
 
     tr:last-child {
@@ -63,7 +65,7 @@
         user-select: none;
 
         th {
-            background: @tertiary-bg;
+            // background: @tertiary-bg;
             font-weight: 600;
             cursor: pointer;
         }
@@ -96,6 +98,14 @@
         }
     }
 
+    &:not(:hover) td {
+        border-left-color: transparent;
+    }
+
+    th {
+        background: @color-inspector-label-bg;
+    }
+
     td {
         font-weight: 400;
         border-left: 1px solid @color-inspector-border;
@@ -103,25 +113,15 @@
         white-space: nowrap;
         overflow: hidden;
         background: @color-inspector-value-bg;
+        transition: border-left-color 0.35s;
 
         &.text {
             input[type=text] {
                 background: @color-inspector-value-bg;
                 color: @color-inspector-value-color;
+                text-overflow: ellipsis;
 
-                &::-webkit-input-placeholder {
-                    font-weight: normal!important;
-                    color: #b5babd;
-                }
-                &:-moz-placeholder {
-                    font-weight: normal!important;
-                    color: #b5babd;
-                }
-                &::-moz-placeholder {
-                    font-weight: normal!important;
-                    color: #b5babd;
-                }
-                &:-ms-input-placeholder {
+                &::placeholder {
                     font-weight: normal!important;
                     color: #b5babd;
                 }
@@ -266,7 +266,7 @@
                div.external-editor {
                     div.controls {
                         input {
-                            background: @input-bg;
+                            background: @secondary-bg;
                         }
                     }
                 }
@@ -426,14 +426,51 @@ div.control-popover {
                 display: none;
             }
         }
+
+        > div > form {
+            padding: 5px 20px 10px;
+        }
+
+        .popover-head {
+            padding-left: 20px;
+            padding-right: 20px;
+        }
+
+        .inspector-fields {
+            th {
+                padding-left: 0;
+            }
+        }
     }
 
     &.hero {
+        > div {
+            border-radius: 8px;
+        }
+
+        .popover-head {
+            .border-top-radius(8px);
+
+            h3 {
+                font-weight: normal;
+                font-size: 18px;
+            }
+
+            .btn-close {
+                top: 16px;
+                right: 17px;
+            }
+        }
+
         .inspector-fields {
             th, td {
                 padding: 9px 12px;
                 font-weight: 600!important;
                 font-size: 13px;
+            }
+
+            th {
+                padding-left: 0;
             }
 
             td {
@@ -561,7 +598,7 @@ div.inspector-dictionary-container {
     padding: 14px 16px;
     position: relative;
     color: @color-popover-head-text;
-    border-bottom: 2px solid @color-popover-border;
+    border-bottom: 1px solid @color-popover-border;
 
     h3 {
         font-size: @font-size-base + 1;

@@ -1,7 +1,7 @@
-oc.Module.register('cms.editor.intellisense.completer.partials', function() {
+oc.Modules.register('cms.editor.intellisense.completer.partials', function() {
     'use strict';
 
-    const CompleterBase = oc.Module.import('cms.editor.intellisense.completer.base');
+    const CompleterBase = oc.Modules.import('cms.editor.intellisense.completer.base');
 
     class CompleterOctoberPartials extends CompleterBase {
         get triggerCharacters() {
@@ -29,7 +29,7 @@ oc.Module.register('cms.editor.intellisense.completer.partials', function() {
 
             const textUntilPosition = this.intellisense.utils.textUntilPosition(model, position);
             const textAfterPosition = this.intellisense.utils.textAfterPosition(model, position);
-            const wordMatches = textUntilPosition.match(/\{%\s+partial\s+("|')(\w|\/|\-)*$/);
+            const wordMatches = textUntilPosition.match(/\{%\s+(partial|ajaxPartial)\s+("|')(\w|\/|\-)*$/);
             if (!wordMatches) {
                 return;
             }

@@ -1,7 +1,7 @@
-<?php if ($this->useController): ?>
-    <?= $this->controller->relationRender($this->valueFrom) ?>
-<?php else: ?>
-    <div class="relation-widget" id="<?= $this->getId() ?>">
+<div class="relation-widget" id="<?= $this->getId() ?>">
+    <?php if ($this->useController): ?>
+        <?= $this->controller->relationRender($this->valueFrom, ['readOnlyDefault' => $this->previewMode]) ?>
+    <?php else: ?>
         <?= $this->makePartial('~/modules/backend/widgets/form/partials/_field_'.$field->type.'.php', ['field' => $field]) ?>
-    </div>
-<?php endif ?>
+    <?php endif ?>
+</div>

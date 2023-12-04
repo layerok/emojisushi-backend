@@ -2,7 +2,7 @@
 
 use File;
 use Markdown;
-use Cms\Classes\PageLookup;
+use Cms\Classes\PageManager;
 
 /**
  * Content file class.
@@ -61,11 +61,11 @@ class Content extends CmsCompoundObject
 
         switch ($extension) {
             case 'html':
-                $result = PageLookup::processMarkup($result);
+                $result = PageManager::processMarkup($result);
                 break;
             case 'md':
                 $result = Markdown::parse((string) $result);
-                $result = PageLookup::processMarkup($result);
+                $result = PageManager::processMarkup($result);
                 break;
             case 'txt':
                 $result = htmlspecialchars($result);

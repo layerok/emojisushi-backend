@@ -101,7 +101,7 @@ class Updates extends Controller
      */
     public function manage()
     {
-        $this->pageTitle = 'Manage Plugins';
+        $this->pageTitle = "Manage Plugins";
         PluginManager::instance()->clearDisabledCache();
 
         $this->vars['canUpdate'] = BackendAuth::userHasAccess('general.backend.perform_updates');

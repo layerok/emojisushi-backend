@@ -7,7 +7,6 @@
     data-template="#<?= $this->getId('template') ?>"
     data-input-name="<?= $field->getName() ?>"
     <?php if ($externalToolbarAppState): ?>data-external-toolbar-app-state="<?= e($externalToolbarAppState)?>"<?php endif ?>
-    <?php if ($externalToolbarEventBus): ?>data-external-toolbar-event-bus="<?= e($externalToolbarEventBus)?>"<?php endif ?>
     <?= $field->getAttributes() ?>
 >
     <div class="empty-state">
@@ -36,6 +35,7 @@
                 data-thumb-url="<?= $singleFile->thumbUrl ?? '' ?>"
                 data-path="<?= e($singleFile->path ?? '') ?>"
                 data-title="<?= e($singleFile->title ?? '') ?>"
+                data-document-type="<?= e($singleFile ? $singleFile->getFileType() : '') ?>"
             ></div>
         </div>
     </div>
@@ -50,4 +50,4 @@
     </div>
 </div>
 
-<?= $this->makePartial('image_item_template') ?>
+<?= $this->makePartial('template_image') ?>

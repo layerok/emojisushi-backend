@@ -1,7 +1,7 @@
 /*
  * Vue Inspector set control implementation
  */
-oc.Module.register('backend.component.inspector.control.set', function () {
+oc.Modules.register('backend.component.inspector.control.set', function () {
     Vue.component('backend-component-inspector-control-set', {
         extends: $.oc.vueComponentHelpers.inspector.controlBase,
         props: {

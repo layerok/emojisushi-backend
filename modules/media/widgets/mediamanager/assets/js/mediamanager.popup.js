@@ -10,11 +10,11 @@
         BaseProto = Base.prototype
 
     var MediaManagerPopup = function(options) {
-        this.$popupRootElement = null
+        this.$popupRootElement = null;
 
-        this.options = $.extend({}, MediaManagerPopup.DEFAULTS, options)
+        this.options = $.extend({}, MediaManagerPopup.DEFAULTS, options);
 
-        Base.call(this)
+        Base.call(this);
 
         this.init();
         this.show();
@@ -54,8 +54,12 @@
 
     MediaManagerPopup.prototype.show = function() {
         var data = {
-            bottomToolbar: this.options.bottomToolbar ? 1 : 0,
-            cropAndInsertButton: this.options.cropAndInsertButton ? 1 : 0
+            bottom_toolbar: this.options.bottomToolbar ? 1 : 0,
+            crop_insert_button: this.options.cropAndInsertButton ? 1 : 0
+        }
+
+        if (this.options.mediaFolder) {
+            data.media_folder = this.options.mediaFolder;
         }
 
         this.$popupRootElement.popup({
@@ -117,7 +121,7 @@
 
         // Unfocus other form fields, otherwise all keyboard commands
         // may the Media Manager popup translate to the form widget.
-        this.getMediaManagerElement().mediaManager('selectFirstItem')
+        this.getMediaManagerElement().mediaManager('selectFirstItem');
     }
 
     MediaManagerPopup.prototype.onPopupCommand = function(ev, command, param) {
@@ -136,6 +140,7 @@
 
     MediaManagerPopup.DEFAULTS = {
         alias: undefined,
+        mediaFolder: null,
         bottomToolbar: true,
         cropAndInsertButton: false,
         onInsert: undefined,

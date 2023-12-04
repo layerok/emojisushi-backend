@@ -1,7 +1,7 @@
-oc.Module.register('cms.editor.intellisense.hoverprovider.octobertags', function() {
+oc.Modules.register('cms.editor.intellisense.hoverprovider.octobertags', function() {
     'use strict';
 
-    const HoverProviderBase = oc.Module.import('cms.editor.intellisense.hoverprovider.base');
+    const HoverProviderBase = oc.Modules.import('cms.editor.intellisense.hoverprovider.base');
 
     class HoverProviderOctoberTags extends HoverProviderBase {
         getOctoberTags() {

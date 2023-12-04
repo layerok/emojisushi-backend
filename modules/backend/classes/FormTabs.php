@@ -14,7 +14,7 @@ use October\Rain\Element\Form\FieldsetDefinition;
  * @method FormTabs activeTab(string $activeTab) activeTab is the selected tab when the form first loads, name or index.
  * @method FormTabs icons(array $icons) icons lists of icons for their corresponding tabs
  * @method FormTabs stretch(bool $stretch) stretch should these tabs stretch to the bottom of the page layout
- * @method FormTabs cssClass(string $cssClass) cssClass cpecifies a CSS class to attach to the tab container
+ * @method FormTabs cssClass(string $cssClass) cssClass specifies a CSS class to attach to the tab container
  * @method FormTabs paneCssClass(array $paneCssClass) paneCssClass specifies a CSS class to an individual tab pane
  * @method FormTabs linkable(bool $linkable) linkable means tab gets url fragment to be linkable
  *

@@ -449,8 +449,12 @@ class FormField extends FieldDefinition
      */
     public function getOptionsFromModel($model, $fieldOptions, $data)
     {
+        // Preset
+        if (is_string($fieldOptions) && str_starts_with($fieldOptions, 'preset:')) {
+            $fieldOptions = \System\Classes\PresetManager::instance()->getPreset($fieldOptions);
+        }
         // Method name
-        if (is_string($fieldOptions)) {
+        elseif (is_string($fieldOptions)) {
             $fieldOptions = $this->getOptionsFromModelAsString($model, $fieldOptions, $data);
         }
         // Default collection

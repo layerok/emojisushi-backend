@@ -1,9 +1,9 @@
-oc.Module.register('editor.extension.cms.main', function() {
+oc.Modules.register('editor.extension.cms.main', function() {
     'use strict';
 
-    const ExtensionBase = oc.Module.import('editor.extension.base');
-    const DocumentUri = oc.Module.import('editor.documenturi');
-    const EditorCommand = oc.Module.import('editor.command');
+    const ExtensionBase = oc.Modules.import('editor.extension.base');
+    const DocumentUri = oc.Modules.import('editor.documenturi');
+    const EditorCommand = oc.Modules.import('editor.command');
 
     // Declaring this as a scoped variable. For some reason,
     // making this a property of CmsEditorExtension causes
@@ -32,17 +32,17 @@ oc.Module.register('editor.extension.cms.main', function() {
         setInitialState(initialState) {
             super.setInitialState(initialState);
 
-            this.intellisense = oc.Module.import('cms.editor.intellisense').make(this.state.customData);
+            this.intellisense = oc.Modules.import('cms.editor.intellisense').make(this.state.customData);
             this.intellisense.on('onTokenClick', (tokenClickData) => this.onTokenClick(tokenClickData));
         }
 
         listDocumentControllerClasses() {
             return [
-                oc.Module.import('cms.editor.extension.documentcontroller.page'),
-                oc.Module.import('cms.editor.extension.documentcontroller.layout'),
-                oc.Module.import('cms.editor.extension.documentcontroller.partial'),
-                oc.Module.import('cms.editor.extension.documentcontroller.content'),
-                oc.Module.import('cms.editor.extension.documentcontroller.asset')
+                oc.Modules.import('cms.editor.extension.documentcontroller.page'),
+                oc.Modules.import('cms.editor.extension.documentcontroller.layout'),
+                oc.Modules.import('cms.editor.extension.documentcontroller.partial'),
+                oc.Modules.import('cms.editor.extension.documentcontroller.content'),
+                oc.Modules.import('cms.editor.extension.documentcontroller.asset')
             ];
         }
 

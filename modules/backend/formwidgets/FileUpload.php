@@ -29,7 +29,7 @@ class FileUpload extends FormWidgetBase
     use \Backend\Traits\FormModelWidget;
 
     //
-    // Configurable properties
+    // Configurable Properties
     //
 
     /**
@@ -43,7 +43,7 @@ class FileUpload extends FormWidgetBase
     public $imageHeight = 190;
 
     /**
-     * @var mixed fileTypes accpetd
+     * @var mixed fileTypes accepted
      */
     public $fileTypes = false;
 
@@ -65,18 +65,10 @@ class FileUpload extends FormWidgetBase
     /**
      * @var string Defines a mount point for the editor toolbar.
      * Must include a module name that exports the Vue application and a state element name.
-     * Format: module.name::stateElementName
+     * Format: stateElementName
      * Only works in Vue applications and form document layouts.
      */
     public $externalToolbarAppState = null;
-
-    /**
-     * @var string Defines an event bus for an external toolbar.
-     * Must include a module name that exports the Vue application and a state element name.
-     * Format: module.name::eventBus
-     * Only works in Vue applications and form document layouts.
-     */
-    public $externalToolbarEventBus = null;
 
     /**
      * @var array thumbOptions used for generating thumbnails
@@ -97,7 +89,7 @@ class FileUpload extends FormWidgetBase
     public $deferredBinding = true;
 
     //
-    // Object properties
+    // Object Properties
     //
 
     /**
@@ -128,8 +120,7 @@ class FileUpload extends FormWidgetBase
             'thumbOptions',
             'useCaption',
             'deferredBinding',
-            'externalToolbarAppState',
-            'externalToolbarEventBus'
+            'externalToolbarAppState'
         ]);
 
         // @deprecated API
@@ -187,7 +178,6 @@ class FileUpload extends FormWidgetBase
         $this->vars['cssDimensions'] = $this->getCssDimensions();
         $this->vars['useCaption'] = $this->useCaption;
         $this->vars['externalToolbarAppState'] = $this->externalToolbarAppState;
-        $this->vars['externalToolbarEventBus'] = $this->externalToolbarEventBus;
     }
 
     /**
@@ -430,7 +420,7 @@ class FileUpload extends FormWidgetBase
             }
 
             $fileModel = $this->getRelationModel();
-            $uploadedFile = Input::file('file_data');
+            $uploadedFile = files('file_data');
 
             $validationRules = ['max:'.($this->maxFilesize * 1024)];
             if ($fileTypes = $this->getAcceptedFileTypes()) {
@@ -455,6 +445,19 @@ class FileUpload extends FormWidgetBase
             }
 
             $fileRelation = $this->getRelationObject();
+
+            // Check and clean vector files
+            // @deprecated v4 this should be moved to a post processing method on the file model
+            $extension = strtolower($uploadedFile->getClientOriginalExtension());
+            // @deprecated media.clean_vectors set default to true in v4
+            if ($extension === 'svg' && \Config::get('media.clean_vectors', false)) {
+                // getRealPath() can be empty for some environments (IIS)
+                $realPath = empty(trim($uploadedFile->getRealPath()))
+                    ? $uploadedFile->getPath() . DIRECTORY_SEPARATOR . $uploadedFile->getFileName()
+                    : $uploadedFile->getRealPath();
+
+                \File::put($realPath, \Html::cleanVector(\File::get($realPath)));
+            }
 
             $file = $fileModel;
             $file->data = $uploadedFile;

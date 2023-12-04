@@ -54,7 +54,7 @@ class NavigationManager
     /**
      * @var array menuDisplayTree
      */
-    protected static $menuDisplayTree;
+    protected $menuDisplayTree;
 
     /**
      * loadItems from modules and plugins
@@ -449,24 +449,24 @@ class NavigationManager
      */
     public function listMainMenuItemsWithSubitems()
     {
-        if (self::$menuDisplayTree !== null) {
-            return self::$menuDisplayTree;
+        if ($this->menuDisplayTree !== null) {
+            return $this->menuDisplayTree;
         }
 
         $mainMenuItems = $this->listMainMenuItems();
-        self::$menuDisplayTree = [];
+        $this->menuDisplayTree = [];
 
         foreach ($mainMenuItems as $mainMenuItem) {
             $subMenuItems = $this->listSideMenuItems($mainMenuItem->owner, $mainMenuItem->code);
 
-            self::$menuDisplayTree[] = (object)[
+            $this->menuDisplayTree[] = (object)[
                 'mainMenuItem' => $mainMenuItem,
                 'subMenuItems' => $subMenuItems,
                 'subMenuHasDropdown' => $mainMenuItem->useDropdown && count($subMenuItems)
             ];
         }
 
-        return self::$menuDisplayTree;
+        return $this->menuDisplayTree;
     }
 
     /**
@@ -684,5 +684,14 @@ class NavigationManager
     protected function makeItemKey($owner, $code)
     {
         return strtoupper($owner).'.'.strtoupper($code);
+    }
+
+    /**
+     * resetCache resets any memory or cache involved with the sites
+     */
+    public function resetCache()
+    {
+        $this->items = null;
+        $this->menuDisplayTree = null;
     }
 }

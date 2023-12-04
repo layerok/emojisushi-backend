@@ -5,8 +5,7 @@ use System;
 use October\Rain\Database\Model;
 
 /**
- * Parameter model
- * Used for storing internal application parameters.
+ * Parameter model is used for storing internal application parameters.
  *
  * @package october\system
  * @author Alexey Bobkov, Samuel Georges
@@ -26,7 +25,7 @@ class Parameter extends Model
     public $timestamps = false;
 
     /**
-     * @var array cache
+     * @var array cache is an internal cache of model values.
      */
     protected static $cache = [];
 
@@ -40,11 +39,11 @@ class Parameter extends Model
      */
     public function afterSave()
     {
-        Cache::forget(implode('-', [$this->table, $this->namespace, $this->group, $this->item]));
+        $this->clearCache();
     }
 
     /**
-     * Returns a setting value by the module (or plugin) name and setting name.
+     * get returns a setting value by the module (or plugin) name and setting name.
      * @param string $key Specifies the setting key value, for example 'system:updates.check'
      * @param mixed $default The default value to return if the setting doesn't exist in the DB.
      * @return mixed Returns the setting value loaded from the database or the default value.
@@ -64,7 +63,7 @@ class Parameter extends Model
     }
 
     /**
-     * Stores a setting value to the database.
+     * set stores a setting value to the database.
      * @param string $key Specifies the setting key value, for example 'system:updates.check'
      * @param mixed $value The setting value to store, serializable.
      * @return bool
@@ -95,7 +94,7 @@ class Parameter extends Model
     }
 
     /**
-     * Resets a setting value by deleting the record.
+     * reset a setting value by deleting the record.
      * @param string $key Specifies the setting key value.
      * @return bool
      */
@@ -113,7 +112,15 @@ class Parameter extends Model
     }
 
     /**
-     * Returns a record (cached)
+     * clearCache
+     */
+    public function clearCache()
+    {
+        Cache::forget($this->getCacheKey());
+    }
+
+    /**
+     * findRecord returns a record with cache
      * @return self
      */
     public static function findRecord($key)
@@ -124,19 +131,20 @@ class Parameter extends Model
 
         $record = new static;
 
-        [$namespace, $group, $item] = $record->parseKey($key);
-
         return $record
             ->applyKey($key)
-            ->remember(5, implode('-', [$record->getTable(), $namespace, $group, $item]))
+            ->remember(5, $record->getCacheKey($key))
             ->first()
         ;
     }
 
     /**
-     * Scope to find a setting record for the specified module (or plugin) name and setting name.
-     * @param string $key Specifies the setting key value, for example 'system:updates.check'
-     * @param mixed $default The default value to return if the setting doesn't exist in the DB.
+     * scopeApplyKey is a scope to find a setting record for the specified module
+     * (or plugin) name and setting name. Key specifies the setting key value,
+     * for example 'system:updates.check'. The default value to return if the setting
+     * doesn't exist in the DB.
+     * @param string $key
+     * @param mixed $default
      * @return QueryBuilder
      */
     public function scopeApplyKey($query, $key)
@@ -150,5 +158,28 @@ class Parameter extends Model
         ;
 
         return $query;
+    }
+
+    /**
+     * getCacheKey returns a cache key for this record.
+     */
+    public function getCacheKey($key = null)
+    {
+        if ($key !== null) {
+            [$namespace, $group, $item] = $this->parseKey($key);
+
+            return implode('-', [$this->table, $namespace, $group, $item]);
+        }
+
+        return implode('-', [$this->table, $this->namespace, $this->group, $this->item]);
+    }
+
+    /**
+     * clearInternalCache of model cache values.
+     * @return void
+     */
+    public static function clearInternalCache()
+    {
+        static::$cache = [];
     }
 }

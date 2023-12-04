@@ -189,7 +189,7 @@ trait NavigationRegistry
             return null;
         }
 
-        // Explictily disabled by config
+        // Explicitly disabled by config
         if ($isDefined && $blueprint->$prop === false) {
             return null;
         }

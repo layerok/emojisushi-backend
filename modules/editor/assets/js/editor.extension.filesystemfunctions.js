@@ -1,4 +1,4 @@
-oc.Module.register('editor.extension.filesystemfunctions', function () {
+oc.Modules.register('editor.extension.filesystemfunctions', function () {
     'use strict';
 
     async function onCreateDirectoryConfirmed(handlerName, name, parent, payload, metadataExtraData, documentController) {
@@ -41,7 +41,7 @@ oc.Module.register('editor.extension.filesystemfunctions', function () {
     }
 
     async function onFilesSelected(handlerName, input, path, documentController, requestExtraData) {
-        const uploaderUtils = oc.Module.import('backend.vuecomponents.uploader.utils');
+        const uploaderUtils = oc.Modules.import('backend.vuecomponents.uploader.utils');
         requestExtraData = requestExtraData || {};
 
         try {
@@ -202,7 +202,7 @@ oc.Module.register('editor.extension.filesystemfunctions', function () {
         }
 
         handleNavigatorExternalDrop(handlerName, cmd, requestExtraData) {
-            const uploaderUtils = oc.Module.import('backend.vuecomponents.uploader.utils');
+            const uploaderUtils = oc.Modules.import('backend.vuecomponents.uploader.utils');
             const dataTransfer = cmd.userData.ev.dataTransfer;
             requestExtraData = requestExtraData || {};
 

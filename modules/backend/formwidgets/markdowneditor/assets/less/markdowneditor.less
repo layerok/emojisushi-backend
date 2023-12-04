@@ -238,7 +238,7 @@
         }
 
         .CodeMirror-scroll {
-            min-height: 20px!important;
+            min-height: 20px !important;
         }
 
         .component-backend-document {
@@ -303,6 +303,19 @@
 
 //
 // Default theme
+//
+
+.field-markdowneditor .CodeMirror {
+    .CodeMirror-cursor {
+        border-color: @emphasis-color;
+    }
+
+    .CodeMirror-selected,
+    .CodeMirror-selectedtext {
+        background: @input-selection-bg;
+        color: @input-selection-color;
+    }
+}
 
 .field-markdowneditor .editor-preview {
     color: #515c5d;

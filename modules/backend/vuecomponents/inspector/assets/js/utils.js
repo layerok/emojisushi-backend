@@ -1,4 +1,4 @@
-oc.Module.register('backend.component.inspector.utils', function () {
+oc.Modules.register('backend.component.inspector.utils', function () {
     var InspectorUtils = function() {
         var validator = null;
 

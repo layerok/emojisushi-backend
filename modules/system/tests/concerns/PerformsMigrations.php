@@ -31,6 +31,18 @@ trait PerformsMigrations
     }
 
     /**
+     * migrateApp
+     */
+    protected function migrateApp()
+    {
+        $manager = UpdateManager::instance();
+
+        $manager->rollbackApp();
+
+        $manager->migrateApp();
+    }
+
+    /**
      * migrateModules
      */
     protected function migrateModules()
@@ -41,7 +53,7 @@ trait PerformsMigrations
         // Migrate modules
         UpdateManager::instance()->update();
 
-        // Reregister all plugins
+        // Re-register all plugins
         PluginManager::instance()->loadPlugins();
     }
 
@@ -52,9 +64,13 @@ trait PerformsMigrations
     {
         // Detect plugin from test and autoload it
         $pluginCode = $this->guessPluginCodeFromTest();
-
         if ($pluginCode !== false) {
             $this->migratePluginInternal($pluginCode, false);
+        }
+
+        // Current plugin is the app
+        if ($this->isAppCodeFromTest()) {
+            $this->migrateApp();
         }
     }
 
@@ -96,7 +112,7 @@ trait PerformsMigrations
         $manager->rollbackPlugin($code);
 
         // Migrate plugin
-        $manager->updatePlugin($code);
+        $manager->migratePlugin($code);
     }
 
     /**

@@ -133,6 +133,10 @@
         }
     }
 
+    Surface.prototype.getEventHandler = function(handler) {
+        return $.oc.inspector.helpers.getEventHandler(this.getInspectableElement(), handler);
+    }
+
     //
     // Building
     //
@@ -271,25 +275,25 @@
             return
         }
 
-        var groupManager = this.getGroupManager()
+        var groupManager = this.getGroupManager();
 
         for (var i = 0, len = this.editors.length; i < len; i++) {
             var editor = this.editors[i],
-                group = editor.parentGroup
+                group = editor.parentGroup;
 
             if (group && !this.groupManager.isGroupExpanded(group) ) {
-                continue
+                continue;
             }
 
             var externalParameterEditor = this.findExternalParameterEditor(editor.getPropertyName())
 
             if (externalParameterEditor && externalParameterEditor.isEditorVisible()) {
-                externalParameterEditor.focus()
-                return
+                externalParameterEditor.focus();
+                return;
             }
 
-            editor.focus()
-            return
+            editor.focus();
+            return;
         }
     }
 
@@ -392,16 +396,16 @@
 
     Surface.prototype.applyGroupLevelToRow = function(row, group) {
         if (row.hasAttribute('data-group-level')) {
-            return
+            return;
         }
 
-        var th = this.getRowHeadElement(row)
+        var th = this.getRowHeadElement(row);
 
         if (th === null) {
-            throw new Error('Cannot find TH element for the Inspector row')
+            throw new Error('Cannot find TH element for the Inspector row');
         }
 
-        var groupLevel = group.getLevel()
+        var groupLevel = group.getLevel();
 
         row.setAttribute('data-group-level', groupLevel)
         th.children[0].style.marginLeft = groupLevel*10 + 'px'

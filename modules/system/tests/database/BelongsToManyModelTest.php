@@ -113,7 +113,7 @@ class BelongsToManyModelTest extends PluginTestCase
         $this->assertEquals([$role1->id, $role2->id], $relatedIds);
 
         // Commit deferred
-        $author->save(null, $sessionKey);
+        $author->save(['sessionKey' => $sessionKey]);
         $this->assertEquals(2, $author->roles()->count());
         $this->assertEquals('Designer', $author->roles->first()->name);
 
@@ -128,7 +128,7 @@ class BelongsToManyModelTest extends PluginTestCase
         $this->assertEquals('Designer', $author->roles->first()->name);
 
         // Commit deferred
-        $author->save(null, $sessionKey);
+        $author->save(['sessionKey' => $sessionKey]);
         $this->assertEquals(0, $author->roles()->count());
         $this->assertEquals(0, $author->roles->count());
     }
@@ -167,7 +167,7 @@ class BelongsToManyModelTest extends PluginTestCase
         $this->assertEquals([$post1->id, $post2->id], $relatedIds);
 
         // Commit deferred
-        $category->save(null, $sessionKey);
+        $category->save(['sessionKey' => $sessionKey]);
         $this->assertEquals(2, $category->posts()->count());
         $this->assertEquals('First post', $category->posts->first()->title);
         $this->assertEquals('Second post', $category->posts->last()->title);
@@ -192,7 +192,7 @@ class BelongsToManyModelTest extends PluginTestCase
         $this->assertEquals('News in pivot', $category->posts->last()->pivot->category_name);
 
         // Commit deferred
-        $category->save(null, $sessionKey);
+        $category->save(['sessionKey' => $sessionKey]);
         $this->assertEquals(0, $category->posts()->count());
         $this->assertEquals(0, $category->posts->count());
     }

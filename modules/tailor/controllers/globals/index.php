@@ -8,7 +8,7 @@
 
     <?= Form::open(['class' => 'layout']) ?>
         <div class="layout-row">
-            <div class="mw-950">
+            <div class="mw-<?= $formSize ?>">
                 <?= $this->formRender() ?>
             </div>
         </div>

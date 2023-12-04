@@ -20,8 +20,8 @@
                 name="<?= $field->getName() ?>"
                 value="<?= e($value) ?>"
                 type="radio"
-                <?= $field->isSelected($value) ? 'checked="checked"' : '' ?>
-                <?= $this->previewMode ? 'disabled="disabled"' : '' ?>
+                <?= $field->isSelected($value) ? 'checked' : '' ?>
+                <?= $this->previewMode ? 'disabled' : '' ?>
                 <?= $field->getAttributes() ?>
             />
 

@@ -21,7 +21,7 @@ App::before(function ($request) {
      * Other pages
      */
     Route::group([
-            'middleware' => ['web'],
+            'middleware' => Config::get('backend.middleware_group', 'web'),
             'prefix' => Backend::uri()
         ], function () {
             Route::any('{slug?}', [\Backend\Classes\BackendController::class, 'run'])
@@ -34,7 +34,7 @@ App::before(function ($request) {
      * Entry point
      */
     Route::any(Backend::uri(), [\Backend\Classes\BackendController::class, 'run'])
-        ->middleware('web')
+        ->middleware(Config::get('backend.middleware_group', 'web'))
     ;
 
     /**

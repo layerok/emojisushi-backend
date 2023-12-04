@@ -13,6 +13,6 @@ abstract class ComponentModuleBase extends ComponentBase
      */
     public function getPath()
     {
-        return base_path('modules') . $this->dirName;
+        return base_path('modules/' . $this->dirName);
     }
 }

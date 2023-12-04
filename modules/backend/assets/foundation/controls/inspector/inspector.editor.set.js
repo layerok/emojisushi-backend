@@ -159,19 +159,20 @@
     SetEditor.prototype.loadDynamicItems = function() {
         var link = this.getLink(),
             data = this.inspector.getValues(),
-            $form = $(link).closest('form')
+            $form = $(link).closest('form');
 
-        $.oc.foundation.element.addClass(link, 'loading-indicator-container size-small')
-        this.showLoadingIndicator()
+        $.oc.foundation.element.addClass(link, 'loading-indicator-container size-small');
+        this.showLoadingIndicator();
 
-        data['inspectorProperty'] = this.getPropertyPath()
-        data['inspectorClassName'] = this.inspector.options.inspectorClass
+        data['inspectorProperty'] = this.getPropertyPath();
+        data['inspectorClassName'] = this.inspector.options.inspectorClass;
 
-        $form.request('onInspectableGetOptions', {
+        $form.request(this.inspector.getEventHandler('onInspectableGetOptions'), {
             data: data,
+            progressBar: false
         })
         .done(this.proxy(this.itemsRequestDone))
-        .always(this.proxy(this.hideLoadingIndicator))
+        .always(this.proxy(this.hideLoadingIndicator));
     }
 
     SetEditor.prototype.itemsRequestDone = function(data, currentValue, initialization) {
@@ -250,21 +251,21 @@
     }
 
     SetEditor.prototype.getNormalizedValue = function() {
-        var value = this.inspector.getPropertyValue(this.propertyDefinition.property)
+        var value = this.inspector.getPropertyValue(this.propertyDefinition.property);
 
         if (value === null) {
-            value = undefined
+            value = undefined;
         }
 
         if (value === undefined) {
-            return value
+            return value;
         }
 
         if (value.length === undefined || typeof value === 'string') {
-            return undefined
+            return undefined;
         }
 
-        return value
+        return value;
     }
 
     //
@@ -295,17 +296,17 @@
         // current set value is [create] and checkboxValue is "create".
         // The result of the method will be TRUE.
 
-        var value = this.getNormalizedValue()
+        var value = this.getNormalizedValue();
 
         if (value === undefined) {
-            return this.isCheckedByDefault(checkboxValue)
+            return this.isCheckedByDefault(checkboxValue);
         }
 
         if (!value) {
-            return false
+            return false;
         }
 
-        return value.indexOf(checkboxValue) > -1
+        return value.indexOf(checkboxValue) > -1;
     }
 
     SetEditor.prototype.setPropertyValue = function(checkboxValue, isChecked) {
@@ -334,13 +335,13 @@
             }
             else {
                 if (isChecked) {
-                    resultValue.push(itemValue)
+                    resultValue.push(itemValue);
                 }
             }
         }
 
-        this.inspector.setPropertyValue(this.propertyDefinition.property, this.cleanUpValue(resultValue))
-        this.setLinkText(this.getLink())
+        this.inspector.setPropertyValue(this.propertyDefinition.property, this.cleanUpValue(resultValue));
+        this.setLinkText(this.getLink());
     }
 
     SetEditor.prototype.generateSequencedId = function() {

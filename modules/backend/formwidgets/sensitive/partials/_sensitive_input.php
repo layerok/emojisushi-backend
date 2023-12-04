@@ -13,9 +13,9 @@
                 value="<?= $hasValue ? $hiddenPlaceholder : '' ?>"
                 placeholder="<?= e(__($this->formField->placeholder)) ?>"
                 class="form-control"
-                <?php if ($this->previewMode): ?>disabled="disabled"<?php endif ?>
                 autocomplete="off"
                 data-sensitive-input
+                <?= $this->previewMode ? 'disabled' : '' ?>
             />
             <?php if ($allowCopy): ?>
                 <a

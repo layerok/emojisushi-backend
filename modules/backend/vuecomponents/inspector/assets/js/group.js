@@ -1,7 +1,7 @@
 /*
  * Vue Inspector control group implementation
  */
-oc.Module.register('backend.component.inspector.group', function () {
+oc.Modules.register('backend.component.inspector.group', function () {
     Vue.component('backend-component-inspector-group', {
         props: {
             controls: {

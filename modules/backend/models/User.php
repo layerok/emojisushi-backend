@@ -37,6 +37,7 @@ class User extends UserBase
      * @var array dates attributes that should be mutated to dates
      */
     protected $dates = [
+        'password_changed_at',
         'activated_at',
         'last_login',
         'created_at',
@@ -154,7 +155,18 @@ class User extends UserBase
 
         // Will pass if password attribute is dirty
         if ($password = $this->getOriginalHashValue('password')) {
+            $this->password_changed_at = $this->freshTimestamp();
             $this->validatePasswordPolicy($password);
+        }
+    }
+
+    /**
+     * beforeCreate
+     */
+    public function beforeCreate()
+    {
+        if ($this->getOriginalPurgeValue('send_invite')) {
+            $this->is_password_expired = true;
         }
     }
 
@@ -167,6 +179,16 @@ class User extends UserBase
 
         if ($this->send_invite) {
             $this->sendInvitation();
+        }
+    }
+
+    /**
+     * afterFetch event
+     */
+    public function afterFetch()
+    {
+        if (is_array($this->permissions)) {
+            $this->permissions = UserRole::applyPermissionPatches($this->permissions);
         }
     }
 
@@ -237,7 +259,7 @@ class User extends UserBase
     }
 
     /**
-     * createDefaultAdmin inserts a new administrator with the default featureset
+     * createDefaultAdmin inserts a new administrator with the default feature set
      */
     public static function createDefaultAdmin(array $data)
     {
@@ -266,6 +288,26 @@ class User extends UserBase
         }
 
         return $user;
+    }
+
+    /**
+     * hasPasswordExpired checks if the password has expired for this user
+     */
+    public function hasPasswordExpired(): bool
+    {
+        if ($this->is_password_expired) {
+            return true;
+        }
+
+        $expireDays = Config::get('backend.password_policy.expire_days');
+        if (!$expireDays) {
+            return false;
+        }
+
+        $changedDays = $this->freshTimestamp()
+            ->diffInDays($this->password_changed_at ?: $this->created_at);
+
+        return $changedDays > $expireDays;
     }
 
     /**

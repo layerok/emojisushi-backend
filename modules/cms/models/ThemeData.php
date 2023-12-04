@@ -255,11 +255,7 @@ class ThemeData extends Model
     {
         $theme = CmsTheme::getActiveTheme();
 
-        if (!$theme) {
-            return;
-        }
-
-        if (!$theme->hasCustomData()) {
+        if (!$theme || !$theme->hasCustomData()) {
             return;
         }
 
@@ -280,7 +276,8 @@ class ThemeData extends Model
     public static function getCombinerCacheKey()
     {
         $theme = CmsTheme::getActiveTheme();
-        if (!$theme->hasCustomData()) {
+
+        if (!$theme || !$theme->hasCustomData()) {
             return '';
         }
 

@@ -130,14 +130,14 @@ class Controller
     }
 
     /**
-     * run finds and serves the requested page.
+     * run finds and serves the requested page URL.
      * If the page cannot be found, returns the page with the URL /404.
      * If the /404 page doesn't exist, returns the system 404 page.
-     * If the parameter is null, the current URL used. If it is not
-     * provided then '/' is used
+     * If the parameter is null, the current URL used. If it is not provided then '/' is used.
+     * Returns the response to the provided URL.
      *
-     * @param string|null $url Specifies the requested page URL.
-     * @return BaseResponse Returns the response to the provided URL
+     * @param string|null $url
+     * @return mixed
      */
     public function run($url = '/')
     {
@@ -156,7 +156,7 @@ class Controller
         }
 
         // Maintenance mode
-        if (MaintenanceSetting::isEnabled()) {
+        if (MaintenanceSetting::isEnabled() && !Cms::urlHasException($url, 'maintenance')) {
             if (!Request::ajax()) {
                 $this->setStatusCode(503);
             }
@@ -276,17 +276,25 @@ class Controller
             throw new CmsException(Lang::get('cms::lang.page.not_found_name', ['name'=>$pageFile]));
         }
 
-        return $controller->runPage($page, false);
+        return $controller->runPage($page, ['render' => true]);
     }
 
     /**
      * runPage runs a page directly from its object and supplied parameters.
      * @param \Cms\Classes\Page $page
-     * @param bool $useAjax
+     * @param array $options
      * @return string
      */
-    public function runPage($page, $useAjax = true)
+    public function runPage($page, $options = [])
     {
+        // Process options
+        extract(array_merge([
+            'capture' => false,
+            'render' => false
+        ], (array) $options));
+
+        $useAjax = !($capture || $render);
+
         // If the page doesn't refer any layout, create the fallback layout.
         // Otherwise load the layout specified in the page.
         if (!$page->layout) {
@@ -364,12 +372,12 @@ class Controller
         }
 
         // Execute AJAX event
-        if ($useAjax && $ajaxResponse = $this->execAjaxHandlers()) {
+        if ($useAjax && ($ajaxResponse = $this->execAjaxHandlers())) {
             return $ajaxResponse;
         }
 
         // Execute postback handler
-        if ($useAjax && $handlerResponse = $this->execPostbackHandler()) {
+        if ($useAjax && ($handlerResponse = $this->execPostbackHandler())) {
             return $handlerResponse;
         }
 
@@ -409,7 +417,9 @@ class Controller
         // Render the layout
         $result = $this->renderLayoutContents();
 
-        return $result;
+        if (!$capture) {
+            return $result;
+        }
     }
 
     /**
@@ -654,17 +664,22 @@ class Controller
     //
 
     /**
-     * pageUrl looks up the URL for a supplied page and returns it relative to the website root.
-     *
-     * @param mixed $name Specifies the Cms Page file name.
-     * @param array $parameters Route parameters to consider in the URL.
-     * @param bool $routePersistence By default the existing routing parameters will be included
+     * pageUrl looks up the URL for a supplied page name and returns it relative to the website root,
+     * including route parameters. Parameters can be persisted from the current page parameters.
+     * @param string|null $name
+     * @param array $parameters
+     * @param bool $routePersistence
      * @return string
      */
-    public function pageUrl($name, $parameters = [], $routePersistence = true)
+    public function pageUrl($name = null, $parameters = [], $routePersistence = true)
     {
         if (!$name) {
             return $this->currentPageUrl($parameters, $routePersistence);
+        }
+
+        // Invalid input same as not found
+        if (!is_string($name)) {
+            return null;
         }
 
         // Second parameter can act as third
@@ -712,7 +727,20 @@ class Controller
             return $this->combineAssets($url);
         }
 
-        return Url::asset($this->getThemeAssetPath($url));
+        $themeUrl = $this->getThemeAssetPath($url);
+
+        // @deprecated uncomment this in v4
+        // if (Config::get('system.themes_asset_url')) {
+        //     return $themeUrl;
+        // }
+
+        if (Config::get('system.relative_links') === true) {
+            return Url::toRelative($themeUrl);
+        }
+
+        // @deprecated v4 this should be toRelative since this is controlled by
+        // config system.themes_asset_url
+        return Url::asset($themeUrl);
     }
 
     /**
@@ -733,7 +761,7 @@ class Controller
     /**
      * getController returns an existing instance of the controller.
      * If the controller doesn't exists, returns null.
-     * @return mixed Returns the controller object or null.
+     * @return self|null
      */
     public static function getController()
     {
@@ -814,6 +842,15 @@ class Controller
     public function getLayout()
     {
         return $this->layout;
+    }
+
+    /**
+     * getPartialObject returns the active partial object from the current context
+     * @return \Cms\Classes\CodeBase
+     */
+    public function getPartialObject()
+    {
+        return $this->partialStack ? $this->partialStack->getPartialObj() : null;
     }
 
     //

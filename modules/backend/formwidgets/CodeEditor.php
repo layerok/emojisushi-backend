@@ -12,7 +12,7 @@ use Backend\Classes\FormWidgetBase;
 class CodeEditor extends FormWidgetBase
 {
     //
-    // Configurable properties
+    // Configurable Properties
     //
 
     /**
@@ -102,7 +102,7 @@ class CodeEditor extends FormWidgetBase
     public $showPrintMargin = false;
 
     //
-    // Object properties
+    // Object Properties
     //
 
     /**

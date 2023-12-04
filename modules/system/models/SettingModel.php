@@ -22,6 +22,7 @@ use Exception;
 class SettingModel extends ExpandoModel
 {
     use \System\Traits\ConfigMaker;
+    use \System\Models\SettingModel\HasMultisite;
 
     /**
      * @var string table associated with the model
@@ -104,6 +105,7 @@ class SettingModel extends ExpandoModel
         $item = $model->getSettingsRecord();
         if (!$item) {
             $model->initSettingsData();
+            $model->fireEvent('model.initSettingsData');
             $item = $model;
         }
 
@@ -138,7 +140,7 @@ class SettingModel extends ExpandoModel
      */
     public static function get($key, $default = null)
     {
-        return static::instance()->$key ?? $default;
+        return array_get(static::instance(), $key, $default);
     }
 
     /**
@@ -193,7 +195,7 @@ class SettingModel extends ExpandoModel
     {
         $query = $this->registerGlobalScopes($this->newQueryWithoutScopes());
 
-        return $query->where('item', '=', $this->settingsCode);
+        return $query->where('item', $this->settingsCode);
     }
 
     /**

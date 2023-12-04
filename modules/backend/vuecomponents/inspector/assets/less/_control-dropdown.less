@@ -42,19 +42,8 @@ div.multiselect {
         margin: 0;
     }
 
-    .multiselect__input {
-        &::-webkit-input-placeholder {
-            color: @inspector-placeholder-color!important;
-        }
-        &::-moz-placeholder {
-            color: @inspector-placeholder-color!important;
-        }
-        &:-ms-input-placeholder {
-            color: @inspector-placeholder-color!important;
-        }
-        &::placeholder {
-            color: @inspector-placeholder-color!important;
-        }
+    .multiselect__input::placeholder {
+        color: @inspector-placeholder-color!important;
     }
 
     .multiselect__content-wrapper {

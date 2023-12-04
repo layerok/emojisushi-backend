@@ -1,7 +1,7 @@
 <?php if ($this->user->hasAccess('admins.manage')): ?>
     <?php Block::put('breadcrumb') ?>
         <ol class="breadcrumb">
-            <li class="breadcrumb-item"><a href="<?= Backend::url('backend/users') ?>"><?= e(trans('backend::lang.user.menu_label')) ?></a></li>
+            <li class="breadcrumb-item"><a href="<?= Backend::url('backend/users') ?>"><?= __("Administrators") ?></a></li>
             <li class="breadcrumb-item active" aria-current="page"><?= e(__($this->pageTitle)) ?></li>
         </ol>
     <?php Block::endPut() ?>

@@ -134,6 +134,14 @@ class GetAttrNode extends GetAttrExpression
             }
         }
 
+        // In sandbox mode, cast objects to safer versions when calling methods
+        if ($sandboxed && $type === Template::METHOD_CALL && $env->hasExtension(SandboxExtension::class)) {
+            $policy = $env->getExtension(SandboxExtension::class)->getSecurityPolicy();
+            if ($policy instanceof \System\Twig\SecurityPolicy) {
+                $object = $policy->castMethodObjectToSafeObject($object);
+            }
+        }
+
         return \twig_get_attribute(
             $env,
             $source,

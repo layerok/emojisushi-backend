@@ -1,7 +1,7 @@
-oc.Module.register('cms.editor.intellisense.completer.assets', function() {
+oc.Modules.register('cms.editor.intellisense.completer.assets', function() {
     'use strict';
 
-    const CompleterBase = oc.Module.import('cms.editor.intellisense.completer.base');
+    const CompleterBase = oc.Modules.import('cms.editor.intellisense.completer.base');
 
     class CompleterAssets extends CompleterBase {
         get triggerCharacters() {

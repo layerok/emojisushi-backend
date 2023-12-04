@@ -1,7 +1,7 @@
-oc.Module.register('cms.editor.extension.documentcontroller.content', function() {
+oc.Modules.register('cms.editor.extension.documentcontroller.content', function() {
     'use strict';
 
-    const DocumentControllerBase = oc.Module.import('editor.extension.documentcontroller.base');
+    const DocumentControllerBase = oc.Modules.import('editor.extension.documentcontroller.base');
 
     const treeviewUtils = $.oc.vueComponentHelpers.treeviewUtils;
 

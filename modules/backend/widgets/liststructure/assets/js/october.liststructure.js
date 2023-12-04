@@ -93,7 +93,12 @@
             onStart: this.proxy(this.onDragStart),
             onChange: this.proxy(this.onChange),
             onEnd: this.proxy(this.onDragStop),
-            onMove: this.proxy(this.onDragMove)
+            onMove: this.proxy(this.onDragMove),
+
+            // Auto scroll plugin
+            forceAutoScrollFallback: true,
+            scrollSensitivity: 60,
+            scrollSpeed: 20
         };
 
         if (!this.options.dragRow) {
@@ -189,6 +194,10 @@
         var $item = $(evt.item),
             self = this,
             $tableBody = this.$tableBody;
+
+        if (!$tableBody) {
+            return;
+        }
 
         $tableBody.addClass('tree-drag-updated').removeClass('tree-drag-mode');
 

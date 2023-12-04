@@ -16,7 +16,7 @@ class CoreLangTest extends TestCase
 
         $messages = $validator->messages();
         $this->assertCount(1, $messages);
-        $this->assertEquals('The name must be at least 5 characters.', $messages->all()[0]);
+        $this->assertEquals('The name field must be at least 5 characters.', $messages->all()[0]);
     }
 
     public function testValidCoreLanguageFiles()

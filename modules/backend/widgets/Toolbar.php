@@ -12,7 +12,7 @@ use Backend\Classes\WidgetBase;
 class Toolbar extends WidgetBase
 {
     //
-    // Configurable properties
+    // Configurable Properties
     //
 
     /**
@@ -26,7 +26,7 @@ class Toolbar extends WidgetBase
     public $search;
 
     //
-    // Object properties
+    // Object Properties
     //
 
     /**

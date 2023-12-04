@@ -1,4 +1,4 @@
-oc.Module.register('editor.documenturi', function() {
+oc.Modules.register('editor.documenturi', function() {
     'use strict';
     /**
      * Represents Editor document URI. Document URIs are fully qualified document identifiers.

@@ -9,7 +9,7 @@
     ]) ?>
 <?php else: ?>
     <?php
-        $callout = BackendUi::callout();
+        $callout = Ui::callout();
 
         if ($field->label) {
             $callout->label(e(__($field->label)));

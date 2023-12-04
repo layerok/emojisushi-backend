@@ -25,7 +25,7 @@ trait ScopeProcessor
             }
 
             // Defer the execution of option data collection
-            $scopeOptions = $scope->options;
+            $scopeOptions = $scope->optionsMethod ?: $scope->options;
             $scope->options(function () use ($scope, $scopeOptions) {
                 return $scope->getOptionsFromModel($this->model, $scopeOptions);
             });

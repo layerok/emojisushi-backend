@@ -1,5 +1,5 @@
 :root {
-    --oc-nav-logo-offset-top: 0;
+    --oc-nav-logo-offset-top: -2px;
     --oc-nav-logo-offset-start: 0;
     --oc-nav-logo-opacity: .5;
 }
@@ -40,9 +40,15 @@
         opacity: var(--oc-nav-logo-opacity);
     }
 
-    &.active, &:hover {
+    &.active, &.active-dropdown, &:hover {
         .nav-logo {
             opacity: 1;
         }
+    }
+}
+
+@media (max-width: @screen-sm) {
+    .mainmenu-logo {
+        display: none;
     }
 }

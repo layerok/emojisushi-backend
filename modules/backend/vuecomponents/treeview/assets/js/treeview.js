@@ -4,7 +4,7 @@
  * @see https://developer.mozilla.org/en-US/docs/Web/Accessibility/ARIA/Roles/Tab_Role
  * @see https://www.w3.org/WAI/GL/wiki/Using_ARIA_trees
  */
-oc.Module.register('backend.component.treeview', function () {
+oc.Modules.register('backend.component.treeview', function () {
     Vue.component('backend-component-treeview', {
         props: {
             sections: Array,
@@ -37,7 +37,7 @@ oc.Module.register('backend.component.treeview', function () {
             }
         },
         data: function () {
-            var Selection = oc.Module.import('backend.vuecomponents.treeview.selection'),
+            var Selection = oc.Modules.import('backend.vuecomponents.treeview.selection'),
                 selection = new Selection();
 
             return {

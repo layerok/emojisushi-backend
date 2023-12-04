@@ -1,4 +1,4 @@
-oc.Module.register('backend.component.dropdownmenu.utils', function () {
+oc.Modules.register('backend.component.dropdownmenu.utils', function () {
     'use strict';
 
     var DropdownmenuUtils = function() {

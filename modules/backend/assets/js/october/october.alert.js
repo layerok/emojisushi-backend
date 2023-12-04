@@ -7,7 +7,7 @@
  * $.oc.alert()
  * $.oc.confirm()
  *
- * Dependences:
+ * Dependencies:
  * - Translations (october.lang.js)
  */
 (function($){
@@ -30,12 +30,17 @@
 
     $.oc.confirm = function(message, callback, title) {
         $.oc.confirmPromise(message, title).then(function () {
-            callback(true)
-        }, function () { });
+            callback(true);
+        }, function () {
+            callback(false);
+        });
     }
 
     $.oc.confirmPromise = function(message, title) {
-        var messageTitle = typeof title !== 'string' ?  $.oc.lang.get('alert.confirm') : title;
+        var messageTitle = typeof title !== 'string'
+            ? $.oc.lang.get('alert.confirm')
+            : title;
+
         return $.oc.vueComponentHelpers.modalUtils.showConfirm(messageTitle, message, {});
     }
 })(jQuery);

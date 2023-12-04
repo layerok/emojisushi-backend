@@ -24,6 +24,7 @@ trait HasJoinTable
 
         Schema::create($tableName, function ($table) {
             $this->defineJoinTableColumns($table);
+            $this->defineTableComment($table, "Joins for :name [:id].");
         });
 
         $this->actionCount++;

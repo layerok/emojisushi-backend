@@ -19,9 +19,8 @@ class RichEditorField extends FallbackField
         $config = $this->config;
 
         if (isset($config['span']) && $config['span'] === 'adaptive') {
-            $config['resizable'] = true;
-            $config['externalToolbarAppState'] = 'tailor.app::toolbarExtensionPoint';
-            $config['externalToolbarEventBus'] = 'tailor.app::eventBus';
+            $config['showMargins'] = true;
+            $config['externalToolbarAppState'] = 'toolbarExtensionPoint';
         }
 
         $form->addFormField($this->fieldName, $this->label)->useConfig($config);

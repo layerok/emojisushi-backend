@@ -24,9 +24,7 @@ trait PropertyContainer
     {
         $definedProperties = $this->defineProperties() ?: [];
 
-        /*
-         * Determine and implement default values
-         */
+        // Determine and implement default values
         $defaultProperties = [];
 
         foreach ($definedProperties as $name => $information) {

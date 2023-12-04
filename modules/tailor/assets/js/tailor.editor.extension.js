@@ -1,9 +1,9 @@
-oc.Module.register('editor.extension.tailor.main', function() {
+oc.Modules.register('editor.extension.tailor.main', function() {
     'use strict';
 
-    const ExtensionBase = oc.Module.import('editor.extension.base');
-    const DocumentUri = oc.Module.import('editor.documenturi');
-    const EditorCommand = oc.Module.import('editor.command');
+    const ExtensionBase = oc.Modules.import('editor.extension.base');
+    const DocumentUri = oc.Modules.import('editor.documenturi');
+    const EditorCommand = oc.Modules.import('editor.command');
 
     class TailorEditorExtension extends ExtensionBase {
         constructor(namespace) {
@@ -12,7 +12,7 @@ oc.Module.register('editor.extension.tailor.main', function() {
 
         listDocumentControllerClasses() {
             return [
-                oc.Module.import('tailor.editor.extension.documentcontroller.blueprint'),
+                oc.Modules.import('tailor.editor.extension.documentcontroller.blueprint'),
             ];
         }
 

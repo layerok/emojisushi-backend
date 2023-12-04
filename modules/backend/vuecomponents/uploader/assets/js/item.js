@@ -1,7 +1,7 @@
 /*
  *  Universal file uploader item implementation
  */
-oc.Module.register('backend.component.uploader.item', function () {
+oc.Modules.register('backend.component.uploader.item', function () {
     Vue.component('backend-component-uploader-item', {
         props: {
             errorMessage: String,

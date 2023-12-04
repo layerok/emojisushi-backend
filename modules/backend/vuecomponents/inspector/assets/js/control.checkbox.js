@@ -1,7 +1,7 @@
 /*
  * Vue Inspector checkbox control implementation
  */
-oc.Module.register('backend.component.inspector.control.checkbox', function () {
+oc.Modules.register('backend.component.inspector.control.checkbox', function () {
     Vue.component('backend-component-inspector-control-checkbox', {
         extends: $.oc.vueComponentHelpers.inspector.controlBase,
         props: {

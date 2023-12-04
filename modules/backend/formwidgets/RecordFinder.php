@@ -32,7 +32,7 @@ class RecordFinder extends FormWidgetBase
     use \Backend\Traits\FormModelWidget;
 
     //
-    // Configurable properties
+    // Configurable Properties
     //
 
     /**
@@ -96,8 +96,13 @@ class RecordFinder extends FormWidgetBase
      */
     public $modelClass;
 
+    /**
+     * @var string popupSize as, either giant, huge, large, small, tiny or adaptive
+     */
+    public $popupSize = 'huge';
+
     //
-    // Object properties
+    // Object Properties
     //
 
     /**
@@ -144,6 +149,7 @@ class RecordFinder extends FormWidgetBase
             'recordsPerPage',
             'useRelation',
             'modelClass',
+            'popupSize',
         ]);
 
         if (!$this->useRelation && !class_exists($this->modelClass)) {
@@ -197,6 +203,7 @@ class RecordFinder extends FormWidgetBase
         }
 
         $this->vars['displayMode'] = 'single';
+        $this->vars['popupSize'] = $this->popupSize;
         $this->vars['value'] = $this->getKeyValue();
         $this->vars['field'] = $this->formField;
         $this->vars['nameValue'] = $this->getNameValue();
@@ -277,7 +284,7 @@ class RecordFinder extends FormWidgetBase
         else {
             $value = parent::getLoadValue();
             if ($value) {
-                $value = $this->modelClass::find($value);
+                $value = $this->modelClass::where($this->getKeyFromAttributeName(), $value)->first();
             }
         }
 
@@ -335,15 +342,15 @@ class RecordFinder extends FormWidgetBase
         $relationObject = $this->getRelationObject();
 
         // Relations can specify a custom local or foreign "other" key,
-        // which can be detected and implemented here automagically.
-        if (in_array($relationType, ['hasMany', 'belongsTo', 'hasOne'])) {
-            $primaryKeyName = $relationObject->getOtherKey();
+        // which can be detected and implemented here automatically.
+        if (in_array($relationType, ['belongsTo'])) {
+            $primaryKeyName = $relationObject->getOwnerKeyName();
         }
-        elseif (in_array($relationType, ['belongsToMany', 'morphedByMany', 'morphToMany'])) {
+        elseif (in_array($relationType, ['hasMany', 'hasOne', 'belongsToMany', 'morphedByMany', 'morphToMany'])) {
             $primaryKeyName = $relationObject->getRelatedKeyName();
         }
         else {
-            $primaryKeyName = $this->relationModel->getKeyName();
+            $primaryKeyName = $this->getRelationModel()->getKeyName();
         }
 
         return $primaryKeyName;

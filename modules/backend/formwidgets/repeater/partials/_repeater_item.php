@@ -4,7 +4,7 @@
     $itemIcon = $useGroups ? $this->getGroupItemConfig($groupCode, 'icon') : 'icon-sticky-note-o';
     $titleFrom = $useGroups ? $this->getGroupItemConfig($groupCode, 'titleFrom') : '';
     $itemDescription = $useGroups ? $this->getGroupItemConfig($groupCode, 'description') : '';
-    $useTabs = $useGroups ? $this->getGroupItemConfig($groupCode, 'useTabs') : $this->useTabs;
+    $useTabs = $useGroups ? $this->getGroupItemConfig($groupCode, 'useTabs', $this->useTabs) : $this->useTabs;
 ?>
 <li
     <?= $itemTitle ? 'data-item-title="'.e(__($itemTitle)).'"' : '' ?>
@@ -59,11 +59,10 @@
         data-refresh-handler="<?= $this->getEventHandler('onRefresh') ?>"
         data-refresh-data="'_repeater_index': '<?= $indexValue ?>', '_repeater_group': '<?= $groupCode ?>'"
     >
-        <?php if ($useTabs): ?>
-            <?= $widget->renderTabSection($widget->getTab('secondary')) ?>
-        <?php else: ?>
-            <?= $widget->renderFields($widget->getFields()) ?>
-        <?php endif ?>
+        <?= $widget->render([
+            'section' => $useTabs ? 'secondary' : 'outside',
+            'useContainer' => false
+        ]) ?>
         <input type="hidden" name="<?= $widget->arrayName ?>[_index]" value="<?= $indexValue ?>" />
         <?php if ($useGroups): ?>
             <input type="hidden" name="<?= $widget->arrayName ?>[<?= $groupKeyFrom ?>]" value="<?= $groupCode ?>" />

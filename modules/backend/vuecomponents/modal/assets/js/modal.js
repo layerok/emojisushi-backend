@@ -1,7 +1,7 @@
 /*
  * Vue modal implementation
  */
-oc.Module.register('backend.component.modal', function () {
+oc.Modules.register('backend.component.modal', function () {
     Vue.component('backend-component-modal', {
         props: {
             ariaLabeledBy: {

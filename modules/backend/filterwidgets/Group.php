@@ -226,7 +226,7 @@ class Group extends FilterWidgetBase
     {
         // Load the data
         $scope = $this->filterScope;
-        $options = $scope->options;
+        $options = $scope->optionsMethod ?: $scope->options;
 
         if (is_scalar($options)) {
             $model = $this->model;

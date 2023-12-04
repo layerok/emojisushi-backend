@@ -37,7 +37,7 @@
             this.surface = null
             this.title = null
             this.description = null
-        } 
+        }
         else {
             this.surface = sourceWrapper.surface
             this.title = sourceWrapper.title
@@ -54,21 +54,21 @@
 
     BaseWrapper.prototype.dispose = function() {
         if (!this.switched) {
-            this.$element.removeClass('inspector-open')
-            this.setInspectorVisibleFlag(false)
+            this.$element.removeClass('inspector-open');
+            this.setInspectorVisibleFlag(false);
 
-            this.$element.trigger('hidden.oc.inspector')
+            this.$element.trigger('hidden.oc.inspector');
         }
 
         if (this.surface !== null && this.surface.options.onGetInspectableElement === this.proxy(this.onGetInspectableElement)) {
-            this.surface.options.onGetInspectableElement = null
+            this.surface.options.onGetInspectableElement = null;
         }
 
-        this.surface = null
-        this.$element = null
-        this.title = null
-        this.description = null
-        this.configuration = null
+        this.surface = null;
+        this.$element = null;
+        this.title = null;
+        this.description = null;
+        this.configuration = null;
 
         BaseProto.dispose.call(this)
     }
@@ -163,126 +163,121 @@
     //
 
     BaseWrapper.prototype.loadValues = function(configuration) {
-        var $valuesField = this.getElementValuesInput()
+        var $valuesField = this.getElementValuesInput();
 
         if ($valuesField.length > 0) {
-            var valuesStr = $.trim($valuesField.val())
+            var valuesStr = $.trim($valuesField.val());
 
             try {
-                return valuesStr.length === 0 ? {} : JSON.parse(valuesStr)
+                return valuesStr.length === 0 ? {} : JSON.parse(valuesStr);
             }
             catch (err) {
-                throw new Error('Error parsing Inspector field values. ' + err)
+                throw new Error('Error parsing Inspector field values. ' + err);
             }
         }
 
         var values = {},
-            attributes = this.$element.get(0).attributes
+            attributes = this.$element.get(0).attributes;
 
         for (var i=0, len = attributes.length; i < len; i++) {
             var attribute = attributes[i],
-                matches = []
+                matches = [];
 
             if (matches = attribute.name.match(/^data-property-(.*)$/)) {
                 // Important - values contained in data-property-xxx attributes are
-                // considered strings and never parsed with JSON. The use of the
-                // data-property-xxx attributes is very limited - they're only
-                // used in Pages for creating snippets from partials, where properties 
-                // are created with a table UI widget, which doesn't allow creating 
-                // properties of any complex types.
-                //
-                // There is no a technically reliable way to determine when a string
-                // is a JSON data or a regular string. Users can enter a value
-                // like [10], which is a proper JSON value, but meant to be a string.
-                //
-                // One possible way to resolve it, if to check the property type loaded
-                // from the configuration and see if the corresponding editor expects
-                // complex data.
+                // considered strings and only parsed with JSON when they begin with
+                // the json: protocol prefix.
+                var normalizedPropertyName = this.normalizePropertyCode(matches[1], configuration),
+                    attrVal = attribute.value;
 
-                var normalizedPropertyName = this.normalizePropertyCode(matches[1], configuration)
-                values[normalizedPropertyName] = attribute.value
+                if (attrVal.startsWith('json:')) {
+                    try {
+                        attrVal = JSON.parse(decodeURIComponent(attrVal.substring(5)));
+                    }
+                    catch (e) {
+                        attrVal = '';
+                    }
+                }
+
+                values[normalizedPropertyName] = attrVal;
             }
         }
 
-        return values
+        return values;
     }
 
     BaseWrapper.prototype.applyValues = function(liveUpdateMode) {
         var $valuesField = this.getElementValuesInput(),
-            values = liveUpdateMode ? 
-                        this.surface.getValidValues() : 
-                        this.surface.getValues()
+            values = liveUpdateMode
+                ? this.surface.getValidValues()
+                : this.surface.getValues();
 
         if (liveUpdateMode) {
             // In the live update mode, when only valid values are applied,
             // we don't want to change all other values (invalid properties).
-
-            var existingValues = this.loadValues(this.configuration)
-
+            var existingValues = this.loadValues(this.configuration);
             for (var property in values) {
                 if (values[property] !== $.oc.inspector.invalidProperty) {
-                    existingValues[property] = values[property]
+                    existingValues[property] = values[property];
                 }
             }
 
-            // Properties that use settings like ignoreIfPropertyEmpty could 
+            // Properties that use settings like ignoreIfPropertyEmpty could
             // be removed from the list returned by getValidValues(). Removed
             // properties should be removed from the result list.
-
-            var filteredValues = {}
+            var filteredValues = {};
 
             for (var property in existingValues) {
                 if (values.hasOwnProperty(property)) {
-                    filteredValues[property] = existingValues[property]
+                    filteredValues[property] = existingValues[property];
                 }
             }
 
-
-            values = filteredValues
+            values = filteredValues;
         }
 
         if ($valuesField.length > 0) {
-            $valuesField.val(JSON.stringify(values))
-        } 
+            $valuesField.val(JSON.stringify(values));
+        }
         else {
             for (var property in values) {
-                var value = values[property]
+                var value = values[property];
 
-                if ($.isArray(value) ||$.isPlainObject(value)) {
-                    throw new Error('Inspector data-property-xxx attributes do not support complex values. Property: ' + property)
+                if ($.isArray(value) || $.isPlainObject(value)) {
+                    value = 'json:' + encodeURIComponent(JSON.stringify(value));
                 }
 
-                this.$element.attr('data-property-' + property, value)
+                this.$element.attr('data-property-' + property, value);
             }
         }
 
-        // In the live update mode the livechange event is triggered 
+        // In the live update mode the livechange event is triggered
         // regardless of whether Surface properties match or don't match
         // the original properties of the inspectable element. Without it
         // there could be undesirable side effects.
 
         if (liveUpdateMode) {
-            this.$element.trigger('livechange')
+            this.$element.trigger('livechange');
         }
         else {
-            var hasChanges = false
+            var hasChanges = false;
 
             if (this.isLiveUpdateEnabled()) {
-                var currentValues = this.loadValues(this.configuration)
+                var currentValues = this.loadValues(this.configuration);
 
                 // If the Inspector setup supports the live update mode,
                 // evaluate changes as a difference between the current element
                 // properties and internal properties stored in the Surface.
                 // If there is no differences, the properties have already
                 // been applied with a preceding live update.
-                hasChanges = this.surface.hasChanges(currentValues)
+                hasChanges = this.surface.hasChanges(currentValues);
             }
             else {
-                hasChanges = this.surface.hasChanges()
+                hasChanges = this.surface.hasChanges();
             }
 
             if (hasChanges) {
-                this.$element.trigger('change')
+                this.$element.trigger('change');
             }
         }
     }
@@ -297,70 +292,75 @@
                 properties: {},
                 title: null,
                 description: null
-            }
+            };
 
-        result.title = this.$element.data('inspector-title')
-        result.description = this.$element.data('inspector-description')
+        result.title = this.$element.data('inspector-title');
+        result.description = this.$element.data('inspector-description');
 
         if (configString !== undefined) {
-            result.properties = this.parseConfiguration(configString)
+            result.properties = this.parseConfiguration(configString);
 
-            this.configurationLoaded(result)
-            return
+            this.configurationLoaded(result);
+            return;
         }
 
-        var $configurationField = this.$element.find('> input[data-inspector-config]')
+        var $configurationField = this.$element.find('> input[data-inspector-config]');
 
         if ($configurationField.length > 0) {
-            result.properties = this.parseConfiguration($configurationField.val())
-
-            this.configurationLoaded(result)
-            return
+            result.properties = this.parseConfiguration($configurationField.val());
+            this.configurationLoaded(result);
+            return;
         }
 
         var $form = this.$element.closest('form'),
             data = this.$element.data(),
-            self = this
+            self = this;
 
-        $.oc.stripeLoadIndicator.show()
-        $form.request('onGetInspectorConfiguration', {
+        $.oc.stripeLoadIndicator.show();
+
+        $form.request($.oc.inspector.helpers.getEventHandler(this.$element, 'onGetInspectorConfiguration'), {
             data: data
-        }).done(function inspectorConfigurationRequestDoneClosure(data) {
-            self.onConfigurartionRequestDone(data, result)
-        }).always(function() {
-            $.oc.stripeLoadIndicator.hide()
         })
+        .done(function inspectorConfigurationRequestDoneClosure(data) {
+            self.onConfigurationRequestDone(data, result);
+        })
+        .fail(function inspectorConfigurationRequestErrorClosure(data) {
+            self.$element.trigger('error.oc.inspector');
+        })
+        .always(function() {
+            $.oc.stripeLoadIndicator.hide();
+        });
     }
 
     BaseWrapper.prototype.parseConfiguration = function(configuration) {
         if (!$.isArray(configuration) && !$.isPlainObject(configuration)) {
             if ($.trim(configuration) === 0) {
-                return {}
+                return {};
             }
 
             try {
-               return JSON.parse(configuration)
+               return JSON.parse(configuration);
             }
             catch(err) {
-                throw new Error('Error parsing Inspector configuration. ' + err)
+                throw new Error('Error parsing Inspector configuration. ' + err);
             }
         }
         else {
-            return configuration
+            return configuration;
         }
     }
 
     BaseWrapper.prototype.configurationLoaded = function(configuration) {
-        var values = this.loadValues(configuration.properties)
+        var values = this.loadValues(configuration.properties);
 
-        this.title = configuration.title
-        this.description = configuration.description
-        this.configuration = configuration
+        this.title = configuration.title;
+        this.description = configuration.description;
+        this.configuration = configuration;
 
-        this.createSurfaceAndUi(configuration.properties, values)
+        this.createSurfaceAndUi(configuration.properties, values);
     }
 
-    BaseWrapper.prototype.onConfigurartionRequestDone = function(data, result) {
+    BaseWrapper.prototype.onConfigurationRequestDone = function(data, result) {
         result.properties = this.parseConfiguration(data.configuration.properties)
 
         if (data.configuration.title !== undefined) {
@@ -379,17 +379,17 @@
     //
 
     BaseWrapper.prototype.triggerShowingAndInit = function() {
-        var e = $.Event('showing.oc.inspector')
+        var e = $.Event('showing.oc.inspector');
 
-        this.$element.trigger(e, [{callback: this.proxy(this.init)}])
+        this.$element.trigger(e, [{callback: this.proxy(this.init)}]);
         if (e.isDefaultPrevented()) {
-            this.$element = null
+            this.$element = null;
 
-            return false
+            return false;
         }
 
         if (!e.isPropagationStopped()) {
-            this.init()
+            this.init();
         }
     }
 
@@ -402,12 +402,12 @@
     }
 
     BaseWrapper.prototype.onGetInspectableElement = function() {
-        return this.$element
+        return this.$element;
     }
 
     BaseWrapper.DEFAULTS = {
         containerSupported: false
-    }
+    };
 
-    $.oc.inspector.wrappers.base = BaseWrapper
+    $.oc.inspector.wrappers.base = BaseWrapper;
 }(window.jQuery);

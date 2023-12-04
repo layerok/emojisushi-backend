@@ -17,7 +17,7 @@
                 <button
                     class="backend-toolbar-button control-button toolbar-find-button"
                     data-control="popup"
-                    data-size="huge"
+                    data-size="<?= $popupSize ?? 'huge' ?>"
                     data-handler="<?= $this->getEventHandler('onFindRecord') ?>"
                     data-request-data="recordfinder_flag: 1"
                     type="button">

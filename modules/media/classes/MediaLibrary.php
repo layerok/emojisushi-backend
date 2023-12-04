@@ -61,8 +61,8 @@ class MediaLibrary
     protected function init()
     {
         $this->storageUrl = rtrim(Config::get('filesystems.disks.media.url', '/storage/app/media'), '/');
-        $this->ignoreNames = Config::get('media.ignore_files', FileDefinitions::get('ignore_files'));
-        $this->ignorePatterns = Config::get('media.ignore_patterns', FileDefinitions::get('ignore_patterns'));
+        $this->ignoreNames = FileDefinitions::get('ignore_files');
+        $this->ignorePatterns = FileDefinitions::get('ignore_patterns');
     }
 
     /**
@@ -459,9 +459,10 @@ class MediaLibrary
 
     /**
      * validatePath checks if file path doesn't contain any substrings that would pose a security
-     * threat. Returns a normalized path. Throws an exception if the path is not valid.
-     * @param string $path Specifies the path.
-     * @param bool $normalizeOnly Specifies if only the normalization, without validation should be performed.
+     * threat. Returns a normalized path. Throws an exception if the path is not valid. An option
+     * is provided, if only normalization is needed without validation.
+     * @param string $path
+     * @param bool $normalizeOnly
      * @return string
      */
     public static function validatePath($path, $normalizeOnly = false): string

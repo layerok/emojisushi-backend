@@ -1,19 +1,19 @@
-oc.Module.register('cms.editor.intellisense', function() {
+oc.Modules.register('cms.editor.intellisense', function() {
     'use strict';
 
-    const CompleterOctoberTags = oc.Module.import('cms.editor.intellisense.completer.octobertags');
-    const CompleterTwigFilters = oc.Module.import('cms.editor.intellisense.completer.twigfilters');
-    const CompleterOctoberPartials = oc.Module.import('cms.editor.intellisense.completer.partials');
-    const CompleterAssets = oc.Module.import('cms.editor.intellisense.completer.assets');
-    const CompleterPages = oc.Module.import('cms.editor.intellisense.completer.pages');
-    const CompleterContent = oc.Module.import('cms.editor.intellisense.completer.content');
+    const CompleterOctoberTags = oc.Modules.import('cms.editor.intellisense.completer.octobertags');
+    const CompleterTwigFilters = oc.Modules.import('cms.editor.intellisense.completer.twigfilters');
+    const CompleterOctoberPartials = oc.Modules.import('cms.editor.intellisense.completer.partials');
+    const CompleterAssets = oc.Modules.import('cms.editor.intellisense.completer.assets');
+    const CompleterPages = oc.Modules.import('cms.editor.intellisense.completer.pages');
+    const CompleterContent = oc.Modules.import('cms.editor.intellisense.completer.content');
 
-    const ClickHandlerTemplate = oc.Module.import('cms.editor.intellisense.clickhandler.template');
-    const ClickHandlerCssImports = oc.Module.import('cms.editor.intellisense.clickhandler.cssimports');
-    const HoverProviderOctoberTags = oc.Module.import('cms.editor.intellisense.hoverprovider.octobertags');
-    const HoverProviderTwigFilters = oc.Module.import('cms.editor.intellisense.hoverprovider.twigfilters');
-    const IntellisenseUtils = oc.Module.import('cms.editor.intellisense.utils.js');
-    const ActionHandlerExpandComponent = oc.Module.import('cms.editor.intellisense.actionhandlers.expandcomponent');
+    const ClickHandlerTemplate = oc.Modules.import('cms.editor.intellisense.clickhandler.template');
+    const ClickHandlerCssImports = oc.Modules.import('cms.editor.intellisense.clickhandler.cssimports');
+    const HoverProviderOctoberTags = oc.Modules.import('cms.editor.intellisense.hoverprovider.octobertags');
+    const HoverProviderTwigFilters = oc.Modules.import('cms.editor.intellisense.hoverprovider.twigfilters');
+    const IntellisenseUtils = oc.Modules.import('cms.editor.intellisense.utils.js');
+    const ActionHandlerExpandComponent = oc.Modules.import('cms.editor.intellisense.actionhandlers.expandcomponent');
 
     let instance = null;
 

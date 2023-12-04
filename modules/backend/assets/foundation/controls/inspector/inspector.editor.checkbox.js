@@ -44,44 +44,44 @@
 
         if (value === undefined) {
             if (this.propertyDefinition.default !== undefined) {
-                isChecked = this.normalizeCheckedValue(this.propertyDefinition.default)
+                isChecked = this.normalizeCheckedValue(this.propertyDefinition.default);
             }
         }
         else {
-            isChecked = this.normalizeCheckedValue(value)
+            isChecked = this.normalizeCheckedValue(value);
         }
 
-        editor.checked = isChecked
+        editor.checked = isChecked;
 
-        this.containerCell.appendChild(container)
+        this.containerCell.appendChild(container);
     }
 
     CheckboxEditor.prototype.normalizeCheckedValue = function(value) {
          if (value == '0' || value == 'false') {
-             return false
+             return false;
          }
 
-        return value
+        return value;
     }
 
     CheckboxEditor.prototype.getInput = function() {
-        return this.containerCell.querySelector('input')
+        return this.containerCell.querySelector('input');
     }
 
     CheckboxEditor.prototype.focus = function() {
-        this.getInput().parentNode.focus()
+        this.getInput().parentNode.focus({ preventScroll: true });
     }
 
     CheckboxEditor.prototype.updateDisplayedValue = function(value) {
-        this.getInput().checked = this.normalizeCheckedValue(value)
+        this.getInput().checked = this.normalizeCheckedValue(value);
     }
 
     CheckboxEditor.prototype.isEmptyValue = function(value) {
         if (value === 0 || value === '0' || value === 'false') {
-            return true
+            return true;
         }
 
-        return BaseProto.isEmptyValue.call(this, value)
+        return BaseProto.isEmptyValue.call(this, value);
     }
 
     CheckboxEditor.prototype.registerHandlers = function() {

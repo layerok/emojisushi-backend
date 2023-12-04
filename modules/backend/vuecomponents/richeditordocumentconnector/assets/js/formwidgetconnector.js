@@ -1,4 +1,4 @@
-oc.Module.register('backend.component.richeditor.document.connector.formwidgetconnector', function () {
+oc.Modules.register('backend.component.richeditor.document.connector.formwidgetconnector', function () {
     Vue.component('backend-component-richeditor-document-connector-formwidgetconnector', {
         props: {
             textarea: null,
@@ -51,8 +51,8 @@ oc.Module.register('backend.component.richeditor.document.connector.formwidgetco
                 return this.options.readOnly;
             },
 
-            externalToolbarEventBus: function computeExternalToolbarEventBus() {
-                return this.options.externalToolbarEventBus;
+            externalToolbarAppState: function computeExternalToolbarAppState() {
+                return this.options.externalToolbarAppState;
             },
 
             toolbarExtensionPointProxy: function computeToolbarExtensionPointProxy() {
@@ -60,22 +60,20 @@ oc.Module.register('backend.component.richeditor.document.connector.formwidgetco
                     return this.toolbarExtensionPoint;
                 }
 
-                // Expected format: tailor.app::toolbarExtensionPoint
-                const parts = this.options.externalToolbarAppState.split('::');
-                if (parts.length !== 2) {
-                    throw new Error('Invalid externalToolbarAppState format. Expected format: module.name::stateElementName');
-                }
+                const point = $.oc.vueUtils.getToolbarExtensionPoint(
+                    this.options.externalToolbarAppState,
+                    this.textarea
+                );
 
-                const app = oc.Module.import(parts[0]);
-                return app.state[parts[1]];
+                return point ? point.state : this.toolbarExtensionPoint;
             },
 
             hasExternalToolbar: function computeHasExternalToolbar() {
                 return !!this.options.externalToolbarAppState;
             },
 
-            resizable: function computeResizable() {
-                return this.options.resizable ? true : false;
+            showMargins: function computeShowMargins() {
+                return this.options.showMargins ? true : false;
             }
         },
         mounted: function onMounted() {

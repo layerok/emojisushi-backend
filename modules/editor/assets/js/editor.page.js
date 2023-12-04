@@ -1,5 +1,5 @@
 $(document).ready(function() {
-    const EditorStore = oc.Module.import('editor.store');
+    const EditorStore = oc.Modules.import('editor.store');
 
     class EditorPage {
         constructor(height, width) {

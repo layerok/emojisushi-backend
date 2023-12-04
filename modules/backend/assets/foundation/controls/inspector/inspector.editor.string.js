@@ -48,36 +48,36 @@
     }
 
     StringEditor.prototype.getInput = function() {
-        return this.containerCell.querySelector('input')
+        return this.containerCell.querySelector('input');
     }
 
     StringEditor.prototype.focus = function() {
-        this.getInput().focus()
-        this.onInputFocus()
+        this.getInput().focus({ preventScroll: true });
+        this.onInputFocus();
     }
 
     StringEditor.prototype.registerHandlers = function() {
-        var input = this.getInput()
+        var input = this.getInput();
 
-        input.addEventListener('focus', this.proxy(this.onInputFocus))
-        input.addEventListener('keyup', this.proxy(this.onInputKeyUp))
+        input.addEventListener('focus', this.proxy(this.onInputFocus));
+        input.addEventListener('keyup', this.proxy(this.onInputKeyUp));
     }
 
     StringEditor.prototype.unregisterHandlers = function() {
-        var input = this.getInput()
+        var input = this.getInput();
 
-        input.removeEventListener('focus', this.proxy(this.onInputFocus))
-        input.removeEventListener('keyup', this.proxy(this.onInputKeyUp))
+        input.removeEventListener('focus', this.proxy(this.onInputFocus));
+        input.removeEventListener('keyup', this.proxy(this.onInputKeyUp));
     }
 
     StringEditor.prototype.onInputFocus = function(ev) {
-        this.inspector.makeCellActive(this.containerCell)
+        this.inspector.makeCellActive(this.containerCell);
     }
 
     StringEditor.prototype.onInputKeyUp = function() {
-        var value = $.trim(this.getInput().value)
+        var value = $.trim(this.getInput().value);
 
-        this.inspector.setPropertyValue(this.propertyDefinition.property, value)
+        this.inspector.setPropertyValue(this.propertyDefinition.property, value);
     }
 
     StringEditor.prototype.onExternalPropertyEditorHidden = function() {

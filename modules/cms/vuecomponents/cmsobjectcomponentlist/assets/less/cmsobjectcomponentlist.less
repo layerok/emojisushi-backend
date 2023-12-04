@@ -185,5 +185,9 @@ li.cms-transition-component-list-enter-active {
 
 li.cms-transition-component-list-enter {
     opacity: 0;
-    .transform(~'scale(1.1)');
+    transform: scale(1.1);
+}
+
+body.popover-open .remove-component {
+    pointer-events: none !important;
 }

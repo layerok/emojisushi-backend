@@ -46,7 +46,8 @@
                         class="form-check-input"
                         type="checkbox"
                         id="remember"
-                        name="remember" />
+                        name="remember"
+                        <?= post('remember') ? 'checked' : '' ?> />
                     <label class="form-check-label" for="remember">
                         <?= __('Stay logged in') ?>
                     </label>

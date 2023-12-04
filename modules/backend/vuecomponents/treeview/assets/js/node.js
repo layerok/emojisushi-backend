@@ -1,7 +1,7 @@
 /*
  * Vue treeview node
  */
-oc.Module.register('backend.component.treeview.node', function () {
+oc.Modules.register('backend.component.treeview.node', function () {
     Vue.component('backend-component-treeview-node', {
         props: {
             nodeData: {

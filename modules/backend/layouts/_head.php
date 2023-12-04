@@ -1,7 +1,11 @@
 <title data-title-template="<?= empty($this->pageTitleTemplate) ? '%s' : e($this->pageTitleTemplate) ?> | <?= e(Backend\Models\BrandSetting::get('app_name')) ?>">
     <?= e(__($this->pageTitle)) ?> | <?= e(Backend\Models\BrandSetting::get('app_name')) ?>
 </title>
-<link rel="icon" type="image/png" href="<?= e(Backend\Models\BrandSetting::getFavicon()) ?>">
+<?php if ($customFavicon = Backend\Models\BrandSetting::getFavicon()): ?>
+    <link rel="icon" type="image/png" href="<?= e($customFavicon) ?>">
+<?php else: ?>
+    <link rel="icon" type="image/png" href="<?= e(Backend::skinAsset('assets/images/favicon.png')) ?>" data-favicon-dark="<?= e(Backend::skinAsset('assets/images/favicon-dark.png')) ?>">
+<?php endif ?>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=0">
 <meta name="robots" content="noindex">

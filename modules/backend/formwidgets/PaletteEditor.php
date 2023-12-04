@@ -123,7 +123,7 @@ class PaletteEditor extends FormWidgetBase
         );
 
         if ($colorMode === 'auto') {
-            $colorMode = $_COOKIE['admin_color_mode'] ?? 'light';
+            $colorMode = $_COOKIE['admin_color_mode_setting'] ?? 'light';
         }
 
         if (!in_array($colorMode, ['light', 'dark'])) {

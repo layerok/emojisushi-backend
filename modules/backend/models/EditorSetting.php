@@ -2,6 +2,7 @@
 
 use File;
 use Cache;
+use Config;
 use Less_Parser;
 use System\Models\SettingModel;
 use Exception;
@@ -121,12 +122,12 @@ class EditorSetting extends SettingModel
      */
     protected $editorToolbarPresets = [
         'default' => 'paragraphFormat, paragraphStyle, quote, bold, italic, align, formatOL, formatUL, insertTable,
-                      insertPageLink, insertImage, insertVideo, insertAudio, insertFile, insertHR, fullscreen, html',
-        'minimal' => 'bold, italic, underline, |, insertPageLink, insertImage, |, html',
+                      insertSnippet, insertPageLink, insertImage, insertVideo, insertAudio, insertFile, insertHR, fullscreen, html',
+        'minimal' => 'bold, italic, underline, |, insertSnippet, insertPageLink, insertImage, |, html',
         'full'    => 'undo, redo, |, bold, italic, underline, |, paragraphFormat, paragraphStyle, inlineStyle, |,
                       strikeThrough, subscript, superscript, clearFormatting, |, fontFamily, fontSize, |, color,
                       emoticons, -, selectAll, |, align, formatOL, formatUL, outdent, indent, quote, |, insertHR,
-                      insertPageLink, insertImage, insertVideo, insertAudio, insertFile, insertTable, |, selectAll,
+                      insertSnippet, insertPageLink, insertImage, insertVideo, insertAudio, insertFile, insertTable, |, selectAll,
                       html, fullscreen',
     ];
 
@@ -142,18 +143,24 @@ class EditorSetting extends SettingModel
      */
     public function initSettingsData()
     {
-        $this->html_allow_empty_tags = $this->defaultHtmlAllowEmptyTags;
-        $this->html_allow_tags = $this->defaultHtmlAllowTags;
-        $this->html_no_wrap_tags = $this->defaultHtmlNoWrapTags;
-        $this->html_remove_tags = $this->defaultHtmlRemoveTags;
-        $this->html_line_breaker_tags = $this->defaultHtmlLineBreakerTags;
-        $this->html_custom_styles = File::get(base_path().'/modules/backend/models/editorsetting/default_styles.less');
-        $this->html_style_image = $this->makeStylesForTable($this->defaultHtmlStyleImage);
-        $this->html_style_link = $this->makeStylesForTable($this->defaultHtmlStyleLink);
-        $this->html_style_paragraph = $this->makeStylesForTable($this->defaultHtmlStyleParagraph);
-        $this->html_style_table = $this->makeStylesForTable($this->defaultHtmlStyleTable);
-        $this->html_style_table_cell = $this->makeStylesForTable($this->defaultHtmlStyleTableCell);
-        $this->html_paragraph_formats = $this->makeFormatsForTable($this->defaultHtmlParagraphFormats);
+        $this->html_toolbar_buttons = static::getBaseConfig('toolbar_buttons', '');
+        $this->html_allow_empty_tags = static::getBaseConfig('allow_empty_tags', $this->defaultHtmlAllowEmptyTags);
+        $this->html_allow_tags = static::getBaseConfig('allow_tags', $this->defaultHtmlAllowTags);
+        $this->html_no_wrap_tags = static::getBaseConfig('no_wrap_tags', $this->defaultHtmlNoWrapTags);
+        $this->html_remove_tags = static::getBaseConfig('remove_tags', $this->defaultHtmlRemoveTags);
+        $this->html_line_breaker_tags = static::getBaseConfig('line_breaker_tags', $this->defaultHtmlLineBreakerTags);
+        $this->html_style_image = $this->makeStylesForTable(static::getBaseConfig('style_image', $this->defaultHtmlStyleImage));
+        $this->html_style_link = $this->makeStylesForTable(static::getBaseConfig('style_link', $this->defaultHtmlStyleLink));
+        $this->html_style_paragraph = $this->makeStylesForTable(static::getBaseConfig('style_paragraph', $this->defaultHtmlStyleParagraph));
+        $this->html_style_table = $this->makeStylesForTable(static::getBaseConfig('style_table', $this->defaultHtmlStyleTable));
+        $this->html_style_table_cell = $this->makeStylesForTable(static::getBaseConfig('style_table_cell', $this->defaultHtmlStyleTableCell));
+        $this->html_paragraph_formats = $this->makeFormatsForTable(static::getBaseConfig('paragraph_formats', $this->defaultHtmlParagraphFormats));
+
+        // Attempt to load custom CSS
+        $htmlCssPath = File::symbolizePath(self::getBaseConfig('stylesheet_path', '~/modules/backend/models/editorsetting/default_styles.less'));
+        if ($htmlCssPath && File::exists($htmlCssPath)) {
+            $this->html_custom_styles = File::get($htmlCssPath);
+        }
     }
 
     /**
@@ -321,5 +328,29 @@ class EditorSetting extends SettingModel
         $parser->parse($customStyles);
 
         return $parser->getCss();
+    }
+
+    //
+    // Base line configuration
+    //
+
+    /**
+     * getBaseConfig will only look at base config if the enabled flag is true
+     */
+    public static function getBaseConfig(string $value, $default = null)
+    {
+        if (!self::isBaseConfigured()) {
+            return $default;
+        }
+
+        return Config::get('editor.html_defaults.'.$value, $default);
+    }
+
+    /**
+     * isBaseConfigured checks if base brand settings found in config
+     */
+    public static function isBaseConfigured(): bool
+    {
+        return (bool) Config::get('editor.html_defaults.enabled', false);
     }
 }

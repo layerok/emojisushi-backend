@@ -122,13 +122,11 @@ class Index extends Controller
             return ExtensionManager::instance()->runCommand($extension, $command, $this);
         }
         catch (ValidationException $ex) {
-            $messages = $ex->getErrors()->getMessages();
-            if (!$messages) {
-                throw $ex;
+            if ($fields = $ex->getFields()) {
+                return Response::json(['validationErrors' => $fields], 406);
             }
 
-            $responseData = ['validationErrors' => $messages];
-            return Response::json($responseData, 406);
+            throw $ex;
         }
     }
 

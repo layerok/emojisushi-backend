@@ -1,11 +1,13 @@
 <?php namespace Tailor\Behaviors;
 
+use Event;
+use Cache;
 use System;
+use Config;
 use Cms\Classes\Page;
 use Cms\Classes\Theme;
 use Cms\Classes\Controller;
 use Tailor\Classes\Blueprint;
-use Tailor\Classes\Blueprint\SingleBlueprint;
 use Backend\Classes\ControllerBehavior;
 use Tailor\Models\PreviewToken;
 use ApplicationException;
@@ -22,9 +24,9 @@ class PreviewController extends ControllerBehavior
     use \Backend\Traits\FormModelSaver;
 
     /**
-     * @var Page previewPageObj
+     * @var Page previewPageName
      */
-    protected $previewPageObj;
+    protected $previewPageName;
 
     /**
      * @var Blueprint activeSource
@@ -54,7 +56,7 @@ class PreviewController extends ControllerBehavior
             throw new ApplicationException('Cannot preview without the CMS module installed!');
         }
 
-        if (!$page = $this->getPreviewPageUrl()) {
+        if (!$pageName = $this->getPreviewPageName()) {
             throw new ApplicationException('There is no page that uses the necessary component');
         }
 
@@ -68,9 +70,16 @@ class PreviewController extends ControllerBehavior
             $this->controller->formGetWidget()->getSessionKey()
         );
 
+        // A preview page is already open
+        if ($existingToken = post('preview_token')) {
+            return [
+                'token' => $existingToken,
+            ];
+        }
+
         // Get the URL from the CMS controller
         $controller = new Controller(Theme::getEditTheme());
-        $url = $controller->pageUrl($page->getBaseFileName(), [
+        $url = $controller->pageUrl($pageName, [
             'id' => $model->id,
             'slug' => $model->slug,
             'fullslug' => $model->fullslug
@@ -86,7 +95,10 @@ class PreviewController extends ControllerBehavior
             '_preview_token' => $token->token,
         ]);
 
-        return $url;
+        return [
+            'token' => $token->token,
+            'url' => $url
+        ];
     }
 
     /**
@@ -94,40 +106,107 @@ class PreviewController extends ControllerBehavior
      */
     public function hasPreviewPage(): bool
     {
-        return $this->getPreviewPageUrl() !== null;
+        return $this->getPreviewPageName() !== null;
     }
 
     /**
-     * getPreviewPageUrl
+     * getPreviewPageName
      */
-    protected function getPreviewPageUrl(): ?Page
+    protected function getPreviewPageName(): ?string
     {
-        if ($this->previewPageObj !== null) {
-            return $this->previewPageObj;
+        if ($this->previewPageName !== null) {
+            return $this->previewPageName;
         }
 
         if (!$blueprint = $this->activeSource) {
             throw new SystemException('Missing a blueprint source in the controller.');
         }
 
-        $handleName = $blueprint->handle;
-        $componentName = $this->componentName;
-
         // Find page with component
-        $page = Page::whereComponent($componentName, 'entrySlug', true)
-            ->whereComponent($componentName, 'handle', $handleName)
-            ->first()
-        ;
+        $theme = $this->getTheme();
+        $cacheKey = self::getPreviewPageCacheKey($theme);
+        $lookupKey = "{$this->componentName}.{$blueprint->handle}";
+        $result = [];
 
-        // Singular sections without an entry slug
-        if (!$page && $blueprint instanceof SingleBlueprint) {
-            $page = Page::whereComponent($componentName, 'handle', $handleName)->first();
+        // Check cache
+        $cached = Cache::get($cacheKey, false);
+        if ($cached !== false && ($cached = @unserialize($cached)) !== false && is_array($cached)) {
+            if (array_key_exists($lookupKey, $cached)) {
+                return $cached[$lookupKey];
+            }
+            else {
+                $result = $cached;
+            }
         }
 
-        if ($page) {
-            return $this->previewPageObj = $page;
+        $page = $this->lookupPreviewPage($theme, $blueprint->handle);
+
+        $this->previewPageName = $result[$lookupKey] = $page ? $page->getBaseFileName() : null;
+
+        $expiresAt = now()->addMinutes(Config::get('cms.template_cache_ttl', 10));
+        Cache::put($cacheKey, serialize($result), $expiresAt);
+
+        return $result[$lookupKey] ?? null;
+    }
+
+    /**
+     * lookupPreviewPage returns the preview page for a specified handle.
+     */
+    protected function lookupPreviewPage($theme, $handle)
+    {
+        $allPages = Page::listInTheme($theme, true);
+
+        // Try the one flagged as default first
+        $page = $allPages->whereComponent($this->componentName, [
+            'handle' => $handle,
+            'isDefault' => true
+        ])->first();
+
+        // Then try finding anything
+        if (!$page) {
+            $page = $allPages->whereComponent($this->componentName, 'handle', $handle)->first();
         }
 
-        return null;
+        return $page;
+    }
+
+    /**
+     * getTheme returns the theme to source snippets
+     */
+    protected function getTheme()
+    {
+        return Theme::getEditTheme() ?: Theme::getActiveTheme();
+    }
+
+    /**
+     * getPreviewPageCacheKey returns a cache key for this record.
+     */
+    protected static function getPreviewPageCacheKey($theme)
+    {
+        $key = crc32($theme?->getPath() ?: 1) . 'preview-page-map';
+
+        /**
+         * @event tailor.getPreviewPageCacheKey
+         * Enables modifying the key used to reference cached preview pages
+         *
+         * Example usage:
+         *
+         *     Event::listen('tailor.getPreviewPageCacheKey', function (&$key) {
+         *          $key = $key . '-' . App::getLocale();
+         *     });
+         *
+         */
+        Event::fire('tailor.getPreviewPageCacheKey', [&$key]);
+
+        return $key;
+    }
+
+    /**
+     * clearCache clears front-end run-time cache.
+     * @param \Cms\Classes\Theme $theme Specifies a parent theme.
+     */
+    public static function clearCache($theme)
+    {
+        Cache::forget(self::getPreviewPageCacheKey($theme));
     }
 }

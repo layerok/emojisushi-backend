@@ -45,6 +45,7 @@ class MailBrandSetting extends SettingModel
     const LINK_COLOR = '#0181b9';
     const FOOTER_COLOR = '#aeaeae';
     const BORDER_COLOR = '#edeff2';
+    const SUB_BORDER_COLOR = '#e8e5ef';
     const PROMOTION_BORDER_COLOR = '#9ba2ab';
 
     /**
@@ -115,7 +116,7 @@ class MailBrandSetting extends SettingModel
     {
         $vars = [
             'body_bg' => self::BODY_BG,
-            'content_bg' => self::WHITE_COLOR,
+            'content_bg' => self::BODY_BG,
             'content_inner_bg' => self::WHITE_COLOR,
             'button_text_color' => self::WHITE_COLOR,
             'button_primary_bg' => self::PRIMARY_BG,
@@ -127,8 +128,8 @@ class MailBrandSetting extends SettingModel
             'link_color' => self::LINK_COLOR,
             'footer_color' => self::FOOTER_COLOR,
             'body_border_color' => self::BORDER_COLOR,
-            'subcopy_border_color' => self::BORDER_COLOR,
-            'table_border_color' => self::BORDER_COLOR,
+            'subcopy_border_color' => self::SUB_BORDER_COLOR,
+            'table_border_color' => self::SUB_BORDER_COLOR,
             'panel_bg' => self::BORDER_COLOR,
             'promotion_bg' => self::WHITE_COLOR,
             'promotion_border_color' => self::PROMOTION_BORDER_COLOR,

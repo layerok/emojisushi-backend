@@ -20,7 +20,7 @@ return new class extends Migration
             $table->string('locale')->nullable();
             $table->string('timezone')->nullable();
 
-            $table->boolean('is_restricted')->default(0);
+            $table->boolean('is_host_restricted')->default(0);
             $table->mediumText('allow_hosts')->nullable();
 
             $table->boolean('is_prefixed')->default(0);
@@ -29,6 +29,9 @@ return new class extends Migration
             $table->boolean('is_styled')->default(0);
             $table->string('color_foreground')->nullable();
             $table->string('color_background')->nullable();
+
+            $table->boolean('is_role_restricted')->default(0);
+            $table->mediumText('allow_roles')->nullable();
 
             $table->boolean('is_primary')->default(0);
             $table->boolean('is_enabled')->default(0);

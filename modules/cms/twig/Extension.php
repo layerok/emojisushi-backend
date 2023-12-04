@@ -5,13 +5,14 @@ use Cms;
 use Block;
 use Event;
 use Response;
-use Redirect;
-use Cms\Classes\PageLookup;
+use Cms\Classes\PageManager;
 use Cms\Classes\Controller;
+use Cms\Classes\ThisVariable;
 use Twig\Environment as TwigEnvironment;
 use Twig\TwigFilter as TwigSimpleFilter;
 use Twig\TwigFunction as TwigSimpleFunction;
 use Twig\Extension\AbstractExtension as TwigExtension;
+use Illuminate\Http\Exceptions\HttpResponseException;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
@@ -112,6 +113,7 @@ class Extension extends TwigExtension
             new FlashTokenParser,
             new ScriptsTokenParser,
             new StylesTokenParser,
+            new MetaTokenParser,
         ];
     }
 
@@ -249,9 +251,6 @@ class Extension extends TwigExtension
         if ($content instanceof \Illuminate\Contracts\Support\Responsable) {
             $response = $content->toResponse(App::make('request'));
         }
-        elseif ($content instanceof \Cms\Classes\AjaxResponse && $content->isAjaxRedirect()) {
-            $response = Redirect::to($content->getAjaxRedirectUrl(), $status ?: 302, $headers);
-        }
         elseif ($content instanceof \Symfony\Component\HttpFoundation\Response) {
             $response = $content;
         }
@@ -263,7 +262,10 @@ class Extension extends TwigExtension
             $response->setStatusCode($status);
         }
 
-        $this->controller->setResponse($response);
+        // Allow headers and interception from Response Maker
+        $response = $this->controller->makeResponse($response);
+
+        throw new HttpResponseException($response);
     }
 
     /**
@@ -273,9 +275,7 @@ class Extension extends TwigExtension
      */
     public function redirectFunction($to, $parameters = [], $code = 302)
     {
-        $this->controller->setResponse(
-            Cms::redirect($to, $parameters, $code)
-        );
+        throw new HttpResponseException(Cms::redirect($to, $parameters, $code));
     }
 
     /**
@@ -298,15 +298,19 @@ class Extension extends TwigExtension
     }
 
     /**
-     * pageFilter looks up the URL for a supplied page and returns it relative to the website root.
-     * @param mixed $name Specifies the Cms Page file name.
-     * @param array $parameters Route parameters to consider in the URL.
-     * @param bool $routePersistence By default the existing routing parameters will be included
-     * when creating the URL, set to false to disable this feature.
+     * pageFilter looks up the URL for a supplied page name and returns it relative to the website root,
+     * including route parameters. Parameters can be persisted from the current page parameters.
+     * @param mixed $name
+     * @param array $parameters
+     * @param bool $routePersistence
      * @return string
      */
     public function pageFilter($name, $parameters = [], $routePersistence = true)
     {
+        if ($name instanceof ThisVariable) {
+            $name = '';
+        }
+
         return $this->controller->pageUrl($name, $parameters, $routePersistence);
     }
 
@@ -328,11 +332,7 @@ class Extension extends TwigExtension
      */
     public function contentFilter($content)
     {
-        $content = PageLookup::processMarkup($content);
-
-        // @todo process snippets markup
-
-        return $content;
+        return PageManager::processMarkup($content);
     }
 
     /**

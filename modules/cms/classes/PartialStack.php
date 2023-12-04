@@ -44,13 +44,20 @@ class PartialStack
     }
 
     /**
+     * getPartialObj
+     */
+    public function getPartialObj()
+    {
+        return $this->activePartial['obj'] ?? null;
+    }
+
+    /**
      * addPartialObj
      */
     public function addPartialObj($partialObj)
     {
         $this->activePartial['obj'] = $partialObj;
     }
-
 
     /**
      * findHandlerFromStack

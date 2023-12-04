@@ -2,7 +2,7 @@
 
 use Carbon\Carbon;
 use Backend\Classes\FormWidgetBase;
-use System\Helpers\DateTimeHelper;
+use System\Helpers\DateTime as DateTimeHelper;
 
 /**
  * DatePicker renders a date picker field
@@ -13,7 +13,7 @@ use System\Helpers\DateTimeHelper;
 class DatePicker extends FormWidgetBase
 {
     //
-    // Configurable properties
+    // Configurable Properties
     //
 
     /**
@@ -45,6 +45,12 @@ class DatePicker extends FormWidgetBase
     public $yearRange;
 
     /**
+     * @var string|array disableDays are days that cannot be selected. Value can be a number
+     * to represent Sunday (0) to Saturday (6), or an explicit date (2024-10-01).
+     */
+    public $disableDays;
+
+    /**
      * @var int firstDay of the week
      * eg: 0 (Sunday), 1 (Monday), 2 (Tuesday), etc.
      */
@@ -72,7 +78,7 @@ class DatePicker extends FormWidgetBase
     public $defaultTimeMidnight = false;
 
     //
-    // Object properties
+    // Object Properties
     //
 
     /**
@@ -91,6 +97,7 @@ class DatePicker extends FormWidgetBase
             'minDate',
             'maxDate',
             'yearRange',
+            'disableDays',
             'firstDay',
             'twelveHour',
             'showWeekNumber',
@@ -148,6 +155,7 @@ class DatePicker extends FormWidgetBase
         $this->vars['minDate'] = $this->minDate;
         $this->vars['maxDate'] = $this->maxDate;
         $this->vars['yearRange'] = $this->yearRange;
+        $this->vars['disableDays'] = $this->disableDays;
         $this->vars['firstDay'] = $this->firstDay;
         $this->vars['twelveHour'] = $this->twelveHour;
         $this->vars['showWeekNumber'] = $this->showWeekNumber;
@@ -168,6 +176,20 @@ class DatePicker extends FormWidgetBase
         }
 
         return $value;
+    }
+
+    /**
+     * resetFormValue from the form field
+     */
+    public function resetFormValue()
+    {
+        // Transfer approved config
+        $this->minDate = $this->formField->minDate;
+        $this->maxDate = $this->formField->maxDate;
+        $this->yearRange = $this->formField->yearRange;
+        $this->firstDay = $this->formField->firstDay;
+        $this->twelveHour = $this->formField->twelveHour;
+        $this->showWeekNumber = $this->formField->showWeekNumber;
     }
 
     /**

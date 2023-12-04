@@ -14,7 +14,7 @@ use ApplicationException;
 class ColorPicker extends FormWidgetBase
 {
     //
-    // Configurable properties
+    // Configurable Properties
     //
 
     /**
@@ -64,7 +64,7 @@ class ColorPicker extends FormWidgetBase
     public $disabled = false;
 
     //
-    // Object properties
+    // Object Properties
     //
 
     /**

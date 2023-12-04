@@ -1,4 +1,4 @@
-oc.Module.register('backend.vuecomponents.monacoeditor.modelreference', function() {
+oc.Modules.register('backend.vuecomponents.monacoeditor.modelreference', function() {
     'use strict';
 
     class ModelReference {

@@ -11,7 +11,7 @@ use October\Rain\Html\Helper as HtmlHelper;
 abstract class FormWidgetBase extends WidgetBase
 {
     //
-    // Configurable properties
+    // Configurable Properties
     //
 
     /**
@@ -45,7 +45,7 @@ abstract class FormWidgetBase extends WidgetBase
     public $showLabels = true;
 
     //
-    // Object properties
+    // Object Properties
     //
 
     /**

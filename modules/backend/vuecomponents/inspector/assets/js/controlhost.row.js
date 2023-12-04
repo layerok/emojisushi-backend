@@ -1,7 +1,7 @@
 /*
  * Vue Inspector control host row implementation
  */
-oc.Module.register('backend.component.inspector.controlhost.row', function () {
+oc.Modules.register('backend.component.inspector.controlhost.row', function () {
     Vue.component('backend-component-inspector-controlhost-row', {
         props: {
             obj: {

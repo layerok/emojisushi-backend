@@ -1,7 +1,7 @@
 /*
  * Media manager control class
  *
- * Dependences:
+ * Dependencies:
  * - Scrollpad (october.scrollpad.js)
  */
 +function ($) { "use strict";
@@ -105,12 +105,12 @@
                     publicUrl: item.getAttribute('data-public-url'),
                     // @todo optimistically this should be a thumb URL for the media picker -sg
                     thumbUrl: item.getAttribute('data-public-url')
-                }
+                };
 
-            result.push(itemDetails)
+            result.push(itemDetails);
         }
 
-        return result
+        return result;
     }
 
     // MEDIA MANAGER INTERNAL METHODS
@@ -841,24 +841,24 @@
     //
 
     MediaManager.prototype.cropSelectedImage = function(callback) {
-        var selectedItems = this.getSelectedItems(true)
+        var selectedItems = this.getSelectedItems(true);
 
         if (selectedItems.length != 1) {
-            alert(this.options.selectSingleImage)
-            return
+            alert(this.options.selectSingleImage);
+            return;
         }
 
         if (selectedItems[0].getAttribute('data-document-type') !== 'image') {
-            alert(this.options.selectionNotImage)
-            return
+            alert(this.options.selectionNotImage);
+            return;
         }
 
-        var path = selectedItems[0].getAttribute('data-path')
+        var path = selectedItems[0].getAttribute('data-path');
 
         new $.oc.mediaManager.imageCropPopup(path, {
-                alias: this.options.alias,
-                onDone: callback
-            })
+            alias: this.options.alias,
+            onDone: callback
+        });
     }
 
     MediaManager.prototype.onImageCropped = function(result) {

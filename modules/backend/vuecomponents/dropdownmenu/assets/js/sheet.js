@@ -1,5 +1,5 @@
-oc.Module.register('backend.component.dropdownmenu.sheet', function () {
-    var dropdownMenuUtils = oc.Module.import('backend.component.dropdownmenu.utils');
+oc.Modules.register('backend.component.dropdownmenu.sheet', function () {
+    var dropdownMenuUtils = oc.Modules.import('backend.component.dropdownmenu.utils');
 
     Vue.component('backend-component-dropdownmenu-sheet', {
         props: {

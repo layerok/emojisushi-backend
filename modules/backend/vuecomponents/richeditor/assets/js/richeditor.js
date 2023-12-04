@@ -1,4 +1,4 @@
-oc.Module.register('backend.component.richeditor', function () {
+oc.Modules.register('backend.component.richeditor', function () {
     function initFroala(component) {
         const options = JSON.parse(component.$el.getAttribute('data-configuration'));
         const $textarea = $(component.$refs.textarea);
@@ -7,6 +7,10 @@ oc.Module.register('backend.component.richeditor', function () {
             language: options.editorLang,
             toolbarSticky: false
         };
+
+        if (component.useLineBreaks) {
+            froalaOptions.enter = $.FroalaEditor.ENTER_BR;
+        }
 
         if (Array.isArray(component.toolbarButtons) && component.toolbarButtons.length > 0) {
             froalaOptions.toolbarButtons = component.toolbarButtons;
@@ -109,7 +113,14 @@ oc.Module.register('backend.component.richeditor', function () {
         var placeholder = component.placeholder;
         froalaOptions.placeholderText = placeholder ? placeholder : '';
 
-        froalaOptions.height = Infinity;
+        var fieldEl = component.$el.closest('.field-richeditor');
+        if (fieldEl && !fieldEl.classList.contains('stretch')) {
+            froalaOptions.height = $('.height-indicator', fieldEl).height();
+        }
+        else {
+            froalaOptions.height = Infinity;
+        }
+
         froalaOptions.iframeStyleFiles = [options.iframeStylesFile];
 
         if (component.fullPage) {
@@ -151,6 +162,7 @@ oc.Module.register('backend.component.richeditor', function () {
                 default: true
             },
             readOnly: Boolean,
+            useLineBreaks: Boolean,
             toolbarButtons: Array,
             fullPage: {
                 type: Boolean,
@@ -166,22 +178,7 @@ oc.Module.register('backend.component.richeditor', function () {
         data: function() {
             return {
                 editorId: $.oc.domIdManager.generate('richeditor'),
-                defaultButtons: [
-                    'paragraphFormat',
-                    'align',
-                    'bold',
-                    'italic',
-                    'underline',
-                    '-',
-                    'formatOL',
-                    'formatUL',
-                    '-',
-                    'insertTable',
-                    'insertPageLink',
-                    'insertImage',
-                    'insertHR',
-                    'html'
-                ],
+                defaultButtons: oc.richEditorButtons,
                 editor: null,
                 lastCachedValue: this.value
             };

@@ -1,7 +1,7 @@
 /*
  *  Read-only information table implementation
  */
-oc.Module.register('backend.component.infotable', function () {
+oc.Modules.register('backend.component.infotable', function () {
     Vue.component('backend-component-infotable', {
         props: {
             items: {

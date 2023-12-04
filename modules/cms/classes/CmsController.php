@@ -1,6 +1,7 @@
 <?php namespace Cms\Classes;
 
 use App;
+use Cms;
 use Site;
 use Config;
 use Request;
@@ -51,6 +52,11 @@ class CmsController extends ControllerBase
      */
     public function run($url = '/')
     {
+        // Check configuration for bypass exceptions
+        if (Cms::urlHasException((string) $url, 'site')) {
+            return App::make(Controller::class)->run($url);
+        }
+
         // Locate site
         $site = $this->findSite(Request::getHost(), $url);
 

@@ -79,7 +79,10 @@ class SiteSwitcher extends WidgetBase
 
         $this->vars['switchHandler'] = $this->switchHandler;
         $this->vars['useMultisite'] = $useMultisite;
-        $this->vars['editSite'] = $useMultisite ? Site::getEditSite() : Site::getAnySite();
+        $this->vars['canManageSite'] = BackendAuth::userHasAccess('settings.manage_sites');
+        $this->vars['useAnySite'] = Site::hasAnySite();
+        $this->vars['editSite'] = Site::getEditSite() ?: Site::getAnySite();
+        $this->vars['sites'] = Site::listEditEnabled();
     }
 
     /**
@@ -189,10 +192,10 @@ class SiteSwitcher extends WidgetBase
         }
 
         if (!$id) {
-            return Site::getPrimarySite();
+            return Site::getAnyEditSite();
         }
 
-        return Site::getSiteFromId($id) ?: Site::getPrimarySite();
+        return Site::getSiteFromId($id) ?: Site::getAnyEditSite();
     }
 
     /**
@@ -219,6 +222,6 @@ class SiteSwitcher extends WidgetBase
          *     });
          *
          */
-        Event::fire('backend.site.setEditSite', compact('id'));
+        Event::fire('backend.site.setEditSite', [$id]);
     }
 }

@@ -45,7 +45,7 @@
                         <a
                             href="#license"
                             data-tab-url="<?= Backend::url('system/market/plugin/'.$urlCode.'/license') ?>">
-                            <?= e(__('Licence')) ?>
+                            <?= e(__('License')) ?>
                         </a>
                     </li>
                 <?php endif ?>
@@ -56,7 +56,7 @@
                         <?php if ($product->contentHtml): ?>
                             <?= $product->contentHtml ?>
                         <?php else: ?>
-                            <?= BackendUi::callout(function() { ?>
+                            <?= Ui::callout(function() { ?>
                                 <p><?= e(__('There is no documentation provided.')) ?></p>
                             <?php }) ?>
                         <?php endif ?>

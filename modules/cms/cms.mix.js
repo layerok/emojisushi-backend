@@ -14,6 +14,7 @@ module.exports = (mix) => {
     mix.less('modules/cms/assets/less/october.theme-selector.less', 'modules/cms/assets/css/');
 
     // Component LESS
+    mix.lessList('modules/cms/widgets');
     mix.lessList('modules/cms/formwidgets');
     mix.lessList('modules/cms/vuecomponents');
 };

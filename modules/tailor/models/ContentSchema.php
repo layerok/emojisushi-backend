@@ -93,14 +93,23 @@ class ContentSchema extends Model
     /**
      * setDroppedColumn
      */
-    public function setDroppedColumn($fieldName, $droppedName)
+    public function setDroppedColumn($fieldName, $droppedName, $isRename = false)
     {
-        $this->droppedFields[$droppedName] = [
-            'original' => $fieldName,
-            'details' => $this->proposedFields[$fieldName] ?? null
-        ];
+        if ($isRename) {
+            $this->droppedFields[$droppedName] = [
+                'original' => $fieldName,
+                'renamed' => true,
+                'details' => $this->proposedFields[$fieldName] ?? null
+            ];
+        }
+        else {
+            $this->droppedFields[$droppedName] = [
+                'original' => $fieldName,
+                'details' => $this->proposedFields[$fieldName] ?? null
+            ];
 
-        unset($this->proposedFields[$fieldName]);
+            unset($this->proposedFields[$fieldName]);
+        }
     }
 
     /**
@@ -111,11 +120,9 @@ class ContentSchema extends Model
         // Extract fields from blueprint
         $fields = [];
         foreach ($table->getColumns() as $column) {
-            if (!isset($column['name'])) {
-                continue;
+            if (isset($column['name'])) {
+                $fields[$column['name']] = $column->toArray();
             }
-
-            $fields[$column['name']] = $column;
         }
 
         // Compare for existing schema
@@ -197,6 +204,22 @@ class ContentSchema extends Model
     public function setLatestMeta(array $meta)
     {
         $this->latestMeta = $meta;
+    }
+
+    /**
+     * getPruneFields returns fields that should be pruned after migration
+     */
+    public function getPruneFields(): array
+    {
+        return $this->droppedFields;
+    }
+
+    /**
+     * setPrunedColumn removes a column after pruning it
+     */
+    public function setPrunedColumn(string $fieldName)
+    {
+        unset($this->droppedFields[$fieldName]);
     }
 
     /**

@@ -41,6 +41,11 @@ class MediaManager extends WidgetBase
     const FILTER_EVERYTHING = 'everything';
 
     /**
+     * @var string currentFolder
+     */
+    protected $currentFolder;
+
+    /**
      * @var string brokenImageHash string for the broken image graphic.
      */
     protected $brokenImageHash;
@@ -309,9 +314,7 @@ class MediaManager extends WidgetBase
                 $filesToDelete[] = $path;
             }
             elseif ($type === MediaLibraryItem::TYPE_FOLDER) {
-                /*
-                 * Delete single folder
-                 */
+                // Delete single folder
                 $library->deleteFolder($path);
 
                 /**
@@ -339,9 +342,7 @@ class MediaManager extends WidgetBase
             // Delete collection of files
             $library->deleteFiles($filesToDelete);
 
-            /*
-             * Extensibility
-             */
+            // Extensibility
             foreach ($filesToDelete as $path) {
                 /**
                  * @event media.file.delete
@@ -680,7 +681,7 @@ class MediaManager extends WidgetBase
      */
     public function onSetSidebarVisible()
     {
-        $visible = Input::get('visible');
+        $visible = post('visible');
 
         $this->setSidebarVisible($visible);
     }
@@ -691,9 +692,13 @@ class MediaManager extends WidgetBase
      */
     public function onLoadPopup()
     {
-        $this->bottomToolbar = Input::get('bottomToolbar', $this->bottomToolbar);
+        if ($currentFolder = post('media_folder')) {
+            $this->currentFolder = MediaLibrary::validatePath($currentFolder);
+        }
 
-        $this->cropAndInsertButton = Input::get('cropAndInsertButton', $this->cropAndInsertButton);
+        $this->bottomToolbar = post('bottom_toolbar', $this->bottomToolbar);
+
+        $this->cropAndInsertButton = post('crop_insert_button', $this->cropAndInsertButton);
 
         return $this->makePartial('popup-body');
     }
@@ -708,7 +713,7 @@ class MediaManager extends WidgetBase
             throw new ForbiddenException;
         }
 
-        $path = Input::get('path');
+        $path = post('path');
         $path = MediaLibrary::validatePath($path);
         $cropSessionKey = md5(FormHelper::getSessionKey());
         $selectionParams = $this->getSelectionParams();
@@ -900,6 +905,8 @@ class MediaManager extends WidgetBase
         $path = MediaLibrary::validatePath($path);
 
         $this->putSession('media_folder', $path);
+
+        $this->currentFolder = $path;
     }
 
     /**
@@ -908,7 +915,11 @@ class MediaManager extends WidgetBase
      */
     protected function getCurrentFolder()
     {
-        return $this->getSession('media_folder', self::FOLDER_ROOT);
+        if ($this->currentFolder) {
+            return $this->currentFolder;
+        }
+
+        return $this->currentFolder = $this->getSession('media_folder', self::FOLDER_ROOT);
     }
 
     /**
@@ -1300,7 +1311,10 @@ class MediaManager extends WidgetBase
      */
     protected function getThumbnailDirectory()
     {
-        return MediaLibrary::validatePath(Config::get('media.thumb_folder', 'public'), true) . '/';
+        return MediaLibrary::validatePath(
+            Config::get('media.thumb_folder', 'public'),
+            true
+        ) . '/';
     }
 
     /**
@@ -1529,7 +1543,7 @@ class MediaManager extends WidgetBase
         }
 
         try {
-            $uploadedFile = Input::file('file_data');
+            $uploadedFile = files('file_data');
 
             /**
              * @event media.file.beforeUpload
@@ -1538,7 +1552,7 @@ class MediaManager extends WidgetBase
              * Example usage:
              *
              *     Event::listen('media.file.beforeUpload', function ((\Symfony\Component\HttpFoundation\File\UploadedFile) $uploadedFile) {
-             *         \Log::info($path . " was upoaded.");
+             *         \Log::info($path . " was uploaded.");
              *     });
              *
              * Or
@@ -1551,13 +1565,11 @@ class MediaManager extends WidgetBase
             $this->fireSystemEvent('media.file.beforeUpload', [$uploadedFile]);
 
             // Convert uppercase file extensions to lowercase
-            //
             $fileName = $uploadedFile->getClientOriginalName();
             $extension = strtolower($uploadedFile->getClientOriginalExtension());
             $fileName = File::name($fileName).'.'.$extension;
 
             // File name contains non-latin characters, attempt to slug the value
-            //
             $autoRename = Config::get('media.auto_rename') === 'slug';
             if (!$this->validateFileName($fileName) || $autoRename) {
                 $fileNameClean = $this->slugFileName(File::name($fileName));
@@ -1565,13 +1577,11 @@ class MediaManager extends WidgetBase
             }
 
             // Check for unsafe file extensions
-            //
             if (!$this->validateFileType($fileName)) {
                 throw new ApplicationException(Lang::get('backend::lang.media.type_blocked'));
             }
 
             // See mime type handling in the asset manager
-            //
             if (!$uploadedFile->isValid()) {
                 throw new ApplicationException($uploadedFile->getErrorMessage());
             }
@@ -1581,22 +1591,28 @@ class MediaManager extends WidgetBase
             $filePath = $path.'/'.$fileName;
 
             // getRealPath() can be empty for some environments (IIS)
-            //
             $realPath = empty(trim($uploadedFile->getRealPath()))
                 ? $uploadedFile->getPath() . DIRECTORY_SEPARATOR . $uploadedFile->getFileName()
                 : $uploadedFile->getRealPath();
 
             // Cannot overwrite files
-            //
             if (!$this->checkHasPermission('mediaDelete') && MediaLibrary::instance()->has($filePath)) {
                 throw new ApplicationException(__('A media file already exists at this location, please upload using a different filename.'));
             }
 
+            // Check and clean vector files
+            // @todo use streaming like file objects
+            $contents = File::get($realPath);
+            // @deprecated media.clean_vectors set default to true in v4
+            if ($extension === 'svg' && Config::get('media.clean_vectors', false)) {
+                // @todo File::cleanVector() helper might be helpful here to clean temporary file in place
+                $contents = \Html::cleanVector($contents);
+            }
+
             // Write file to disk
-            //
             MediaLibrary::instance()->put(
                 $filePath,
-                File::get($realPath)
+                $contents
             );
 
             /**
@@ -1606,7 +1622,7 @@ class MediaManager extends WidgetBase
              * Example usage:
              *
              *     Event::listen('media.file.upload', function ((\Media\Widgets\MediaManager) $mediaWidget, (string) &$path, (\Symfony\Component\HttpFoundation\File\UploadedFile) $uploadedFile) {
-             *         \Log::info($path . " was upoaded.");
+             *         \Log::info($path . " was uploaded.");
              *     });
              *
              * Or

@@ -1,4 +1,4 @@
-oc.Module.register('backend.vuecomponents.richeditordocumentconnector.octobercommands', function() {
+oc.Modules.register('backend.vuecomponents.richeditordocumentconnector.octobercommands', function() {
     'use strict';
 
     function getUrlPopupConfig(component) {
@@ -91,7 +91,7 @@ oc.Module.register('backend.vuecomponents.richeditordocumentconnector.octobercom
         }
 
         uploadMedia(callback, $textarea, accept) {
-            const uploaderUtils = oc.Module.import('backend.vuecomponents.uploader.utils');
+            const uploaderUtils = oc.Modules.import('backend.vuecomponents.uploader.utils');
             uploaderUtils.selectAndUploadMediaManagerFiles(
                 function(link, isMultipleFiles) {
                     callback(link);

@@ -1,4 +1,4 @@
-oc.Module.register('cms.editor.intellisense.completer.base', function() {
+oc.Modules.register('cms.editor.intellisense.completer.base', function() {
     'use strict';
 
     class CompleterBase {

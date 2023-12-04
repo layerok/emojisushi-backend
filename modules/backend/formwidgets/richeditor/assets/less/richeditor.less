@@ -36,8 +36,12 @@
     @import "../../../../models/editorsetting/default_styles.less";
 }
 
-// Modifications
-@import "_froala.less";
+.fr-wrapper {
+    ::selection {
+        background: @input-selection-bg;
+        color: @input-selection-color;
+    }
+}
 
 //
 // Make the focus ring and textarea fill the whole rich editor container
@@ -135,7 +139,7 @@
         }
 
         .fr-wrapper {
-            width: 100% !important;
+            width: 100%;
             left: 0;
             top: 0;
             bottom: 0;
@@ -168,33 +172,6 @@
 //
 
 .control-richeditor {
-    .richeditor-snippet() {
-        display: inline-block;
-        width: 100%;
-        margin: 0 0 15px 0;
-        padding: 10px 10px 10px 36px;
-        border: 2px dotted #bdc3c7;
-        background: white;
-        position: relative;
-        cursor: pointer;
-        color: #6c7071;
-        font: 15px @font-family-base;
-        font-weight: 500;
-        line-height: 150%;
-        .border-radius(3px);
-
-        &:focus,
-        &.inspector-open {
-            border-color: #2581b8;
-            border-style: solid;
-            outline: none;
-        }
-    }
-
-    figure[data-ui-block] {
-        .richeditor-snippet();
-    }
-
     figure[data-video],
     figure[data-audio] {
         padding-left: 13px;

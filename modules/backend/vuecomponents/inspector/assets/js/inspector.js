@@ -1,7 +1,7 @@
 /*
  * Vue Inspector implementation
  */
-oc.Module.register('backend.component.inspector', function () {
+oc.Modules.register('backend.component.inspector', function () {
     Vue.component('backend-component-inspector', {
         props: {
             dataSchema: {

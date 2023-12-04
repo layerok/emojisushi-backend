@@ -2,15 +2,15 @@
     'use strict';
 
     function OctoberModuleRegistry() {
-        this.modules = new Map();
+        this.moduleMap = new Map();
 
         this.register = function(namespace, registrationFn) {
-            if (this.modules.has(namespace)) {
+            if (this.moduleMap.has(namespace)) {
                 console.info('Module namespace is already registered: ' + namespace);
                 return;
             }
 
-            this.modules.set(namespace, registrationFn());
+            this.moduleMap.set(namespace, registrationFn());
         };
 
         this.import = function(namespace) {
@@ -18,11 +18,11 @@
                 throw new Error('Module namespace is not registered: ' + namespace);
             }
 
-            return this.modules.get(namespace);
+            return this.moduleMap.get(namespace);
         };
 
         this.exists = function(namespace) {
-            return this.modules.has(namespace);
+            return this.moduleMap.has(namespace);
         };
     }
 
@@ -30,6 +30,8 @@
         window.oc = {};
     }
 
-    // $.oc.module is @deprecated -sg
-    window.oc.Module = $.oc.module = new OctoberModuleRegistry();
+    window.oc.Modules = new OctoberModuleRegistry();
+
+    // oc.Module and $.oc.module is @deprecated -sg
+    window.oc.Module = $.oc.module = window.oc.Modules;
 })($);

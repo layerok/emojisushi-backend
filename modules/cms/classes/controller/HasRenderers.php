@@ -27,7 +27,9 @@ trait HasRenderers
      */
     public function renderPage()
     {
+        // Prevents infinite loop by setting to empty string first
         if ($this->pageContents === null) {
+            $this->pageContents = '';
             $this->pageContents = $this->renderPageContents();
         }
 
@@ -189,7 +191,6 @@ trait HasRenderers
             }
             $this->partialStack->stackPartial();
 
-            $manager = ComponentManager::instance();
             foreach ($partial->settings['components'] as $component => $properties) {
                 // Do not inject the viewBag component to the environment.
                 // Not sure if they're needed there by the requirements,
@@ -204,27 +205,7 @@ trait HasRenderers
                     ? explode(' ', $component)
                     : [$component, $component];
 
-                $componentObj = $manager->makeComponent($componentName, $this->pageObj, $properties);
-                if (!$componentObj) {
-                    $strictMode = Config::get('cms.strict_components', false);
-                    if ($strictMode) {
-                        throw new CmsException(Lang::get('cms::lang.component.not_found', ['name' => $componentName]));
-                    }
-                    else {
-                        $parameters[$alias] = null;
-                    }
-                }
-                else {
-                    $componentObj->alias = $alias;
-                    $partial->components[$alias] = $componentObj;
-                    $parameters[$alias] = $componentObj->makePrimaryAccessor();
-
-                    $this->partialStack->addComponent($alias, $componentObj);
-
-                    $this->parseRouteParamsOnComponent($componentObj, $this->router->getParameters());
-                    $componentObj->init();
-                    $this->parseEnvironmentVarsOnComponent($componentObj, $parameters + $this->vars);
-                }
+                $this->addPartialComponent($partial, $parameters, $componentName, $alias, $properties);
             }
 
             CmsException::mask($this->page, 300);
@@ -353,17 +334,13 @@ trait HasRenderers
 
         $fileContent = $content->parsedMarkup;
 
-        /*
-         * Inject global view variables
-         */
+        // Inject global view variables
         $globalVars = ViewHelper::getGlobalVars();
         if (!empty($globalVars)) {
             $parameters = (array) $parameters + $globalVars;
         }
 
-        /*
-         * Parse basic template variables
-         */
+        // Parse basic template variables
         if (!empty($parameters)) {
             $fileContent = TextParser::parse($fileContent, $parameters);
         }

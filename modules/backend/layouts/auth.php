@@ -1,16 +1,15 @@
 <!DOCTYPE html>
 <html lang="<?= App::getLocale() ?>" class="no-js">
     <head>
+        <link rel="icon" type="image/png" href="<?= e(Backend\Models\BrandSetting::getFavicon() ?: Backend::skinAsset('assets/images/favicon.png')) ?>">
+        <title><?= __('Administration Area') ?> | <?= e(Backend\Models\BrandSetting::get('app_name')) ?></title>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=0">
         <meta name="robots" content="noindex">
         <meta name="apple-mobile-web-app-capable" content="yes">
         <meta name="backend-base-path" content="<?= Backend::baseUrl() ?>">
         <meta name="csrf-token" content="<?= csrf_token() ?>">
-        <meta name="turbo-visit-control" content="disable" />
-        <link rel="icon" type="image/png" href="<?= e(Backend\Models\BrandSetting::getFavicon()) ?>">
-        <title><?= __('Administration Area') ?> | <?= e(Backend\Models\BrandSetting::get('app_name')) ?></title>
-
+        <meta name="turbo-visit-control" content="disable">
         <?php
             $coreBuild = Backend::assetVersion();
 
@@ -30,7 +29,6 @@
                 Url::asset('modules/system/assets/js/lang/lang.'.App::getLocale().'.js'),
             ];
         ?>
-
         <?php foreach ($styles as $style): ?>
             <link href="<?= $style . '?v=' . $coreBuild ?>" rel="stylesheet" importance="high" />
         <?php endforeach ?>
@@ -108,5 +106,6 @@
         <div id="layout-flash-messages"><?= $this->makeLayoutPartial('flash_messages') ?></div>
 
         <?= $this->makeLayoutPartial('vue_templates') ?>
+        <?= Block::placeholder('footer') ?>
     </body>
 </html>

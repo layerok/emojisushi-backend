@@ -34,7 +34,7 @@ class NestedForm extends FormWidgetBase
 
     /**
      * @var bool defaultCreate will create a new record when the form loads, useful
-     * for assocating relations within the nested form
+     * for associating relations within the nested form
      */
     public $defaultCreate = false;
 
@@ -103,9 +103,11 @@ class NestedForm extends FormWidgetBase
      */
     public function getSaveValue($value)
     {
-        return $this->useRelation
-            ? $this->processSaveForRelation($value)
-            : $value;
+        if ($this->useRelation) {
+            return $this->processSaveForRelation($value);
+        }
+
+        return $this->formWidget->getSaveData();
     }
 
     /**
@@ -134,7 +136,7 @@ class NestedForm extends FormWidgetBase
 
         foreach ($modelsToSave as $attrChain => $modelToSave) {
             try {
-                $modelToSave->save(null, $widget->getSessionKey());
+                $modelToSave->save(['sessionKey' => $widget->getSessionKey()]);
             }
             catch (ValidationException $ve) {
                 $ve->setFieldPrefix(array_merge(
@@ -160,7 +162,7 @@ class NestedForm extends FormWidgetBase
         }
         else {
             $config->model = $this->model;
-            $config->data = $this->getLoadValue();
+            $config->data = $this->getLoadValue() ?: [];
             $config->isNested = true;
         }
 
@@ -169,11 +171,31 @@ class NestedForm extends FormWidgetBase
         $config->arrayName = $this->getFieldName();
         $config->sessionKey = $this->sessionKey;
 
+        $this->tagTabbedFormFields($config->tabs);
+        $this->tagTabbedFormFields($config->secondaryTabs);
+
         $widget = $this->makeWidget(\Backend\Widgets\Form::class, $config);
         $widget->previewMode = $this->previewMode;
         $widget->bindToController();
 
         $this->formWidget = $widget;
+    }
+
+    /**
+     * tagTabbedFormFields adds is-nested CSS class to tabs
+     */
+    protected function tagTabbedFormFields(&$config)
+    {
+        if (!$config) {
+            return;
+        }
+
+        if (isset($config['cssClass'])) {
+            $config['cssClass'] = $config['cssClass'] . ' is-nested';
+        }
+        else {
+            $config['cssClass'] = 'is-nested';
+        }
     }
 
     /**

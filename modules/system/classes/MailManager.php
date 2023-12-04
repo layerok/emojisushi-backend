@@ -132,17 +132,13 @@ class MailManager
      */
     protected function addContentToMailerInternal($message, $template, $data, $plainOnly = false)
     {
-        /*
-         * Inject global view variables
-         */
+        // Inject global view variables
         $globalVars = ViewHelper::getGlobalVars();
         if (!empty($globalVars)) {
             $data = (array) $data + $globalVars;
         }
 
-        /*
-         * Subject
-         */
+        // Subject
         $sMessage = $message->getSymfonyMessage();
 
         if (empty($sMessage->getSubject())) {
@@ -203,7 +199,7 @@ class MailManager
         $css = '';
 
         // Parse template layout
-        if ($template->layout) {
+        if ($template->layout && $template->layout->content_html) {
             // Disable inline CSS
             if (array_get($template->layout->options, 'disable_auto_inline_css', false)) {
                 $disableAutoInlineCss = true;
@@ -255,15 +251,11 @@ class MailManager
     {
         $this->isHtmlRenderMode = false;
 
-        $templateText = $template->content_text;
-
-        if (!empty($template->content_text)) {
-            $templateText = $template->content_html;
-        }
+        $templateText = $template->content_text ?: $template->content_html;
 
         $text = $this->renderText($templateText, $data);
 
-        if ($template->layout) {
+        if ($template->layout && $template->layout->content_text) {
             $text = $this->parseTwig($template->layout->content_text, [
                 'content' => $text
             ] + (array) $data);

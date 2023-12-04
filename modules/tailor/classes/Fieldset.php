@@ -72,8 +72,18 @@ class Fieldset extends FieldsetDefinition
             throw new SystemException('Cannot extend an empty model.');
         }
 
+        $fillable = [];
+
         foreach ($this->getAllFields() as $field) {
             $field->extendModel($model);
+
+            if ($field->guarded !== true) {
+                $fillable[] = $field->fieldName;
+            }
+        }
+
+        if ($fillable) {
+            $model->addFillable($fillable);
         }
     }
 
@@ -156,7 +166,7 @@ class Fieldset extends FieldsetDefinition
 
     /**
      * getContentColumnNames spins over every field to determine the actual column
-     * names that it uses in the databse, as opposed to its field name
+     * names that it uses in the database, as opposed to its field name
      */
     public function getContentColumnNames()
     {
@@ -174,5 +184,22 @@ class Fieldset extends FieldsetDefinition
         }
 
         return $columnNames;
+    }
+
+    /**
+     * getRelationControllerFields returns fields that should be registered with the
+     * RelationController behavior
+     */
+    public function getRelationControllerFields(): array
+    {
+        $fields = [];
+
+        foreach ($this->getAllFields() as $fieldObj) {
+            if ($fieldObj->type === 'entries' && $fieldObj->displayMode === 'controller') {
+                $fields[] = $fieldObj;
+            }
+        }
+
+        return $fields;
     }
 }

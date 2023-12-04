@@ -13,7 +13,7 @@
 
     <div class="control-tabs content-tabs" data-control="tab">
 
-        <div style="position:absolute; right:0; z-index:2">
+        <div style="position:absolute;top:6px;right:10px;z-index:2">
             <a
                 href="javascript:;"
                 data-control="popup"
@@ -33,6 +33,15 @@
                     </a>
                 </li>
             <?php endif ?>
+            <?php /*
+            <li class="<?= $activeTab == 'recommended' ? 'active' : '' ?>">
+                <a
+                    href="#tabRecommended"
+                    data-tab-url="<?= Backend::url('system/market/index/recommended') ?>">
+                    <?= __("Recommended") ?>
+                </a>
+            </li>
+            */ ?>
             <li class="<?= $activeTab == 'plugins' ? 'active' : '' ?>">
                 <a
                     href="#tabPlugins"
@@ -56,6 +65,13 @@
                     </div>
                 </div>
             <?php endif ?>
+            <?php /*
+            <div class="tab-pane pane-bordered <?= $activeTab == 'recommended' ? 'active' : '' ?>">
+                <div class="padded-container">
+                    <?= $this->makePartial('install_recommended') ?>
+                </div>
+            </div>
+            */ ?>
             <div class="tab-pane pane-bordered <?= $activeTab == 'plugins' ? 'active' : '' ?>">
                 <div class="padded-container">
                     <?= $this->makePartial('install_plugins') ?>

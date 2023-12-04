@@ -10,9 +10,9 @@
         href="javascript:;"
         data-request="onEmptyLog"
         data-request-confirm="<?= e(trans('backend::lang.list.delete_selected_confirm')) ?>"
-        data-load-indicator="<?= e(trans('system::lang.event_log.empty_loading')) ?>"
+        data-load-indicator="<?= __("Emptying Event Log...") ?>"
         class="btn btn-default oc-icon-eraser">
-        <?= e(trans('system::lang.event_log.empty_link')) ?>
+        <?= __("Empty Event Log") ?>
     </a>
     <button
         class="btn btn-danger oc-icon-trash-o"

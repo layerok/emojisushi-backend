@@ -20,6 +20,7 @@ class GlobalComponent extends ComponentModuleBase
             'description' => 'Makes globals available to the page.'
         ];
     }
+
     /**
      * defineProperties
      */

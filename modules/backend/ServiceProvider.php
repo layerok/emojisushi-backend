@@ -4,6 +4,7 @@ use Backend;
 use System\Classes\MailManager;
 use System\Classes\SettingsManager;
 use Backend\Models\UserRole;
+use Backend\Models\BrandSetting;
 use October\Rain\Support\ModuleServiceProvider;
 
 /**
@@ -18,6 +19,7 @@ class ServiceProvider extends ModuleServiceProvider
     {
         parent::register('backend');
 
+        $this->registerSingletons();
         $this->registerMailer();
     }
 
@@ -27,6 +29,16 @@ class ServiceProvider extends ModuleServiceProvider
     public function boot()
     {
         parent::boot('backend');
+    }
+
+    /**
+     * registerSingletons
+     */
+    protected function registerSingletons()
+    {
+        // See notes in \System\ServiceProvider::registerSingletons
+        // this had to be moved kept there so it is available before
+        // plugins. The load order is system, plugins, modules.
     }
 
     /**
@@ -136,17 +148,6 @@ class ServiceProvider extends ModuleServiceProvider
             //     'tab' => 'Administrators',
             //     'order' => 400
             // ],
-            'admins.manage.roles' => [
-                'label' => 'Manage Roles',
-                'comment' => 'Allow users to create new roles and manage roles lower than their highest role.',
-                'tab' => 'Administrators',
-                'order' => 500
-            ],
-            'admins.manage.groups' => [
-                'label' => 'Manage Groups',
-                'tab' => 'Administrators',
-                'order' => 600
-            ],
             'admins.manage.other_admins' => [
                 'label' => 'Manage Other Admins',
                 'comment' => 'Allow users to reset passwords and update emails.',
@@ -158,28 +159,39 @@ class ServiceProvider extends ModuleServiceProvider
                 'tab' => 'Administrators',
                 'order' => 800
             ],
+            'admins.roles' => [
+                'label' => 'Manage Roles',
+                'comment' => 'Allow users to create new roles and manage roles lower than their highest role.',
+                'tab' => 'Administrators',
+                'order' => 500
+            ],
+            'admins.groups' => [
+                'label' => 'Manage Groups',
+                'tab' => 'Administrators',
+                'order' => 600
+            ],
 
             // Preferences
             'preferences' => [
-                'label' => 'system::lang.permissions.manage_preferences',
+                'label' => "Manage Backend Preferences",
                 'tab' => 'Preferences',
                 'order' => 400
             ],
             'preferences.code_editor' => [
-                'label' => 'system::lang.permissions.manage_editor',
+                'label' => "Manage Code Editor Preferences",
                 'tab' => 'Preferences',
                 'order' => 500
             ],
 
             // Settings
             'settings.customize_backend' => [
-                'label' => 'system::lang.permissions.manage_branding',
+                'label' => "Customize Backend Styles",
                 'tab' => 'Settings',
                 'order' => 400
             ],
             'settings.editor_settings' => [
                 'label' => 'Global Editor Settings',
-                'comment' => 'backend::lang.editor.menu_description',
+                'comment' => "Change the global editor preferences.",
                 'tab' => 'Settings',
                 'order' => 500
             ]
@@ -228,8 +240,8 @@ class ServiceProvider extends ModuleServiceProvider
     {
         return [
             'administrators' => [
-                'label' => 'backend::lang.user.menu_label',
-                'description' => 'backend::lang.user.menu_description',
+                'label' => "Administrators",
+                'description' => "Manage back-end administrator users, groups and permissions.",
                 'category' => SettingsManager::CATEGORY_TEAM,
                 'icon' => 'octo-icon-users',
                 'url' => Backend::url('backend/users'),
@@ -237,61 +249,75 @@ class ServiceProvider extends ModuleServiceProvider
                 'order' => 400
             ],
             'adminroles' => [
-                'label' => 'backend::lang.user.role.menu_label',
-                'description' => 'backend::lang.user.role.menu_description',
+                'label' => "Manage Roles",
+                'description' => "Define permissions for administrators based on their role.",
                 'category' => SettingsManager::CATEGORY_TEAM,
                 'icon' => 'octo-icon-id-card-1',
                 'url' => Backend::url('backend/userroles'),
-                'permissions' => ['admins.manage.roles'],
+                'permissions' => ['admins.roles'],
                 'order' => 410
             ],
             'admingroups' => [
-                'label' => 'backend::lang.user.group.menu_label',
-                'description' => 'backend::lang.user.group.menu_description',
+                'label' => "Manage Groups",
+                'description' => "Add administrators to groups used for notifications and features.",
                 'category' => SettingsManager::CATEGORY_TEAM,
                 'icon' => 'octo-icon-user-group',
                 'url' => Backend::url('backend/usergroups'),
-                'permissions' => ['admins.manage.groups'],
+                'permissions' => ['admins.groups'],
                 'order' => 420
             ],
             'branding' => [
-                'label' => 'backend::lang.branding.menu_label',
-                'description' => 'backend::lang.branding.menu_description',
+                'label' => "Customize Backend",
+                'description' => "Customize the administration area such as name, colors and logo.",
                 'category' => SettingsManager::CATEGORY_SYSTEM,
                 'icon' => 'octo-icon-paint-brush-1',
-                'class' => 'Backend\Models\BrandSetting',
+                'class' => \Backend\Models\BrandSetting::class,
                 'permissions' => ['settings.customize_backend'],
                 'order' => 500,
                 'keywords' => 'brand style'
             ],
             'editor' => [
-                'label' => 'backend::lang.editor.menu_label',
-                'description' => 'backend::lang.editor.menu_description',
+                'label' => "Editor Settings",
+                'description' => "Change the global editor preferences.",
                 'category' => SettingsManager::CATEGORY_SYSTEM,
                 'icon' => 'icon-code',
-                'class' => 'Backend\Models\EditorSetting',
+                'class' => \Backend\Models\EditorSetting::class,
                 'permissions' => ['settings.editor_settings'],
                 'order' => 500,
                 'keywords' => 'html code class style'
             ],
             'myaccount' => [
-                'label' => 'backend::lang.myaccount.menu_label',
-                'description' => 'backend::lang.myaccount.menu_description',
+                'label' => "My Account",
+                'description' => "Update your account details such as name, email address and password.",
                 'category' => SettingsManager::CATEGORY_MYSETTINGS,
                 'icon' => 'octo-icon-user-account',
                 'url' => Backend::url('backend/users/myaccount'),
                 'order' => 500,
                 'context' => 'mysettings',
-                'keywords' => 'backend::lang.myaccount.menu_keywords'
+                'keywords' => "security login"
             ],
             'preferences' => [
-                'label' => 'backend::lang.backend_preferences.menu_label',
-                'description' => 'backend::lang.backend_preferences.menu_description',
+                'label' => "Backend Preferences",
+                'description' => "Manage your account preferences such as desired language.",
                 'category' => SettingsManager::CATEGORY_MYSETTINGS,
                 'icon' => 'octo-icon-app-window',
                 'url' => Backend::url('backend/preferences'),
                 'permissions' => ['preferences'],
                 'order' => 510,
+                'context' => 'mysettings'
+            ],
+            'color_mode' => !BrandSetting::get('show_light_switch') ? null : [
+                'label' => "Color Mode",
+                'category' => SettingsManager::CATEGORY_MYSETTINGS,
+                'icon' => 'icon-adjust',
+                'url' => 'javascript:;',
+                'permissions' => ['preferences'],
+                'attributes' => [
+                    'data-control' => 'color-mode-switcher',
+                    'data-lang-light-mode' => __("Light Mode"),
+                    'data-lang-dark-mode' => __("Dark Mode")
+                ],
+                'order' => 520,
                 'context' => 'mysettings'
             ],
             'access_logs' => [

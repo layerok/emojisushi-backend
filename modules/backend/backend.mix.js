@@ -43,6 +43,7 @@ module.exports = (mix) => {
         'modules/backend/assets/vendor/pikaday/js/pikaday.jquery.js',
         'modules/backend/assets/vendor/clockpicker/js/jquery-clockpicker.js',
         'modules/backend/assets/vendor/mustache/mustache.js',
+        'modules/backend/assets/vendor/popperjs/popper.min.js',
 
         'modules/backend/assets/foundation/migrate/vendor/raphael/raphael.js',
         'modules/backend/assets/foundation/migrate/vendor/flot/jquery.flot.js',
@@ -58,6 +59,7 @@ module.exports = (mix) => {
         ...require('./assets/foundation/scripts/build.js').map(name => `modules/backend/assets/foundation/scripts/${name}`),
         ...require('./assets/foundation/controls/build.js').map(name => `modules/backend/assets/foundation/controls/${name}`),
         ...require('./assets/foundation/migrate/build.js').map(name => `modules/backend/assets/foundation/migrate/${name}`),
+        ...require('./assets/js/vueapp/build.js').map(name => `modules/backend/assets/js/vueapp/${name}`),
         ...require('./assets/js/build.js').map(name => `modules/backend/assets/js/${name}`),
     ], 'modules/backend/assets/js/october-min.js');
 

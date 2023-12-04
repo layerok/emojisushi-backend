@@ -10,8 +10,8 @@
  */
 'use strict';
 
-oc.Module.register('backend.formwidget.repeater.accordion', function() {
-    const BaseClass = oc.Module.import('backend.formwidget.repeater.base');
+oc.Modules.register('backend.formwidget.repeater.accordion', function() {
+    const BaseClass = oc.Modules.import('backend.formwidget.repeater.base');
 
     class RepeaterFormWidgetAccordion extends BaseClass
     {

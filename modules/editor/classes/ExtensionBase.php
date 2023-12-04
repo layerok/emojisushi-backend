@@ -1,5 +1,6 @@
 <?php namespace Editor\Classes;
 
+use Backend\Helpers\Inspector as InspectorHelper;
 use Backend\VueComponents\TreeView\SectionList;
 
 /**
@@ -121,23 +122,19 @@ abstract class ExtensionBase
     }
 
     /**
-     * loadSettingsFile
+     * loadSettingsFields
      */
-    protected function loadSettingsFile(string $rootPath, string $documentDirectoryName)
+    protected function loadSettingsFields(string $fieldsClass): array
     {
-        $path = $rootPath.'/'.$documentDirectoryName.'/settings-fields.json';
-
-        if (file_exists($path)) {
-            return $this->loadAndLocalizeJsonFile($path);
-        }
-
-        return [];
+        return InspectorHelper::getPropertyConfig(
+            (new $fieldsClass)->defineSettingsFields()
+        );
     }
 
     /**
      * loadAndLocalizeJsonFile
      */
-    protected function loadAndLocalizeJsonFile($path)
+    protected function loadAndLocalizeJsonFile(string $path): array
     {
         $contents = json_decode(file_get_contents($path), true);
 

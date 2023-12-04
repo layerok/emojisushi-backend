@@ -160,46 +160,46 @@
     }
 
     ExternalParameterEditor.prototype.repositionEditor = function() {
-        this.getEditor().style.left = 0
-        this.containerCell.scrollTop = 0
+        this.getEditor().style.left = 0;
+        this.containerCell.scrollTop = 0;
     }
 
     ExternalParameterEditor.prototype.hideEditor = function() {
         var editor = this.getEditor(),
-            container = this.getContainer()
+            container = this.getContainer();
 
-        editor.style.left = 'auto'
-        editor.style.right = '30px'
+        editor.style.left = 'auto';
+        editor.style.right = '30px';
 
-        $.oc.foundation.element.removeClass(container, 'editor-visible')
-        $.oc.foundation.element.removeClass(this.containerCell, 'active')
+        $.oc.foundation.element.removeClass(container, 'editor-visible');
+        $.oc.foundation.element.removeClass(this.containerCell, 'active');
 
-        var propertyEditor = this.inspector.findPropertyEditor(this.propertyDefinition.property)
+        var propertyEditor = this.inspector.findPropertyEditor(this.propertyDefinition.property);
 
         if (propertyEditor) {
-            propertyEditor.onExternalPropertyEditorHidden()
+            propertyEditor.onExternalPropertyEditorHidden();
         }
     }
 
     ExternalParameterEditor.prototype.toggleEditor = function(ev) {
-        $.oc.foundation.event.stop(ev)
+        $.oc.foundation.event.stop(ev);
 
         var link = this.getLink(),
             container = this.getContainer(),
-            editor = this.getEditor()
+            editor = this.getEditor();
 
-        $(link).tooltip('hide')
+        $(link).tooltip('hide');
 
         if (!this.isEditorVisible()) {
-            this.showEditor()
-            return
+            this.showEditor();
+            return;
         }
 
-        var left = container.offsetWidth
+        var left = container.offsetWidth;
 
-        editor.style.left = left + 'px'
-        link.setAttribute('data-original-title', this.tooltipText)
-        this.getInput().setAttribute('tabindex', '-1')
+        editor.style.left = left + 'px';
+        link.setAttribute('data-original-title', this.tooltipText);
+        this.getInput().setAttribute('tabindex', '-1');
 
         this.toggleEditorVisibility(true)
 
@@ -244,22 +244,22 @@
     }
 
     ExternalParameterEditor.prototype.focus = function() {
-        this.getInput().focus()
+        this.getInput().focus({ preventScroll: true });
     }
 
     ExternalParameterEditor.prototype.validate = function(silentMode) {
-        var value = $.trim(this.getValue())
+        var value = $.trim(this.getValue());
 
         if (value.length === 0) {
             if (!silentMode) {
-                $.oc.flashMsg({text: 'Please enter the external parameter name.', 'class': 'error', 'interval': 5})
-                this.focus()
+                $.oc.flashMsg({text: 'Please enter the external parameter name.', 'class': 'error', 'interval': 5});
+                this.focus();
             }
 
-            return false
+            return false;
         }
 
-        return true
+        return true;
     }
 
     //
@@ -267,19 +267,19 @@
     //
 
     ExternalParameterEditor.prototype.registerHandlers = function() {
-        var input = this.getInput()
+        var input = this.getInput();
 
-        this.getLink().addEventListener('click', this.proxy(this.toggleEditor))
-        input.addEventListener('focus', this.proxy(this.onInputFocus))
-        input.addEventListener('change', this.proxy(this.onInputChange))
+        this.getLink().addEventListener('click', this.proxy(this.toggleEditor));
+        input.addEventListener('focus', this.proxy(this.onInputFocus));
+        input.addEventListener('change', this.proxy(this.onInputChange));
     }
 
     ExternalParameterEditor.prototype.onInputFocus = function() {
-        this.inspector.makeCellActive(this.containerCell)
+        this.inspector.makeCellActive(this.containerCell);
     }
 
     ExternalParameterEditor.prototype.onInputChange = function() {
-        this.inspector.markPropertyChanged(this.propertyDefinition.property, true)
+        this.inspector.markPropertyChanged(this.propertyDefinition.property, true);
     }
 
     //

@@ -5,6 +5,7 @@ use Lang;
 use Cms\Contracts\CmsObject as CmsObjectContract;
 use Cms\Helpers\File as FileHelper;
 use October\Rain\Extension\Extendable;
+use DirectoryIterator;
 use SystemException;
 
 /**
@@ -114,6 +115,33 @@ class ComponentPartial extends Extendable implements CmsObjectContract
         }
 
         return $partial;
+    }
+
+    /**
+     * all loads all partials for a given component
+     */
+    public static function all($component): array
+    {
+        if (!is_dir($component->getPath())) {
+            return [];
+        }
+
+        $it = new DirectoryIterator($component->getPath());
+        $it->rewind();
+
+        $result = [];
+        foreach ($it as $fileinfo) {
+            if ($fileinfo->isDir() || $fileinfo->isDot()) {
+                continue;
+            }
+
+            $partial = static::load($component, $fileinfo->getFilename());
+            if ($partial) {
+                $result[] = $partial;
+            }
+        }
+
+        return $result;
     }
 
     /**

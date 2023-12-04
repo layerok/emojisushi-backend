@@ -12,8 +12,6 @@
 
 
 .field-repeater {
-    padding-top: 5px;
-
     > .field-repeater-builder > .field-repeater-groups,
     > ul.field-repeater-items {
         padding: 0;
@@ -95,16 +93,16 @@
 
         &[data-external-toolbar-app-state] {
             > .field-repeater-toolbar {
-                display: none;
+                display: none !important;
             }
 
             > .field-repeater-builder {
                 > .field-repeater-toolbar {
-                    display: none;
+                    display: none !important;
                 }
 
                 > .field-repeater-groups {
-                    padding-top: 0!important;
+                    padding-top: 0 !important;
                 }
             }
         }

@@ -9,6 +9,7 @@ tabs:
         _view_as:
             type: partial
             path: ~/modules/backend/controllers/userroles/_action_view_as.php
+            context: update
 
         name:
             label: backend::lang.user.role.name_field

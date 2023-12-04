@@ -68,8 +68,10 @@ trait ManagesThemes
         }
 
         // Remove via composer
-        if ($composerCode = $this->themeManager->getComposerCode($name)) {
-            $composer = ComposerManager::instance();
+        $composer = ComposerManager::instance();
+        $composerCode = $this->themeManager->getComposerCode($name);
+
+        if ($composerCode && $composer->hasPackage($composerCode)) {
             $composer->remove([$composerCode]);
         }
 

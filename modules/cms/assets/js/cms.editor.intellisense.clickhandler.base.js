@@ -1,4 +1,4 @@
-oc.Module.register('cms.editor.intellisense.clickhandler.base', function() {
+oc.Modules.register('cms.editor.intellisense.clickhandler.base', function() {
     'use strict';
 
     class ClickHandlerBase {

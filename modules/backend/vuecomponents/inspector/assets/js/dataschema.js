@@ -1,4 +1,4 @@
-oc.Module.register('backend.component.inspector.dataschema', function () {
+oc.Modules.register('backend.component.inspector.dataschema', function () {
     var inspectorDataSchema = {
         type: 'array',
         items: {

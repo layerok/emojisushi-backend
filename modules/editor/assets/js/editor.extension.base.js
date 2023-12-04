@@ -1,4 +1,4 @@
-oc.Module.register('editor.extension.base', function() {
+oc.Modules.register('editor.extension.base', function() {
     'use strict';
 
     class ExtensionBase {

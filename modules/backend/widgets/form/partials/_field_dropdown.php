@@ -11,7 +11,7 @@
     <?php
         $fieldValue = $fieldOptions[$field->value] ?? '';
     ?>
-    <div class="form-control" <?= $field->readOnly ? 'disabled="disabled"' : '' ?>>
+    <div class="form-control" <?= $field->readOnly ? 'disabled' : '' ?>>
         <?php if (is_array($fieldValue)): ?>
             <?php if (Html::isValidColor($fieldValue[1])): ?>
                 <span class="status-indicator" style="background:<?= $fieldValue[1] ?>"></span>

@@ -132,6 +132,20 @@ final class SecurityPolicy implements SecurityPolicyInterface
     {
     }
 
+    /**
+     * castMethodObjectToSafeObject casts unsafe objects used by method calls to proxy objects
+     * that protect from arbitrary callable methods, such as using 'passthru' to execute
+     * shell commands.
+     */
+    public function castMethodObjectToSafeObject($object)
+    {
+        if ($object instanceof \Illuminate\Support\Collection) {
+            return new \October\Rain\Support\SafeCollection($object);
+        }
+
+        return $object;
+    }
+
     //
     // Allow-list
     //

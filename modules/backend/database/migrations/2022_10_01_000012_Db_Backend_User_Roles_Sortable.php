@@ -7,27 +7,22 @@ return new class extends Migration
 {
     public function up()
     {
-        Schema::table('backend_user_roles', function (Blueprint $table) {
-            if (!Schema::hasColumn('backend_user_roles', 'sort_order')) {
+        if (!Schema::hasColumns('backend_user_roles', ['sort_order', 'color_background'])) {
+            Schema::table('backend_user_roles', function (Blueprint $table) {
                 $table->integer('sort_order')->nullable();
-            }
-
-            if (!Schema::hasColumn('backend_user_roles', 'color_background')) {
                 $table->string('color_background')->nullable();
-            }
-        });
+            });
+        }
     }
 
     public function down()
     {
-        Schema::table('backend_user_roles', function (Blueprint $table) {
-            if (Schema::hasColumn('backend_user_roles', 'sort_order')) {
-                $table->dropColumn('sort_order');
-            }
+        if (Schema::hasColumn('backend_user_roles', 'sort_order')) {
+            Schema::dropColumns('backend_user_roles', 'sort_order');
+        }
 
-            if (Schema::hasColumn('backend_user_roles', 'color_background')) {
-                $table->dropColumn('color_background');
-            }
-        });
+        if (Schema::hasColumn('backend_user_roles', 'color_background')) {
+            Schema::dropColumns('backend_user_roles', 'color_background');
+        }
     }
 };

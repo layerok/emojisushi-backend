@@ -4,7 +4,7 @@
     $versions = $primaryModel->getVersionRecords();
 ?>
 <?php if (count($drafts) || count($versions)): ?>
-    <?= BackendUi::callout(function() use ($drafts, $versions, $activeSource, $primaryModel) { ?>
+    <?= Ui::callout(function() use ($drafts, $versions, $activeSource, $primaryModel) { ?>
         <p>
             <a href="<?= Backend::url('tailor/entries/'.$activeSource->handle.'/'.$primaryModel->getKey()) ?>">
                 Current Record

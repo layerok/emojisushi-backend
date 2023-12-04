@@ -24,6 +24,11 @@ class RepeaterItem extends ExpandoModel
     public $rules = [];
 
     /**
+     * @var array fillable fields, in addition to those dynamically added by content fields
+     */
+    protected $fillable = [];
+
+    /**
      * @var string expandoColumn name to store the data
      */
     protected $expandoColumn = 'content_value';
@@ -173,6 +178,11 @@ class RepeaterItem extends ExpandoModel
         $this->setRelation('host', $parentModel);
         $this->setFieldsetDefinition($tableName, $fieldConfig, $useGroups);
 
+        // Extend model now since the fields are static
+        if (!$useGroups) {
+            $this->extendWithBlueprint();
+        }
+
         // Recursive implementation
         $this->bindEvent('model.newInstance', function($instance) use ($parentModel, $tableName, $fieldName, $fieldConfig, $useGroups) {
             $instance->setBlueprintFieldConfig($parentModel, $tableName, $fieldName, $fieldConfig, $useGroups);
@@ -283,7 +293,7 @@ class RepeaterItem extends ExpandoModel
     }
 
     /**
-     * spawnFromPath will repsawn this related model from a saved path.
+     * spawnFromPath will respawn this related model from a saved path.
      * The syntax is: class@uuid:group.relation:group.relation:group
      */
     public static function spawnFromPath(string $path)

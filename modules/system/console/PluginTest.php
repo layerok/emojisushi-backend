@@ -15,7 +15,8 @@ class PluginTest extends Command
     /**
      * @var string signature for the console command.
      */
-    protected $signature = 'plugin:test {name}
+    protected $signature = 'plugin:test
+        {namespace : App or Plugin Namespace. <info>(eg: Acme.Blog)</info>}
         {--without-tty : Disable output to TTY}
         {--pest : Run the tests using Pest}';
 
@@ -31,7 +32,8 @@ class PluginTest extends Command
      */
     public function handle()
     {
-        if (!PluginManager::instance()->hasPlugin($name = $this->pluginCode())) {
+        if (!$this->isValidNamespace()) {
+            $name = $this->pluginCode();
             return $this->output->error("Unable to find plugin [{$name}]");
         }
 
@@ -95,8 +97,10 @@ class PluginTest extends Command
             return !Str::startsWith($option, ['--env=', '--pest']);
         }));
 
-        if (!file_exists($file = $this->pluginPath('phpunit.xml'))) {
-            $file = $this->pluginPath('phpunit.xml.dist');
+        $lookupMethod = $this->isAppNamespace() ? 'app_path' : [$this, 'pluginPath'];
+
+        if (!file_exists($file = $lookupMethod('phpunit.xml'))) {
+            $file = $lookupMethod('phpunit.xml.dist');
         }
 
         return array_merge(['-c', $file], $options);
@@ -113,6 +117,27 @@ class PluginTest extends Command
     }
 
     /**
+     * isAppNamespace
+     */
+    protected function isAppNamespace(): bool
+    {
+        return mb_strtolower(trim($this->argument('namespace'))) === 'app';
+    }
+
+    /**
+     * isValidNamespace
+     * @return bool
+     */
+    protected function isValidNamespace(): bool
+    {
+        if ($this->isAppNamespace()) {
+            return true;
+        }
+
+        return PluginManager::instance()->hasPlugin($this->pluginCode());
+    }
+
+    /**
      * pluginPath
      */
     protected function pluginPath($path = '')
@@ -125,6 +150,6 @@ class PluginTest extends Command
      */
     protected function pluginCode()
     {
-        return PluginManager::instance()->normalizeIdentifier($this->argument('name'));
+        return PluginManager::instance()->normalizeIdentifier($this->argument('namespace'));
     }
 }

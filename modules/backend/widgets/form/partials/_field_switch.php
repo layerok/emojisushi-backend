@@ -4,15 +4,15 @@
         type="hidden"
         name="<?= $field->getName() ?>"
         value="0"
-        <?= $this->previewMode ? 'disabled="disabled"' : '' ?>>
+        <?= $this->previewMode ? 'disabled' : '' ?>>
     <input
         class="form-check-input"
         type="checkbox"
         id="<?= $field->getId() ?>"
         name="<?= $field->getName() ?>"
         value="1"
-        <?= $this->previewMode ? 'disabled="disabled"' : '' ?>
-        <?= $field->isSelected() ? 'checked="checked"' : '' ?>
+        <?= $this->previewMode ? 'disabled' : '' ?>
+        <?= $field->isSelected() ? 'checked' : '' ?>
         <?= $field->getAttributes() ?>
     />
 

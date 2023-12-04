@@ -1,7 +1,7 @@
 /*
  * Vue splitter implementation
  */
-oc.Module.register('backend.component.splitter', function () {
+oc.Modules.register('backend.component.splitter', function () {
     Vue.component('backend-component-splitter', {
         props: {
             direction: {

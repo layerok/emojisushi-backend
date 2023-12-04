@@ -4,7 +4,6 @@ use Lang;
 use DbDongle;
 use Backend\Classes\WidgetBase;
 use October\Rain\Element\ElementHolder;
-use October\Rain\Element\Filter\ScopeDefinition;
 use October\Contracts\Element\FilterElement;
 use Backend\Classes\FilterScope;
 use ApplicationException;
@@ -18,12 +17,13 @@ use SystemException;
  */
 class Filter extends WidgetBase implements FilterElement
 {
+    use \Backend\Widgets\Filter\IsFilterElement;
     use \Backend\Widgets\Filter\ScopeProcessor;
     use \Backend\Widgets\Filter\HasFilterWidgets;
     use \Backend\Widgets\Filter\HasLegacyDefinitions;
 
     //
-    // Configurable properties
+    // Configurable Properties
     //
 
     /**
@@ -48,7 +48,7 @@ class Filter extends WidgetBase implements FilterElement
     public $extraData;
 
     //
-    // Object properties
+    // Object Properties
     //
 
     /**
@@ -161,7 +161,6 @@ class Filter extends WidgetBase implements FilterElement
         $this->fireSystemEvent('backend.filter.extendScopesBefore');
 
         // All scopes
-        //
         if (!isset($this->scopes) || !is_array($this->scopes)) {
             $this->scopes = [];
         }
@@ -193,7 +192,6 @@ class Filter extends WidgetBase implements FilterElement
         $this->fireSystemEvent('backend.filter.extendScopes');
 
         // Apply post processing
-        //
         $this->processLegacyDefinitions($this->allScopes);
         $this->processScopeModels($this->allScopes);
         $this->processPermissionCheck($this->allScopes);
@@ -201,7 +199,6 @@ class Filter extends WidgetBase implements FilterElement
         $this->processFieldOptionValues($this->allScopes);
 
         // Set scope values from data source
-        //
         foreach ($this->allScopes as $scope) {
             $scope->setScopeValue($this->getScopeValue($scope));
         }
@@ -210,7 +207,7 @@ class Filter extends WidgetBase implements FilterElement
     }
 
     /**
-     * addScopes programatically, used internally and for extensibility.
+     * addScopes programmatically, used internally and for extensibility.
      */
     public function addScopes(array $scopes)
     {
@@ -247,7 +244,7 @@ class Filter extends WidgetBase implements FilterElement
     }
 
     /**
-     * removeScope programatically, used for extensibility.
+     * removeScope programmatically, used for extensibility.
      * @param string $scopeName
      */
     public function removeScope($scopeName)
@@ -395,10 +392,12 @@ class Filter extends WidgetBase implements FilterElement
         // Condition
         $sqlCondition = $scope->conditions;
         if (is_string($sqlCondition)) {
-            $query->whereRaw(DbDongle::parse(strtr($sqlCondition, [
-                ':filtered' => $scopeValue,
-                ':value' => $scopeValue,
-            ])));
+            // @deprecated adapt legacy format
+            $sqlCondition = str_replace(["':value'", "':filtered'", ':filtered'], ':value', $sqlCondition);
+
+            $query->whereRaw(DbDongle::parse($sqlCondition, [
+                'value' => $scopeValue
+            ]));
             return;
         }
 
@@ -445,21 +444,6 @@ class Filter extends WidgetBase implements FilterElement
         return $this->makePartial('form_' . $scope->type, [
             'scope' => $scope,
         ]);
-    }
-
-    /**
-     * defineScope
-     */
-    public function defineScope(string $scopeName = null, string $label = null): ScopeDefinition
-    {
-        $scopeObj = new FilterScope([
-            'scopeName' => $scopeName,
-            'label' => $label
-        ]);
-
-        $this->allScopes[$scopeName] = $scopeObj;
-
-        return $scopeObj;
     }
 
     /**
@@ -593,6 +577,15 @@ class Filter extends WidgetBase implements FilterElement
         }
 
         return $dependScopes;
+    }
+
+    /**
+     * getModel returns the active model for this form.
+     * @return \Model|null
+     */
+    public function getModel()
+    {
+        return $this->model;
     }
 
     /**

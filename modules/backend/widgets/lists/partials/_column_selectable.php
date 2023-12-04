@@ -24,5 +24,5 @@ $isComplex = is_array(array_first($selectedValues));
         </span>
     <?php endforeach ?>
 <?php else: ?>
-    <?= implode(', ', $selectedValues) ?>
+    <?= e(implode(', ', Arr::trans($selectedValues))) ?>
 <?php endif ?>

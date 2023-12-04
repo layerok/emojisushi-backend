@@ -77,7 +77,7 @@ trait HasReportWidgets
          * @event system.reportwidgets.extendItems
          * Enables adding or removing report widgets.
          *
-         * You will have access to the WidgetManager instance and be able to call the appropiate methods
+         * You will have access to the WidgetManager instance and be able to call the appropriate methods
          * $manager->registerReportWidget();
          * $manager->removeReportWidget();
          *

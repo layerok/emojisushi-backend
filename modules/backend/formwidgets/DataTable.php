@@ -16,7 +16,7 @@ use ApplicationException;
 class DataTable extends FormWidgetBase
 {
     //
-    // Configurable properties
+    // Configurable Properties
     //
 
     /**
@@ -31,7 +31,7 @@ class DataTable extends FormWidgetBase
     public $rowSorting = false;
 
     //
-    // Object properties
+    // Object Properties
     //
 
     /**
@@ -159,6 +159,7 @@ class DataTable extends FormWidgetBase
 
         $table = new Table($this->controller, $config);
         $table->bindEvent('table.getDropdownOptions', [$this, 'getDataTableOptions']);
+        $table->bindEvent('table.getAutocompleteOptions', [$this, 'getDataTableOptions']);
 
         return $table;
     }

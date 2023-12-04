@@ -7,7 +7,7 @@
  * JavaScript API:
  * $('pre').templateDiff({ option: 'value' })
  *
- * Dependences:
+ * Dependencies:
  * - jsdiff (diff.js)
  */
 

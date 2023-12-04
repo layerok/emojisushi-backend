@@ -2,6 +2,7 @@
 
 use Lang;
 use Flash;
+use Backend;
 use Redirect;
 use BackendMenu;
 use Tailor\Models\GlobalRecord;
@@ -32,7 +33,7 @@ class Globals extends WildcardController
     public $formConfig = 'config_form.yaml';
 
     /**
-     * @var GlobalBlueprint activeSource
+     * @var \Tailor\Classes\Blueprint\GlobalBlueprint activeSource
      */
     protected $activeSource;
 
@@ -64,7 +65,7 @@ class Globals extends WildcardController
             return;
         }
 
-        $this->pageTitle = 'Update Global';
+        $this->setPageTitleFromMessage('titleUpdateForm', "Update Global");
 
         // Uses "create" context to enable default values on newly introduced fields
         $response = $this->asExtension('FormController')->update(null, FormField::CONTEXT_CREATE);
@@ -82,6 +83,7 @@ class Globals extends WildcardController
     {
         $this->vars['entityName'] = $this->activeSource->name ?? '';
         $this->vars['activeSource'] = $this->activeSource;
+        $this->vars['formSize'] = Backend::sizeToPixels($this->activeSource->formSize ?? 950) ?: 'auto';
     }
 
     /**
@@ -171,6 +173,29 @@ class Globals extends WildcardController
         else {
             BackendMenu::setContext('October.Tailor', 'tailor');
         }
+    }
+
+    /**
+     * setPageTitleMessage
+     */
+    protected function setPageTitleFromMessage(string $message, string $defaultMessage = 'Tailor')
+    {
+        $global = $this->activeSource;
+
+        if (!$global) {
+            $this->pageTitle = $defaultMessage;
+            return;
+        }
+
+        $vars = [
+            'name' => $global->name
+        ];
+
+        $this->pageTitle = $global->getMessage(
+            $message,
+            $this->customMessages[$message] ?? $defaultMessage,
+            $vars
+        );
     }
 
     /**

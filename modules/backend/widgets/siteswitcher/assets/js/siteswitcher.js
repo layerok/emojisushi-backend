@@ -3,7 +3,7 @@
  */
 'use strict';
 
-oc.Module.register('backend.widget.siteswitcher', function() {
+oc.Modules.register('backend.widget.siteswitcher', function() {
     class SiteSwitcherWidget extends oc.FoundationPlugin
     {
         constructor(element, config) {

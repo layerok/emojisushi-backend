@@ -1,6 +1,7 @@
 <?php namespace System;
 
 use Db;
+use Site;
 use Event;
 use Config;
 use Schema;
@@ -51,8 +52,8 @@ class ServiceProvider extends ModuleServiceProvider
 
         // Register other module providers
         foreach (System::listModules() as $module) {
-            if ($module !== 'System') {
-                $this->app->register('\\' . $module . '\ServiceProvider');
+            if ($module !== 'System' && class_exists($spClass = '\\' . $module . '\ServiceProvider')) {
+                $this->app->register($spClass);
             }
         }
 
@@ -117,17 +118,21 @@ class ServiceProvider extends ModuleServiceProvider
         $this->app->singleton('cms.helper', \Cms\Helpers\Cms::class);
         $this->app->singleton('system.helper', \System\Helpers\System::class);
         $this->app->singleton('system.manifest', \System\Classes\ManifestCache::class);
-        $this->app->singleton('backend.ui', \Backend\Helpers\BackendUi::class);
+        $this->app->singleton('system.preset', \System\Classes\PresetManager::class);
+        $this->app->singleton('system.ui', \System\Classes\UiManager::class);
+        $this->app->singleton('system.sites', \System\Classes\SiteManager::class);
+        $this->app->singleton('system.resizer', \System\Classes\ResizeImages::class);
+
+        // @deprecated
+        $this->app->singleton('backend.ui', \System\Classes\UiManager::class);
+        $this->app->singleton('site.manager', \System\Classes\SiteManager::class);
+
+        // @todo v4 - these belong in the backend provider, and the load order
+        // should be changed to system, modules, plugins
         $this->app->singleton('backend.helper', \Backend\Helpers\Backend::class);
-
-        $this->app->singleton('site.manager', function () {
-            return \System\Classes\SiteManager::instance();
-        });
-
         $this->app->singleton('backend.menu', function () {
             return \Backend\Classes\NavigationManager::instance();
         });
-
         $this->app->singleton('backend.auth', function () {
             return \Backend\Classes\AuthManager::instance();
         });
@@ -195,8 +200,8 @@ class ServiceProvider extends ModuleServiceProvider
                 'md_safe' => [\Markdown::class, 'parseSafe'],
                 'md_clean' => [\Markdown::class, 'parseClean'],
                 'md_indent' => [\Markdown::class, 'parseIndent'],
-                'time_since' => [\System\Helpers\DateTimeHelper::class, 'timeSince'],
-                'time_tense' => [\System\Helpers\DateTimeHelper::class, 'timeTense'],
+                'time_since' => [\System\Helpers\DateTime::class, 'timeSince'],
+                'time_tense' => [\System\Helpers\DateTime::class, 'timeTense'],
             ]
         ];
     }
@@ -252,6 +257,7 @@ class ServiceProvider extends ModuleServiceProvider
         $this->registerConsoleCommand('plugin.list', \System\Console\PluginList::class);
         $this->registerConsoleCommand('plugin.check', \System\Console\PluginCheck::class);
         $this->registerConsoleCommand('plugin.test', \System\Console\PluginTest::class);
+        $this->registerConsoleCommand('plugin.seed', \System\Console\PluginSeed::class);
 
         $this->registerConsoleCommand('project.sync', \System\Console\ProjectSync::class);
     }
@@ -373,7 +379,7 @@ class ServiceProvider extends ModuleServiceProvider
             if (empty($systemSettingItems) && empty($systemMenuItems)) {
                 $manager->removeMainMenuItem('October.System', 'system');
             }
-        }, -9999);
+        }, -1);
     }
 
     /**
@@ -415,7 +421,7 @@ class ServiceProvider extends ModuleServiceProvider
             ],
 
             // Settings
-            'settings.manage_sites' => [
+            'settings.manage_sites' => !Site::hasFeature() ? null : [
                 'label' => 'Manage Sites',
                 'tab' => 'Settings',
                 'order' => 400
@@ -429,15 +435,6 @@ class ServiceProvider extends ModuleServiceProvider
     public function registerSettings()
     {
         return [
-            'sites' => [
-                'label' => 'Manage Sites',
-                'description' => 'Manage the websites available for this application.',
-                'category' => SettingsManager::CATEGORY_SYSTEM,
-                'icon' => 'octo-icon-globe',
-                'url' => Backend::url('system/sites'),
-                'permissions' => ['settings.manage_sites'],
-                'order' => 250
-            ],
             'updates' => [
                 'label' => 'System Updates',
                 'description' => 'Update the system modules and plugins.',
@@ -457,9 +454,18 @@ class ServiceProvider extends ModuleServiceProvider
                 'order' => 520,
                 'context' => 'mysettings'
             ],
+            'sites' => !Site::hasFeature() ? null : [
+                'label' => 'Manage Sites',
+                'description' => 'Manage the websites available for this application.',
+                'category' => SettingsManager::CATEGORY_SYSTEM,
+                'icon' => 'octo-icon-globe',
+                'url' => Backend::url('system/sites'),
+                'permissions' => ['settings.manage_sites'],
+                'order' => 350
+            ],
             'mail_templates' => [
-                'label' => 'system::lang.mail_templates.menu_label',
-                'description' => 'system::lang.mail_templates.menu_description',
+                'label' => "Mail Templates",
+                'description' => "Modify the mail templates that are sent to users and administrators, manage email layouts.",
                 'category' => SettingsManager::CATEGORY_MAIL,
                 'icon' => 'octo-icon-mail-messages',
                 'url' => Backend::url('system/mailtemplates'),
@@ -467,17 +473,17 @@ class ServiceProvider extends ModuleServiceProvider
                 'order' => 610
             ],
             'mail_settings' => Config::get('backend.force_mail_setting', false) ? [] : [
-                'label' => 'system::lang.mail.menu_label',
-                'description' => 'system::lang.mail.menu_description',
+                'label' => "Mail Configuration",
+                'description' => "Manage email configuration.",
                 'category' => SettingsManager::CATEGORY_MAIL,
                 'icon' => 'octo-icon-mail-settings',
-                'class' => 'System\Models\MailSetting',
+                'class' => \System\Models\MailSetting::class,
                 'permissions' => ['mail.settings'],
                 'order' => 620
             ],
             'mail_brand_settings' => [
-                'label' => 'system::lang.mail_brand.menu_label',
-                'description' => 'system::lang.mail_brand.menu_description',
+                'label' => "Mail Branding",
+                'description' => "Modify the colors and appearance of mail templates.",
                 'category' => SettingsManager::CATEGORY_MAIL,
                 'icon' => 'octo-icon-mail-branding',
                 'url' => Backend::url('system/mailbrandsettings'),
@@ -485,8 +491,8 @@ class ServiceProvider extends ModuleServiceProvider
                 'order' => 630
             ],
             'event_logs' => [
-                'label' => 'system::lang.event_log.menu_label',
-                'description' => 'system::lang.event_log.menu_description',
+                'label' => "Event Log",
+                'description' => "View system log messages with their recorded time and details.",
                 'category' => SettingsManager::CATEGORY_LOGS,
                 'icon' => 'octo-icon-text-format-ul',
                 'url' => Backend::url('system/eventlogs'),
@@ -495,8 +501,8 @@ class ServiceProvider extends ModuleServiceProvider
                 'keywords' => 'error exception'
             ],
             'request_logs' => [
-                'label' => 'system::lang.request_log.menu_label',
-                'description' => 'system::lang.request_log.menu_description',
+                'label' => "Request Log",
+                'description' => "View bad or redirected requests, such as Page not found (404).",
                 'category' => SettingsManager::CATEGORY_LOGS,
                 'icon' => 'icon-file-o',
                 'url' => Backend::url('system/requestlogs'),
@@ -505,11 +511,11 @@ class ServiceProvider extends ModuleServiceProvider
                 'keywords' => '404 error'
             ],
             'log_settings' => [
-                'label' => 'system::lang.log.menu_label',
-                'description' => 'system::lang.log.menu_description',
+                'label' => "Log Settings",
+                'description' => "Specify which areas should use logging.",
                 'category' => SettingsManager::CATEGORY_LOGS,
                 'icon' => 'octo-icon-log-settings',
-                'class' => 'System\Models\LogSetting',
+                'class' => \System\Models\LogSetting::class,
                 'permissions' => ['system.manage_logs'],
                 'order' => 990
             ],
@@ -581,15 +587,19 @@ class ServiceProvider extends ModuleServiceProvider
     }
 
     /**
-     * extendMailerService templating and settings override.
+     * extendMailerService templates and settings override.
      */
     protected function extendMailerService()
     {
         // Override system mailer with mail settings
         if (!Config::get('backend.force_mail_setting', false)) {
-            Event::listen('mailer.beforeRegister', function () {
+            $this->callBeforeResolving('mail.manager', function() {
                 if (MailSetting::isConfigured()) {
                     MailSetting::applyConfigValues();
+                }
+
+                if (Site::hasFeature('backend_mail_setting')) {
+                    MailSetting::enableMultisiteMailer();
                 }
             });
         }

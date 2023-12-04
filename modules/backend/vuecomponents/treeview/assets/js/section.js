@@ -1,7 +1,7 @@
 /*
  * Vue treeview section
  */
-oc.Module.register('backend.component.treeview.section', function () {
+oc.Modules.register('backend.component.treeview.section', function () {
     Vue.component('backend-component-treeview-section', {
         props: {
             uniqueKey: {

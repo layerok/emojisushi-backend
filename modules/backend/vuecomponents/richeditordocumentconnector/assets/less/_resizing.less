@@ -38,16 +38,16 @@
 }
 
 &.resizing-ui {
-    .fr-box.fr-basic .fr-wrapper {
+    .fr-box.fr-basic {
         background-color: @body-bg;
     }
 
-    .fr-element.fr-view {
+    .fr-wrapper {
         background: @input-bg;
         color: @text-color;
         box-shadow: 0 0 5px 3px rgba(var(--bs-body-color-rgb), 0.05);
-        margin: 0 auto;
         display: block;
         max-width: 100% !important;
+        left: 50% !important;
     }
 }

@@ -1,7 +1,7 @@
 /*
  * Vue popover implementation
  */
-oc.Module.register('backend.component.popover', function () {
+oc.Modules.register('backend.component.popover', function () {
     Vue.component('backend-component-popover', {
         props: {
             closeByEsc: {

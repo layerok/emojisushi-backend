@@ -44,9 +44,13 @@ trait AssetMaker
     protected $assetDefaults = ['build' => 'core'];
 
     /**
-     * flushAssets disables the use, and subequent broadcast, of assets. This is useful
+     * flushAssets disables the use, and subsequent broadcast, of assets. This is useful
      * to call during an AJAX request to speed things up. This method works
      * by specifically targeting the hasAssetsDefined method.
+     *
+     * @todo in terms of speeding up AJAX, assets should be requested instead of sent
+     * by default all the time, widgets can specify if they will need a asset refresh
+     *
      * @return void
      */
     public function flushAssets()
@@ -56,7 +60,7 @@ trait AssetMaker
     }
 
     /**
-     * Outputs `<link>` and `<script>` tags to load assets previously added with addJs and addCss method calls
+     * makeAssets outputs `<link>` and `<script>` tags to load assets previously added with addJs and addCss method calls
      * @param string $type Return an asset collection of a given type (css, rss, js) or null for all.
      * @return string
      */
@@ -135,10 +139,46 @@ trait AssetMaker
     }
 
     /**
-     * addJsBundle includes a JS asset to the bundled combiner stream
+     * addJsBundle includes a JS asset to the bundled combiner pipeline
      */
     public function addJsBundle(string $name, $attributes = [])
     {
+        /**
+         * @event system.assets.beforeBundleAsset
+         * Provides an opportunity to modify adding an js bundle.
+         *
+         * The parameters provided are:
+         * object `$this`: The current asset maker object
+         * string `$type`: The type of the asset being bundled
+         * string `$name`: The name to the asset being bundled
+         * mixed `$attributes`: The array of attributes for the asset being bundled.
+         *
+         * The name and attributes parameters are provided by reference for modification.
+         * This event is also a halting event, so returning false will prevent the
+         * current asset from being bundled.
+         *
+         * Example usage:
+         *
+         *     Event::listen('system.assets.beforeBundleAsset', function (AssetMaker $assetMaker, string $type, string $name, array $attributes) {
+         *         $assetMaker->addJs($name, $attributes);
+         *         return false;
+         *     });
+         *
+         * Or
+         *
+         *     $this->bindEvent('assets.beforeBundleAsset', function (AssetMaker $assetMaker, string $type, string $name, array $attributes) {
+         *         $assetMaker->addJs($name, $attributes);
+         *         return false;
+         *     });
+         *
+         */
+        if (
+            (method_exists($this, 'fireEvent') && ($this->fireEvent('assets.beforeBundleAsset', [$this, 'js', &$name, &$attributes], true) === false)) ||
+            (Event::fire('system.assets.beforeBundleAsset', [$this, 'js', &$name, &$attributes], true) === false)
+        ) {
+            return;
+        }
+
         $jsPath = $this->getAssetPath($name);
         $attributes = $this->processAssetAttributes($attributes);
 
@@ -171,10 +211,46 @@ trait AssetMaker
     }
 
     /**
-     * addCssBundle includes a CSS asset to the bundled combiner stream
+     * addCssBundle includes a CSS asset to the bundled combiner pipeline
      */
     public function addCssBundle(string $name, $attributes = [])
     {
+        /**
+         * @event system.assets.beforeBundleAsset
+         * Provides an opportunity to modify adding an css bundle.
+         *
+         * The parameters provided are:
+         * object `$this`: The current asset maker object
+         * string `$type`: The type of the asset being bundled
+         * string `$name`: The name to the asset being bundled
+         * mixed `$attributes`: The array of attributes for the asset being bundled.
+         *
+         * The name and attributes parameters are provided by reference for modification.
+         * This event is also a halting event, so returning false will prevent the
+         * current asset from being bundled.
+         *
+         * Example usage:
+         *
+         *     Event::listen('system.assets.beforeBundleAsset', function (AssetMaker $assetMaker, string $type, string $name, array $attributes) {
+         *         $assetMaker->addCss($name, $attributes);
+         *         return false;
+         *     });
+         *
+         * Or
+         *
+         *     $this->bindEvent('assets.beforeBundleAsset', function (AssetMaker $assetMaker, string $type, string $name, array $attributes) {
+         *         $assetMaker->addCss($name, $attributes);
+         *         return false;
+         *     });
+         *
+         */
+        if (
+            (method_exists($this, 'fireEvent') && ($this->fireEvent('assets.beforeBundleAsset', [$this, 'css', &$name, &$attributes], true) === false)) ||
+            (Event::fire('system.assets.beforeBundleAsset', [$this, 'css', &$name, &$attributes], true) === false)
+        ) {
+            return;
+        }
+
         $cssPath = $this->getAssetPath($name);
         $attributes = $this->processAssetAttributes($attributes);
 
@@ -214,7 +290,7 @@ trait AssetMaker
 
         $assetPath = $localPath ?: $this->assetLocalPath;
 
-        return Url::to(CombineAssets::combine($assets, $assetPath));
+        return CombineAssets::combine($assets, $assetPath);
     }
 
     /**

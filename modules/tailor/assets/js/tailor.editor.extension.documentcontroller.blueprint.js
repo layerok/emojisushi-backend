@@ -1,9 +1,9 @@
-oc.Module.register('tailor.editor.extension.documentcontroller.blueprint', function() {
+oc.Modules.register('tailor.editor.extension.documentcontroller.blueprint', function() {
     'use strict';
 
-    const DocumentControllerBase = oc.Module.import('editor.extension.documentcontroller.base');
-    const EditorCommand = oc.Module.import('editor.command');
-    const FileSystemFunctions = oc.Module.import('editor.extension.filesystemfunctions');
+    const DocumentControllerBase = oc.Modules.import('editor.extension.documentcontroller.base');
+    const EditorCommand = oc.Modules.import('editor.command');
+    const FileSystemFunctions = oc.Modules.import('editor.extension.filesystemfunctions');
 
     class DocumentControllerBlueprint extends DocumentControllerBase {
         get documentType() {
@@ -41,7 +41,7 @@ oc.Module.register('tailor.editor.extension.documentcontroller.blueprint', funct
         }
 
         getNavigatorContextMenuItems(commandObj, payload) {
-            const DocumentUri = oc.Module.import('editor.documenturi');
+            const DocumentUri = oc.Modules.import('editor.documenturi');
             const uri = DocumentUri.parse(payload.nodeData.uniqueKey);
             const parentPath = payload.nodeData.userData.path;
 

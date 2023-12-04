@@ -1,4 +1,4 @@
-oc.Module.register('cms.editor.intellisense.hoverprovider.base', function() {
+oc.Modules.register('cms.editor.intellisense.hoverprovider.base', function() {
     'use strict';
 
     class HoverProviderBase {

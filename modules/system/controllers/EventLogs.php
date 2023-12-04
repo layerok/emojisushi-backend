@@ -64,7 +64,7 @@ class EventLogs extends Controller
     public function index_onEmptyLog()
     {
         EventLog::truncate();
-        Flash::success(Lang::get('system::lang.event_log.empty_success'));
+        Flash::success(__("Event log emptied"));
         return $this->listRefresh();
     }
 

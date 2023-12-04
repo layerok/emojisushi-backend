@@ -32,12 +32,11 @@ class EntryBlueprint extends Blueprint
     }
 
     /**
-     * getMetaData
+     * getMetaData returns meta data for the content schema table
      */
-    public function getMetaData()
+    public function getMetaData(): array
     {
-        return [
-            'blueprint_type' => $this->type,
+        return parent::getMetaData() + [
             'multisite_sync' => $this->useMultisiteSync(),
         ];
     }

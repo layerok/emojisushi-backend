@@ -1,4 +1,4 @@
-oc.Module.register('cms.editor.intellisense.utils.js', function() {
+oc.Modules.register('cms.editor.intellisense.utils.js', function() {
     'use strict';
 
     class IntellisenseUtils {

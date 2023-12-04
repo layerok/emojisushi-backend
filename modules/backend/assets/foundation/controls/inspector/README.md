@@ -56,7 +56,7 @@ public function onGetInspectorConfiguration()
     //
     $someValue = Request::input('someValue');
 
-    ... do some processing ...
+    // ... do some processing ...
 
     return [
         'configuration' => [

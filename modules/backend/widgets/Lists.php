@@ -10,12 +10,11 @@ use DbDongle;
 use Carbon\Carbon;
 use October\Rain\Html\Helper as HtmlHelper;
 use October\Rain\Router\Helper as RouterHelper;
-use System\Helpers\DateTimeHelper;
+use System\Helpers\DateTime as DateTimeHelper;
 use System\Classes\PluginManager;
 use Backend\Classes\ListColumn;
 use Backend\Classes\WidgetBase;
 use October\Rain\Database\Model;
-use October\Rain\Element\Lists\ColumnDefinition;
 use October\Contracts\Element\ListElement;
 use Illuminate\Database\Query\Builder as QueryBuilder;
 use Illuminate\Pagination\UrlWindow;
@@ -31,6 +30,7 @@ use UnitEnum;
  */
 class Lists extends WidgetBase implements ListElement
 {
+    use \Backend\Widgets\Lists\IsListElement;
     use \Backend\Widgets\Lists\ColumnProcessor;
     use \Backend\Widgets\Lists\HasListSetup;
     use \Backend\Widgets\Lists\HasSorting;
@@ -38,36 +38,36 @@ class Lists extends WidgetBase implements ListElement
     use \Backend\Traits\PreferenceMaker;
 
     //
-    // Configurable properties
+    // Configurable Properties
     //
 
     /**
-     * @var array List column configuration.
+     * @var array columns configuration.
      */
     public $columns;
 
     /**
-     * @var Model List model object.
+     * @var Model model object for the list.
      */
     public $model;
 
     /**
-     * @var string Link for each record row. Replace :id with the record id.
+     * @var string recordUrl for each record row. Replace :id with the record id.
      */
     public $recordUrl;
 
     /**
-     * @var string Click event for each record row. Replace :id with the record id.
+     * @var string recordOnClick event for each record row. Replace :id with the record id.
      */
     public $recordOnClick;
 
     /**
-     * @var string Message to display when there are no records in the list.
+     * @var string noRecordsMessage to display when there are no records in the list.
      */
     public $noRecordsMessage = 'backend::lang.list.no_records';
 
     /**
-     * @var int Maximum rows to display for each page.
+     * @var int recordsPerPage as maximum rows to display.
      */
     public $recordsPerPage;
 
@@ -77,7 +77,7 @@ class Lists extends WidgetBase implements ListElement
     public $perPageOptions;
 
     /**
-     * @var bool Shows the sorting options for each column.
+     * @var bool showSorting options for each column.
      */
     public $showSorting = true;
 
@@ -87,7 +87,7 @@ class Lists extends WidgetBase implements ListElement
     public $defaultSort;
 
     /**
-     * @var bool Display a checkbox next to each record row.
+     * @var bool showCheckboxes next to each record row.
      */
     public $showCheckboxes = false;
 
@@ -122,7 +122,7 @@ class Lists extends WidgetBase implements ListElement
     public $customPageName = 'page';
 
     //
-    // Object properties
+    // Object Properties
     //
 
     /**
@@ -430,7 +430,7 @@ class Lists extends WidgetBase implements ListElement
                 else {
                     $columnName = isset($column->sqlSelect)
                         ? DbDongle::raw($this->parseTableName($column->sqlSelect, $primaryTable))
-                        : Db::getTablePrefix() . $primaryTable . '.' . $column->columnName;
+                        : $primaryTable . '.' . $column->columnName;
 
                     $primarySearchable[] = $columnName;
                 }
@@ -460,7 +460,7 @@ class Lists extends WidgetBase implements ListElement
         }
 
         // Apply search term
-        $query->where(function ($innerQuery) use ($primarySearchable, $relationSearchable, $joins) {
+        $query->where(function($innerQuery) use ($primarySearchable, $relationSearchable, $joins) {
 
             // Search primary columns
             if (count($primarySearchable) > 0) {
@@ -495,7 +495,7 @@ class Lists extends WidgetBase implements ListElement
             if (isset($column->relation)) {
                 // @todo Find a way...
                 $relationType = $this->model->getRelationType($column->relation);
-                if ($relationType == 'morphTo') {
+                if ($relationType === 'morphTo') {
                     throw new ApplicationException('The relationship morphTo is not supported for list columns.');
                 }
 
@@ -505,6 +505,11 @@ class Lists extends WidgetBase implements ListElement
                 // Manipulate a count query for the sub query
                 $relationObj = $this->model->{$column->relation}();
                 $relationQuery = $relationObj->getRelated()->newQuery();
+
+                // Apply related constraints to the sub query
+                // Possibility: the column could contribute to this via conditions or scope
+                $relationObj->addDefinedConstraintsToQuery($relationQuery);
+
                 $countQuery = $relationObj->getRelationExistenceQuery($relationQuery, $query);
 
                 $joinSql = $this->isColumnRelated($column, true)
@@ -513,9 +518,9 @@ class Lists extends WidgetBase implements ListElement
 
                 $joinSql = $countQuery->select($joinSql)->reorder()->toSql();
 
-                $selects[] = Db::raw("(".$joinSql.") as ".$alias);
+                $selects[] = Db::raw('('.$joinSql.') as '.$alias);
 
-                // If this is a polymorphic relation there will be bindings that need to be added to the query
+                // If a polymorphic relation, bindings need to be added to the query
                 $bindings = array_merge($bindings, $countQuery->getBindings());
             }
             // Primary column
@@ -866,17 +871,6 @@ class Lists extends WidgetBase implements ListElement
     }
 
     /**
-     * defineColumn
-     */
-    public function defineColumn(string $columnName = null, string $label = null): ColumnDefinition
-    {
-        return $this->allColumns[$columnName] = new ListColumn([
-            'columnName' => $columnName,
-            'label' => $label
-        ]);
-    }
-
-    /**
      * defineListColumns builds an array of list columns with keys as the column name
      * and values as a ListColumn object
      */
@@ -961,7 +955,7 @@ class Lists extends WidgetBase implements ListElement
     }
 
     /**
-     * addColumns programatically add columns, used internally and for extensibility.
+     * addColumns programmatically add columns, used internally and for extensibility.
      * @param array $columns Column definitions
      */
     public function addColumns(array $columns)
@@ -972,7 +966,7 @@ class Lists extends WidgetBase implements ListElement
     }
 
     /**
-     * removeColumn programatically removes a column, used for extensibility.
+     * removeColumn programmatically removes a column, used for extensibility.
      * @param string $column Column name
      */
     public function removeColumn($columnName)
@@ -980,6 +974,15 @@ class Lists extends WidgetBase implements ListElement
         if (isset($this->allColumns[$columnName])) {
             unset($this->allColumns[$columnName]);
         }
+    }
+
+    /**
+     * getModel returns the active model for this list.
+     * @return \Model|null
+     */
+    public function getModel()
+    {
+        return $this->model;
     }
 
     /**
@@ -1385,6 +1388,9 @@ class Lists extends WidgetBase implements ListElement
         // Media item
         else {
             foreach ((array) $value as $val) {
+                if (is_array($val)) {
+                    return '';
+                }
                 if (strpos($val, '://') !== false) {
                     $images[] = $val;
                 }
@@ -1604,7 +1610,7 @@ class Lists extends WidgetBase implements ListElement
             'label' => $column->label
         ]);
 
-        $fieldOptions = $column->config['options'] ?? null;
+        $fieldOptions = $column->optionsMethod ?: $column->options;
 
         if (!is_array($fieldOptions)) {
             $model = $this->isColumnRelated($column)
@@ -1716,7 +1722,7 @@ class Lists extends WidgetBase implements ListElement
 
     /**
      * isColumnRelated checks if column refers to a relation of the model, with a toggle
-     * switch for checking only relationsips with multiple records.
+     * switch for checking only relationships with multiple records.
      * @param ListColumn $column
      * @param bool $isMulti
      */

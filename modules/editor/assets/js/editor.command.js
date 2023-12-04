@@ -1,4 +1,4 @@
-oc.Module.register('editor.command', function() {
+oc.Modules.register('editor.command', function() {
     'use strict';
     /**
      * Represents Editor client-side commands.

@@ -26,7 +26,7 @@ trait InspectableContainer
         }
 
         $className = trim(post('inspectorClassName'));
-        if (!$className) {
+        if (!$className || $className === 'undefined') {
             throw new ApplicationException('The inspectable class name is not specified.');
         }
 
@@ -60,9 +60,7 @@ trait InspectableContainer
             $options = $obj->getPropertyOptions($property);
         }
 
-        /*
-         * Convert to array to retain the sort order in JavaScript
-         */
+        // Convert to array to retain the sort order in JavaScript
         $optionsArray = [];
         foreach ((array) $options as $value => $title) {
             $optionsArray[] = ['value' => $value, 'title' => Lang::get($title)];

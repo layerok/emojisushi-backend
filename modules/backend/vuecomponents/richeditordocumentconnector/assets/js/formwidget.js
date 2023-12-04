@@ -1,4 +1,4 @@
-oc.Module.register('backend.vuecomponents.richeditordocumentconnector.formwidget', function() {
+oc.Modules.register('backend.vuecomponents.richeditordocumentconnector.formwidget', function() {
     'use strict';
 
     class FormWidget {
@@ -6,6 +6,8 @@ oc.Module.register('backend.vuecomponents.richeditordocumentconnector.formwidget
             const widgetConnectorClass = Vue.extend(
                 Vue.options.components['backend-component-richeditor-document-connector-formwidgetconnector']
             );
+
+            this.element = element;
 
             this.connectorInstance = new widgetConnectorClass({
                 propsData: {
@@ -22,6 +24,8 @@ oc.Module.register('backend.vuecomponents.richeditordocumentconnector.formwidget
                 });
             }
 
+            this.element.addEventListener('change', this.onChangeTextarea);
+
             this.connectorInstance.$on('focus', function() {
                 $(element).closest('.editor-write').addClass('editor-focus');
             });
@@ -32,6 +36,10 @@ oc.Module.register('backend.vuecomponents.richeditordocumentconnector.formwidget
 
             this.connectorInstance.$mount();
             element.parentNode.appendChild(this.connectorInstance.$el);
+        }
+
+        onChangeTextarea = () => {
+            this.setContent(this.element.value);
         }
 
         getEditor() {
@@ -47,12 +55,15 @@ oc.Module.register('backend.vuecomponents.richeditordocumentconnector.formwidget
         }
 
         remove() {
+            this.element.removeEventListener('change', this.onChangeTextarea);
+
             if (this.connectorInstance) {
                 this.connectorInstance.$destroy();
                 $(this.connectorInstance.$el).remove();
             }
 
             this.connectorInstance = null;
+            this.element = null;
         }
     }
 
