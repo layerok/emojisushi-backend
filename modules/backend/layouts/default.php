@@ -93,11 +93,8 @@
                 </div>
             </div>
         </div>
-
-        <!-- Flash Messages -->
-        <div id="layout-flash-messages"><?= $this->makeLayoutPartial('flash_messages') ?></div>
-
         <?= $this->makeLayoutPartial('mainmenu_responsive') ?>
-        <?= $this->makeLayoutPartial('vue_templates') ?>
+        <?= $this->makeLayoutPartial('footer') ?>
+        <?= $this->fireViewEvent('backend.layout.extendFooter', ['default']) ?>
     </body>
 </html>

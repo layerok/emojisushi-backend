@@ -19,7 +19,8 @@ class ModelBehavior extends ModelBehaviorBase
 
     /**
      * __construct
-     * @param October\Rain\Database\Model $model The extended model.
+     * @param \October\Rain\Database\Model $model The extended model.
+     * @throws ApplicationException
      */
     public function __construct($model)
     {

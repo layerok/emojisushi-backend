@@ -81,7 +81,7 @@ trait HasViewMode
         $config->customPageName = $this->getConfig('view[customPageName]', camel_case(class_basename($this->relationModel).'Page'));
 
         $defaultOnClick = sprintf(
-            "$.oc.relationBehavior.clickViewListRecord(':%s', '%s', '%s', '%s')",
+            "oc.relationBehavior.clickViewListRecord(':%s', '%s', '%s', '%s')",
             $this->relationModel->getKeyName(),
             $this->relationGetId(),
             $this->relationGetSessionKey(),
@@ -117,14 +117,22 @@ trait HasViewMode
             $widget = $this->makeWidget(ListWidget::class, $config);
         }
 
+        // Linkage for JS plugins
+        if ($this->toolbarWidget) {
+            $this->toolbarWidget->listWidgetId = $widget->getId();
+        }
+
         // Custom structure reordering logic
         if (
             $this->model->isClassInstanceOf(\October\Contracts\Database\SortableRelationInterface::class) &&
             $this->model->isSortableRelation($this->field)
         ) {
-            $widget->bindEvent('list.reorderStructure', function () {
+            $widget->bindEvent('list.beforeReorderStructure', function () {
                 $this->model->setSortableRelationOrder($this->field, post('sort_orders'), true);
-            });
+                // return false;
+                // @deprecated should be as above
+                return true;
+            }, -1);
         }
 
         // Apply defined constraints
@@ -143,7 +151,7 @@ trait HasViewMode
                 $this->relationObject->addDefinedConstraintsToQuery($query);
 
                 // Reset any orders that may have come from the definition
-                // because it has a tendency to break things
+                // because it has a tendency to break things.
                 if (!$this->model->exists) {
                     $query->getQuery()->reorder();
                 }
@@ -171,16 +179,15 @@ trait HasViewMode
         });
 
         // Constrain the list by the search widget, if available
-        if ($this->toolbarWidget && $this->getConfig('view[showSearch]')
-            && $searchWidget = $this->toolbarWidget->getSearchWidget()
+        if (
+            $this->toolbarWidget &&
+            $this->getConfig('view[showSearch]') &&
+            $searchWidget = $this->toolbarWidget->getSearchWidget()
         ) {
             $searchWidget->bindEvent('search.submit', function () use ($widget, $searchWidget) {
                 $widget->setSearchTerm($searchWidget->getActiveTerm());
                 return $widget->onRefresh();
             });
-
-            // Linkage for JS plugins
-            $searchWidget->listWidgetId = $widget->getId();
 
             // Pass search options
             $widget->setSearchOptions([

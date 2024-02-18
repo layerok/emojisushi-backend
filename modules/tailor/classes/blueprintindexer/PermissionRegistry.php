@@ -79,18 +79,14 @@ trait PermissionRegistry
     {
         $result = [];
 
-        /*
-         * Sections
-         */
+        // Sections
         foreach (EntryBlueprint::listInProject() as $blueprint) {
             if ($config = $this->buildPermissionConfig($blueprint)) {
                 $result[$blueprint->uuid] = $config;
             }
         }
 
-        /*
-         * Globals
-         */
+        // Globals
         foreach (GlobalBlueprint::listInProject() as $blueprint) {
             if ($config = $this->buildPermissionConfig($blueprint)) {
                 $result[$blueprint->uuid] = $config;
@@ -130,12 +126,5 @@ trait PermissionRegistry
         }
 
         return $config;
-    }
-
-    /**
-     * hasBlueprintPermission
-     */
-    public function hasBlueprintPermission($handle, $permissionSuffix = null)
-    {
     }
 }

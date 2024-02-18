@@ -1,12 +1,11 @@
 <?php namespace Tailor\Traits;
 
-use October\Rain\Database\Models\DeferredBinding;
 use Tailor\Models\RepeaterItem;
 
 /**
  * DeferredContentModel modifies deferred binding to support content UUIDs
  *
- * @package october\database
+ * @package october\tailor
  * @author Alexey Bobkov, Samuel Georges
  */
 trait DeferredContentModel

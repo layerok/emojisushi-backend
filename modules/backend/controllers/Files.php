@@ -1,6 +1,7 @@
 <?php namespace Backend\Controllers;
 
 use View;
+use Event;
 use Cache;
 use Config;
 use Backend;
@@ -8,6 +9,7 @@ use Response;
 use System\Models\File as FileModel;
 use Backend\Classes\Controller;
 use ApplicationException;
+use ForbiddenException;
 use Exception;
 
 /**
@@ -27,6 +29,9 @@ class Files extends Controller
         try {
             return $this->findFileObject($code)->output();
         }
+        catch (ForbiddenException $ex) {
+            throw $ex;
+        }
         catch (Exception $ex) {
         }
 
@@ -44,6 +49,9 @@ class Files extends Controller
                 $height,
                 compact('mode', 'extension')
             );
+        }
+        catch (ForbiddenException $ex) {
+            throw $ex;
         }
         catch (Exception $ex) {
         }
@@ -71,7 +79,7 @@ class Files extends Controller
         }
 
         if (
-            (class_exists('\League\Flysystem\AwsS3v3\AwsS3Adapter') && $adapter instanceof \League\Flysystem\AwsS3v3\AwsS3Adapter) ||
+            (class_exists('\League\Flysystem\AwsS3v3\AwsS3V3Adapter') && $adapter instanceof \League\Flysystem\AwsS3v3\AwsS3V3Adapter) ||
             (class_exists('\League\Flysystem\Rackspace\RackspaceAdapter') && $adapter instanceof \League\Flysystem\Rackspace\RackspaceAdapter) ||
             method_exists($adapter, 'getTemporaryUrl')
         ) {
@@ -161,7 +169,7 @@ class Files extends Controller
         [$id, $hash] = $parts;
 
         if (!$file = FileModel::find((int) $id)) {
-            throw new ApplicationException('Unable to find file');
+            throw new ApplicationException('File not found');
         }
 
         // Ensure that the file model utilized for this request is
@@ -180,6 +188,26 @@ class Files extends Controller
         $verifyCode = self::getUniqueCode($file);
         if ($code != $verifyCode) {
             throw new ApplicationException('Invalid hash');
+        }
+
+        /**
+         * @event backend.files.get
+         * Fires before a file is output.
+         *
+         * Example usage:
+         *
+         *     Event::listen('backend.files.get', function ((\System\Models\File) $file) {
+         *         // Block access to this file
+         *         return false;
+         *
+         *         // Or signal access denied
+         *         throw new \ForbiddenException;
+         *     });
+         *
+         */
+        $response = Event::fire('backend.files.get', [$file], true);
+        if ($response === false) {
+            throw new ApplicationException('File access halted');
         }
 
         return $file;

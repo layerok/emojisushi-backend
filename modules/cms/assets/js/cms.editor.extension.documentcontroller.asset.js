@@ -1,10 +1,10 @@
-oc.Module.register('cms.editor.extension.documentcontroller.asset', function() {
+oc.Modules.register('cms.editor.extension.documentcontroller.asset', function() {
     'use strict';
 
-    const DocumentControllerBase = oc.Module.import('editor.extension.documentcontroller.base');
+    const DocumentControllerBase = oc.Modules.import('editor.extension.documentcontroller.base');
     const treeviewUtils = $.oc.vueComponentHelpers.treeviewUtils;
-    const EditorCommand = oc.Module.import('editor.command');
-    const FileSystemFunctions = oc.Module.import('editor.extension.filesystemfunctions');
+    const EditorCommand = oc.Modules.import('editor.command');
+    const FileSystemFunctions = oc.Modules.import('editor.extension.filesystemfunctions');
 
     class DocumentControllerAsset extends DocumentControllerBase {
         get documentType() {
@@ -44,7 +44,7 @@ oc.Module.register('cms.editor.extension.documentcontroller.asset', function() {
         }
 
         getNavigatorContextMenuItems(commandObj, payload) {
-            const DocumentUri = oc.Module.import('editor.documenturi');
+            const DocumentUri = oc.Modules.import('editor.documenturi');
             const uri = DocumentUri.parse(payload.nodeData.uniqueKey);
             const parentPath = payload.nodeData.userData.path;
 

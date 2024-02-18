@@ -21,39 +21,39 @@
     InspectorPopup.prototype.constructor = Base
 
     InspectorPopup.prototype.dispose = function() {
-        this.unregisterHandlers()
+        this.unregisterHandlers();
 
-        this.$popoverContainer = null
-        this.popoverObj = null
+        this.$popoverContainer = null;
+        this.popoverObj = null;
 
-        BaseProto.dispose.call(this)
+        BaseProto.dispose.call(this);
     }
 
     InspectorPopup.prototype.createSurfaceAndUi = function(properties, values, title, description) {
-        this.showPopover()
+        this.showPopover();
 
-        this.initSurface(this.$popoverContainer.find('[data-surface-container]').get(0), properties, values)
-        this.repositionPopover()
+        this.initSurface(this.$popoverContainer.find('[data-surface-container]').get(0), properties, values);
+        this.repositionPopover();
 
-        this.registerPopupHandlers()
+        this.registerPopupHandlers();
     }
 
     InspectorPopup.prototype.adoptSurface = function() {
-        this.showPopover()
+        this.showPopover();
 
-        this.surface.moveToContainer(this.$popoverContainer.find('[data-surface-container]').get(0))
-        this.repositionPopover()
+        this.surface.moveToContainer(this.$popoverContainer.find('[data-surface-container]').get(0));
+        this.repositionPopover();
 
-        this.registerPopupHandlers()
+        this.registerPopupHandlers();
 
-        BaseProto.adoptSurface.call(this)
+        BaseProto.adoptSurface.call(this);
     }
 
     InspectorPopup.prototype.cleanupAfterSwitch = function() {
-        this.cleaningUp = true
-        this.switched = true
+        this.cleaningUp = true;
+        this.switched = true;
 
-        this.forceClose()
+        this.forceClose();
 
         // The parent cleanupAfterSwitch() is not called because
         // disposing happens in onHide() triggered by forceClose()
@@ -77,18 +77,18 @@
             offsetX = this.$element.data('inspector-offset-x'),
             offsetY = this.$element.data('inspector-offset-y'),
             placement = this.$element.data('inspector-placement'),
-            fallbackPlacement = this.$element.data('inspector-fallback-placement')
+            fallbackPlacement = this.$element.data('inspector-fallback-placement');
 
         if (offset === undefined) {
-            offset = 15
+            offset = 15;
         }
 
         if (placement === undefined) {
-            placement = 'bottom'
+            placement = 'bottom';
         }
 
         if (fallbackPlacement === undefined) {
-            fallbackPlacement = 'bottom'
+            fallbackPlacement = 'bottom';
         }
 
         this.$element.ocPopover({
@@ -102,34 +102,33 @@
             offset: offset,
             offsetX: offsetX,
             offsetY: offsetY,
-            width: 400
-        })
+            width: 450
+        });
 
-        this.setInspectorVisibleFlag(true)
+        this.setInspectorVisibleFlag(true);
 
-        this.popoverObj = this.$element.data('oc.popover')
-        this.$popoverContainer = this.popoverObj.$container
+        this.popoverObj = this.$element.data('oc.popover');
+        this.$popoverContainer = this.popoverObj.$container;
 
-        this.$popoverContainer.addClass('inspector-temporary-placement')
+        this.$popoverContainer.addClass('inspector-temporary-placement');
 
         if (this.options.inspectorCssClass !== undefined) {
-            this.$popoverContainer.addClass(this.options.inspectorCssClass)
+            this.$popoverContainer.addClass(this.options.inspectorCssClass);
         }
 
         if (this.options.containerSupported) {
-            var moveToContainerButton = $('<span class="inspector-move-to-container oc-icon-download">')
-
-            this.$popoverContainer.find('.popover-head').append(moveToContainerButton)
+            var moveToContainerButton = $('<span class="inspector-move-to-container oc-icon-download">');
+            this.$popoverContainer.find('.popover-head').append(moveToContainerButton);
         }
 
-        this.$popoverContainer.find('[data-inspector-title]').text(this.title)
-        this.$popoverContainer.find('[data-inspector-description]').text(this.description)
+        this.$popoverContainer.find('[data-inspector-title]').text(this.title);
+        this.$popoverContainer.find('[data-inspector-description]').text(this.description);
     }
 
     InspectorPopup.prototype.repositionPopover = function() {
-        this.popoverObj.reposition()
-        this.$popoverContainer.removeClass('inspector-temporary-placement')
-        this.$popoverContainer.find('div[data-surface-container] > div').trigger('focus-control')
+        this.popoverObj.reposition();
+        this.$popoverContainer.removeClass('inspector-temporary-placement');
+        this.$popoverContainer.find('div[data-surface-container] > div').trigger('focus-control');
     }
 
     InspectorPopup.prototype.forceClose = function() {

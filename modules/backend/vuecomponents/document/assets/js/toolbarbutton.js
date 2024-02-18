@@ -1,4 +1,4 @@
-oc.Module.register('backend.component.toolbar.button', function () {
+oc.Modules.register('backend.component.toolbar.button', function () {
     Vue.component('backend-component-document-toolbar-button', {
         props: {
             settings: Object,
@@ -8,6 +8,12 @@ oc.Module.register('backend.component.toolbar.button', function () {
             icon: function computeIcon() {
                 if (this.settings.icon) {
                     return this.settings.icon;
+                }
+            },
+
+            command: function computeCommand() {
+                if (this.settings.command) {
+                    return this.settings.command;
                 }
             },
 

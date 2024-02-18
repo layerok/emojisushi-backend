@@ -319,10 +319,10 @@
         }
 
         var callback = function dropdownOptionsRequestDoneClosure(data) {
-            self.hideLoadingIndicator()
-            self.optionsRequestDone(data, currentValue, true)
+            self.hideLoadingIndicator();
+            self.optionsRequestDone(data, currentValue, true);
 
-            if (dependents.length > 0) {
+            if (dependents.length > 0 && self.inspector) {
                 for (var i in dependents) {
                     var editor = self.inspector.findPropertyEditor(dependents[i])
                     if (editor && typeof editor.onInspectorPropertyChanged === 'function') {
@@ -333,23 +333,23 @@
         }
 
         if (this.propertyDefinition.depends) {
-            this.saveDependencyValues()
+            this.saveDependencyValues();
         }
 
-        data['inspectorProperty'] = this.getPropertyPath()
-        data['inspectorClassName'] = this.inspector.options.inspectorClass
+        data['inspectorProperty'] = this.getPropertyPath();
+        data['inspectorClassName'] = this.inspector.options.inspectorClass;
 
-        this.showLoadingIndicator()
+        this.showLoadingIndicator();
 
         if (this.triggerGetOptions(data, callback) === false) {
-            return
+            return;
         }
 
-        $form.request('onInspectableGetOptions', {
+        $form.request(this.inspector.getEventHandler('onInspectableGetOptions'), {
             data: data,
-        }).done(callback).always(
-            this.proxy(this.hideLoadingIndicator)
-        )
+            progressBar: false
+        })
+        .done(callback).always(this.proxy(this.hideLoadingIndicator));
     }
 
     DropdownEditor.prototype.triggerGetOptions = function(values, callback) {

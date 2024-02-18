@@ -34,10 +34,18 @@
                     href="javascript:;"
                     data-control="popup"
                     data-handler="<?= $removeHandler ?>"
+                    data-request-confirm="<?= __("Are you sure?") ?>"
                     data-request-data="code: '<?= e($product->code) ?>'"
                     class="btn btn-danger oc-icon-chain-broken">
                     <?= __("Remove") ?>
                 </a>
+                <?php /*
+                <a
+                    href="<?= Backend::url('system/updates/manage') ?>"
+                    class="btn btn-default oc-icon-cog">
+                    <?= __("Manage") ?>
+                </a>
+                */ ?>
             <?php endif ?>
         <?php else: ?>
             <a

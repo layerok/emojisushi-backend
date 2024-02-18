@@ -45,8 +45,7 @@ class QueryString
             return $specialProperties;
         }
 
-        $keys = $query->keys();
-        $properties = $category->load('property_groups.properties')->properties->whereIn('slug', $keys);
+        $properties = $category->load('property_groups.properties')->properties->whereIn('slug', $query->keys());
 
         // Map the user defined database properties.
         return $properties->mapWithKeys(function (Property $property) use ($query) {

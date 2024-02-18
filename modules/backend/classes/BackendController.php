@@ -13,7 +13,7 @@ use Closure;
 /**
  * BackendController is the master controller for all back-end pages.
  * All requests that are prefixed with the backend URI pattern are sent here,
- * then the next URI segments are analysed and the request is routed to the
+ * then the next URI segments are analyzed and the request is routed to the
  * relevant back-end controller.
  *
  * For example, a request with the URL `/backend/acme/blog/posts` will look
@@ -131,9 +131,8 @@ class BackendController extends ControllerBase
         if (System::hasModule('Cms')) {
             return \Cms::pageNotFound();
         }
-        else {
-            return Response::make(View::make('backend::404'), 404);
-        }
+
+        return Response::make(View::make('backend::404'), 404);
     }
 
     /**

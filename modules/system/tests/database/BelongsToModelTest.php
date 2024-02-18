@@ -76,7 +76,7 @@ class BelongsToModelTest extends PluginTestCase
         $this->assertEquals(1, $post->author()->withDeferred($sessionKey)->count());
 
         // Commit deferred
-        $post->save(null, $sessionKey);
+        $post->save(['sessionKey' => $sessionKey]);
         $this->assertEquals(1, $post->author()->count());
         $this->assertEquals($author->id, $post->author_id);
         $this->assertEquals('Stevie', $post->author->name);
@@ -92,7 +92,7 @@ class BelongsToModelTest extends PluginTestCase
         $this->assertEquals('Stevie', $post->author->name);
 
         // Commit deferred
-        $post->save(null, $sessionKey);
+        $post->save(['sessionKey' => $sessionKey]);
         $this->assertEquals(0, $post->author()->count());
         $this->assertNull($post->author_id);
         $this->assertNull($post->author);

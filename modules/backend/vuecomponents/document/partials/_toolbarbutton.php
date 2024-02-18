@@ -9,6 +9,7 @@
         v-bind:aria-controls="ariaControlsId"
         v-bind:aria-haspopup="settings.type == 'dropdown'"
         v-bind:id="buttonId"
+        v-bind:data-cmd="command"
         v-bind:data-tooltip-text="tooltip"
         v-bind:data-tooltip-hotkey="tooltipHotkey"
         class="backend-toolbar-button"
@@ -20,12 +21,14 @@
         <span v-if="label" v-text="label"></span>
     </a>
     <button
+        type="button"
         v-else
         v-bind:disabled="settings.disabled || toolbarDisabled"
         v-bind:tabindex="settings.disabled || toolbarDisabled ? -1 : 0"
         v-bind:aria-controls="ariaControlsId"
         v-bind:aria-haspopup="settings.type == 'dropdown'"
         v-bind:id="buttonId"
+        v-bind:data-cmd="command"
         v-bind:data-tooltip-text="tooltip"
         v-bind:data-tooltip-hotkey="tooltipHotkey"
         class="backend-toolbar-button"
@@ -37,6 +40,7 @@
         <span class="button-label" v-if="label" v-text="label" :style="titleStyle"></span>
     </button
     ><button
+        type="button"
         v-if="settings.type != 'dropdown' && settings.menuitems"
         class="backend-toolbar-button menu-trigger"
         :class="menuTriggerCssClass"

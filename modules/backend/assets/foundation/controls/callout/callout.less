@@ -110,21 +110,18 @@
 
         h3 {
             letter-spacing: 0;
-            margin: 0 0 7px 0;
             font-size: @font-size-base;
             font-weight: 600;
             line-height: 150%;
+            margin: 0;
         }
 
-        h3,
-        p,
-        ul,
-        ol {
+        h3, p, ul, ol {
             margin-left: 32px;
+            margin-bottom: 7px;
         }
 
-        ul,
-        ol {
+        ul, ol {
             padding-left: @padding-standard;
         }
 
@@ -175,8 +172,7 @@
             margin-bottom: 0;
         }
 
-        ul,
-        ol {
+        ul, ol {
             padding-left: @padding-standard;
 
             li {
@@ -314,6 +310,14 @@
         }
         > .content {
             background: @callout-warning-bg;
+        }
+    }
+
+    &.is-flush {
+        margin-bottom: 0;
+        > .content {
+            border-bottom-left-radius: 0;
+            border-bottom-right-radius: 0;
         }
     }
 }

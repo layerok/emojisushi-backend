@@ -44,12 +44,7 @@ class SectionComponent extends ComponentModuleBase
                 'type' => 'dropdown',
                 'showExternalParam' => false
             ],
-            'entrySlug' => [
-                'title' => 'Slug',
-                'type' => 'string',
-                'description' => 'URL code (slug) used to find the primary record.'
-            ],
-            'entryColumn' => [
+            'identifier' => [
                 'title' => 'Lookup Column',
                 'type' => 'dropdown',
                 'description' => 'Column name (index) to match with the primary record.',
@@ -59,18 +54,17 @@ class SectionComponent extends ComponentModuleBase
                     'id' => 'ID (Primary Key)',
                 ]
             ],
-            'entryDefault' => [
+            'value' => [
+                'title' => 'Lookup Value',
+                'type' => 'string',
+                'description' => 'URL code (slug) used to find the primary record.'
+            ],
+            'isDefault' => [
                 'title' => 'Default View',
                 'type' => 'checkbox',
                 'description' => 'Used as default entry point when previewing the record.',
                 'showExternalParam' => false
             ],
-            // @deprecated
-            // 'fullSlug' => [
-            //     'title' => 'Full Slug',
-            //     'type' => 'checkbox',
-            //     'description' => 'Use the full slug when looking up the record.',
-            // ],
         ];
     }
 
@@ -129,14 +123,14 @@ class SectionComponent extends ComponentModuleBase
             return $model;
         }
 
-        // Using entry point slug
-        if ($model = $this->getEntryPointModel($query)) {
-            return $model;
-        }
-
-        // Single section is the same as an entry point
+        // Using single section without identifier value
         if ($query->getModel()->isEntrySingle()) {
             return $query->first();
+        }
+
+        // Using entry point identifier value
+        if ($model = $this->getEntryPointModel($query)) {
+            return $model;
         }
 
         return null;
@@ -172,29 +166,48 @@ class SectionComponent extends ComponentModuleBase
      */
     protected function getEntryPointModel($query)
     {
-        $slug = $this->property('entrySlug');
+        $slug = $this->getEntryPointIdentifierValue();
         if (!$slug) {
             return null;
         }
 
-        $columnName = $this->getEntryPointColumnName();
+        $columnName = $this->getEntryPointIdentifierKey();
         return $query->where($columnName, $slug)->first();
     }
 
     /**
-     * getEntryPointColumnName returns the lookup column name
+     * getEntryPointIdentifierKey returns the lookup column name
      */
-    protected function getEntryPointColumnName(): string
+    protected function getEntryPointIdentifierKey(): string
     {
-        // @deprecated
-        if ($this->property('fullSlug')) {
-            return 'fullslug';
-        }
-
         $validColumns = ['id', 'slug', 'fullslug'];
-        $columnName = $this->property('entryColumn');
+        $columnName = $this->property('identifier');
 
         return in_array($columnName, $validColumns) ? $columnName : 'slug';
+    }
+
+    /**
+     * getEntryPointIdentifierValue
+     */
+    protected function getEntryPointIdentifierValue()
+    {
+        if ($value = $this->property('value')) {
+            return $value;
+        }
+
+        return $this->param($this->getEntryPointIdentifierKey());
+    }
+
+    /**
+     * getEntryPointIdentifierParamName
+     */
+    protected function getEntryPointIdentifierParamName()
+    {
+        if ($param = $this->paramName('value')) {
+            return $param;
+        }
+
+        return $this->getEntryPointIdentifierKey();
     }
 
     /**
@@ -207,12 +220,20 @@ class SectionComponent extends ComponentModuleBase
         }
 
         $otherRecord = $this->findOtherSiteRecords()->where('site_id', $site->id)->first();
-        $slugName = $this->paramName('entrySlug');
-        if ($otherRecord && $slugName) {
-            $columnName = $this->getEntryPointColumnName();
-            $params[$slugName] = $otherRecord->$columnName;
-            return $params;
+        if (!$otherRecord) {
+            return;
         }
+
+        $params['id'] = $otherRecord->id;
+        $params['slug'] = $otherRecord->slug;
+        $params['fullslug'] = $otherRecord->fullslug;
+
+        if ($paramName = $this->getEntryPointIdentifierParamName()) {
+            $columnName = $this->getEntryPointIdentifierKey();
+            $params[$paramName] = $otherRecord->$columnName;
+        }
+
+        return $params;
     }
 
     /**
@@ -242,5 +263,33 @@ class SectionComponent extends ComponentModuleBase
         $primaryRecord = $this->getPrimaryRecord();
 
         return $this->multisiteCache = $primaryRecord && $primaryRecord->isMultisiteEnabled();
+    }
+
+    /**
+     * validateProperties is used to replace older property definitions with new ones
+     */
+    public function validateProperties(array $properties)
+    {
+        $properties = parent::validateProperties($properties);
+
+        // @deprecated in v3.2
+        if (isset($properties['fullSlug'])) {
+            $properties['identifier'] = 'fullslug';
+        }
+
+        // @deprecated in v3.3
+        if (isset($properties['entryColumn'])) {
+            $properties['identifier'] = $properties['entryColumn'];
+        }
+
+        if (isset($properties['entrySlug'])) {
+            $properties['value'] = $properties['entrySlug'];
+        }
+
+        if (isset($properties['entryDefault'])) {
+            $properties['isDefault'] = $properties['entryDefault'];
+        }
+
+        return $properties;
     }
 }

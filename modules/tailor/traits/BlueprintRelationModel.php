@@ -11,7 +11,7 @@
  *
  *   public $belongsToMany = [..., 'blueprint' => '6947ff28-b660-47d7-9240-24ca6d58aeae'];
  *
- * @package october\database
+ * @package october\tailor
  * @author Alexey Bobkov, Samuel Georges
  */
 trait BlueprintRelationModel
@@ -40,7 +40,7 @@ trait BlueprintRelationModel
      */
     protected function defineBlueprintRelationModels()
     {
-        $supportsBlueprints = ['belongsToMany', 'belongsTo'];
+        $supportsBlueprints = ['belongsToMany', 'belongsTo', 'hasMany', 'morphedByMany', 'morphToMany'];
 
         foreach ($supportsBlueprints as $type) {
             foreach ($this->$type as $name => $definition) {

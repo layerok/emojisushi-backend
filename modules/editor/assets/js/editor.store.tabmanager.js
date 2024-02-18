@@ -1,4 +1,4 @@
-oc.Module.register('editor.store.tabmanager', function() {
+oc.Modules.register('editor.store.tabmanager', function() {
     'use strict';
 
     class TabManager {

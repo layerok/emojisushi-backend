@@ -1,7 +1,7 @@
 /*
  * Vue modal alert implementation
  */
-oc.Module.register('backend.component.modal.alert', function () {
+oc.Modules.register('backend.component.modal.alert', function () {
     Vue.component('backend-component-modal-alert', {
         props: {
             title: {

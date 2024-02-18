@@ -66,23 +66,6 @@ class SettingsManager
     protected $contextItemCode;
 
     /**
-     * @var array itemDefaults for settings
-     */
-    protected static $itemDefaults = [
-        'code' => null,
-        'label' => null,
-        'category' => null,
-        'icon' => null,
-        'iconSvg' => null,
-        'url' => null,
-        'permissions' => [],
-        'order' => 500,
-        'context' => 'system',
-        'keywords' => null,
-        'size' => 'large'
-    ];
-
-    /**
      * loadItems
      */
     protected function loadItems()
@@ -276,14 +259,12 @@ class SettingsManager
             $definition = array_merge((array) $this->items[$itemKey], $definition);
         }
 
-        $item = array_merge(self::$itemDefaults, array_merge($definition, [
+        $item = array_merge($definition, [
             'code' => $code,
             'owner' => $owner
-        ]));
+        ]);
 
-        /*
-         * Link to the generic settings page if a URL is not provided
-         */
+        // Link to the generic settings page if a URL is not provided
         if (isset($item['class']) && !isset($item['url'])) {
             $uri = [];
 
@@ -301,7 +282,15 @@ class SettingsManager
             $item['url'] = Backend::url('system/settings/update/' . $uri);
         }
 
-        $this->items[$itemKey] = (object) $item;
+        $this->items[$itemKey] = $this->defineSettingsMenuItem($item);
+    }
+
+    /**
+     * defineSettingsMenuItem
+     */
+    protected function defineSettingsMenuItem(array $config): SettingsMenuItem
+    {
+        return (new SettingsMenuItem)->useConfig($config);
     }
 
     /**

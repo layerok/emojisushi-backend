@@ -21,10 +21,9 @@ class TailorRefresh extends Command
     /**
      * @var string signature of console command
      */
-    protected $signature = 'tailor:refresh
+    protected $signature = 'tailor:refresh {--f|force : Force the operation to run.}
         {--r|rollback : Rollback to the beginning.}
-        {--f|force : Force the operation to run.}
-        {--blueprint= : Handle name to refresh one blueprint.}';
+        {--blueprint= : Handle name to refresh a single blueprint.}';
 
     /**
      * @var string description of the console command
@@ -43,7 +42,7 @@ class TailorRefresh extends Command
     {
         $this->indexer = BlueprintIndexer::instance()->setNotesCommand($this);
 
-        $message = "This will DESTROY all content records for Tailor.";
+        $message = "This will DESTROY all content records for Tailor. Please make sure you have a backup first.";
         if ($handle = $this->option('blueprint')) {
             $message = "This will DESTROY content records for the [{$handle}] handle.";
         }

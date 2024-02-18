@@ -1,0 +1,12 @@
+# ===================================
+#  Relation Behavior Config
+# ===================================
+
+_default_config:
+    label: Relation
+
+    # Columns supplied dynamically
+    list: []
+
+    # Fields supplied dynamically
+    form: []

@@ -1,6 +1,6 @@
-oc.Module.register('backend.component.uploader', function () {
-    const UploaderQueue = oc.Module.import('backend.vuecomponents.uploader.queue');
-    const UploaderFile = oc.Module.import('backend.vuecomponents.uploader.file');
+oc.Modules.register('backend.component.uploader', function () {
+    const UploaderQueue = oc.Modules.import('backend.vuecomponents.uploader.queue');
+    const UploaderFile = oc.Modules.import('backend.vuecomponents.uploader.file');
 
     /*
      *  Universal file uploader implementation

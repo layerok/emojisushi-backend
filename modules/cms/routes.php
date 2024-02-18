@@ -23,7 +23,7 @@ App::before(function ($request) {
      */
     Route::any('{slug?}', [\Cms\Classes\CmsController::class, 'run'])
         ->where('slug', '(.*)?')
-        ->middleware('web')
+        ->middleware(Config::get('cms.middleware_group', 'web'))
     ;
 
     /**

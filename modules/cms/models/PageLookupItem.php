@@ -17,7 +17,7 @@ use Cms\Classes\Theme;
 class PageLookupItem extends Model
 {
     /**
-     * @var bool singleMode only allows items to be selected that resovle to a single URL.
+     * @var bool singleMode only allows items to be selected that resolve to a single URL.
      */
     public $singleMode = false;
 
@@ -25,6 +25,11 @@ class PageLookupItem extends Model
      * @var bool nesting determines if auto-generated menu items could have subitems.
      */
     public $nesting = false;
+
+    /**
+     * @var array|bool sites includes a lookup for other sites.
+     */
+    public $sites = false;
 
     /**
      * @var array pageTypeInfoCache
@@ -315,6 +320,7 @@ class PageLookupItem extends Model
             $this->viewBag = $itemInfo['viewBag'] ?? [];
             $this->code = $itemInfo['code'] ?? null;
             $this->mtime = $itemInfo['mtime'] ?? null;
+            $this->sites = $itemInfo['sites'] ?? null;
 
             $this->attributes = array_merge($this->attributes, $itemInfo);
 
@@ -342,6 +348,7 @@ class PageLookupItem extends Model
             $reference->viewBag = $item['viewBag'] ?? [];
             $reference->code = $item['code'] ?? null;
             $reference->mtime = $item['mtime'] ?? null;
+            $reference->sites = $item['sites'] ?? null;
 
             if (isset($item['items'])) {
                 $reference->items = $this->buildChildItems($item['items']);
@@ -364,6 +371,7 @@ class PageLookupItem extends Model
         }
 
         $item->nesting = (bool) array_get($options, 'nesting', false);
+        $item->sites = (bool) array_get($options, 'sites', false);
 
         return $item->resolveItem();
     }
@@ -394,7 +402,7 @@ class PageLookupItem extends Model
 
     /**
      * decodeSchema will decode an October CMS protocol, e.g.
-     * `october://cms-page/aboutus/home/index?target=_blank`
+     * `october://cms-page/about/home/index?target=_blank`
      */
     public static function decodeSchema(string $address): array
     {
@@ -439,7 +447,7 @@ class PageLookupItem extends Model
 
     /**
      * encodeSchema will encode an October CMS protocol, e.g.
-     * `('cms-page', 'aboutus/home/index', ['target' => '_blank'])`
+     * `('cms-page', 'about/home/index', ['target' => '_blank'])`
      */
     public static function encodeSchema(string $type, string $reference = '', array $params = []): string
     {

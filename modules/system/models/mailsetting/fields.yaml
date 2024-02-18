@@ -6,32 +6,41 @@ tabs:
     fields:
 
         sender_name:
-            label: system::lang.mail.sender_name
+            label: Sender Name
             span: auto
-            tab: system::lang.mail.general
+            tab: General
 
         sender_email:
-            label: system::lang.mail.sender_email
+            label: Sender Email
             span: auto
             type: email
-            tab: system::lang.mail.general
+            tab: General
 
         send_mode:
-            label: system::lang.mail.method
+            label: Mail Method
             type: dropdown
-            tab: system::lang.mail.general
+            tab: General
+
+        drivers_hint:
+            type: partial
+            path: ~/modules/system/models/mailsetting/_drivers_hint.php
+            tab: General
+            trigger:
+                action: show
+                field: send_mode
+                condition: value[ses][mailgun][postmark]
 
         smtp_address:
-            label: system::lang.mail.smtp_address
-            tab: system::lang.mail.general
+            label: SMTP Address
+            tab: General
             trigger:
                 action: show
                 field: send_mode
                 condition: value[smtp]
 
         smtp_port:
-            label: system::lang.mail.smtp_port
-            tab: system::lang.mail.general
+            label: SMTP Port
+            tab: General
             span: auto
             trigger:
                 action: show
@@ -40,8 +49,8 @@ tabs:
 
         smtp_encryption:
             type: dropdown
-            label: system::lang.mail.smtp_encryption
-            tab: system::lang.mail.general
+            label: SMTP Encryption Protocol
+            tab: General
             span: auto
             trigger:
                 action: show
@@ -50,17 +59,17 @@ tabs:
 
         smtp_authorization:
             type: checkbox
-            label: system::lang.mail.smtp_authorization
-            tab: system::lang.mail.general
-            comment: system::lang.mail.smtp_authorization_comment
+            label: SMTP Authorization Required
+            tab: General
+            comment: Use this checkbox if your SMTP server requires authorization.
             trigger:
                 action: show
                 field: send_mode
                 condition: value[smtp]
 
         smtp_user:
-            label: system::lang.mail.smtp_username
-            tab: system::lang.mail.general
+            label: Username
+            tab: General
             span: left
             trigger:
                 action: show
@@ -68,8 +77,8 @@ tabs:
                 condition: value[smtp]
 
         smtp_password:
-            label: system::lang.mail.smtp_password
-            tab: system::lang.mail.general
+            label: Password
+            tab: General
             type: sensitive
             span: right
             trigger:
@@ -78,27 +87,27 @@ tabs:
                 condition: value[smtp]
 
         sendmail_path:
-            label: system::lang.mail.sendmail_path
-            commentAbove: system::lang.mail.sendmail_path_comment
-            tab: system::lang.mail.general
+            label: Sendmail Path
+            commentAbove: Please specify the path of the sendmail program.
+            tab: General
             trigger:
                 action: show
                 field: send_mode
                 condition: value[sendmail]
 
         mailgun_domain:
-            label: system::lang.mail.mailgun_domain
-            commentAbove: system::lang.mail.mailgun_domain_comment
-            tab: system::lang.mail.general
+            label: Mailgun Domain
+            commentAbove: Please specify the Mailgun domain name.
+            tab: General
             trigger:
                 action: show
                 field: send_mode
                 condition: value[mailgun]
 
         mailgun_secret:
-            label: system::lang.mail.mailgun_secret
-            commentAbove: system::lang.mail.mailgun_secret_comment
-            tab: system::lang.mail.general
+            label: Mailgun Secret
+            commentAbove: Enter your Mailgun API key.
+            tab: General
             type: sensitive
             trigger:
                 action: show
@@ -106,9 +115,9 @@ tabs:
                 condition: value[mailgun]
 
         ses_key:
-            label: system::lang.mail.ses_key
-            commentAbove: system::lang.mail.ses_key_comment
-            tab: system::lang.mail.general
+            label: SES Key
+            commentAbove: Enter your SES API key
+            tab: General
             span: left
             trigger:
                 action: show
@@ -116,9 +125,9 @@ tabs:
                 condition: value[ses]
 
         ses_secret:
-            label: system::lang.mail.ses_secret
-            commentAbove: system::lang.mail.ses_secret_comment
-            tab: system::lang.mail.general
+            label: SES Secret
+            commentAbove: Enter your SES API secret key
+            tab: General
             type: sensitive
             span: right
             trigger:
@@ -127,9 +136,9 @@ tabs:
                 condition: value[ses]
 
         ses_region:
-            label: system::lang.mail.ses_region
-            commentAbove: system::lang.mail.ses_region_comment
-            tab: system::lang.mail.general
+            label: SES Region
+            commentAbove: Enter your SES region (e.g. us-east-1)
+            tab: General
             span: left
             trigger:
                 action: show
@@ -137,10 +146,10 @@ tabs:
                 condition: value[ses]
 
         postmark_token:
-            label: system::lang.mail.postmark_token
-            commentAbove: system::lang.mail.postmark_token_comment
+            label: Postmark Token
+            commentAbove: Enter your Postmark API secret key
             type: sensitive
-            tab: system::lang.mail.general
+            tab: General
             trigger:
                 action: show
                 field: send_mode

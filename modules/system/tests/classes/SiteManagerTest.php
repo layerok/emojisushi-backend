@@ -31,7 +31,7 @@ class SiteManagerTest extends TestCase
                 'is_primary' => true,
                 'is_enabled' => true,
                 'is_enabled_edit' => true,
-                'is_restricted' => true,
+                'is_host_restricted' => true,
                 'allow_hosts' => [
                     ['hostname' => 'octobercms.test']
                 ]
@@ -43,7 +43,7 @@ class SiteManagerTest extends TestCase
                 'is_primary' => true,
                 'is_enabled' => true,
                 'is_enabled_edit' => true,
-                'is_restricted' => true,
+                'is_host_restricted' => true,
                 'allow_hosts' => [
                     ['hostname' => 'en.octobercms.test'],
                     ['hostname' => '*.en.octobercms.test'],

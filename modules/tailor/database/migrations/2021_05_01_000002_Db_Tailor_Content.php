@@ -19,6 +19,16 @@ return new class extends Migration
 
     public function down()
     {
+        // Drop all tailor content before losing the schema
+        Db::table('tailor_content_schema')->orderBy('id')->chunkById(100, function($tables) {
+            foreach ($tables as $table) {
+                $tablePrefix = substr($table->table_name, 0, -1);
+                Schema::dropIfExists($tablePrefix.'c');
+                Schema::dropIfExists($tablePrefix.'j');
+                Schema::dropIfExists($tablePrefix.'r');
+            }
+        });
+
         Schema::dropIfExists('tailor_content_schema');
     }
 };

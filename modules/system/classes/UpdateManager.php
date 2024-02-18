@@ -1,12 +1,12 @@
 <?php namespace System\Classes;
 
 use App;
+use Date;
 use File;
 use Event;
 use Schema;
 use Config;
 use System as SystemHelper;
-use Carbon\Carbon;
 use Cms\Classes\ThemeManager;
 use System\Models\Parameter;
 use System\Models\PluginVersion;
@@ -67,7 +67,7 @@ class UpdateManager
     protected $repository;
 
     /**
-     * @var int migrateCount number of migrations that occured.
+     * @var int migrateCount number of migrations that occurred.
      */
     protected $migrateCount = 0;
 
@@ -116,15 +116,10 @@ class UpdateManager
         }
 
         // Update modules
-        foreach (SystemHelper::listModules() as $module) {
-            $this->migrateModule($module);
-        }
+        $this->migrateModules();
 
         // Update plugins
-        $plugins = $this->pluginManager->getPlugins();
-        foreach ($plugins as $code => $plugin) {
-            $this->updatePlugin($code);
-        }
+        $this->migratePlugins();
 
         // Update app
         $this->migrateApp();
@@ -156,9 +151,7 @@ class UpdateManager
         }
 
         // Seed modules
-        foreach (SystemHelper::listModules() as $module) {
-            $this->seedModule($module);
-        }
+        $this->seedModules();
 
         // Seed app
         $this->seedApp();
@@ -191,7 +184,7 @@ class UpdateManager
         // Retry period not passed, skipping.
         if (!$force
             && ($retryTimestamp = Parameter::get('system::update.retry'))
-            && Carbon::createFromTimeStamp($retryTimestamp)->isFuture()
+            && Date::createFromTimeStamp($retryTimestamp)->isFuture()
         ) {
             return (array) Parameter::get('system::update.versions');
         }
@@ -216,7 +209,7 @@ class UpdateManager
 
         // Remember update count, set retry date
         Parameter::set('system::update.versions', $versions);
-        Parameter::set('system::update.retry', Carbon::now()->addHours(24)->timestamp);
+        Parameter::set('system::update.retry', Date::now()->addHours(24)->timestamp);
 
         return $versions;
     }
@@ -280,7 +273,7 @@ class UpdateManager
      */
     public function getComposerUrl(bool $withProtocol = true): string
     {
-        $gateway = env('APP_COMPOSER_GATEWAY', Config::get('system.composer_gateway', 'gateway.octobercms.com'));
+        $gateway = (string) Config::get('system.composer_gateway', 'gateway.octobercms.com');
 
         return $withProtocol ? 'https://'.$gateway : $gateway;
     }
@@ -297,7 +290,10 @@ class UpdateManager
         }
 
         // Register module migration files
-        $paths = [];
+        $paths = [
+            app_path('database/migrations')
+        ];
+
         foreach (SystemHelper::listModules() as $module) {
             $paths[] = base_path() . '/modules/'.strtolower($module).'/database/migrations';
         }
@@ -307,13 +303,7 @@ class UpdateManager
             $this->migrator->setOutput($this->notesOutput);
         }
 
-        while (true) {
-            $rolledBack = $this->migrator->rollback($paths, ['pretend' => false]);
-
-            if (count($rolledBack) === 0) {
-                break;
-            }
-        }
+        $this->migrator->reset($paths);
 
         Schema::dropIfExists($this->getMigrationTableName());
     }

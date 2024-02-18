@@ -134,15 +134,15 @@
             AZERBAIJANI_MAP,
             ROMANIAN_MAP,
             BELARUSIAN_MAP
-        ]
+        ];
 
         var removeList = [
             "a", "an", "as", "at", "before", "but", "by", "for", "from", "is",
             "in", "into", "like", "of", "off", "on", "onto", "per", "since",
             "than", "the", "this", "that", "to", "up", "via", "with"
-        ]
+        ];
 
-        var locale = $('meta[name="backend-locale"]').attr('content')
+        var locale = $('meta[name="backend-locale"]').attr('content');
 
         var Downcoder = {
             Initialize: function() {
@@ -172,50 +172,58 @@
         }
 
         function removeStopWords(str, options) {
+            if (locale && !locale.startsWith('en')) {
+                return str;
+            }
+
             if (options.inputPresetRemoveWords) {
-                var regex = new RegExp('\\b(' + removeList.join('|') + ')\\b', 'gi')
-                str = str.replace(regex, '')
+                var regex = new RegExp('\\b(' + removeList.join('|') + ')\\b', 'gi');
+                str = str.replace(regex, '');
             }
 
             return str;
         }
 
         function toCamel(slug, numChars, options) {
-            Downcoder.Initialize()
+            Downcoder.Initialize();
             slug = slug.replace(Downcoder.regex, function(m) {
-                return Downcoder.map[m]
-            })
+                return Downcoder.map[m];
+            });
 
-            slug = removeStopWords(slug, options)
-            slug = slug.toLowerCase()
+            slug = removeStopWords(slug, options);
+            slug = slug.toLowerCase();
             slug = slug.replace(/(\b|-)\w/g, function(m) {
                 return m.toUpperCase();
-            })
-            slug = slug.replace(/[^-\w\s]/g, '')
-            slug = slug.replace(/^\s+|\s+$/g, '')
-            slug = slug.replace(/[-\s]+/g, '')
-            slug = slug.substr(0, 1).toLowerCase() + slug.substr(1)
-            return slug.substring(0, numChars)
+            });
+            slug = slug.replaceAll('\\', ' ');
+            slug = slug.replaceAll('/', ' ');
+            slug = slug.replace(/[^-\w\s]/g, '');
+            slug = slug.replace(/^\s+|\s+$/g, '');
+            slug = slug.replace(/[-\s]+/g, '');
+            slug = slug.substr(0, 1).toLowerCase() + slug.substr(1);
+            return slug.substring(0, numChars);
         }
 
         function formatNamespace(srcValue, options) {
-            var value = toCamel(srcValue, undefined, options)
+            var value = toCamel(srcValue, undefined, options);
 
-            return value.substr(0, 1).toUpperCase() + value.substr(1)
+            return value.substr(0, 1).toUpperCase() + value.substr(1);
         }
 
         function slugify(slug, numChars, options) {
             Downcoder.Initialize()
             slug = slug.replace(Downcoder.regex, function(m) {
-                return Downcoder.map[m]
-            })
+                return Downcoder.map[m];
+            });
 
             slug = removeStopWords(slug, options);
-            slug = slug.replace(/[^-\w\s]/g, '')
-            slug = slug.replace(/^\s+|\s+$/g, '')
-            slug = slug.replace(/[-\s]+/g, '-')
-            slug = slug.toLowerCase()
-            return slug.substring(0, numChars)
+            slug = slug.replaceAll('\\', ' ');
+            slug = slug.replaceAll('/', ' ');
+            slug = slug.replace(/[^-\w\s]/g, '');
+            slug = slug.replace(/^\s+|\s+$/g, '');
+            slug = slug.replace(/[-\s]+/g, '-');
+            slug = slug.toLowerCase();
+            return slug.substring(0, numChars);
         }
 
         this.formatValue = function(options, srcValue) {

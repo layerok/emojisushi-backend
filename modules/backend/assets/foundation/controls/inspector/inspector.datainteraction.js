@@ -1,7 +1,7 @@
 /*
  * Inspector data interaction class.
  *
- * Provides methods for loading and writing Inspector configuration 
+ * Provides methods for loading and writing Inspector configuration
  * and values form and to inspectable elements.
  */
 +function ($) { "use strict";
@@ -13,9 +13,9 @@
         BaseProto = Base.prototype
 
     var DataInteraction = function(element) {
-        this.element = element
+        this.element = element;
 
-        Base.call(this)
+        Base.call(this);
     }
 
     DataInteraction.prototype = Object.create(BaseProto)
@@ -70,8 +70,8 @@
                 // Important - values contained in data-property-xxx attributes are
                 // considered strings and never parsed with JSON. The use of the
                 // data-property-xxx attributes is very limited - they're only
-                // used in Pages for creating snippets from partials, where properties 
-                // are created with a table UI widget, which doesn't allow creating 
+                // used in Pages for creating snippets from partials, where properties
+                // are created with a table UI widget, which doesn't allow creating
                 // properties of any complex types.
                 //
                 // There is no a technically reliable way to determine when a string
@@ -97,30 +97,33 @@
                 title: null,
                 description: null
             },
-            $element = $(this.element)
+            $element = $(this.element);
 
-        result.title = $element.data('inspector-title')
-        result.description = $element.data('inspector-description')
+        result.title = $element.data('inspector-title');
+        result.description = $element.data('inspector-description');
 
         if (configurationField) {
-            result.configuration = this.parseConfiguration(configurationField.value)
+            result.configuration = this.parseConfiguration(configurationField.value);
 
-            onComplete(result, this)
-            return
+            onComplete(result, this);
+            return;
         }
 
         var $form = $element.closest('form'),
             data = $element.data(),
-            self = this
+            self = this;
 
-        $.oc.stripeLoadIndicator.show()
-        $form.request('onGetInspectorConfiguration', {
+        $.oc.stripeLoadIndicator.show();
+
+        $form.request($.oc.inspector.helpers.getEventHandler($element, 'onGetInspectorConfiguration'), {
             data: data
-        }).done(function inspectorConfigurationRequestDoneClosure(data) {
-            self.configurartionRequestDone(data, onComplete, result)
-        }).always(function() {
-            $.oc.stripeLoadIndicator.hide()
         })
+        .done(function inspectorConfigurationRequestDoneClosure(data) {
+            self.configurationRequestDone(data, onComplete, result);
+        })
+        .always(function() {
+            $.oc.stripeLoadIndicator.hide();
+        });
     }
 
     //
@@ -130,34 +133,34 @@
     DataInteraction.prototype.parseConfiguration = function(configuration) {
         if (!$.isArray(configuration) && !$.isPlainObject(configuration)) {
             if ($.trim(configuration) === 0) {
-                return {}
+                return {};
             }
 
             try {
-               return JSON.parse(configuration)
+               return JSON.parse(configuration);
             }
             catch(err) {
-                throw new Error('Error parsing Inspector configuration. ' + err)
+                throw new Error('Error parsing Inspector configuration. ' + err);
             }
         }
         else {
-            return configuration
+            return configuration;
         }
     }
 
-    DataInteraction.prototype.configurartionRequestDone = function(data, onComplete, result) {
-        result.configuration = this.parseConfiguration(data.configuration.properties)
+    DataInteraction.prototype.configurationRequestDone = function(data, onComplete, result) {
+        result.configuration = this.parseConfiguration(data.configuration.properties);
 
         if (data.configuration.title !== undefined) {
-            result.title = data.configuration.title
+            result.title = data.configuration.title;
         }
 
         if (data.configuration.description !== undefined) {
-            result.description = data.configuration.description
+            result.description = data.configuration.description;
         }
 
-        onComplete(result, this)
+        onComplete(result, this);
     }
 
-    $.oc.inspector.dataInteraction = DataInteraction
+    $.oc.inspector.dataInteraction = DataInteraction;
 }(window.jQuery);

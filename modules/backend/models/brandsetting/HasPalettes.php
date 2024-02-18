@@ -20,6 +20,7 @@ trait HasPalettes
                 'primary' => '#6a6cf7',
                 'secondary' => '#72809d',
                 'selection' => '#6bc48d',
+                'link_color' => '#3498db',
                 'mainnav_color' => '#ffffff',
                 'mainnav_bg' => '#2d3134',
                 'sidebar_color' => '#536061',
@@ -35,6 +36,7 @@ trait HasPalettes
                 'settings_hover_bg' => '#dfe7ee',
             ],
             'dark' => [
+                'link_color' => '#a6a7fa',
                 'sidebar_color' => '#d7e1eA',
                 'sidebar_bg' => '#292a2d',
                 'sidebar_active_color' => '#ffffff',

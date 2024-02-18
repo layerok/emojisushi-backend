@@ -51,7 +51,7 @@ class Preferences extends Controller
      */
     public function index()
     {
-        $this->pageTitle = 'backend::lang.backend_preferences.menu_label';
+        $this->pageTitle = "Backend Preferences";
         $this->asExtension('FormController')->update();
     }
 
@@ -61,7 +61,7 @@ class Preferences extends Controller
     public function formExtendFields($form)
     {
         if (!$this->user->hasAccess('preferences.code_editor')) {
-            $form->removeTab('backend::lang.backend_preferences.code_editor');
+            $form->removeTab('Code Editor');
         }
     }
 

@@ -3,7 +3,7 @@
 
         <?= Form::ajax('onRelationManagePivotUpdate', [
             'data-popup-load-indicator' => true,
-            'data-request-success' => "$.oc.relationBehavior.changed('" . e($relationField) . "', 'updated')",
+            'data-request-success' => "oc.relationBehavior.changed('" . e($relationField) . "', 'updated')",
         ]) ?>
 
             <!-- Passable fields -->
@@ -46,7 +46,7 @@
 
         <?= Form::ajax('onRelationManagePivotCreate', [
             'data-popup-load-indicator' => true,
-            'data-request-success' => "$.oc.relationBehavior.changed('" . e($relationField) . "', 'created')",
+            'data-request-success' => "oc.relationBehavior.changed('" . e($relationField) . "', 'created')",
         ]) ?>
 
             <!-- Passable fields -->
@@ -83,7 +83,7 @@
 </div>
 
 <script>
-    $.oc.relationBehavior.bindToPopups('#<?= $relationManageWidget->getId("pivotPopup") ?>', {
+    oc.relationBehavior.bindToPopups('#<?= $relationManageWidget->getId("pivotPopup") ?>', {
         _relation_field: '<?= $relationField ?>',
         _relation_mode: 'pivot'
     });

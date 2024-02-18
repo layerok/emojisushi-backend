@@ -1,7 +1,7 @@
-@color-fancy-master-tabs-bg:                 @color-grey-2;
+@color-fancy-master-tabs-bg:                 var(--oc-fancy-tabs-bg);
 @color-fancy-master-tabs-active-text:        @text-color;
 @color-fancy-master-tabs-inactive-text:      rgba(255, 255, 255, .5);
-@color-fancy-master-panel-bg:                @color-grey-2;
+@color-fancy-master-panel-bg:                @brand-secondary;
 
 @color-fancy-secondary-tabs-bg:              @body-bg;
 @color-fancy-secondary-tabs-active-text:     @text-color;
@@ -16,9 +16,17 @@
 @color-fancy-form-tabless-fields-bg:         @body-bg;
 @color-fancy-form-label:                     @primary-color;
 @color-fancy-form-text:                      @text-color;
-@color-fancy-form-text-selection:            @color-grey-2;
+@color-fancy-form-text-selection:            @brand-secondary;
 @color-fancy-form-placeholder:               rgba(0, 0, 0, .5);
 @color-fancy-form-inactive-tab:              transparent;
+
+:root, [data-bs-theme="light"] {
+    --oc-fancy-tabs-bg: @brand-secondary;
+}
+
+[data-bs-theme="dark"] {
+    --oc-fancy-tabs-bg: var(--oc-editor-tab-bg);
+}
 
 body.breadcrumb-fancy .control-breadcrumb,
 .control-breadcrumb.breadcrumb-fancy {

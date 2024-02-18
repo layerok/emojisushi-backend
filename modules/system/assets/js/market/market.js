@@ -1,7 +1,7 @@
 /**
  * Installs class
  *
- * Dependences:
+ * Dependencies:
  * - Waterfall plugin (waterfall.js)
  */
 

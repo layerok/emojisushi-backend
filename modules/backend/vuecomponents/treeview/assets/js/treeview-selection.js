@@ -1,4 +1,4 @@
-oc.Module.register('backend.vuecomponents.treeview.selection', function() {
+oc.Modules.register('backend.vuecomponents.treeview.selection', function() {
     class Selection {
         keySet;
         selectedKeys;

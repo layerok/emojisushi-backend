@@ -4,7 +4,7 @@
         <?= Form::ajax('onRelationManageUpdate', [
             'sessionKey' => $newSessionKey,
             'data-popup-load-indicator' => true,
-            'data-request-success' => "$.oc.relationBehavior.changed('" . e($relationField) . "', 'updated')",
+            'data-request-success' => "oc.relationBehavior.changed('" . e($relationField) . "', 'updated')",
         ]) ?>
 
             <!-- Passable fields -->
@@ -52,7 +52,7 @@
         <?= Form::ajax('onRelationManageCreate', [
             'sessionKey' => $newSessionKey,
             'data-popup-load-indicator' => true,
-            'data-request-success' => "$.oc.relationBehavior.changed('" . e($relationField) . "', 'created')",
+            'data-request-success' => "oc.relationBehavior.changed('" . e($relationField) . "', 'created')",
         ]) ?>
 
             <!-- Passable fields -->
@@ -89,7 +89,7 @@
 </div>
 
 <script>
-    $.oc.relationBehavior.bindToPopups('#<?= $relationManageWidget->getId("managePopup") ?>', {
+    oc.relationBehavior.bindToPopups('#<?= $relationManageWidget->getId("managePopup") ?>', {
         _relation_field: '<?= $relationField ?>',
         _relation_mode: 'form'
     });

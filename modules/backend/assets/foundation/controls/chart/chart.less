@@ -157,16 +157,26 @@
     .control-chart-non-centered();
 }
 
+.tickLabel, .flot-tick-label {
+    color: #545454;
+}
+
+[data-bs-theme="dark"] {
+    .tickLabel, .flot-tick-label {
+        color: #e0e0e0;
+    }
+}
+
 #flotTip, #chart-tooltip {
     white-space: nowrap;
-    padding: 7px 10px;
-    background: @color-chart-tooltip-bg;
+    padding: @tooltip-padding;
+    background: @tooltip-bg;
     position: absolute;
     z-index: @zindex-tooltip;
-    color: @color-chart-tooltip-text;
-    border-radius: @border-radius-base * 2;
-    font-size: 12px;
-    opacity: .8;
+    color: @tooltip-color;
+    border-radius: @tooltip-border-radius;
+    font-size: @tooltip-font-size;
+    opacity: @tooltip-opacity;
 }
 
 .title-value {

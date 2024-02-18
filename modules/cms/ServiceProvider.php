@@ -10,7 +10,8 @@ use Cms\Classes\CmsObject;
 use Cms\Classes\Page as CmsPage;
 use Cms\Classes\ThemeManager;
 use Cms\Classes\CmsObjectCache;
-use Cms\Widgets\PageManager;
+use Cms\Widgets\PageLookup;
+use Cms\Widgets\SnippetLookup;
 use Backend\Models\UserRole;
 use Backend\Classes\Controller as BackendController;
 use System\Classes\SettingsManager;
@@ -28,17 +29,19 @@ class ServiceProvider extends ModuleServiceProvider
     {
         parent::register('cms');
 
+        $this->registerSingletons();
         $this->registerThemeLogging();
         $this->registerCombinerEvents();
         $this->registerThemeSiteEvents();
         $this->registerThemeTranslations();
         $this->registerConsole();
+        $this->registerRenamedClasses();
 
         CmsObjectCache::flush();
 
         // Backend specific
         if ($this->app->runningInBackend()) {
-            $this->registerPageManagerInstance();
+            $this->registerPageLookupInstance();
         }
     }
 
@@ -50,7 +53,7 @@ class ServiceProvider extends ModuleServiceProvider
         parent::boot('cms');
 
         $this->bootEditorEvents();
-        $this->bootPageManagerEvents();
+        $this->bootPageLookupEvents();
     }
 
     /**
@@ -79,6 +82,14 @@ class ServiceProvider extends ModuleServiceProvider
            \Cms\Components\Resources::class => 'resources',
            \Cms\Components\SitePicker::class => 'sitePicker'
         ];
+    }
+
+    /**
+     * registerSingletons
+     */
+    protected function registerSingletons()
+    {
+        $this->app->singleton('cms.snippets', \Cms\Classes\SnippetManager::class);
     }
 
     /**
@@ -116,11 +127,7 @@ class ServiceProvider extends ModuleServiceProvider
      */
     protected function registerThemeSiteEvents()
     {
-        Event::listen('system.site.setEditSite', function() {
-            Theme::resetCache();
-        });
-
-        Event::listen('system.site.setActiveSite', function() {
+        Event::listen('site.changed', function() {
             Theme::resetCache();
         });
     }
@@ -260,10 +267,10 @@ class ServiceProvider extends ModuleServiceProvider
     {
         return [
             'filters' => [
-                'link' => [\Cms\Classes\PageLookup::class, 'url'],
+                'link' => [\Cms\Classes\PageManager::class, 'url'],
             ],
             'functions' => [
-                'link' => [\Cms\Classes\PageLookup::class, 'resolve'],
+                'link' => [\Cms\Classes\PageManager::class, 'resolve'],
             ]
         ];
     }
@@ -306,9 +313,9 @@ class ServiceProvider extends ModuleServiceProvider
     }
 
     /**
-     * bootPageManagerEvents
+     * bootPageLookupEvents
      */
-    protected function bootPageManagerEvents()
+    protected function bootPageLookupEvents()
     {
         Event::listen(['cms.pageLookup.listTypes', 'pages.menuitem.listTypes'], function () {
             return [
@@ -340,15 +347,28 @@ class ServiceProvider extends ModuleServiceProvider
     }
 
     /**
-     * registerPageManagerInstance ensures page lookup widget is available on all backend pages
+     * registerPageLookupInstance ensures page lookup widget is available on all backend pages
      */
-    protected function registerPageManagerInstance()
+    protected function registerPageLookupInstance()
     {
         BackendController::extend(function($controller) {
             if (BackendAuth::getUser()) {
-                $manager = new PageManager($controller, ['alias' => 'ocpagelookup']);
+                $manager = new PageLookup($controller, ['alias' => 'ocpagelookup']);
+                $manager->bindToController();
+
+                $manager = new SnippetLookup($controller, ['alias' => 'ocsnippetlookup']);
                 $manager->bindToController();
             }
         });
+    }
+
+    /**
+     * registerRenamedClasses
+     */
+    protected function registerRenamedClasses()
+    {
+        $this->app->registerClassAliases([
+            \Cms\Classes\PageLookup::class => \Cms\Classes\PageManager::class,
+        ]);
     }
 }

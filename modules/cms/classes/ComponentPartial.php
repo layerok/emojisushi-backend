@@ -5,6 +5,7 @@ use Lang;
 use Cms\Contracts\CmsObject as CmsObjectContract;
 use Cms\Helpers\File as FileHelper;
 use October\Rain\Extension\Extendable;
+use DirectoryIterator;
 use SystemException;
 
 /**
@@ -36,11 +37,11 @@ class ComponentPartial extends Extendable implements CmsObjectContract
     public $content;
 
     /**
-     * @var int The maximum allowed path nesting level. The default value is 2,
+     * @var int The maximum allowed path nesting level. The default value is 5,
      * meaning that files can only exist in the root directory, or in a
      * subdirectory. Set to null if any level is allowed.
      */
-    protected $maxNesting = 2;
+    protected $maxNesting = 5;
 
     /**
      * @var array Allowable file extensions.
@@ -114,6 +115,33 @@ class ComponentPartial extends Extendable implements CmsObjectContract
         }
 
         return $partial;
+    }
+
+    /**
+     * all loads all partials for a given component
+     */
+    public static function all($component): array
+    {
+        if (!is_dir($component->getPath())) {
+            return [];
+        }
+
+        $it = new DirectoryIterator($component->getPath());
+        $it->rewind();
+
+        $result = [];
+        foreach ($it as $fileinfo) {
+            if ($fileinfo->isDir() || $fileinfo->isDot()) {
+                continue;
+            }
+
+            $partial = static::load($component, $fileinfo->getFilename());
+            if ($partial) {
+                $result[] = $partial;
+            }
+        }
+
+        return $result;
     }
 
     /**

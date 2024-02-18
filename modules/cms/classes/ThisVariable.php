@@ -1,6 +1,7 @@
 <?php namespace Cms\Classes;
 
 use October\Rain\Extension\Extendable;
+use October\Contracts\Twig\CallsAnyMethod;
 use ArrayAccess;
 
 /**
@@ -9,7 +10,7 @@ use ArrayAccess;
  * @package october\cms
  * @author Alexey Bobkov, Samuel Georges
  */
-class ThisVariable extends Extendable implements ArrayAccess
+class ThisVariable extends Extendable implements CallsAnyMethod, ArrayAccess
 {
     /**
      * @var array config values for this instance
@@ -49,12 +50,16 @@ class ThisVariable extends Extendable implements ArrayAccess
      */
     public function __call($method, $parameters)
     {
-        if ($this->controller) {
-            if (($pageObj = $this->controller->getPageObject()) && $pageObj->methodExists($method)) {
+        if ($controller = $this->get('controller')) {
+            if (($partialObj = $controller->getPartialObject()) && $partialObj->methodExists($method)) {
+                return $partialObj->$method(...$parameters);
+            }
+
+            if (($pageObj = $controller->getPageObject()) && $pageObj->methodExists($method)) {
                 return $pageObj->$method(...$parameters);
             }
 
-            if (($layoutObj = $this->controller->getLayoutObject()) && $layoutObj->methodExists($method)) {
+            if (($layoutObj = $controller->getLayoutObject()) && $layoutObj->methodExists($method)) {
                 return $layoutObj->$method(...$parameters);
             }
         }

@@ -40,7 +40,7 @@
                     position: relative;
                     display: inline-block;
                     padding: 9px 25px 4px 25px;
-                    .box-sizing(border-box);
+                    box-sizing: border-box;
                     z-index: @zindex-tab;
 
                     > span {
@@ -81,6 +81,32 @@
                         display: none;
                     }
                 }
+            }
+        }
+    }
+}
+
+.control-tabs.pill-tabs.is-vertical {
+    > ul.nav-tabs, > div > ul.nav-tabs, > div > div > ul.nav-tabs {
+        flex-direction: column;
+
+        > li {
+            margin-left: 0;
+
+            + li:not(:last-child):not(.active) {
+                border-bottom-color: transparent;
+            }
+
+            &:last-child {
+                border-bottom-left-radius: @border-radius-large;
+                border-bottom-right-radius: @border-radius-large;
+                border-top-right-radius: 0;
+            }
+
+            &:first-child {
+                border-top-left-radius: @border-radius-large;
+                border-top-right-radius: @border-radius-large;
+                border-bottom-left-radius: 0;
             }
         }
     }

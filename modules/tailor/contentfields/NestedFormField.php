@@ -1,6 +1,7 @@
 <?php namespace Tailor\ContentFields;
 
 use Tailor\Models\RepeaterItem;
+use Tailor\Models\NestedFormItem;
 use Tailor\Classes\ContentFieldBase;
 use Tailor\Classes\Relations\CustomFieldHasOneRelation;
 use October\Contracts\Element\FormElement;
@@ -68,6 +69,8 @@ class NestedFormField extends ContentFieldBase
 
         if (isset($config['form'])) {
             $config['form']['fields'] = [];
+            $config['form']['tabs']['fields'] = [];
+            $config['form']['secondaryTabs']['fields'] = [];
         }
 
         return $config;
@@ -80,7 +83,7 @@ class NestedFormField extends ContentFieldBase
     {
         // Define the relationship
         $model->hasOne[$this->fieldName] = [
-            RepeaterItem::class,
+            NestedFormItem::class,
             'key' => 'host_id',
             'delete' => true,
             'relationClass' => CustomFieldHasOneRelation::class

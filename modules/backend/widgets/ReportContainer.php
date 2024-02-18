@@ -21,7 +21,7 @@ use ForbiddenException;
 class ReportContainer extends WidgetBase
 {
     //
-    // Configurable properties
+    // Configurable Properties
     //
 
     /**
@@ -74,7 +74,7 @@ class ReportContainer extends WidgetBase
     public $canAddAndDelete;
 
     //
-    // Object properties
+    // Object Properties
     //
 
     /**

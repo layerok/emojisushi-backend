@@ -69,12 +69,14 @@ class RoleManager
     public function registerPermissions($owner, array $definitions)
     {
         foreach ($definitions as $code => $definition) {
-            $permission = new RolePermission(array_merge($definition, [
-                'code' => $code,
-                'owner' => $owner
-            ]));
+            if ($definition && is_array($definition)) {
+                $permission = new RolePermission(array_merge($definition, [
+                    'code' => $code,
+                    'owner' => $owner
+                ]));
 
-            $this->permissions[] = $permission;
+                $this->permissions[] = $permission;
+            }
         }
     }
 
@@ -98,7 +100,7 @@ class RoleManager
                 unset($this->permissions[$key]);
             }
         }
-        
+
         $this->permissionCache = $this->permissions;
     }
 

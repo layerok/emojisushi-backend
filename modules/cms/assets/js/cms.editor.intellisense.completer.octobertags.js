@@ -1,7 +1,7 @@
-oc.Module.register('cms.editor.intellisense.completer.octobertags', function() {
+oc.Modules.register('cms.editor.intellisense.completer.octobertags', function() {
     'use strict';
 
-    const CompleterBase = oc.Module.import('cms.editor.intellisense.completer.base');
+    const CompleterBase = oc.Modules.import('cms.editor.intellisense.completer.base');
 
     class CompleterOctoberTags extends CompleterBase {
         getOctoberTags() {

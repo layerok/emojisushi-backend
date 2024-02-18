@@ -5,7 +5,6 @@
     data-template="#<?= $this->getId('template') ?>"
     data-input-name="<?= $field->getName() ?>"
     <?php if ($externalToolbarAppState): ?>data-external-toolbar-app-state="<?= e($externalToolbarAppState)?>"<?php endif ?>
-    <?php if ($externalToolbarEventBus): ?>data-external-toolbar-event-bus="<?= e($externalToolbarEventBus)?>"<?php endif ?>
     <?= $field->getAttributes() ?>
 >
     <div class="empty-state">
@@ -47,4 +46,4 @@
     </div>
 </div>
 
-<?= $this->makePartial('file_item_template') ?>
+<?= $this->makePartial('template_file') ?>

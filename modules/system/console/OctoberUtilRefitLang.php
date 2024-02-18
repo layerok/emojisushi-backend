@@ -18,6 +18,40 @@ trait OctoberUtilRefitLang
     protected $refitFinalMessage;
 
     /**
+     * utilImportCrowdin excepts a directory above the root
+     * called "crowdin" with the export data
+     */
+    protected function utilImportCrowdin()
+    {
+        $this->comment('Importing crowdin translations.');
+
+        $supplements = [
+            'es-es' => 'es'
+        ];
+
+        $path = realpath(base_path('../crowdin'));
+
+        foreach (File::directories($path) as $dir) {
+            $lang = strtolower(basename($dir));
+            if (isset($supplements[$lang])) {
+                $lang = $supplements[$lang];
+            }
+
+            $modules = '';
+            foreach (File::files($dir) as $source) {
+                $module = File::anyname(basename($source));
+                $destination = base_path("modules/{$module}/lang/{$lang}.json");
+                if (file_exists($destination)) {
+                    $modules .= $module.' ';
+                    File::copy($source, $destination);
+                }
+            }
+
+            $this->comment("{$modules}→ [{$lang}]");
+        }
+    }
+
+    /**
      * utilLangWipeJson
      */
     protected function utilWipeLangJson()
@@ -274,7 +308,7 @@ trait OctoberUtilRefitLang
             'id',
             'it',
             'ja',
-            'kr',
+            'ko',
             'lt',
             'lv',
             'nb-no',

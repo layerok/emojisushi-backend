@@ -1,7 +1,7 @@
 Vue.component('cms-editor-component-content-editor', {
-    extends: oc.Module.import('cms.editor.extension.documentcomponent.base'),
+    extends: oc.Modules.import('cms.editor.extension.documentcomponent.base'),
     data: function() {
-        const EditorModelDefinition = oc.Module.import('backend.vuecomponents.monacoeditor.modeldefinition');
+        const EditorModelDefinition = oc.Modules.import('backend.vuecomponents.monacoeditor.modeldefinition');
         const defMarkup = new EditorModelDefinition(
             'html',
             this.trans('cms::lang.content.editor_content'),
@@ -117,6 +117,10 @@ Vue.component('cms-editor-component-content-editor', {
         },
 
         getDocumentLanguage: function getDocumentLanguage(fileName) {
+            if (!fileName) {
+                return 'html';
+            }
+
             if (fileName.endsWith('.txt')) {
                 return 'plaintext';
             }

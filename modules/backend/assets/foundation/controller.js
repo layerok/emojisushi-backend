@@ -38,11 +38,11 @@ export class Controller
         }
 
         container.querySelectorAll('[data-disposable]').forEach(function(control) {
-            oc.Events.dispatch('october:dispose', { target: control });
+            oc.Events.dispatch('october:dispose', { target: control, bubbles: false });
         });
 
         if (container.hasAttribute('data-disposable')) {
-            oc.Events.dispatch('october:dispose', { target: container });
+            oc.Events.dispatch('october:dispose', { target: container, bubbles: false });
         }
     }
 }

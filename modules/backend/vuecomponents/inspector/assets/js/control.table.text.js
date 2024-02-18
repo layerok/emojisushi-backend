@@ -1,7 +1,7 @@
 /*
  * Vue Inspector table text control implementation
  */
-oc.Module.register('backend.component.inspector.control.table.text', function () {
+oc.Modules.register('backend.component.inspector.control.table.text', function () {
     Vue.component('backend-component-inspector-control-table-text', {
         extends: $.oc.vueComponentHelpers.inspector.table.controlBase,
         props: {

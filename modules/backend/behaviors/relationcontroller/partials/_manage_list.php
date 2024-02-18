@@ -8,7 +8,7 @@
             <button type="button" class="btn-close" data-dismiss="popup"></button>
         </div>
 
-        <div class="list-flush">
+        <div class="list-flush" data-list-linkage="<?= $relationManageWidget->getId() ?>">
             <?php if ($relationSearchWidget): ?>
                 <?= $relationSearchWidget->render() ?>
             <?php endif ?>
@@ -25,7 +25,7 @@
                     class="btn btn-primary"
                     data-request="onRelationManageAdd"
                     data-dismiss="popup"
-                    data-request-success="$.oc.relationBehavior.changed('<?= e($relationField) ?>', 'added')"
+                    data-request-success="oc.relationBehavior.changed('<?= e($relationField) ?>', 'added')"
                     data-stripe-load-indicator>
                     <?= e(trans('backend::lang.relation.add_selected')) ?>
                 </button>

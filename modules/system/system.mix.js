@@ -13,6 +13,7 @@ module.exports = (mix) => {
     // System LESS
     mix.less('modules/system/assets/less/styles.less', 'modules/system/assets/css/');
     mix.less('modules/system/assets/less/settings/settings.less', 'modules/system/assets/css/settings/');
+    mix.less('modules/system/assets/less/market/market.less', 'modules/system/assets/css/market/');
 
     // Component LESS
     mix.lessList('modules/system/widgets');

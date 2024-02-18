@@ -40,6 +40,15 @@ fields:
             condition: value[csv_custom]
             field: file_format
 
+    format_encoding:
+        label: File Encoding
+        span: auto
+        type: dropdown
+        trigger:
+            action: show
+            condition: value[csv_custom]
+            field: file_format
+
     step2_section:
         label: 2. Select columns to export
         type: section

@@ -1,4 +1,4 @@
-<h2><?= __('Password Reset') ?></h2>
+<h2><?= __("Password Reset") ?></h2>
 
 <?= Form::open() ?>
     <input type="hidden" name="postback" value="1" />

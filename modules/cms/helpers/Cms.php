@@ -6,8 +6,9 @@ use View;
 use Route;
 use Config;
 use Redirect;
+use Response;
 use Cms\Classes\Controller;
-use System\Helpers\DateTimeHelper;
+use System\Helpers\DateTime as DateTimeHelper;
 use Exception;
 
 /**
@@ -19,6 +20,8 @@ use Exception;
  */
 class Cms
 {
+    use \Cms\Helpers\Cms\HasSites;
+
     /**
      * @var bool actionExists determines if the run action exists
      */
@@ -68,7 +71,7 @@ class Cms
 
     /**
      * pageUrl returns a URL for a CMS page, this fires up the CMS controller
-     * to generate the value
+     * to generate the value for maximum performance.
      */
     public function pageUrl($name, $parameters = [])
     {
@@ -83,6 +86,8 @@ class Cms
      */
     public function fullUrl($path = null)
     {
+        $path = '/' . ltrim($path, '/');
+
         if ($site = Site::getSiteFromContext()) {
             return rtrim($site->base_url . $path, '/');
         }
@@ -116,15 +121,14 @@ class Cms
 
             $router = $controller->getRouter();
 
-            if (!$router->findByUrl('/404')) {
-                return View::make('cms::404');
+            if ($router->findByUrl('/404')) {
+                return $controller->run('/404');
             }
-
-            return $controller->run('/404');
         }
         catch (Exception $ex) {
-            return View::make('cms::404');
         }
+
+        return Response::make(View::make('cms::404'), 404);
     }
 
     /**
@@ -137,15 +141,14 @@ class Cms
 
             $router = $controller->getRouter();
 
-            if (!$router->findByUrl('/error')) {
-                return View::make('cms::error');
+            if ($router->findByUrl('/error')) {
+                return $controller->run('/error');
             }
-
-            return $controller->run('/error');
         }
         catch (Exception $ex) {
-            return View::make('cms::error');
         }
+
+        return Response::make(View::make('cms::error'), 500);
     }
 
     /**
@@ -159,5 +162,38 @@ class Cms
         $carbon->setTimezone(Config::get('cms.timezone', Config::get('app.timezone')));
 
         return $carbon;
+    }
+
+    /**
+     * urlHasException checks if the url pattern has an exception for the specified type
+     */
+    public function urlHasException(string $url, string $type): bool
+    {
+        $exceptions = (array) Config::get('cms.url_exceptions', []);
+        if (!$exceptions) {
+            return false;
+        }
+
+        // Normalize URL
+        $haystack = '/' . trim($url, '/ ');
+
+        foreach ($exceptions as $urlPattern => $exceptionStr) {
+            $exceptionTypes = explode('|', $exceptionStr);
+            if (!in_array($type, $exceptionTypes)) {
+                continue;
+            }
+
+            // Normalize slash prefix, remove wildcard end
+            $needle = '/' . ltrim(rtrim($urlPattern, '*'), '/ ');
+            if (str_ends_with($urlPattern, '*') && str_starts_with($haystack, $needle)) {
+                return true;
+            }
+
+            if ($haystack === $needle) {
+                return true;
+            }
+        }
+
+        return false;
     }
 }

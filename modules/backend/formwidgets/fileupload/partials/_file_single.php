@@ -8,7 +8,6 @@
     data-unique-id="<?= $this->getId() ?>"
     data-max-filesize="<?= $maxFilesize ?>"
     <?php if ($externalToolbarAppState): ?>data-external-toolbar-app-state="<?= e($externalToolbarAppState)?>"<?php endif ?>
-    <?php if ($externalToolbarEventBus): ?>data-external-toolbar-event-bus="<?= e($externalToolbarEventBus)?>"<?php endif ?>
     <?php if ($useCaption): ?>data-config-handler="<?= $this->getEventHandler('onLoadAttachmentConfig') ?>"<?php endif ?>
     <?php if ($acceptedFileTypes): ?>data-file-types="<?= $acceptedFileTypes ?>"<?php endif ?>
 >
@@ -25,18 +24,16 @@
                 <i class="octo-icon-common-file-upload"></i>
                 <span
                     class="button-label"
-                    data-upload-label="<?= e(trans('backend::lang.fileupload.upload')) ?>"
-                    data-replace-label="<?= e(trans('backend::lang.fileupload.replace')) ?>"
-                ><?= $singleFile
-                    ? e(trans('backend::lang.fileupload.replace'))
-                    : e(trans('backend::lang.fileupload.upload'))
-                ?></span>
+                    data-upload-label="<?= __("Upload") ?>"
+                    data-replace-label="<?= __("Replace") ?>"
+                ><?= $singleFile ? __("Replace") : __("Upload") ?></span>
             </a>
 
             <button
+                type="button"
                 class="backend-toolbar-button control-button toolbar-clear-file populated-only"
                 data-request="<?= $this->getEventHandler('onRemoveAttachment') ?>"
-                data-request-confirm="<?= e(trans('backend::lang.fileupload.remove_confirm')) ?>"
+                data-request-confirm="<?= __("Are you sure?") ?>"
             >
                 <i class="octo-icon-common-file-remove"></i>
                 <span class="button-label"><?= __("Clear") ?></span>
@@ -60,4 +57,4 @@
     </div>
 </div>
 
-<?= $this->makePartial('file_item_template') ?>
+<?= $this->makePartial('template_file') ?>

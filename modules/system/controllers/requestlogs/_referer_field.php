@@ -7,5 +7,5 @@
         </ul>
     </div>
 <?php else: ?>
-    <div class="form-control"><em>There were no detected referers to this URL.</em></div>
+    <div class="form-control"><em><?= __("There were no detected referrers to this URL.") ?></em></div>
 <?php endif ?>

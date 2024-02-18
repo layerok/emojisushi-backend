@@ -1,7 +1,7 @@
 <?php namespace Tailor\Classes;
 
+use App;
 use Yaml;
-use Exception;
 use Tailor\Classes\Blueprint\EntryBlueprint;
 use Symfony\Component\Yaml\Exception\ParseException;
 
@@ -13,16 +13,56 @@ use Symfony\Component\Yaml\Exception\ParseException;
  * - Duplicate handles
  * - Duplicate UUIDs
  * - Missing source references
- * - Reserved field names
- *
- * @method static BlueprintVerifier instance()
  *
  * @package october\tailor
  * @author Alexey Bobkov, Samuel Georges
  */
 class BlueprintVerifier
 {
-    use \October\Rain\Support\Traits\Singleton;
+    /**
+     * @var array reservedFieldNames are field names that cannot be used as field names.
+     * @see Tailor\Classes\SchemaBuilder
+     */
+    protected $reservedFieldNames = [
+        // Properties
+        'attributes',
+
+        // Columns
+        'site_id',
+        'site_root_id',
+        'created_user_id',
+        'updated_user_id',
+        'deleted_user_id',
+        'relation_id',
+        'relation_type',
+        'field_name',
+        'nest_left',
+        'nest_right',
+        'nest_depth',
+        'blueprint_uuid',
+        'is_version',
+        'primary_id',
+        'primary_attrs',
+        'content_group',
+        'draft_mode',
+        'published_at',
+        'expired_at',
+
+        // Relations
+        'primaryRecord',
+        'drafts',
+        'versions',
+        'parent',
+        'children',
+    ];
+
+    /**
+     * instance creates a new instance of this singleton
+     */
+    public static function instance(): static
+    {
+        return App::make('tailor.blueprint.verifier');
+    }
 
     /**
      * verifyBlueprint
@@ -79,6 +119,14 @@ class BlueprintVerifier
 
         $fieldset = FieldManager::instance()->makeFieldset(['fields' => $fields]);
         $fieldset->validate();
+
+        // Check reserved field names
+        foreach ($fieldset->getAllFields() as $fieldName => $fieldObj) {
+            if (in_array($fieldName, $this->reservedFieldNames)) {
+                $lineNo = $this->findLineFromKeyValPair($blueprint->content, $fieldName, '');
+                throw new BlueprintException($blueprint, "Field name is reserved: {$fieldName}.", $lineNo);
+            }
+        }
     }
 
     /**

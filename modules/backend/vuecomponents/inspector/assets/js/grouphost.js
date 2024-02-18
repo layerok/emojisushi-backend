@@ -1,7 +1,7 @@
 /*
  * Vue Inspector group host implementation
  */
-oc.Module.register('backend.component.inspector.grouphost', function () {
+oc.Modules.register('backend.component.inspector.grouphost', function () {
     Vue.component('backend-component-inspector-grouphost', {
         props: {
             controls: {

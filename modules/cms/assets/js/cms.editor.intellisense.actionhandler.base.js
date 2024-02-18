@@ -1,4 +1,4 @@
-oc.Module.register('cms.editor.intellisense.actionhandler.base', function() {
+oc.Modules.register('cms.editor.intellisense.actionhandler.base', function() {
     'use strict';
 
     class ActionHandlerBase {

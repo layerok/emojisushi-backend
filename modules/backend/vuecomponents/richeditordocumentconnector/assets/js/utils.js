@@ -1,4 +1,4 @@
-oc.Module.register('backend.vuecomponents.richeditordocumentconnector.utils', function() {
+oc.Modules.register('backend.vuecomponents.richeditordocumentconnector.utils', function() {
     'use strict';
 
     class Utils {
@@ -13,12 +13,12 @@ oc.Module.register('backend.vuecomponents.richeditordocumentconnector.utils', fu
             return element.type === 'separator';
         }
 
-        mapIconName(component, editorIconName) {
+        mapIconName(component, editorIconName, defaultIconName) {
             if (component.iconMap[editorIconName] === undefined) {
-                return editorIconName;
+                return defaultIconName || editorIconName;
             }
 
-            return component.iconMap[editorIconName];
+            return 'octo-icon-' + component.iconMap[editorIconName];
         }
 
         addSeparator(component) {
@@ -29,6 +29,7 @@ oc.Module.register('backend.vuecomponents.richeditordocumentconnector.utils', fu
 
         buttonFromButton(component, $button) {
             const cmd = $button.attr('data-cmd');
+            const buttonIconName = $button.find('i').attr('class');
 
             const $wrapper = $button.closest('.fr-btn-wrap');
             if ($wrapper.length && $button.next('.fr-btn.fr-dropdown')) {
@@ -47,7 +48,7 @@ oc.Module.register('backend.vuecomponents.richeditordocumentconnector.utils', fu
 
             component.toolbarContainer.push({
                 type: 'button',
-                icon: 'octo-icon-' + this.mapIconName(component, cmd),
+                icon: this.mapIconName(component, cmd, buttonIconName),
                 command: 'richeditor-toolbar-' + buttonCmd,
                 tooltip: $button.attr('title'),
                 pressed: $button.hasClass('fr-active') || (codeEditing && cmd === 'html'),
@@ -132,7 +133,7 @@ oc.Module.register('backend.vuecomponents.richeditordocumentconnector.utils', fu
 
                 buttonConfig = {
                     type: type,
-                    icon: mappedIcon ? 'octo-icon-' + mappedIcon : null,
+                    icon: mappedIcon,
                     command: 'richeditor-toolbar-' + cmd,
                     emitCommandBeforeMenu: emitCommandBeforeMenu,
                     tooltip: buttonTitle,
@@ -216,7 +217,7 @@ oc.Module.register('backend.vuecomponents.richeditordocumentconnector.utils', fu
 
                 const buttonConfig = {
                     type: 'button',
-                    icon: 'octo-icon-' + that.mapIconName(component, cmd + '-' + param),
+                    icon: that.mapIconName(component, cmd + '-' + param, buttonIconName),
                     command: 'richeditor-toolbar-' + cmd + '@' + param,
                     tooltip: $dropdownButton.attr('title'),
                     buttonGroup: true,

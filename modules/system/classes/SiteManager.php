@@ -1,7 +1,10 @@
 <?php namespace System\Classes;
 
-use Log;
+use App;
+use Event;
+use Config;
 use Manifest;
+use System\Models\SiteGroup;
 use System\Models\SiteDefinition;
 use October\Rain\Database\Collection;
 use Exception;
@@ -9,21 +12,18 @@ use Exception;
 /**
  * SiteManager class manages sites
  *
- * @method static SiteManager instance()
- *
  * @package october\system
  * @author Alexey Bobkov, Samuel Georges
  */
 class SiteManager
 {
-    use \October\Rain\Support\Traits\Singleton;
     use \System\Classes\SiteManager\HasEditSite;
     use \System\Classes\SiteManager\HasActiveSite;
     use \System\Classes\SiteManager\HasSiteContext;
     use \System\Classes\SiteManager\HasPreferredLanguage;
 
     /**
-     * @var const keys for manifest storage
+     * @var string keys for manifest storage
      */
     const MANIFEST_SITES = 'sites.all';
 
@@ -36,6 +36,30 @@ class SiteManager
      * @var array siteIdCache caches sites by their identifier
      */
     protected $siteIdCache = [];
+
+    /**
+     * instance creates a new instance of this singleton
+     */
+    public static function instance(): static
+    {
+        return App::make('system.sites');
+    }
+
+    /**
+     * hasFeature returns true if a multisite feature is enabled
+     */
+    public function hasFeature(string $name = null): bool
+    {
+        if (!Config::get('multisite.enabled', true)) {
+            return false;
+        }
+
+        if (!$name) {
+            return true;
+        }
+
+        return (bool) Config::get("multisite.features.{$name}", false);
+    }
 
     /**
      * getSiteFromRequest locates the site based on the hostname and URI
@@ -114,6 +138,14 @@ class SiteManager
     }
 
     /**
+     * hasSiteGroups
+     */
+    public function hasSiteGroups(): bool
+    {
+        return $this->listSites()->where('group', '<>', null)->unique('group')->count() > 1;
+    }
+
+    /**
      * listEnabled
      */
     public function listEnabled()
@@ -145,7 +177,7 @@ class SiteManager
         }
         else {
             try {
-                $this->sites = SiteDefinition::all();
+                $this->sites = SiteDefinition::with('group')->get();
             }
             catch (Exception $ex) {
                 return new Collection([SiteDefinition::makeFallbackInstance()]);
@@ -166,12 +198,21 @@ class SiteManager
     protected function listSitesFromManifest($sites)
     {
         $items = [];
+
         foreach ($sites as $attributes) {
+            $group = null;
+            if ($groupAttrs = array_pull($attributes, 'group')) {
+                $group = new SiteGroup;
+                $group->attributes = $groupAttrs;
+            }
+
             $site = new SiteDefinition;
+            $site->setRelation('group', $group);
             $site->attributes = $attributes;
             $site->syncOriginal();
             $items[] = $site;
         }
+
         return new Collection($items);
     }
 
@@ -181,10 +222,33 @@ class SiteManager
     protected function listSitesForManifest($sites)
     {
         $items = [];
+
         foreach ($sites as $site) {
-            $items[] = $site->attributes;
+            $store = $site->attributes;
+            $store['group'] = $site->group ? $site->group->attributes : null;
+            $items[] = $store;
         }
+
         return $items;
+    }
+
+    /**
+     * broadcastSiteChange is a generic event used when the site changes
+     */
+    protected function broadcastSiteChange($siteId)
+    {
+        /**
+         * @event site.changed
+         * Fires when the site has been changed.
+         *
+         * Example usage:
+         *
+         *     Event::listen('site.changed', function($id) {
+         *         \Log::info("Site has been changed to $id");
+         *     });
+         *
+         */
+        Event::fire('site.changed', [$siteId]);
     }
 
     /**

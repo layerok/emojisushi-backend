@@ -1,7 +1,7 @@
 /*
  * Tailor entry publish button Vue component
  */
-oc.Module.register('tailor.publishbutton', function () {
+oc.Modules.register('tailor.publishbutton', function () {
     Vue.component('tailor-component-publishbutton', {
         props: {
             state: Object

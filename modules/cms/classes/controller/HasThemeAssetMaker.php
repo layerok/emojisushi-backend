@@ -27,10 +27,10 @@ trait HasThemeAssetMaker
 
         $assetPath = $localPath ?: $this->assetLocalPath;
 
-        return Url::to(CombineAssets::combine(
+        return CombineAssets::combine(
             $this->getMultipleThemeAssetPaths($assets),
             $assetPath
-        ));
+        );
     }
 
     /**
@@ -110,14 +110,12 @@ trait HasThemeAssetMaker
 
         // Configuration for theme asset location
         $assetUrl = Config::get('system.themes_asset_url');
-
         if (!$assetUrl) {
             $assetUrl = Config::get('app.asset_url').'/themes';
         }
 
         // Build path
         $path = $assetUrl . '/' . $dirName;
-
         if ($relativePath !== null) {
             $path = $assetUrl . '/' . $dirName . '/' . $relativePath;
         }

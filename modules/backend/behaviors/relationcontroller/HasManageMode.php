@@ -94,18 +94,18 @@ trait HasManageMode
         if ($this->viewMode === 'single') {
             $config->showCheckboxes = false;
             $config->recordOnClick = sprintf(
-                "$.oc.relationBehavior.clickManageListRecord(':%s', '%s', '%s')",
+                "oc.relationBehavior.clickManageListRecord(':%s', '%s', '%s')",
                 $this->relationModel->getKeyName(),
                 $this->relationGetId(),
                 $this->relationGetSessionKey()
             );
         }
         elseif ($config->showCheckboxes) {
-            $config->recordOnClick = "$.oc.relationBehavior.toggleListCheckbox(this)";
+            $config->recordOnClick = "oc.relationBehavior.toggleListCheckbox(this)";
         }
         elseif ($isPivot) {
             $config->recordOnClick = sprintf(
-                "$.oc.relationBehavior.clickManagePivotListRecord(':%s', '%s', '%s', '%s')",
+                "oc.relationBehavior.clickManagePivotListRecord(':%s', '%s', '%s', '%s')",
                 $this->relationModel->getKeyName(),
                 $this->relationGetId(),
                 $this->relationGetSessionKey(),
@@ -142,9 +142,6 @@ trait HasManageMode
                 $widget->setSearchTerm($this->searchWidget->getActiveTerm());
                 return $widget->onRefresh();
             });
-
-            // Linkage for JS plugins
-            $this->searchWidget->listWidgetId = $widget->getId();
 
             // Pass search options
             $widget->setSearchOptions([
@@ -220,6 +217,10 @@ trait HasManageMode
     {
         $this->beforeAjax();
 
+        if (!$this->manageWidget) {
+            throw new ApplicationException("Missing configuration for [manage.{$this->manageMode}] in RelationController definition {$this->field}");
+        }
+
         // Updating an existing record
         if ($this->manageMode === 'pivot' && $this->manageId) {
             return $this->onRelationManagePivotForm();
@@ -228,9 +229,7 @@ trait HasManageMode
         // The form should not share its session key with the parent
         $this->vars['newSessionKey'] = str_random(40);
 
-        $view = 'manage_' . $this->manageMode;
-
-        return $this->relationMakePartial($view);
+        return $this->relationMakePartial('manage_' . $this->manageMode);
     }
 
     /**
@@ -249,10 +248,10 @@ trait HasManageMode
 
         $modelsToSave = $this->prepareModelsToSave($newModel, $saveData);
         foreach ($modelsToSave as $modelToSave) {
-            $modelToSave->save(null, $this->manageWidget->getSessionKey());
+            $modelToSave->save(['sessionKey' => $this->manageWidget->getSessionKey()]);
         }
 
-        // No need to add relationships that have a valid assocation via HasOneOrMany::make
+        // No need to add relationships that have a valid association via HasOneOrMany::make
         if (!$this->relationObject instanceof HasOneOrMany || !$parentModel->exists) {
             $this->relationObject->add($newModel, $sessionKey);
         }
@@ -285,7 +284,7 @@ trait HasManageMode
 
         $modelsToSave = $this->prepareModelsToSave($this->manageModel, $saveData);
         foreach ($modelsToSave as $modelToSave) {
-            $modelToSave->save(null, $this->manageWidget->getSessionKey());
+            $modelToSave->save(['sessionKey' => $this->manageWidget->getSessionKey()]);
         }
 
         // Display updated form

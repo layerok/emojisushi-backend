@@ -4,7 +4,7 @@ use Log;
 use Flash;
 use System;
 use Backend;
-use BackendUi;
+use Ui;
 use Redirect;
 use Cms\Classes\ThemeManager;
 use System\Classes\UpdateManager;
@@ -69,11 +69,11 @@ class Updater extends WidgetBase
             return '';
         }
 
-        return (string) BackendUi::callout()
+        return (string) Ui::callout()
             ->danger()
             ->label(__('There are missing dependencies needed for the system to run correctly.'))
             ->action(
-                BackendUi::popupButton(__('Check Dependencies'), $this->getEventHandler('onCheckDependencies'))
+                Ui::popupButton(__('Check Dependencies'), $this->getEventHandler('onCheckDependencies'))
                     ->danger()
                     ->loading()
             );
@@ -84,9 +84,12 @@ class Updater extends WidgetBase
      */
     public function onCheckDependencies()
     {
-        $pluginRequire = PluginManager::instance()->findMissingDependencies();
-        $themeRequire = ThemeManager::instance()->findMissingDependencies();
-        $deps = array_unique(array_merge($pluginRequire, $themeRequire));
+        $deps = PluginManager::instance()->findMissingDependencies();
+
+        if (System::hasModule('Cms')) {
+            $themeDeps = ThemeManager::instance()->findMissingDependencies();
+            $deps = array_unique(array_merge($deps, $themeDeps));
+        }
 
         return $this->makePartial('require_form', ['deps' => $deps]);
     }

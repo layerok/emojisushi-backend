@@ -1,16 +1,22 @@
 <?php namespace Tailor\Classes;
 
+use App;
+
 /**
  * RecordIndexer super class responsible for indexing record models
- *
- * @method static RecordIndexer instance()
  *
  * @package october\tailor
  * @author Alexey Bobkov, Samuel Georges
  */
 class RecordIndexer
 {
-    use \October\Rain\Support\Traits\Singleton;
+    /**
+     * instance creates a new instance of this singleton
+     */
+    public static function instance(): static
+    {
+        return App::make('tailor.record.indexer');
+    }
 
     /**
      * process

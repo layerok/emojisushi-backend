@@ -703,7 +703,7 @@
     //
 
     MarkdownEditor.prototype.initVueConnector = function () {
-        var Widget = oc.Module.import('backend.vuecomponents.documentmarkdowneditor.formwidget'),
+        var Widget = oc.Modules.import('backend.vuecomponents.documentmarkdowneditor.formwidget'),
             that = this;
 
         this.vueWidget = new Widget(this.$textarea.get(0), this.options, function () {

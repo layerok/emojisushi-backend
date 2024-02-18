@@ -1,8 +1,8 @@
-oc.Module.register('tailor.editor.extension.documentcomponent.base', function() {
+oc.Modules.register('tailor.editor.extension.documentcomponent.base', function() {
     'use strict';
 
     const EditorDocumentComponentBase = {
-        extends: oc.Module.import('editor.extension.documentcomponent.base'),
+        extends: oc.Modules.import('editor.extension.documentcomponent.base'),
         data: function () {
             return {
                 savingDocument: false,

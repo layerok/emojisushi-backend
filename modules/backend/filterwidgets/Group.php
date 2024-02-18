@@ -114,6 +114,9 @@ class Group extends FilterWidgetBase
                 $q->whereIn('id', $activeValue);
             });
         }
+        elseif ($this->isJsonable) {
+            $query->whereJsonContains($this->valueFrom, array_values($activeValue));
+        }
         else {
             $query->whereIn($this->valueFrom, $activeValue);
         }
@@ -226,7 +229,7 @@ class Group extends FilterWidgetBase
     {
         // Load the data
         $scope = $this->filterScope;
-        $options = $scope->options;
+        $options = $scope->optionsMethod ?: $scope->options;
 
         if (is_scalar($options)) {
             $model = $this->model;
@@ -309,7 +312,8 @@ class Group extends FilterWidgetBase
         $processed = [];
 
         foreach ($options as $id => $result) {
-            $processed[] = ['id' => $id, 'name' => trans($result)];
+            $name = is_array($result) ? ($result[0] ?? '') : $result;
+            $processed[] = ['id' => $id, 'name' => __($name)];
         }
 
         return $processed;

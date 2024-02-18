@@ -1,9 +1,5 @@
-<footer id="layout-footer">
-    <div class="brand">
-        <span class="logo"><i class="icon-leaf"></i></span>
-        <span class="name"><?= e(trans('system::lang.app.name')) ?></span>
-    </div>
-    <div class="tagline">
-        <p><?= e(trans('system::lang.app.tagline')) ?></p>
-    </div>
-</footer>
+<!-- Flash Messages -->
+<div id="layout-flash-messages"><?= $this->makeLayoutPartial('flash_messages') ?></div>
+
+<?= $this->makeLayoutPartial('vue_templates') ?>
+<?= Block::placeholder('footer') ?>

@@ -11,9 +11,14 @@ use Backend\Classes\FilterScope;
 abstract class FilterWidgetBase extends WidgetBase
 {
     /**
-     * @var \October\Rain\Database\Model model object for the filter.
+     * @var \October\Rain\Database\Model|null model is the related model object for the filter.
      */
     public $model;
+
+    /**
+     * @var bool isJsonable determines if the filtered column is stored as JSON in the database.
+     */
+    public $isJsonable;
 
     /**
      * @var FilterScope filterScope object containing general filter scope information.
@@ -50,6 +55,7 @@ abstract class FilterWidgetBase extends WidgetBase
 
         $this->fillFromConfig([
             'model',
+            'isJsonable',
             'parentFilter',
         ]);
 

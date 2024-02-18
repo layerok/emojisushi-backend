@@ -20,16 +20,16 @@
                 name="<?= $field->getName() ?>"
                 value="<?= e($value) ?>"
                 type="radio"
-                <?= $field->isSelected($value) ? 'checked="checked"' : '' ?>
-                <?= $this->previewMode ? 'disabled="disabled"' : '' ?>
+                <?= $field->isSelected($value) ? 'checked' : '' ?>
+                <?= $this->previewMode ? 'disabled' : '' ?>
                 <?= $field->getAttributes() ?>
             />
 
             <label class="form-check-label" for="<?= $fieldId ?>">
-                <?= e(__($option[0])) ?>
+                <?= $field->getDisplayValue($option[0]) ?>
             </label>
             <?php if (isset($option[1])): ?>
-                <p class="form-text"><?= e(__($option[1])) ?></p>
+                <p class="form-text"><?= $field->getDisplayValue($option[1]) ?></p>
             <?php endif ?>
         </div>
     <?php endforeach ?>

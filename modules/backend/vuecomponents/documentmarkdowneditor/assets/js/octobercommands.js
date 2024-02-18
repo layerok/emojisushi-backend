@@ -1,4 +1,4 @@
-oc.Module.register('backend.vuecomponents.documentmarkdowneditor.octobercommands', function() {
+oc.Modules.register('backend.vuecomponents.documentmarkdowneditor.octobercommands', function() {
     'use strict';
 
     function getUrlPopupConfig(component) {
@@ -25,6 +25,9 @@ oc.Module.register('backend.vuecomponents.documentmarkdowneditor.octobercommands
     class OctoberCommands {
         invoke(command, editor, component) {
             switch (command) {
+                case 'oc-snippet':
+                    return this.insertSnippet(editor);
+
                 case 'oc-link':
                     return this.browseLink(editor);
 
@@ -49,7 +52,7 @@ oc.Module.register('backend.vuecomponents.documentmarkdowneditor.octobercommands
         }
 
         uploadMedia(callback, accept) {
-            const uploaderUtils = oc.Module.import('backend.vuecomponents.uploader.utils');
+            const uploaderUtils = oc.Modules.import('backend.vuecomponents.uploader.utils');
             uploaderUtils.selectAndUploadMediaManagerFiles(callback, true, accept);
         }
 
@@ -146,9 +149,18 @@ oc.Module.register('backend.vuecomponents.documentmarkdowneditor.octobercommands
                 .then($.noop, $.noop);
         }
 
-        browseLink(editor) {
-            const that = this;
+        insertSnippet(editor) {
+            oc.snippetLookup.popup({
+                alias: 'ocsnippetlookup',
+                onInsert: function(snippet) {
+                    var str = oc.snippetLookup.generateSnippetHtml(snippet);
+                    editor.codemirror.replaceSelection(str);
+                    this.hide();
+                }
+            });
+        }
 
+        browseLink(editor) {
             oc.pageLookup.popup({
                 alias: 'ocpagelookup',
                 onInsert: function(item) {

@@ -3,24 +3,34 @@
 use Input;
 
 /**
- * Selectable Widget Trait
- * Adds item selection features to back-end widgets
+ * SelectableWidget trait adds item selection features to back-end widgets
  *
  * @package october\backend
  * @author Alexey Bobkov, Samuel Georges
  */
-
 trait SelectableWidget
 {
+    /**
+     * @var bool selectedItemsCache
+     */
     protected $selectedItemsCache = false;
 
+    /**
+     * @var string selectionInputName
+     */
     protected $selectionInputName = 'object';
 
+    /**
+     * onSelect
+     */
     public function onSelect()
     {
         $this->extendSelection();
     }
 
+    /**
+     * getSelectedItems
+     */
     protected function getSelectedItems()
     {
         if ($this->selectedItemsCache !== false) {
@@ -35,6 +45,9 @@ trait SelectableWidget
         return $this->selectedItemsCache = $items;
     }
 
+    /**
+     * extendSelection
+     */
     protected function extendSelection()
     {
         $items = (array) Input::get($this->selectionInputName, []);
@@ -43,11 +56,17 @@ trait SelectableWidget
         $this->putSession('selected', $currentSelection + $items);
     }
 
+    /**
+     * resetSelection
+     */
     protected function resetSelection()
     {
         $this->putSession('selected', []);
     }
 
+    /**
+     * removeSelection
+     */
     protected function removeSelection($itemId)
     {
         $currentSelection = $this->getSelectedItems();
@@ -57,6 +76,9 @@ trait SelectableWidget
         $this->selectedItemsCache = $currentSelection;
     }
 
+    /**
+     * isItemSelected
+     */
     protected function isItemSelected($itemId)
     {
         $selectedItems = $this->getSelectedItems();

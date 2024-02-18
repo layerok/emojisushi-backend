@@ -2,9 +2,11 @@
 
 namespace OFFLINE\Mall\Classes\Index\MySQL;
 
-use Schema;
 use Cache;
 use DB;
+use Event;
+use Schema;
+use Throwable;
 use Illuminate\Support\Collection;
 use October\Rain\Database\Schema\Blueprint;
 use OFFLINE\Mall\Classes\CategoryFilter\Filter;
@@ -17,8 +19,6 @@ use OFFLINE\Mall\Classes\Index\Index;
 use OFFLINE\Mall\Classes\Index\IndexNotSupportedException;
 use OFFLINE\Mall\Classes\Index\IndexResult;
 use OFFLINE\Mall\Models\Currency;
-use Throwable;
-use Event;
 
 class MySQL implements Index
 {
@@ -303,6 +303,6 @@ class MySQL implements Index
     protected function jsonUnsupported(Throwable $e): bool
     {
         return $e->getCode() === '42000'
-            && str_contains($e->getMessage(), ['SQL syntax', 'near \'json']);
+            && str_contains($e->getMessage(), 'near \'json');
     }
 }

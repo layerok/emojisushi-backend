@@ -23,6 +23,18 @@ trait HasSiteContext
     protected $siteContext = null;
 
     /**
+     * listSiteIdsInContext
+     */
+    public function listSiteIdsInContext()
+    {
+        if ($groupId = $this->getSiteFromContext()?->group_id) {
+            return $this->listSites()->where('group_id', $groupId)->pluck('id')->all();
+        }
+
+        return $this->listSiteIds();
+    }
+
+    /**
      * getSiteIdFromContext
      * @return int|null
      */
@@ -84,13 +96,23 @@ trait HasSiteContext
     {
         $previous = $this->siteContext;
 
-        $this->siteContext = $this->getSiteFromId($siteId);
+        $site = $this->getSiteFromId($siteId);
+
+        if ($site) {
+            $this->broadcastSiteChange($site->id);
+        }
 
         try {
+            $this->siteContext = $site;
+
             return $callback();
         }
         finally {
             $this->siteContext = $previous;
+
+            if ($previousId = $this->getSiteIdFromContext()) {
+                $this->broadcastSiteChange($previousId);
+            }
         }
     }
 }

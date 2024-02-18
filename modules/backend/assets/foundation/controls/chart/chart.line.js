@@ -15,7 +15,7 @@
  * JavaScript API:
  * $('.chart').chartLine({ resetZoomLink:'#reset-zoom' })
  *
- * Dependences:
+ * Dependencies:
  * - Flot (jquery.flot.js)
  * - Flot Tooltip (jquery.flot.tooltip.js)
  * - Flot Resize (jquery.flot.resize.js)
@@ -28,11 +28,18 @@
     // ============================
 
     var ChartLine = function(element, options) {
-        var self = this
+        var self = this;
 
-        /*
-         * Flot options
-         */
+        var isDark = document.documentElement.getAttribute('data-bs-theme') === 'dark';
+        var colorBackground = '#fff',
+            colorMarkings = 'rgba(0,0,0,0.02)';
+
+        if (isDark) {
+            colorBackground = '#1e2227';
+            colorMarkings = 'rgba(255,255,255,0.02)';
+        }
+
+        // Flot options
         this.chartOptions = {
             xaxis: {
                 mode: "time",
@@ -40,14 +47,14 @@
             },
             selection: { mode: "x" },
             grid: {
-                markingsColor:   "rgba(0,0,0, 0.02)",
-                backgroundColor: { colors: ["#fff", "#fff"] },
-                borderColor:     "#7bafcc",
-                borderWidth:     0,
-                color:           "#ddd",
-                hoverable:       true,
-                clickable:       true,
-                labelMargin:     10
+                markingsColor: colorMarkings,
+                backgroundColor: { colors: [colorBackground, colorBackground] },
+                borderColor: "#7bafcc",
+                borderWidth: 0,
+                color: colorBackground,
+                hoverable: true,
+                clickable: true,
+                labelMargin: 10
             },
             series: {
                 lines: {
@@ -61,8 +68,8 @@
             tooltip: true,
             tooltipOpts: {
                 defaultTheme: false,
-                content:      "%x: <strong>%y</strong>",
-                dateFormat:   "%y-%0m-%0d",
+                content: "%x: <strong>%y</strong>",
+                dateFormat: "%y-%0m-%0d",
                 shifts: {
                     x: 10,
                     y: 20
@@ -88,9 +95,9 @@
 
         this.chartOptions = $.extend({}, this.chartOptions, parsedOptions)
 
-        this.options       = options
-        this.$el           = $(element)
-        this.fullDataSet   = []
+        this.options = options
+        this.$el = $(element)
+        this.fullDataSet = []
         this.resetZoomLink = $(options.resetZoomLink)
 
         this.$el.trigger('oc.chartLineInit', [this])

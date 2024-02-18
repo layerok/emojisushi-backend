@@ -123,6 +123,15 @@ class PluginManager
     }
 
     /**
+     * unloadPlugins reloads all plugins
+     */
+    public function reloadPlugins()
+    {
+        $this->unloadPlugins();
+        $this->loadPlugins();
+    }
+
+    /**
      * loadPlugin loads a single plugin in to the manager where a namespace is Acme\Blog
      * and the path is somewhere on the disk
      */
@@ -428,6 +437,18 @@ class PluginManager
         $normalized = $this->normalizeIdentifier($classId);
 
         return isset($this->plugins[$normalized]);
+    }
+
+    /**
+     * getPluginNamespace returns the namespace for a plugin
+     */
+    public function getPluginNamespace($id): ?string
+    {
+        if ($classObj = $this->findByIdentifier($id)) {
+            return dirname(get_class($classObj));
+        }
+
+        return null;
     }
 
     /**
@@ -746,7 +767,7 @@ class PluginManager
             }
 
             foreach ($required as $require) {
-                if ($this->hasPlugin($require)) {
+                if (!$require || $this->hasPlugin($require)) {
                     continue;
                 }
 
@@ -760,7 +781,7 @@ class PluginManager
     }
 
     /**
-     * loadDependencies cross checks all plugins and their dependancies, if not met plugins
+     * loadDependencies cross checks all plugins and their dependencies, if not met plugins
      * are disabled and vice versa.
      * @return void
      */
@@ -894,7 +915,7 @@ class PluginManager
     {
         $manager = UpdateManager::instance();
         $manager->rollbackPlugin($id);
-        $manager->updatePlugin($id);
+        $manager->migratePlugin($id);
     }
 
     /**

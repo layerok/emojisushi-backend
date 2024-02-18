@@ -30,6 +30,12 @@
 
 <script type="text/template" data-group-loading-template>
     <li class="field-repeater-group is-placeholder">
-        <?= BackendUi::contentPlaceholder()->addHeaderSubtitleImage() ?>
+        <div class="placeholder-glow">
+            <span class="placeholder col-7"></span>
+            <span class="placeholder col-4"></span>
+            <span class="placeholder col-4"></span>
+            <span class="placeholder col-6"></span>
+            <span class="placeholder col-8"></span>
+        </div>
     </li>
 </script>

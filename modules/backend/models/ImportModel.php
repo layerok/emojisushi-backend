@@ -1,7 +1,5 @@
 <?php namespace Backend\Models;
 
-use Str;
-use Lang;
 use Model;
 use ApplicationException;
 
@@ -76,7 +74,7 @@ abstract class ImportModel extends Model
         $path = $importFilePath ?: $this->getImportFilePath($sessionKey);
 
         if (!$path) {
-            throw new ApplicationException("The import file was not found using seesion key [$sessionKey]");
+            throw new ApplicationException("The import file was not found using session key [$sessionKey]");
         }
 
         $data = $this->processImportData($path, $matches, $options);
@@ -129,13 +127,13 @@ abstract class ImportModel extends Model
      * decodeArrayValue prepares an array object for the file type.
      * @return array
      */
-    protected function decodeArrayValue($value, $delimeter = '|')
+    protected function decodeArrayValue($value, $delimiter = '|')
     {
         if ($this->file_format === 'json') {
             return $this->decodeArrayValueForJson($value);
         }
         else {
-            return $this->decodeArrayValueForCsv($value, $delimeter);
+            return $this->decodeArrayValueForCsv($value, $delimiter);
         }
     }
 
@@ -158,45 +156,6 @@ abstract class ImportModel extends Model
 
         return $file->getLocalPath();
     }
-
-    /**
-     * getFormatEncodingOptions returns all available encodings values from the localization config
-     * @return array
-     */
-    public function getFormatEncodingOptions()
-    {
-        $options = [
-            'utf-8',
-            'us-ascii',
-            'iso-8859-1',
-            'iso-8859-2',
-            'iso-8859-3',
-            'iso-8859-4',
-            'iso-8859-5',
-            'iso-8859-6',
-            'iso-8859-7',
-            'iso-8859-8',
-            'iso-8859-0',
-            'iso-8859-10',
-            'iso-8859-11',
-            'iso-8859-13',
-            'iso-8859-14',
-            'iso-8859-15',
-            'Windows-1250',
-            'Windows-1251',
-            'Windows-1252'
-        ];
-
-        $translated = array_map(function ($option) {
-            return Lang::get('backend::lang.import_export.encodings.'.Str::slug($option, '_'));
-        }, $options);
-
-        return array_combine($options, $translated);
-    }
-
-    //
-    // Result logging
-    //
 
     /**
      * getResultStats

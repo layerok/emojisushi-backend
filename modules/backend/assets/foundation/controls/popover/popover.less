@@ -4,7 +4,7 @@
 
 @color-popover-bg:                           @popup-bg;
 @color-popover-border:                       rgba(0,0,0,.15);
-@color-popover-head-bg:                      @tertiary-bg;
+@color-popover-head-bg:                      @popup-bg; // @tertiary-bg
 @color-popover-head-text:                    @primary-color;
 @color-popover-danger-bg:                    #ab2a1c;
 
@@ -39,7 +39,7 @@ div.control-popover {
         position: relative;
         background: @color-popover-bg;
         box-shadow: @overlay-box-shadow;
-        border-radius: 4px;
+        border-radius: 6px;
 
         &:after, &:before {
             position: absolute;
@@ -136,8 +136,8 @@ div.control-popover {
         padding: 14px 16px;
         position: relative;
         color: @color-popover-head-text;
-        .border-top-radius(2px);
-        border-bottom: 2px solid @color-popover-border;
+        .border-top-radius(6px);
+        border-bottom: 1px solid @color-popover-border;
 
         &:before {
             z-index: @zindex-popover + 2;
@@ -221,17 +221,25 @@ div.control-popover {
         > div {
             color: #fff;
             background-color: @color-popover-danger-bg;
+            .popover-head {
+                p, h3 {
+                    color: #fff;
+                }
+                .btn-close {
+                    filter: var(--bs-btn-close-white-filter);
+                }
+            }
+        }
+
+        &.placement-top {
+            > div:after {
+                .triangle(down, 15px, 8px, @color-popover-danger-bg);
+            }
         }
 
         &.placement-bottom {
             > div:after, .popover-head:before {
                 .triangle(up, 15px, 8px, @color-popover-danger-bg);
-            }
-        }
-
-        &.placement-top {
-            > div:after, .popover-head:before {
-                .triangle(down, 15px, 8px, @color-popover-danger-bg);
             }
         }
 

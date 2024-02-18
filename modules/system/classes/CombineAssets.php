@@ -400,10 +400,13 @@ class CombineAssets
         $actionExists = Route::getRoutes()->getByAction($combineAction) !== null;
 
         if ($actionExists) {
-            return Url::action($combineAction, [$outputFilename], false);
+            $result = Url::action($combineAction, [$outputFilename], false);
+        }
+        else {
+            $result = '/combine/'.$outputFilename;
         }
 
-        return '/combine/'.$outputFilename;
+        return Url::toRelative($result);
     }
 
     /**

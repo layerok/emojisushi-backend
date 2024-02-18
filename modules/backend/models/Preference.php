@@ -5,8 +5,8 @@ use Lang;
 use Config;
 use Session;
 use BackendAuth;
-use System\Helpers\LocaleHelper;
-use System\Helpers\DateTimeHelper;
+use System\Helpers\Preset as PresetHelper;
+use System\Helpers\DateTime as DateTimeHelper;
 use Backend\Models\UserPreferenceModel;
 
 /**
@@ -22,17 +22,17 @@ class Preference extends UserPreferenceModel
     const DEFAULT_THEME = 'twilight';
 
     /**
-     * @var string Unique code
+     * @var string settingsCode is a unique code
      */
     public $settingsCode = 'backend::backend.preferences';
 
     /**
-     * @var mixed Settings form field defitions
+     * @var mixed settingsFields form field definitions
      */
     public $settingsFields = 'fields.yaml';
 
     /**
-     * @var array Validation rules
+     * @var array rules for validation
      */
     public $rules = [];
 
@@ -184,7 +184,7 @@ class Preference extends UserPreferenceModel
      */
     public function getLocaleOptions()
     {
-        return LocaleHelper::listLocalesWithFlags();
+        return PresetHelper::flags();
     }
 
     /**
@@ -193,7 +193,7 @@ class Preference extends UserPreferenceModel
      */
     public function getTimezoneOptions()
     {
-        return DateTimeHelper::listTimezones();
+        return PresetHelper::timezones();
     }
 
     /**

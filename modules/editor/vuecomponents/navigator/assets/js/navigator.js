@@ -34,7 +34,7 @@ Vue.component('editor-component-navigator', {
         },
 
         emitNodeClick: function emitNodeClick(nodeData) {
-            var DocumentUri = oc.Module.import('editor.documenturi'),
+            var DocumentUri = oc.Modules.import('editor.documenturi'),
                 uri = DocumentUri.parse(nodeData.uniqueKey);
 
             var cmd = uri.namespace + ':' + 'navigator-selected';
@@ -55,8 +55,8 @@ Vue.component('editor-component-navigator', {
         },
 
         onNodeDrop: function onNodeDrop(ev) {
-            var DocumentUri = oc.Module.import('editor.documenturi'),
-                Command = oc.Module.import('editor.command'),
+            var DocumentUri = oc.Modules.import('editor.documenturi'),
+                Command = oc.Modules.import('editor.command'),
                 uri = DocumentUri.parse(ev.movedToNode.uniqueKey),
                 cmd = new Command(uri.namespace + ':' + 'navigator-node-moved', {
                     movedNodes: ev.movedNodes,
@@ -68,8 +68,8 @@ Vue.component('editor-component-navigator', {
         },
 
         onExternalDrop: function onExternalDrop(dropData) {
-            var DocumentUri = oc.Module.import('editor.documenturi'),
-                Command = oc.Module.import('editor.command'),
+            var DocumentUri = oc.Modules.import('editor.documenturi'),
+                Command = oc.Modules.import('editor.command'),
                 uri = DocumentUri.parse(dropData.toUniqueKey),
                 cmd = new Command(uri.namespace + ':' + 'navigator-external-drop', dropData);
 
@@ -81,7 +81,7 @@ Vue.component('editor-component-navigator', {
         },
 
         onNodeContextMenuDisplay: function onNodeContextMenuDisplay(nodeData, menuItems, itemsDetails) {
-            var DocumentUri = oc.Module.import('editor.documenturi'),
+            var DocumentUri = oc.Modules.import('editor.documenturi'),
                 uri = DocumentUri.parse(nodeData.uniqueKey, true);
 
             if (!uri) {

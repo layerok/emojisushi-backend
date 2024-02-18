@@ -1,7 +1,7 @@
 Vue.component('cms-editor-component-layout-editor', {
-    extends: oc.Module.import('cms.editor.extension.documentcomponent.base'),
+    extends: oc.Modules.import('cms.editor.extension.documentcomponent.base'),
     data: function() {
-        const EditorModelDefinition = oc.Module.import('backend.vuecomponents.monacoeditor.modeldefinition');
+        const EditorModelDefinition = oc.Modules.import('backend.vuecomponents.monacoeditor.modeldefinition');
         const defMarkup = new EditorModelDefinition(
             'twig',
             this.trans('cms::lang.page.editor_markup'),

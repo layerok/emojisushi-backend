@@ -1,5 +1,6 @@
 <?php namespace Cms\Classes\EditorExtension;
 
+use Url;
 use Lang;
 use Config;
 use Request;
@@ -10,8 +11,10 @@ use Cms\Classes\Page;
 use Cms\Classes\Asset;
 use Cms\Classes\Layout;
 use Cms\Classes\Partial;
+use Cms\Classes\Snippet;
 use Cms\Classes\Content;
 use Cms\Classes\Router;
+use Cms\Classes\SnippetManager;
 use Cms\Classes\CmsCompoundObject;
 use Cms\Classes\ComponentManager;
 use Cms\Classes\ComponentPartial;
@@ -25,6 +28,9 @@ use Editor\Classes\ApiHelpers;
  */
 trait HasExtensionCrud
 {
+    /**
+     * command_onOpenDocument
+     */
     protected function command_onOpenDocument()
     {
         $documentData = post('documentData');
@@ -77,6 +83,9 @@ trait HasExtensionCrud
         return $result;
     }
 
+    /**
+     * command_onSaveDocument
+     */
     protected function command_onSaveDocument()
     {
         $documentData = $this->getRequestDocumentData();
@@ -98,7 +107,7 @@ trait HasExtensionCrud
             return $this->updateTemplateFile($template, $documentType, $templatePath);
         }
 
-        $settings = $this->upgradeSettings($documentData);
+        $settings = $this->upgradeSettings($documentData, $documentType);
         if ($settings) {
             $templateData['settings'] = $settings;
         }
@@ -125,14 +134,12 @@ trait HasExtensionCrud
 
         // Call validate() explicitly because of
         // the `force` flag in save().
-        //
         $template->validate();
 
         // Forcing the operation is required. Failing to
         // do so results in components removed in the UI
         // to persist in the template if there are no
         // other changed attributes.
-        //
         $template->save(['force' => true]);
 
         /**
@@ -217,6 +224,11 @@ trait HasExtensionCrud
             throw new ApplicationException(trans('cms::lang.template.not_found'));
         }
 
+        // Handle snippets
+        if ($documentType === EditorExtension::DOCUMENT_TYPE_PARTIAL) {
+            Snippet::processTemplateSettings($template);
+        }
+
         /**
          * @event cms.template.processSettingsAfterLoad
          * Fires immediately after a CMS template (page|partial|layout|content|asset) has been loaded and provides an opportunity to interact with it.
@@ -226,6 +238,8 @@ trait HasExtensionCrud
          *     Event::listen('cms.template.processSettingsAfterLoad', function ((\Cms\Classes\EditorExtension) $extension, (mixed) $templateObject) {
          *         // Make some modifications to the $template object
          *     });
+         *
+         * @deprecated remove second arg 'editor', context no longer used
          */
         $this->fireSystemEvent('cms.template.processSettingsAfterLoad', [$template, 'editor']);
 
@@ -233,18 +247,18 @@ trait HasExtensionCrud
     }
 
     /**
-     * Resolves a template type to its class name
+     * resolveTypeClassName resolves a template type to its class name
      * @param string $documentType
      * @return string
      */
     private function resolveTypeClassName($documentType)
     {
         $types = [
-            EditorExtension::DOCUMENT_TYPE_PAGE     => Page::class,
-            EditorExtension::DOCUMENT_TYPE_PARTIAL  => Partial::class,
-            EditorExtension::DOCUMENT_TYPE_LAYOUT   => Layout::class,
-            EditorExtension::DOCUMENT_TYPE_CONTENT  => Content::class,
-            EditorExtension::DOCUMENT_TYPE_ASSET    => Asset::class
+            EditorExtension::DOCUMENT_TYPE_PAGE => Page::class,
+            EditorExtension::DOCUMENT_TYPE_PARTIAL => Partial::class,
+            EditorExtension::DOCUMENT_TYPE_LAYOUT => Layout::class,
+            EditorExtension::DOCUMENT_TYPE_CONTENT => Content::class,
+            EditorExtension::DOCUMENT_TYPE_ASSET => Asset::class
         ];
 
         if (!array_key_exists($documentType, $types)) {
@@ -268,6 +282,9 @@ trait HasExtensionCrud
         ];
     }
 
+    /**
+     * loadTemplateMetadata
+     */
     private function loadTemplateMetadata($template, $documentData)
     {
         $theme = $this->getTheme();
@@ -389,6 +406,9 @@ trait HasExtensionCrud
         return $this->getTheme()->getDatasource();
     }
 
+    /**
+     * getRequestMetadata
+     */
     private function getRequestMetadata()
     {
         $metadata = Request::input('documentMetadata');
@@ -399,6 +419,9 @@ trait HasExtensionCrud
         return $metadata;
     }
 
+    /**
+     * getRequestExtraData
+     */
     private function getRequestExtraData()
     {
         $extraData = Request::input('extraData');
@@ -409,6 +432,9 @@ trait HasExtensionCrud
         return $extraData;
     }
 
+    /**
+     * getRequestDocumentData
+     */
     private function getRequestDocumentData()
     {
         $documentData = Request::input('documentData');
@@ -419,6 +445,9 @@ trait HasExtensionCrud
         return $documentData;
     }
 
+    /**
+     * createTemplate
+     */
     private function createTemplate($documentType)
     {
         $class = $this->resolveTypeClassName($documentType);
@@ -430,6 +459,9 @@ trait HasExtensionCrud
         return $template;
     }
 
+    /**
+     * loadOrCreateTemplate
+     */
     private function loadOrCreateTemplate($documentType, $templatePath)
     {
         if ($templatePath) {
@@ -440,11 +472,12 @@ trait HasExtensionCrud
     }
 
     /**
-     * Processes the component settings so they are ready to be saved
+     * upgradeSettings processes the component settings so they are ready to be saved
      * @param array $settings
+     * @param string $documentType
      * @return array
      */
-    private function upgradeSettings($documentData)
+    private function upgradeSettings($documentData, $documentType)
     {
         $settings = array_key_exists('settings', $documentData)
             ?  $documentData['settings']
@@ -474,9 +507,7 @@ trait HasExtensionCrud
             }
         }
 
-        /*
-         * Handle view bag
-         */
+        // Handle view bag
         if (isset($documentData['viewBag'])) {
             $settings['viewBag'] = $documentData['viewBag'];
         }
@@ -485,14 +516,16 @@ trait HasExtensionCrud
             unset($settings['viewBag']);
         }
 
-        /*
-         * This fixes a problem where a partial with PHP code
-         * and Twig markup is saved without any section data.
-         * This creates a template with the PHP code defined
-         * in the first section, which is expected to be INI.
-         */
+        // This fixes a problem where a partial with PHP code and Twig markup is saved without
+        // any section data. This creates a template with the PHP code defined in the first
+        // section, which is expected to be INI.
         if (isset($documentData['code']) && strlen($documentData['code']) && !$settings) {
             $settings['viewBag'] = [];
+        }
+
+        // Handle snippets
+        if ($documentType === EditorExtension::DOCUMENT_TYPE_PARTIAL) {
+            $settings = Snippet::processTemplateSettingsArray($settings);
         }
 
         /**
@@ -505,14 +538,14 @@ trait HasExtensionCrud
          *         // Make some modifications to the $dataHolder object
          *     });
          */
-        $dataHolder = (object) ['settings' => $settings];
+        $dataHolder = (object) ['settings' => $settings, 'documentType' => $documentType];
         $this->fireSystemEvent('cms.template.processSettingsBeforeSave', [$dataHolder]);
 
         return $dataHolder->settings;
     }
 
     /**
-     * Validate that the current request is within the active theme
+     * validateRequestTheme validates that the current request is within the active theme
      * @return void
      */
     private function validateRequestTheme($metadata)
@@ -522,7 +555,10 @@ trait HasExtensionCrud
         }
     }
 
-    private function handleLineEndings($templateData)
+    /**
+     * handleLineEndings
+     */
+    protected function handleLineEndings($templateData)
     {
         $convertLineEndings = Config::get('system.convert_line_endings', false) === true;
         if (!$convertLineEndings) {
@@ -540,7 +576,10 @@ trait HasExtensionCrud
         return $templateData;
     }
 
-    private function handleEmptyValuesOnSave($template, $templateData)
+    /**
+     * handleEmptyValuesOnSave
+     */
+    protected function handleEmptyValuesOnSave($template, $templateData)
     {
         if ($template instanceof Page || $template instanceof Layout || $template instanceof Partial) {
             if (!array_key_exists('components', $templateData)) {
@@ -551,7 +590,10 @@ trait HasExtensionCrud
         return $templateData;
     }
 
-    private function handleEmptyValuesOnLoad($template, $templateData)
+    /**
+     * handleEmptyValuesOnLoad
+     */
+    protected function handleEmptyValuesOnLoad($template, $templateData)
     {
         if ($template instanceof Page || $template instanceof Layout || $template instanceof Partial) {
             // On the client side empty markup and code values
@@ -570,7 +612,7 @@ trait HasExtensionCrud
     }
 
     /**
-     * Replaces Windows style (/r/n) line endings with unix style (/n)
+     * convertLineEndings replaces Windows style (/r/n) line endings with unix style (/n)
      * line endings.
      * @param string $markup The markup to convert to unix style endings
      * @return string
@@ -582,6 +624,9 @@ trait HasExtensionCrud
         return $markup;
     }
 
+    /**
+     * handleMtimeMismatch
+     */
     private function handleMtimeMismatch($template, $metadata)
     {
         $requestMtime = ApiHelpers::assertGetKey($metadata, 'mtime');
@@ -599,6 +644,9 @@ trait HasExtensionCrud
         }
     }
 
+    /**
+     * getUpdateResponse
+     */
     private function getUpdateResponse($template, $documentType, $templateData)
     {
         $navigatorPath = dirname($template->fileName);
@@ -611,6 +659,14 @@ trait HasExtensionCrud
             $router = new Router($theme);
             $router->clearCache();
             CmsCompoundObject::clearCache($theme);
+
+            if (class_exists(\Tailor\Behaviors\PreviewController::class)) {
+                \Tailor\Behaviors\PreviewController::clearCache($theme);
+            }
+        }
+        elseif ($template instanceof Partial) {
+            $theme = $this->getTheme();
+            SnippetManager::clearCache($theme);
         }
 
         $typeDirName = $this->getDocumentTypeDirName($template);
@@ -639,6 +695,9 @@ trait HasExtensionCrud
         return $result;
     }
 
+    /**
+     * getPagePreviewUrl
+     */
     private function getPagePreviewUrl($template, $templateData = null)
     {
         $router = new RainRouter();
@@ -646,9 +705,12 @@ trait HasExtensionCrud
             $templateData['settings']['url'] :
             $template->url;
 
-        return $router->urlFromPattern($url);
+        return Url::to($router->urlFromPattern($url));
     }
 
+    /**
+     * loadRequestedTemplate
+     */
     private function loadRequestedTemplate()
     {
         $metadata = $this->getRequestMetadata();
@@ -662,6 +724,9 @@ trait HasExtensionCrud
         ];
     }
 
+    /**
+     * findComponentClassByAlias
+     */
     private function findComponentClassByAlias($componentAlias, $documentData)
     {
         $components = ApiHelpers::assertIsArray($documentData['components']);
@@ -676,6 +741,9 @@ trait HasExtensionCrud
         }
     }
 
+    /**
+     * getDocumentTypeDirName
+     */
     private function getDocumentTypeDirName($template)
     {
         if ($template instanceof Asset) {
@@ -685,6 +753,9 @@ trait HasExtensionCrud
         return $template->getObjectTypeDirName();
     }
 
+    /**
+     * assertDocumentTypePermissions
+     */
     private function assertDocumentTypePermissions($documentType)
     {
         $user = BackendAuth::getUser();

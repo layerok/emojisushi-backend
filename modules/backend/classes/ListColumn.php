@@ -19,6 +19,8 @@ use October\Rain\Element\Lists\ColumnDefinition;
  * @method ListColumn format(string $format) Specify a format or style for the column value, such as a Date.
  * @method ListColumn path(string $path) Specifies a path for partial-type fields.
  * @method ListColumn sortableDefault(string $sortableDefault) sortableDefault makes the field sorted by default, either as asc or desc.
+ * @method ListColumn valueTrans(bool $valueTrans) valueTrans determines if display values (model attributes) should be translated
+ * @method ListColumn tooltip(array|string $tooltip) tooltip title to display next to the column value, as an array can contain title, placement, icon.
  *
  * @package october\backend
  * @author Alexey Bobkov, Samuel Georges
@@ -39,6 +41,18 @@ class ListColumn extends ColumnDefinition
         }
 
         parent::__construct($config);
+    }
+
+    /**
+     * initDefaultValues for this field
+     */
+    protected function initDefaultValues()
+    {
+        parent::initDefaultValues();
+
+        $this
+            ->valueTrans(true)
+        ;
     }
 
     /**
@@ -83,7 +97,20 @@ class ListColumn extends ColumnDefinition
     }
 
     /**
-     * getAlignClass returns the column specific aligment css class.
+     * getDisplayValue checks to see if display values (model attributes) should be translated,
+     * and also escapes the value
+     */
+    public function getDisplayValue($value)
+    {
+        if ($this->valueTrans) {
+            return e(__($value));
+        }
+
+        return e($value);
+    }
+
+    /**
+     * getAlignClass returns the column specific alignment css class.
      * @return string
      */
     public function getAlignClass()

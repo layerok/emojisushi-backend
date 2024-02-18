@@ -44,7 +44,7 @@ trait HasRelationStore
         if ($this->isLoaded) {
             $value = $this->getLoadedValueFromPost();
             $ids = is_array($value) ? array_map(function($v) {
-                return $v['_id'] ?? null;
+                return $v['_id'] ?? 0;
             }, $value) : [];
 
             $records = $this->getRelationQuery()->find($ids);
@@ -136,6 +136,10 @@ trait HasRelationStore
      */
     protected function processSaveForRelation($value)
     {
+        if (!is_array($value) || !$value) {
+            return FormField::NO_SAVE_DATA;
+        }
+
         $sortCount = 0;
 
         foreach ($value as $index => $data) {
@@ -162,7 +166,7 @@ trait HasRelationStore
 
             foreach ($modelsToSave as $attrChain => $modelToSave) {
                 try {
-                    $modelToSave->save(null, $widget->getSessionKeyWithSuffix());
+                    $modelToSave->save(['sessionKey' => $widget->getSessionKeyWithSuffix()]);
                 }
                 catch (ValidationException $ve) {
                     $ve->setFieldPrefix(array_merge(

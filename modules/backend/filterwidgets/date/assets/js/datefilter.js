@@ -8,7 +8,7 @@
  * JavaScript API:
  * $('div#someElement').dateFilter({ dataLocker: 'input#locker' })
  *
- * Dependences:
+ * Dependencies:
  * - Some other plugin (filename.js)
  */
 

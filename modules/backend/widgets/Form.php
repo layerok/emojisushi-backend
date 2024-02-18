@@ -6,8 +6,6 @@ use Backend\Classes\FormTabs;
 use Backend\Classes\FormField;
 use Backend\Classes\WidgetBase;
 use October\Rain\Element\ElementHolder;
-use October\Rain\Element\Form\FieldDefinition;
-use October\Rain\Element\Form\FieldsetDefinition;
 use October\Contracts\Element\FormElement;
 use October\Rain\Database\Model;
 use October\Rain\Html\Helper as HtmlHelper;
@@ -22,12 +20,13 @@ use UnitEnum;
  */
 class Form extends WidgetBase implements FormElement
 {
+    use \Backend\Widgets\Form\IsFormElement;
     use \Backend\Widgets\Form\FieldProcessor;
     use \Backend\Widgets\Form\HasFormWidgets;
     use \Backend\Traits\FormModelSaver;
 
     //
-    // Configurable properties
+    // Configurable Properties
     //
 
     /**
@@ -73,8 +72,13 @@ class Form extends WidgetBase implements FormElement
      */
     public $isNested = false;
 
+    /**
+     * @var bool useModelFields requests form fields from the supplied model.
+     */
+    public $useModelFields = true;
+
     //
-    // Object properties
+    // Object Properties
     //
 
     /**
@@ -102,11 +106,6 @@ class Form extends WidgetBase implements FormElement
         'primary' => null,
         'secondary' => null,
     ];
-
-    /**
-     * @var FieldsetDefinition|null activeTabSection where fields are currently being added
-     */
-    protected $activeTabSection = null;
 
     /**
      * @var array saveDataOverride allows for values to be changed during the save process
@@ -142,6 +141,7 @@ class Form extends WidgetBase implements FormElement
             'context',
             'arrayName',
             'isNested',
+            'useModelFields',
             'sessionKeySuffix',
         ]);
 
@@ -235,6 +235,7 @@ class Form extends WidgetBase implements FormElement
 
     /**
      * renderFields renders the specified fields.
+     * @deprecated use `render(['section' => 'outside', 'useContainer' => false])`
      */
     public function renderFields(array $fields): string
     {
@@ -243,6 +244,7 @@ class Form extends WidgetBase implements FormElement
 
     /**
      * renderTabSection renders the specified tabs.
+     * @deprecated use `render(['section' => 'outside', 'useContainer' => false])`
      */
     public function renderTabSection($tabs): string
     {
@@ -340,9 +342,7 @@ class Form extends WidgetBase implements FormElement
     }
 
     /**
-     * Prepares the form data
-     *
-     * @return void
+     * prepareVars prepares the form data
      */
     protected function prepareVars()
     {
@@ -523,43 +523,6 @@ class Form extends WidgetBase implements FormElement
         ];
     }
 
-    /**
-     * addFormField adds a field to the fieldset
-     * @see October\Contracts\Element\FormElement
-     */
-    public function addFormField(string $fieldName = null, string $label = null): FieldDefinition
-    {
-        $fieldObj = new FormField([
-            'fieldName' => $fieldName,
-            'label' => $label,
-            'arrayName' => $this->arrayName,
-            'idPrefix' => $this->getId()
-        ]);
-
-        $this->allFields[$fieldName] = $fieldObj;
-
-        $this->activeTabSection->addField($fieldName, $fieldObj);
-
-        return $fieldObj;
-    }
-
-    /**
-     * getFormFieldset returns the current fieldset definition
-     * @see October\Contracts\Element\FormElement
-     */
-    public function getFormFieldset(): FieldsetDefinition
-    {
-        return $this->activeTabSection;
-    }
-
-    /**
-     * getFormContext returns the current form context
-     * @see October\Contracts\Element\FormElement
-     */
-    public function getFormContext()
-    {
-        return $this->getContext();
-    }
 
     /**
      * defineFormFields creates a flat array of form fields from the configuration
@@ -756,7 +719,7 @@ class Form extends WidgetBase implements FormElement
      */
     protected function addFieldsFromModel(string $addToArea = null): void
     {
-        if ($this->isNested || !$this->model) {
+        if (!$this->useModelFields || $this->isNested || !$this->model) {
             return;
         }
 
@@ -778,10 +741,12 @@ class Form extends WidgetBase implements FormElement
         if (method_exists($this->model, $modelMethod)) {
             $this->model->$modelMethod($this);
         }
+
+        $this->activeTabSection = null;
     }
 
     /**
-     * addFields programatically, used internally and for extensibility
+     * addFields programmatically, used internally and for extensibility
      * @param array $fields
      * @param string $addToArea
      */
@@ -822,6 +787,10 @@ class Form extends WidgetBase implements FormElement
      */
     public function addField($name, $config = []): FormField
     {
+        if (is_string($config)) {
+            $config = ['label' => $config];
+        }
+
         return $this->addFields([$name => $config])->$name;
     }
 
@@ -838,6 +807,10 @@ class Form extends WidgetBase implements FormElement
      */
     public function addTabField($name, $config = []): FormField
     {
+        if (is_string($config)) {
+            $config = ['label' => $config];
+        }
+
         return $this->addTabFields([$name => $config])->$name;
     }
 
@@ -854,11 +827,15 @@ class Form extends WidgetBase implements FormElement
      */
     public function addSecondaryTabField($name, $config = []): FormField
     {
+        if (is_string($config)) {
+            $config = ['label' => $config];
+        }
+
         return $this->addSecondaryTabFields([$name => $config])->$name;
     }
 
     /**
-     * removeField programatically
+     * removeField programmatically
      */
     public function removeField($name): bool
     {
@@ -878,7 +855,7 @@ class Form extends WidgetBase implements FormElement
     }
 
     /**
-     * removeTab programatically remove all fields belonging to a tab
+     * removeTab programmatically remove all fields belonging to a tab
      * @param string $name
      */
     public function removeTab($name)
@@ -1268,6 +1245,15 @@ class Form extends WidgetBase implements FormElement
     }
 
     /**
+     * getModel returns the active model for this form.
+     * @return \Model|null
+     */
+    public function getModel()
+    {
+        return $this->model;
+    }
+
+    /**
      * getContext returns the active context for displaying the form.
      * @return string
      */
@@ -1347,7 +1333,7 @@ class Form extends WidgetBase implements FormElement
                 $array = &$array[$part];
             }
             else {
-                continue;
+                return;
             }
         }
 

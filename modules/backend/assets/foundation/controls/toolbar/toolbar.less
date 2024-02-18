@@ -18,6 +18,18 @@
     // &:before { left: -10px; }
     // &:after { right: -8px; }
 
+    .toolbar-divider {
+        margin-right: 1px;
+        display: inline-block;
+        height: 1em;
+        padding: 10px 0;
+        border-right: 1px solid @toolbar-border;
+        border-left: 1px solid @border-color;
+        width: 1px;
+        vertical-align: middle;
+        margin-right: 8px;
+    }
+
     .toolbar-item {
         position: relative;
         white-space: nowrap;
@@ -53,9 +65,9 @@
 
         .btn.btn-secondary,
         .btn.btn-link {
-            .box-shadow(none);
             .backend-toolbar-button();
 
+            box-shadow: none;
             color: @toolbar-color;
             font-size: @font-size-base;
             margin-right: 8px;

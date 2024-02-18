@@ -248,6 +248,10 @@ class EditorExtension extends ExtensionBase
         ];
     }
 
+    /**
+     * getNewDocumentsData
+     * @return array
+     */
     public function getNewDocumentsData()
     {
         return [
@@ -259,15 +263,23 @@ class EditorExtension extends ExtensionBase
         ];
     }
 
+    /**
+     * getSettingsForms
+     * @return array
+     */
     public function getSettingsForms()
     {
         return [
-            EditorExtension::DOCUMENT_TYPE_PAGE => $this->loadAndExtendCmsSettingsFile(__DIR__, 'page'),
-            EditorExtension::DOCUMENT_TYPE_PARTIAL => $this->loadAndExtendCmsSettingsFile(__DIR__, 'partial'),
-            EditorExtension::DOCUMENT_TYPE_LAYOUT => $this->loadAndExtendCmsSettingsFile(__DIR__, 'layout')
+            EditorExtension::DOCUMENT_TYPE_PAGE => $this->loadAndExtendCmsSettingsFields(\Cms\Classes\Page\Fields::class, 'page'),
+            EditorExtension::DOCUMENT_TYPE_PARTIAL => $this->loadAndExtendCmsSettingsFields(\Cms\Classes\Partial\Fields::class, 'partial'),
+            EditorExtension::DOCUMENT_TYPE_LAYOUT => $this->loadAndExtendCmsSettingsFields(\Cms\Classes\Layout\Fields::class, 'layout')
         ];
     }
 
+    /**
+     * hasAccessToDocType
+     * @return array
+     */
     public static function hasAccessToDocType($user, $documentType)
     {
         if (!array_key_exists($documentType, EditorExtension::DOCUMENT_TYPE_PERMISSIONS)) {

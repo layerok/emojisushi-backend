@@ -5,7 +5,14 @@ use Tailor\Classes\Scopes\VersionableScope;
 /**
  * VersionableModel trait allows version versions of models
  *
- * @package october\database
+ * @property int $primary_id
+ * @property array $primary_attrs
+ * @property \October\Rain\Database\Model|null $primaryRecord
+ * @property \October\Rain\Database\Collection|null $versions
+ * @method \October\Rain\Database\Relations\HasMany versions()
+ * @method \October\Rain\Database\Relations\BelongsTo primaryRecord()
+ *
+ * @package october\tailor
  * @author Alexey Bobkov, Samuel Georges
  */
 trait VersionableModel
@@ -41,7 +48,7 @@ trait VersionableModel
         ];
 
         $this->bindEvent('model.afterRelation', function($name, $related) {
-            if (in_array($name, ['drafts', 'primaryRecord'])) {
+            if (in_array($name, ['versions', 'primaryRecord'])) {
                 $related->extendWithBlueprint($this->blueprint_uuid);
             }
         });
@@ -53,10 +60,10 @@ trait VersionableModel
     public function getVersionRecords()
     {
         if ($this->primary_id) {
-            return $this->primaryRecord->drafts;
+            return $this->primaryRecord->versions;
         }
         else {
-            return $this->drafts;
+            return $this->versions;
         }
     }
 

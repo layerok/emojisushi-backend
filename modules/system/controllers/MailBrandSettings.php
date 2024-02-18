@@ -57,7 +57,7 @@ class MailBrandSettings extends SettingsController
     {
         parent::__construct();
 
-        $this->pageTitle = 'system::lang.mail_brand.page_title';
+        $this->pageTitle = "Customize Mail Appearance";
     }
 
     /**

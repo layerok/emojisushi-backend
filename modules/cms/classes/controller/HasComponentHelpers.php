@@ -64,6 +64,43 @@ trait HasComponentHelpers
     }
 
     /**
+     * addPartialComponent adds a component to a partial object, used internally by
+     * the public renderPartial method
+     */
+    protected function addPartialComponent($partial, &$vars, $name, $alias, $properties = [])
+    {
+        $manager = ComponentManager::instance();
+
+        $componentObj = $manager->makeComponent($name, $this->pageObj, $properties);
+
+        if (!$componentObj) {
+            $strictMode = Config::get('cms.strict_components', false);
+            if ($strictMode) {
+                throw new CmsException(Lang::get('cms::lang.component.not_found', ['name' => $name]));
+            }
+            else {
+                return $vars[$alias] = null;
+            }
+        }
+
+        $componentObj->alias = $alias;
+
+        $partial->components[$alias] = $componentObj;
+
+        $vars[$alias] = $componentObj->makePrimaryAccessor();
+
+        $this->partialStack->addComponent($alias, $componentObj);
+
+        $this->parseRouteParamsOnComponent($componentObj, $this->router->getParameters());
+
+        $componentObj->init();
+
+        $this->parseEnvironmentVarsOnComponent($componentObj, $vars + $this->vars);
+
+        return $componentObj;
+    }
+
+    /**
      * findComponentByName searches the layout and page components by an alias
      * and returns the component object if found.
      * @param $name

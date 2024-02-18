@@ -15,9 +15,12 @@ return new class extends Migration
 
     public function down()
     {
-        Schema::table('system_settings', function (Blueprint $table) {
-            $table->dropColumn('site_id');
-            $table->dropColumn('site_root_id');
-        });
+        if (Schema::hasColumn('system_settings', 'site_id')) {
+            Schema::dropColumns('system_settings', 'site_id');
+        }
+
+        if (Schema::hasColumn('system_settings', 'site_root_id')) {
+            Schema::dropColumns('system_settings', 'site_root_id');
+        }
     }
 };

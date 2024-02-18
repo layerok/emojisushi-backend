@@ -10,7 +10,7 @@
         <!-- Username -->
         <div class="form-group">
             <label class="form-label" for="login-input">
-                <?= __('Login') ?>
+                <?= __('Username') ?>
             </label>
 
             <input

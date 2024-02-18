@@ -1,7 +1,7 @@
-oc.Module.register('cms.editor.intellisense.actionhandlers.expandcomponent', function() {
+oc.Modules.register('cms.editor.intellisense.actionhandlers.expandcomponent', function() {
     'use strict';
 
-    const ActionHandlerBase = oc.Module.import('cms.editor.intellisense.actionhandler.base');
+    const ActionHandlerBase = oc.Modules.import('cms.editor.intellisense.actionhandler.base');
 
     class ActionHandlerExpandComponent extends ActionHandlerBase {
         tagRePattern;

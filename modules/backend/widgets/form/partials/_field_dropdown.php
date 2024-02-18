@@ -11,7 +11,7 @@
     <?php
         $fieldValue = $fieldOptions[$field->value] ?? '';
     ?>
-    <div class="form-control" <?= $field->readOnly ? 'disabled="disabled"' : '' ?>>
+    <div class="form-control" <?= $field->readOnly ? 'disabled' : '' ?>>
         <?php if (is_array($fieldValue)): ?>
             <?php if (Html::isValidColor($fieldValue[1])): ?>
                 <span class="status-indicator" style="background:<?= $fieldValue[1] ?>"></span>
@@ -20,9 +20,9 @@
             <?php else: ?>
                 <i class="<?= $fieldValue[1] ?>"></i>
             <?php endif ?>
-            <?= e(__($fieldValue[0])) ?>
+            <?= $field->getDisplayValue($fieldValue[0]) ?>
         <?php else: ?>
-            <?= e(__($fieldValue)) ?>
+            <?= $field->getDisplayValue($fieldValue) ?>
         <?php endif ?>
     </div>
     <?php if ($field->readOnly): ?>
@@ -55,7 +55,7 @@
                     <?php endif ?>
                 <?php endif ?>
                 value="<?= e($value) ?>"
-            ><?= e(__($option[0])) ?></option>
+            ><?= $field->getDisplayValue($option[0]) ?></option>
         <?php endforeach ?>
     </select>
 <?php endif ?>

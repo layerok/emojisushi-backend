@@ -1,13 +1,13 @@
 <?php namespace Tailor\Models;
 
 use Site;
-use Model;
 use October\Contracts\Element\ListElement;
 use October\Contracts\Element\FormElement;
 use October\Contracts\Element\FilterElement;
-use Tailor\Classes\Scopes\EntryRecordScope;
+use Tailor\Classes\BlueprintModel;
 use Tailor\Classes\BlueprintIndexer;
-use ApplicationException;
+use Tailor\Classes\Scopes\EntryRecordScope;
+use SystemException;
 
 /**
  * EntryRecord model for content
@@ -15,30 +15,31 @@ use ApplicationException;
  * @package october\tailor
  * @author Alexey Bobkov, Samuel Georges
  */
-class EntryRecord extends Model
+class EntryRecord extends BlueprintModel
 {
     use \Tailor\Traits\DraftableModel;
     use \Tailor\Traits\NestedTreeModel;
     use \Tailor\Traits\VersionableModel;
     use \Tailor\Traits\DeferredContentModel;
+    use \Tailor\Models\EntryRecord\HasDuplication;
     use \Tailor\Models\EntryRecord\HasStatusScopes;
-    use \Tailor\Models\EntryRecord\HasBlueprintTypes;
+    use \Tailor\Models\EntryRecord\HasEntryBlueprint;
     use \October\Rain\Database\Traits\Multisite;
     use \October\Rain\Database\Traits\SoftDelete;
     use \October\Rain\Database\Traits\Validation;
-
-    /**
-     * @var array implement behaviors in this model
-     */
-    public $implement = [
-        \Tailor\Behaviors\ContentTableModel::class
-    ];
 
     /**
      * @var array rules for validation
      */
     public $rules = [
         'title' => 'required'
+    ];
+
+    /**
+     * @var array fillable fields, in addition to those dynamically added by content fields
+     */
+    protected $fillable = [
+        'title'
     ];
 
     /**
@@ -104,6 +105,7 @@ class EntryRecord extends Model
 
         $host->defineColumn('published_at_date', 'Published Date')->shortLabel('Published')->displayAs('date')->invisible(!$this->isEntryStream())->sortableDefault($this->isEntryStream() ? 'desc' : false);
         $host->defineColumn('status_code', 'Status')->shortLabel('')->displayAs('selectable')->sortable(false)->align('right');
+        $this->applyCoreColumnModifiers($host);
     }
 
     /**
@@ -161,6 +163,8 @@ class EntryRecord extends Model
     protected function applyCoreFieldModifiers(FormElement $host)
     {
         $toTransfer = [
+            'scope',
+            'column',
             'default',
             'label',
             'comment',
@@ -187,6 +191,53 @@ class EntryRecord extends Model
     }
 
     /**
+     * applyCoreColumnModifiers will transfer modified attributes from the blueprint
+     * to the core column definition. For example, the title column.
+     */
+    protected function applyCoreColumnModifiers(ListElement $host)
+    {
+        $coreColumns = [
+            'id',
+            'title',
+            'slug',
+            'fullslug',
+            'entry_type_name',
+            'published_at_date',
+            'status_code',
+        ];
+
+        $toTransfer = [
+            'label',
+            'shortLabel',
+            'valueFrom',
+            'invisible',
+            'hidden'
+        ];
+
+        $fieldset = $this->getFieldsetDefinition();
+        $listColumns = $host->getColumns();
+
+        foreach ($coreColumns as $columnName) {
+            $column = $listColumns[$columnName] ?? null;
+            $field = $fieldset->getField($columnName);
+            if (!$column || !$field) {
+                continue;
+            }
+
+            $modifier = $field->column;
+            if (is_array($modifier)) {
+                $column->useConfig(array_only($modifier, $toTransfer));
+            }
+            elseif (is_string($modifier)) {
+                $column->$modifier();
+            }
+            elseif ($field->hidden || $modifier === false) {
+                $column->hidden();
+            }
+        }
+    }
+
+    /**
      * afterBoot
      */
     public function afterBoot()
@@ -207,7 +258,7 @@ class EntryRecord extends Model
      */
     public function beforeCreate()
     {
-        $this->setPublishingDates($this->freshTimestamp());
+        $this->setPublishingDates($this->published_at ?: $this->freshTimestamp());
     }
 
     /**
@@ -231,7 +282,7 @@ class EntryRecord extends Model
     {
         $blueprint = BlueprintIndexer::instance()->findSectionByHandle($handle);
         if (!$blueprint) {
-            throw new ApplicationException("Section handle [{$handle}] not found");
+            throw new SystemException("Section handle [{$handle}] not found");
         }
 
         return static::inSectionUuid($blueprint->uuid);
@@ -256,7 +307,7 @@ class EntryRecord extends Model
     {
         $blueprint = BlueprintIndexer::instance()->findSectionByHandle($handle);
         if (!$blueprint) {
-            throw new ApplicationException("Section handle [{$handle}] not found");
+            throw new SystemException("Section handle [{$handle}] not found");
         }
 
         self::extendInSectionUuid($blueprint->uuid, $callback);
@@ -287,14 +338,6 @@ class EntryRecord extends Model
         }
 
         return $query->applyPublishedStatus();
-    }
-
-    /**
-     * getBlueprintAttribute
-     */
-    public function getBlueprintAttribute()
-    {
-        return $this->getBlueprintDefinition();
     }
 
     /**
@@ -358,7 +401,7 @@ class EntryRecord extends Model
     {
         $blueprint = BlueprintIndexer::instance()->findSectionByHandle($handle);
         if (!$blueprint) {
-            throw new ApplicationException("Section handle [{$handle}] not found");
+            throw new SystemException("Section handle [{$handle}] not found");
         }
 
         return static::findSingleForSectionUuid($blueprint->uuid);

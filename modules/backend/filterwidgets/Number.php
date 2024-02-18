@@ -157,7 +157,7 @@ class Number extends FilterWidgetBase
             return '';
         }
 
-        // Aritmetic operator
+        // Arithmetic operator
         return +$value;
     }
 

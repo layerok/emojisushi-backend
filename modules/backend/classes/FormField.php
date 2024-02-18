@@ -29,6 +29,7 @@ use Exception;
  * @method FormField trigger(array $trigger) Other field names this field can be triggered by, see the Trigger API documentation.
  * @method FormField preset(array $preset) Other field names text is converted in to a URL, slug or file name value in this field.
  * @method FormField permissions(array $permissions) permissions needed to view this field
+ * @method FormField valueTrans(bool $valueTrans) valueTrans determines if display values (model attributes) should be translated
  *
  * @package october\backend
  * @author Alexey Bobkov, Samuel Georges
@@ -76,7 +77,10 @@ class FormField extends FieldDefinition
     {
         parent::initDefaultValues();
 
-        $this->attributes([]);
+        $this
+            ->valueTrans(true)
+            ->attributes([])
+        ;
     }
 
     /**
@@ -301,6 +305,19 @@ class FormField extends FieldDefinition
     }
 
     /**
+     * getDisplayValue checks to see if display values (model attributes) should be translated,
+     * and also escapes the value
+     */
+    public function getDisplayValue($value)
+    {
+        if ($this->valueTrans) {
+            return e(__($value));
+        }
+
+        return e($value);
+    }
+
+    /**
      * getTranslatableMessage
      */
     public function getTranslatableMessage(): string
@@ -449,8 +466,12 @@ class FormField extends FieldDefinition
      */
     public function getOptionsFromModel($model, $fieldOptions, $data)
     {
+        // Preset
+        if (is_string($fieldOptions) && str_starts_with($fieldOptions, 'preset:')) {
+            $fieldOptions = \System\Classes\PresetManager::instance()->getPreset($fieldOptions);
+        }
         // Method name
-        if (is_string($fieldOptions)) {
+        elseif (is_string($fieldOptions)) {
             $fieldOptions = $this->getOptionsFromModelAsString($model, $fieldOptions, $data);
         }
         // Default collection

@@ -142,7 +142,10 @@ trait FieldProcessor
             }
 
             // Defer the execution of option data collection
-            $fieldOptions = $field->options;
+            $fieldOptions = $field->optionsPreset
+                ? 'preset:' . $field->optionsPreset
+                : ($field->optionsMethod ?: $field->options);
+
             $field->options(function () use ($field, $fieldOptions) {
                 return $field->getOptionsFromModel($this->model, $fieldOptions, $this->data);
             });

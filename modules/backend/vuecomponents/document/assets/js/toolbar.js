@@ -1,4 +1,4 @@
-oc.Module.register('backend.component.toolbar', function () {
+oc.Modules.register('backend.component.toolbar', function () {
     Vue.component('backend-component-document-toolbar', {
         props: {
             elements: Array,
@@ -24,11 +24,15 @@ oc.Module.register('backend.component.toolbar', function () {
         },
         computed: {
             flattenedElements: function computeFlattenedElements() {
+                if (!this.elements) {
+                    return [];
+                }
+
                 var result = [];
 
                 for (var index = 0; index < this.elements.length; index++) {
                     var element = this.elements[index];
-                    if (!$.isArray(element)) {
+                    if (!Array.isArray(element)) {
                         result.push(element);
                     }
                     else {

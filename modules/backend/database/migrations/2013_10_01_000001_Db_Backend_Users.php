@@ -18,7 +18,7 @@ return new class extends Migration
             $table->string('persist_code')->nullable();
             $table->string('reset_password_code')->nullable()->index('reset_code_index');
             $table->mediumText('permissions')->nullable();
-            $table->boolean('is_activated')->default(0);
+            $table->boolean('is_activated')->default(false);
             $table->boolean('is_superuser')->default(false);
             $table->timestamp('activated_at')->nullable();
             $table->timestamp('last_login')->nullable();

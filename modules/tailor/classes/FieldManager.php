@@ -15,15 +15,11 @@ use System\Classes\PluginManager;
 /**
  * FieldManager
  *
- * @method static FieldManager instance()
- *
  * @package october\tailor
  * @author Alexey Bobkov, Samuel Georges
  */
 class FieldManager
 {
-    use \October\Rain\Support\Traits\Singleton;
-
     /**
      * @var array customFields stored in the form of ['FieldClass' => $fieldInfo].
      */
@@ -45,9 +41,17 @@ class FieldManager
     protected $pluginManager;
 
     /**
-     * init initializes this singleton.
+     * instance creates a new instance of this singleton
      */
-    protected function init()
+    public static function instance(): static
+    {
+        return App::make('tailor.fields');
+    }
+
+    /**
+     * __construct this singleton.
+     */
+    public function __construct()
     {
         $this->pluginManager = PluginManager::instance();
     }

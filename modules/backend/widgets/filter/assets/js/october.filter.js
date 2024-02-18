@@ -4,7 +4,7 @@
  * Data attributes:
  * - data-behavior="filter" - enables the filter plugin
  *
- * Dependences:
+ * Dependencies:
  * - October Popover (october.popover.js)
  *
  */
@@ -318,7 +318,7 @@
         var self = this,
             scopeName = $scope.data('scope-name');
 
-        $.oc.stripeLoadIndicator.show();
+        this.$el.addClass('is-loading');
 
         // Prepare data with known values
         if (!data) {
@@ -331,7 +331,7 @@
             data: data
         })
         .always(function(){
-            $.oc.stripeLoadIndicator.hide()
+            self.$el.removeClass('is-loading');
         })
         .done(function (data) {
             // Trigger dependsOn updates on successful requests

@@ -1,6 +1,5 @@
 <?php namespace System\Controllers;
 
-use Site;
 use Lang;
 use Flash;
 use Backend;

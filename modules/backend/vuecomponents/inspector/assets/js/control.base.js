@@ -1,4 +1,4 @@
-oc.Module.register('backend.component.inspector.control.base', function () {
+oc.Modules.register('backend.component.inspector.control.base', function () {
     'use strict';
     var ControlBase = {
         props: {
@@ -123,13 +123,17 @@ oc.Module.register('backend.component.inspector.control.base', function () {
                 data['inspectorProperty'] = this.control.property;
                 data['inspectorClassName'] = this.serverClassName;
 
-                $(this.$el).request('onInspectableGetOptions', {
-                    data: data
+                var handlerAlias = this.$el.dataset.inspectorHandlerAlias,
+                    optionsHandler = handlerAlias ? handlerAlias + '::onInspectableGetOptions' : 'onInspectableGetOptions';
+
+                $(this.$el).request(optionsHandler, {
+                    data: data,
+                    progressBar: false
                 })
-                    .done(that.dynamicOptionsLoaded)
-                    .always(function () {
-                        that.loadingDynamicOptions = false;
-                    });
+                .done(that.dynamicOptionsLoaded)
+                .always(function () {
+                    that.loadingDynamicOptions = false;
+                });
             },
 
             dynamicOptionsLoaded: function dynamicOptionsLoaded(data) {}

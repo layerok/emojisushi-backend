@@ -84,10 +84,10 @@ class FormController extends ControllerBehavior
      * @var array customMessages contains default messages that you can override
      */
     protected $customMessages = [
-        'notFound' => 'backend::lang.form.not_found',
-        'flashCreate' => 'backend::lang.form.create_success',
-        'flashUpdate' => 'backend::lang.form.update_success',
-        'flashDelete' => 'backend::lang.form.delete_success',
+        'notFound' => "Form record with an ID of :id could not be found.",
+        'flashCreate' => ":name Created",
+        'flashUpdate' => ":name Updated",
+        'flashDelete' => ":name Deleted",
     ];
 
     /**
@@ -415,7 +415,7 @@ class FormController extends ControllerBehavior
      * The first argument supports an array of render options. The supported
      * options can be found via the `render` method of the Form widget class.
      *
-     *     <?= $this->formRender(['preview' => true, section' => 'primary']) ?>
+     *     <?= $this->formRender(['preview' => true, 'section' => 'primary']) ?>
      *
      * @see Backend\Widgets\Form
      * @param array $options Render options
@@ -784,7 +784,7 @@ class FormController extends ControllerBehavior
      */
     public function formGetConfig()
     {
-        $config = $this->makeConfig($this->controller->formConfig, $this->requiredConfig);
+        $config = $this->config;
 
         $config->modelClass = Str::normalizeClassName($config->modelClass);
 
@@ -991,8 +991,8 @@ class FormController extends ControllerBehavior
 
     /**
      * extendFormFields is a static helper for extending form fields
-     * @param  callable $callback
-     * @return void
+     * @deprecated for best performance, use Event class directly, see docs
+     * @link https://docs.octobercms.com/3.x/extend/forms/form-controller.html#extending-form-fields
      */
     public static function extendFormFields($callback)
     {

@@ -1,4 +1,6 @@
-<?php namespace OFFLINE\Mall\Components;
+<?php declare(strict_types=1);
+
+namespace OFFLINE\Mall\Components;
 
 use DB;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
@@ -223,7 +225,7 @@ class ProductsFilter extends MallComponent
      */
     public function getCategoryOptions()
     {
-        return [':slug' => trans('offline.mall::lang.components.category.properties.use_url')]
+        return [':slug' => trans('offline.mall::lang.components.products.properties.use_url')]
             + Category::get()->pluck('name', 'id')->toArray();
     }
 

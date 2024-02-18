@@ -1,9 +1,9 @@
 <?php namespace Cms\Classes\EditorExtension;
 
-use Cms\Classes\ComponentManager;
-use Cms\Classes\ComponentHelpers;
-use Cms\Classes\CmsCompoundObject;
 use Cms\Components\ViewBag;
+use Cms\Classes\ComponentManager;
+use Cms\Classes\CmsCompoundObject;
+use Cms\Helpers\Component as ComponentHelpers;
 use Exception;
 
 /**

@@ -81,11 +81,11 @@ trait FormModelSaver
      */
     protected function setModelAttributes($model, $saveData, $attrName = '')
     {
-        $this->modelsToSave[$attrName] = $model;
-
-        if (!is_array($saveData)) {
+        if (!$model || !is_array($saveData)) {
             return;
         }
+
+        $this->modelsToSave[$attrName] = $model;
 
         if (!$model instanceof DatabaseModel) {
             if (method_exists($model, 'fill')) {

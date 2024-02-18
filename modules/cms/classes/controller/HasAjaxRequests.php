@@ -4,14 +4,15 @@ use Lang;
 use Flash;
 use Request;
 use Response;
-use Exception;
 use Cms\Classes\CmsException;
 use Cms\Classes\PartialWatcher;
 use Cms\Classes\AjaxResponse;
 use Cms\Classes\Partial;
 use October\Rain\Exception\AjaxException;
+use October\Rain\Exception\ApplicationException;
 use October\Rain\Exception\ValidationException;
 use Illuminate\Http\RedirectResponse;
+use Exception;
 
 /**
  * HasAjaxRequests
@@ -67,15 +68,15 @@ trait HasAjaxRequests
             $this->getAjaxHandlerPartialList()
         );
 
-        // Run page without AJAX
-        $result = $this->runPage($page, false);
+        // Run page in capture mode
+        if ($result = $this->runPage($page, ['capture' => true])) {
+            return $result;
+        }
 
         // Execute AJAX event
         if ($ajaxResponse = $this->execAjaxHandlers()) {
             return $ajaxResponse;
         }
-
-        return $result;
     }
 
     /**
@@ -155,6 +156,11 @@ trait HasAjaxRequests
                     $responseContents['X_OCTOBER_FLASH_MESSAGES'] = Flash::all();
                 }
 
+                // Look for browser events
+                if ($browserEvents = $this->getBrowserEvents()) {
+                    $responseContents['X_OCTOBER_DISPATCHES'] = $browserEvents;
+                }
+
                 // If the handler returned an array, we should add it to output for rendering.
                 // If it is a string, add it to the array with the key "result".
                 // If an object, pass it to Laravel as a response object.
@@ -174,7 +180,16 @@ trait HasAjaxRequests
                 // Handle validation errors
                 $responseContents['X_OCTOBER_ERROR_FIELDS'] = $ex->getFields();
                 $responseContents['X_OCTOBER_ERROR_MESSAGE'] = $ex->getMessage();
+                if ($browserEvents = $this->getBrowserEvents()) {
+                    $responseContents['X_OCTOBER_DISPATCHES'] = $browserEvents;
+                }
                 throw new AjaxException($responseContents);
+            }
+            catch (AjaxException $ex) {
+                if ($browserEvents = $this->getBrowserEvents()) {
+                    $ex->addContent('X_OCTOBER_DISPATCHES', $browserEvents);
+                }
+                throw $ex;
             }
             catch (Exception $ex) {
                 throw $ex;
@@ -193,7 +208,7 @@ trait HasAjaxRequests
 
         try {
             $result = $this->runAjaxHandler($handler);
-            $response->addHandlerVars($this->pageObj->vars);
+            $response->addPageVars($this->pageObj->vars);
 
             if (Flash::check()) {
                 $response->addFlashMessages(Flash::all());
@@ -233,9 +248,27 @@ trait HasAjaxRequests
             return null;
         }
 
-        $handlerResponse = $this->runAjaxHandler($handler);
-        if ($handlerResponse && $handlerResponse !== true) {
-            return $handlerResponse;
+        try {
+            $handlerResponse = $this->runAjaxHandler($handler);
+            if ($handlerResponse && $handlerResponse !== true) {
+                return $handlerResponse;
+            }
+        }
+        catch (ValidationException $ex) {
+            $errors = $this->vars['errors'] ?? new \Illuminate\Support\ViewErrorBag;
+            $this->vars['errors'] = $errors->put('default', $ex->getErrors());
+            Flash::error($ex->getMessage());
+        }
+        catch (ApplicationException $ex) {
+            Flash::error($ex->getMessage());
+        }
+        catch (Exception $ex) {
+            if (method_exists($ex, 'getSafeMessage')) {
+                Flash::error($ex->{'getSafeMessage'}());
+            }
+            else {
+                throw $ex;
+            }
         }
 
         return null;

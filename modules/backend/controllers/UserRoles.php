@@ -35,7 +35,7 @@ class UserRoles extends SettingsController
     /**
      * @var array Permissions required to view this page.
      */
-    public $requiredPermissions = ['admins.manage.roles'];
+    public $requiredPermissions = ['admins.roles'];
 
     /**
      * @var string settingsItemCode determines the settings code
@@ -80,12 +80,15 @@ class UserRoles extends SettingsController
             return;
         }
 
+        // Fetch user role, including impersonation
+        $userRole = $this->user->getRoleImpersonation() ?: $this->user->role;
+
         // User has no role and therefore cannot manage roles
-        if (!$this->user->role || !$this->user->role->sort_order) {
+        if (!$userRole || !$userRole->sort_order) {
             $query->whereRaw('1 = 2');
             return;
         }
 
-        $query->where('sort_order', '>', $this->user->role->sort_order);
+        $query->where('sort_order', '>', $userRole->sort_order);
     }
 }

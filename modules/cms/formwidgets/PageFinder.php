@@ -18,7 +18,7 @@ class PageFinder extends FormWidgetBase
     use \Backend\Traits\SearchableWidget;
 
     //
-    // Configurable properties
+    // Configurable Properties
     //
 
     /**
@@ -26,8 +26,13 @@ class PageFinder extends FormWidgetBase
      */
     public $singleMode = false;
 
+    /**
+     * @var bool showReference disables link resolution when displaying the selection for performance reasons.
+     */
+    public $showReference = false;
+
     //
-    // Object properties
+    // Object Properties
     //
 
     /**
@@ -52,6 +57,7 @@ class PageFinder extends FormWidgetBase
     {
         $this->fillFromConfig([
             'singleMode',
+            'showReference',
         ]);
 
         if ($this->formField->disabled || $this->formField->readOnly) {
@@ -120,6 +126,10 @@ class PageFinder extends FormWidgetBase
      */
     public function getNameValue()
     {
+        if ($this->showReference) {
+            return $this->getLoadValue();
+        }
+
         $reference = $this->getLookupItemValue();
         if (!$reference) {
             return '';
@@ -133,6 +143,10 @@ class PageFinder extends FormWidgetBase
      */
     public function getDescriptionValue()
     {
+        if ($this->showReference) {
+            return '';
+        }
+
         return $this->getLookupItemValue()->url ?? '';
     }
 

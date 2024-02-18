@@ -1,4 +1,4 @@
-oc.Module.register('backend.vuecomponents.uploader.utils', function() {
+oc.Modules.register('backend.vuecomponents.uploader.utils', function() {
     function makeUploaderInstance() {
         const uploaderClass = Vue.extend(Vue.options.components['backend-component-uploader']);
 
@@ -28,7 +28,7 @@ oc.Module.register('backend.vuecomponents.uploader.utils', function() {
         }
 
         selectAndUploadMediaManagerFiles(callback, multiple, accept) {
-            const uploaderUtils = oc.Module.import('backend.vuecomponents.uploader.utils');
+            const uploaderUtils = oc.Modules.import('backend.vuecomponents.uploader.utils');
             const $input = $('<input type="file" style="display:none" name="file"/>');
 
             if (multiple) {

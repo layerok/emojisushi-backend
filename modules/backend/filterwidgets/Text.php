@@ -93,7 +93,7 @@ class Text extends FilterWidgetBase
         // Raw SQL query
         $sqlCondition = $scopeConditions[$activeCondition] ?? null;
         if (is_string($sqlCondition)) {
-            $query->whereRaw(DbDongle::parseParams($sqlCondition, [
+            $query->whereRaw(DbDongle::parse($sqlCondition, [
                 'value' => $activeValue,
             ]));
             return;

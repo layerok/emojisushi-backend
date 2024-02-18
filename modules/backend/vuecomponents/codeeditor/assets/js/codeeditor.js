@@ -1,4 +1,4 @@
-oc.Module.register('backend.component.codeeditor', function () {
+oc.Modules.register('backend.component.codeeditor', function () {
     jQuery(function() {
         // Fix EMMET HTML when syntax is Twig
         //

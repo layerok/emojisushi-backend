@@ -90,6 +90,14 @@ class PluginBase extends ServiceProviderBase implements OctoberPackage
     /**
      * @inheritDoc
      */
+    public function registerPageSnippets()
+    {
+        return [];
+    }
+
+    /**
+     * @inheritDoc
+     */
     public function registerContentFields()
     {
         return [];

@@ -22,7 +22,6 @@ module.exports = [
     "october/october.vueutils.js",
     "october/october.tooltip.js",
     "october/october.jsmodule.js",
-    "october/october.vueapp.js",
 
     // Still used? -sg
     "october/october.flyout.js",

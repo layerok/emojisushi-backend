@@ -1,4 +1,4 @@
-<div class="loading-indicator-container size-input-text">
+<div class="control-search loading-indicator-container size-input-text">
     <div
         id="<?= $this->getId() ?>"
         class="search-input-container storm-icon-pseudo"

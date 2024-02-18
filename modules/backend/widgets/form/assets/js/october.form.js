@@ -1,7 +1,7 @@
 /*
  * Form Widget
  *
- * Dependences:
+ * Dependencies:
  * - Nil
  */
 +function ($) { "use strict";
@@ -13,9 +13,7 @@
         this.options = options || {};
         this.fieldElementCache = null;
 
-        /*
-         * Throttle dependency updating
-         */
+        // Throttle dependency updating
         this.dependantUpdateInterval = 300;
         this.dependantUpdateTimers = {};
 
@@ -32,10 +30,11 @@
 
         $('[data-change-handler]', this.$el).on('change.oc.formwidget', this.proxy(this.onRefreshChangeField));
         $('.nav-tabs', this.$el).on('shown.bs.tab shownLinkable.oc.tab', 'li.tab-lazy > a', this.proxy(this.showLazyTab));
-        $('.field-checkboxlist', this.$el).on('oc.triggerOn.afterUpdate', this.proxy(this.toggleCheckboxlist));
-        this.$el.on('oc.triggerOn.afterUpdate', this.proxy(this.toggleEmptyTabs));
+        this.$el.on('oc.triggerOn.afterUpdate', '.field-checkboxlist', this.proxy(this.toggleCheckboxlist));
+        this.$el.on('click', '.field-checkboxlist input[type=checkbox]', this.proxy(this.onClickCheckboxListCheckbox));
         this.$el.one('dispose-control', this.proxy(this.dispose));
 
+        addEventListener('trigger:complete', this.proxy(this.toggleEmptyTabs));
         oc.Events.on(this.$el.get(0), 'trigger:empty', '.field-checkboxlist', this.proxy(this.clearCheckboxlist));
 
         this.bindDependents();
@@ -47,8 +46,10 @@
     FormWidget.prototype.dispose = function() {
         $('[data-change-handler]', this.$el).off('change.oc.formwidget', this.proxy(this.onRefreshChangeField));
         $('.nav-tabs', this.$el).off('shown.bs.tab shownLinkable.oc.tab', 'li.tab-lazy > a', this.proxy(this.showLazyTab));
-        $('.field-checkboxlist', this.$el).off('oc.triggerOn.afterUpdate', this.proxy(this.toggleCheckboxlist));
-        this.$el.off('oc.triggerOn.afterUpdate', this.proxy(this.toggleEmptyTabs));
+        this.$el.off('oc.triggerOn.afterUpdate', '.field-checkboxlist', this.proxy(this.toggleCheckboxlist));
+        this.$el.off('click', '.field-checkboxlist input[type=checkbox]', this.proxy(this.onClickCheckboxListCheckbox));
+        removeEventListener('trigger:complete', this.proxy(this.toggleEmptyTabs));
+
         this.$el.off('click', '[data-field-checkboxlist-all]');
         this.$el.off('click', '[data-field-checkboxlist-none]');
         $('.section-field[data-field-collapsible]', this.$form).off('click');
@@ -69,8 +70,12 @@
     /*
      * Logic for checkboxlist
      */
-    FormWidget.prototype.toggleCheckboxlist = function() {
-        var $field = $('.field-checkboxlist', this.$el),
+    FormWidget.prototype.onClickCheckboxListCheckbox = function(ev) {
+        $.oc.checkboxRangeRegisterClick(ev, '.form-check', 'input[type=checkbox]');
+    }
+
+    FormWidget.prototype.toggleCheckboxlist = function(ev) {
+        var $field = $(ev.target).closest('.field-checkboxlist'),
             isDisabled = $field.hasClass('control-disabled');
 
         $('input[type=checkbox]', $field).prop('disabled', isDisabled);
@@ -85,18 +90,20 @@
         var self = this;
 
         this.$el.on('click', '[data-field-checkboxlist-all]', function() {
-            if (!$(this).is('[disabled]')) {
+            if (!$(this).is('[disabled]') && !$(this).is('[readonly]')) {
                 self.checkAllCheckboxlist($(this).closest('.field-checkboxlist'), true);
             }
         });
 
         this.$el.on('click', '[data-field-checkboxlist-none]', function() {
-            if (!$(this).is('[disabled]')) {
+            if (!$(this).is('[disabled]') && !$(this).is('[readonly]')) {
                 self.checkAllCheckboxlist($(this).closest('.field-checkboxlist'), false);
             }
         });
 
-        this.toggleCheckboxlist();
+        $('.field-checkboxlist', this.$el).each(function() {
+            self.toggleCheckboxlist({ target: this });
+        });
     }
 
     FormWidget.prototype.checkAllCheckboxlist = function($field, flag) {
@@ -161,7 +168,7 @@
     }
 
     /*
-     * Refresh a dependancy field
+     * Refresh a dependency field
      * Uses a throttle to prevent duplicate calls and click spamming
      */
     FormWidget.prototype.onRefreshDependents = function(fieldName, toRefresh) {
@@ -201,13 +208,32 @@
      * Calls an AJAX handler when the field updates.
      */
     FormWidget.prototype.onRefreshChangeField = function(ev) {
+        // @todo same approach in onRefreshDependents instead of debounce? -sg
+        if (!this.isCurrentFormContext(ev.target)) {
+            return;
+        }
+
         var $group = $(ev.target).closest('[data-change-handler]'),
             handler = $group.data('change-handler'),
             self = this;
 
-        $group.request(handler).done(function() {
-            self.toggleEmptyTabs();
-        });
+        // Debounce needed because select2 triggers change twice (vanilla + jquery) -sg
+        if (this.dependantUpdateTimers[handler] !== undefined) {
+            window.clearTimeout(this.dependantUpdateTimers[handler]);
+        }
+
+        this.dependantUpdateTimers[handler] = window.setTimeout(function() {
+            var refreshData = paramToObj('data-refresh-data', self.options.refreshData);
+            $group.request(handler, {
+                data: refreshData
+            }).done(function() {
+                self.toggleEmptyTabs();
+            });
+        }, this.dependantUpdateInterval);
+    }
+
+    FormWidget.prototype.isCurrentFormContext = function(el) {
+        return el.closest('[data-control="formwidget"]') === this.$el.get(0);
     }
 
     /*
@@ -230,13 +256,12 @@
                 return;
             }
 
-            // Check each tab pane for form field groups
+            // Check each tab pane for form field groups, locate first level form groups only
             $('.tab-pane:not(.is-lazy):not(.nohide)', tabControl).each(function() {
-                var hasControls = $('.form-group:not(:empty):not(.oc-hide)', $(this)).length;
-
+                var hasControlsSelector = '> .form-group:not(:empty):not(.oc-hide), > .row > .form-group:not(:empty):not(.oc-hide)';
                 $('[data-bs-target="#' + $(this).attr('id') + '"]', tabControl)
                     .closest('li')
-                    .toggle(!!hasControls);
+                    .toggle(!!$(hasControlsSelector, $(this)).length);
             });
 
             // If a hidden tab was selected, select the first visible tab

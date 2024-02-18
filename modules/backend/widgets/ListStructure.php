@@ -331,6 +331,12 @@ class ListStructure extends Lists
             return;
         }
 
+        // if ($this->fireSystemEvent('backend.list.beforeReorderStructure', [$item], true) === false) {
+        // @deprecated should be as above
+        if ($this->fireSystemEvent('backend.list.beforeReorderStructure', [$item], true) === true) {
+            return $this->onRefresh();
+        }
+
         if ($this->model->isClassInstanceOf(\October\Contracts\Database\NestedSetInterface::class)) {
             $this->reorderForNestedTree($item);
         }

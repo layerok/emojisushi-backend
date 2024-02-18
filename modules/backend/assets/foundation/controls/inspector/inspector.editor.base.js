@@ -6,14 +6,17 @@
     // NAMESPACES
     // ============================
 
-    if ($.oc === undefined)
+    if ($.oc === undefined) {
         $.oc = {}
+    }
 
-    if ($.oc.inspector === undefined)
+    if ($.oc.inspector === undefined) {
         $.oc.inspector = {}
+    }
 
-    if ($.oc.inspector.propertyEditors === undefined)
+    if ($.oc.inspector.propertyEditors === undefined) {
         $.oc.inspector.propertyEditors = {}
+    }
 
     // CLASS DEFINITION
     // ============================
@@ -22,41 +25,43 @@
         BaseProto = Base.prototype
 
     var BaseEditor = function(inspector, propertyDefinition, containerCell, group) {
-        this.inspector = inspector
-        this.propertyDefinition = propertyDefinition
-        this.containerCell = containerCell
-        this.containerRow = containerCell.parentNode
-        this.parentGroup = group
-        this.group = null // Group created by a grouped editor, for example by the set editor
-        this.childInspector = null
-        this.validationSet = null
-        this.disposed = false
+        this.inspector = inspector;
+        this.propertyDefinition = propertyDefinition;
+        this.containerCell = containerCell;
+        this.containerRow = containerCell.parentNode;
+        this.parentGroup = group;
+        // Group created by a grouped editor, for example by the set editor
+        this.group = null;
+        this.childInspector = null;
+        this.validationSet = null;
+        this.disposed = false;
 
-        Base.call(this)
+        Base.call(this);
 
-        this.init()
+        this.init();
     }
 
     BaseEditor.prototype = Object.create(BaseProto)
     BaseEditor.prototype.constructor = Base
 
     BaseEditor.prototype.dispose = function() {
-        this.disposed = true // After this point editors can't rely on any DOM references
+        // After this point editors can't rely on any DOM references
+        this.disposed = true;
 
-        this.disposeValidation()
+        this.disposeValidation();
 
         if (this.childInspector) {
-            this.childInspector.dispose()
+            this.childInspector.dispose();
         }
 
-        this.inspector = null
-        this.propertyDefinition = null
-        this.containerCell = null
-        this.containerRow = null
-        this.childInspector = null
-        this.parentGroup = null
-        this.group = null
-        this.validationSet = null
+        this.inspector = null;
+        this.propertyDefinition = null;
+        this.containerCell = null;
+        this.containerRow = null;
+        this.childInspector = null;
+        this.parentGroup = null;
+        this.group = null;
+        this.validationSet = null;
 
         BaseProto.dispose.call(this)
     }
@@ -83,7 +88,7 @@
 
     BaseEditor.prototype.notifyChildSurfacesPropertyChanged = function(property, value) {
         if (!this.hasChildSurface()) {
-            return
+            return;
         }
 
         this.childInspector.notifyEditorsPropertyChanged(property, value)
@@ -105,7 +110,7 @@
     }
 
     /**
-     * Updates displayed value in the editor UI. The value is already set 
+     * Updates displayed value in the editor UI. The value is already set
      * in the Inspector and should be loaded from Inspector.
      */
     BaseEditor.prototype.updateDisplayedValue = function(value) {
@@ -170,11 +175,11 @@
     }
 
     BaseEditor.prototype.markInvalid = function() {
-        $.oc.foundation.element.addClass(this.containerRow, 'invalid')
-        this.inspector.getGroupManager().markGroupRowInvalid(this.parentGroup, this.inspector.getRootTable())
+        $.oc.foundation.element.addClass(this.containerRow, 'invalid');
+        this.inspector.getGroupManager().markGroupRowInvalid(this.parentGroup, this.inspector.getRootTable());
 
-        this.inspector.getRootSurface().expandGroupParents(this.parentGroup)
-        this.focus()
+        this.inspector.getRootSurface().expandGroupParents(this.parentGroup);
+        this.focus();
     }
 
     //

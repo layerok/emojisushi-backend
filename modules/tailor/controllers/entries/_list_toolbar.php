@@ -4,7 +4,7 @@
 <div data-control="toolbar" data-list-linkage="<?= $this->listGetId() ?>">
 
     <?php if ($this->hasSourcePermission('create')): ?>
-        <a href="<?= Backend::url('tailor/entries/'.$section->handleSlug.'/create') ?>" class="btn btn-primary">
+        <a href="<?= Backend::url('tailor/entries/'.$section->handleSlug.'/create') ?>" class="btn btn-primary oc-icon-plus">
             <?= $section->getMessage('buttonCreate', "Create :name Entry", ['name' => "<strong>".e(__($section->name))."</strong>"]) ?>
         </a>
     <?php endif ?>
@@ -17,7 +17,7 @@
 
     <?php if ($section->showExport ?? true): ?>
         <a
-            href="<?= Backend::url('tailor/entriesbulk/'.$section->handleSlug.'/export') ?>"
+            href="<?= Backend::url('tailor/bulkactions/'.$section->handleSlug.'/export') ?>"
             class="btn btn-secondary oc-icon-download">
             <?= __("Export") ?>
         </a>
@@ -25,7 +25,7 @@
 
     <?php if (($section->showImport ?? true) && $this->hasSourcePermission('create')): ?>
         <a
-            href="<?= Backend::url('tailor/entriesbulk/'.$section->handleSlug.'/import') ?>"
+            href="<?= Backend::url('tailor/bulkactions/'.$section->handleSlug.'/import') ?>"
             class="btn btn-secondary oc-icon-upload">
             <?= __("Import") ?>
         </a>

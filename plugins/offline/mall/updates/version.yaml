@@ -462,3 +462,29 @@
     - 'Improved setup of the MailingEventHandler'
 3.0.18:
     - 'Added PL language (thanks to @adamo)'
+3.0.19:
+    - 'Fixed error handing in MySQL indexer'
+3.0.20:
+    - 'Fixed error handing in MySQL indexer (2)'
+3.0.21:
+    - 'Fixed translation strings (thanks to @andezer)'
+3.0.22:
+    - 'Added support for RainLab.User 2.0'
+3.0.23:
+    - 'Fixed compatibility with latest October version'
+3.0.24:
+    - 'Fixed QuickCheckout component in October 3.0'
+3.0.25:
+    - 'Fixed Stripe only working when it is the default payment method'
+3.0.26:
+    - 'Added support for DomPDF 2.x and Laravel 10 (thanks to @Pindagus)'
+3.0.27:
+    - 'Fixed handling of shipping notification'
+3.0.28:
+    - 'Added support for tax calculations for unregistered users in QuickCheckout component'
+3.0.29:
+    - 'Added support for the new page finder widget'
+3.0.30:
+    - 'Made order state flags easier to extend (thanks to @SamBrishes)'
+3.1.0:
+    - '!!! PHP 8.0 is now required to run this plugin. General code cleanup (thanks to @SamBrishes)'

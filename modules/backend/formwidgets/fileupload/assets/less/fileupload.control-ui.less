@@ -1,6 +1,6 @@
 .field-fileupload {
     .uploader-control-container {
-        .border-radius(@input-border-radius);
+        border-radius: @input-border-radius;
         border: 1px solid @input-border;
         background: @input-bg;
 
@@ -17,6 +17,8 @@
         }
 
         &.external-toolbar {
+            background: transparent;
+
             .uploader-control-toolbar {
                 display: none;
             }

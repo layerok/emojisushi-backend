@@ -1,7 +1,7 @@
-oc.Module.register('cms.editor.intellisense.clickhandler.cssimports', function() {
+oc.Modules.register('cms.editor.intellisense.clickhandler.cssimports', function() {
     'use strict';
 
-    const ClickHandlerBase = oc.Module.import('cms.editor.intellisense.clickhandler.base');
+    const ClickHandlerBase = oc.Modules.import('cms.editor.intellisense.clickhandler.base');
 
     class ClickHandlerCssImport extends ClickHandlerBase {
         resolveLink(link, token) {

@@ -1,7 +1,7 @@
 /*
  * Vue Inspector object list records control implementation
  */
-oc.Module.register('backend.component.inspector.control.objectlist.records', function () {
+oc.Modules.register('backend.component.inspector.control.objectlist.records', function () {
     Vue.component('backend-component-inspector-control-objectlist-records', {
         extends: $.oc.vueComponentHelpers.inspector.controlBase,
         props: {

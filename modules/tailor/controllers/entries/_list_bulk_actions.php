@@ -73,6 +73,18 @@
                     <i class="oc-icon-check"></i> <?= __("Enable") ?>
                 </a>
             </li>
+            <li>
+                <a
+                    href="javascript:;"
+                    class="dropdown-item"
+                    data-request="onBulkAction"
+                    data-request-data="action: 'duplicate'"
+                    data-list-checked-request
+                    data-request-confirm="<?= __("Are you sure?") ?>"
+                    data-stripe-load-indicator>
+                    <i class="oc-icon-copy"></i> <?= __("Duplicate") ?>
+                </a>
+            </li>
         <?php endif ?>
         <?php if ($this->hasSourcePermission('delete')): ?>
             <li role="separator" class="divider"></li>

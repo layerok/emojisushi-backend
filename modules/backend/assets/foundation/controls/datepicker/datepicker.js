@@ -3,7 +3,7 @@
  *
  * - Documentation: ../docs/datepicker.md
  *
- * Dependences:
+ * Dependencies:
  * - Pikaday plugin (pikaday.js)
  * - Pikaday jQuery addon (pikaday.jquery.js)
  * - Clockpicker plugin (jquery-clockpicker.js)
@@ -44,6 +44,7 @@
         this.hasTime = !!this.$timePicker.length;
         this.ignoreTimezone = !!this.$el.get(0).hasAttribute('data-ignore-timezone');
         this.defaultTimeMidnight = !!this.$el.get(0).hasAttribute('data-default-time-midnight');
+        this.disabledDays = this.options.disableDays || [];
 
         this.initRegion();
 
@@ -143,6 +144,9 @@
             format: dateFormat,
             setDefaultDate: now,
             keyboardInput: false,
+            disableDayFn: (date) => {
+                return this.isDateDisabled(date);
+            },
             onOpen: function() {
                 var $field = $(this._o.trigger)
 
@@ -170,6 +174,27 @@
 
         this.$datePicker.pikaday(pikadayOptions);
         this.$datePicker.data('pickerBound', true);
+    }
+
+    DatePicker.prototype.isDateDisabled = function(date) {
+        if (!Array.isArray(this.disabledDays)) {
+            return false;
+        }
+
+        const parsedDate = moment(date, this.getDateFormat());
+        const compareDate = parsedDate.format('YYYY-MM-DD');
+
+        for (const disabledDay of this.disabledDays) {
+            if (parsedDate.day() === disabledDay) {
+                return true;
+            }
+
+            if (disabledDay === compareDate) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     // Returns in user preference timezone
@@ -314,6 +339,7 @@
         maxDate: null,
         format: null,
         yearRange: 10,
+        disableDays: null,
         firstDay: 0,
         twelveHour: false,
         showWeekNumber: false

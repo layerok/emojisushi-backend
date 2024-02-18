@@ -1,4 +1,4 @@
-oc.Module.register('backend.vuecomponents.uploader.file', function() {
+oc.Modules.register('backend.vuecomponents.uploader.file', function() {
     'use strict';
 
     let lastFileId = 0;

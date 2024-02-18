@@ -5,7 +5,14 @@ use Tailor\Classes\Scopes\DraftableScope;
 /**
  * DraftableModel trait allows draft versions of models
  *
- * @package october\database
+ * @property int $primary_id
+ * @property array $primary_attrs
+ * @property \October\Rain\Database\Model|null $primaryRecord
+ * @property \October\Rain\Database\Collection|null $drafts
+ * @method \October\Rain\Database\Relations\HasMany drafts()
+ * @method \October\Rain\Database\Relations\BelongsTo primaryRecord()
+ *
+ * @package october\tailor
  * @author Alexey Bobkov, Samuel Georges
  */
 trait DraftableModel

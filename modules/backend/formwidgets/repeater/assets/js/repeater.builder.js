@@ -10,8 +10,8 @@
  */
 'use strict';
 
-oc.Module.register('backend.formwidget.repeater.builder', function() {
-    const BaseClass = oc.Module.import('backend.formwidget.repeater.base');
+oc.Modules.register('backend.formwidget.repeater.builder', function() {
+    const BaseClass = oc.Modules.import('backend.formwidget.repeater.base');
 
     class RepeaterFormWidgetBuilder extends BaseClass
     {
@@ -163,7 +163,7 @@ oc.Module.register('backend.formwidget.repeater.builder', function() {
             var itemIndex = $item.data('repeater-index'),
                 $containerItem = this.findItemFromIndex(itemIndex);
 
-            this.diposeItem($containerItem);
+            this.disposeItem($containerItem);
             $containerItem.remove();
         }
     }

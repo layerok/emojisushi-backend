@@ -28,6 +28,11 @@ tabs:
         _ruler1:
             type: ruler
 
+        group:
+            label: Site Group
+            type: relation
+            required: true
+
         name:
             label: Name
             span: left
@@ -95,7 +100,7 @@ tabs:
                 field: is_prefixed
                 condition: checked
 
-        is_restricted:
+        is_host_restricted:
             label: Define matching hostnames
             comment: Specify domain names and patterns that must be used to serve this site.
             type: checkbox
@@ -106,11 +111,26 @@ tabs:
             cssClass: field-indent
             trigger:
                 action: show
-                field: is_restricted
+                field: is_host_restricted
                 condition: checked
             columns:
                 hostname:
                     title: Hostname
+
+        is_role_restricted:
+            label: Define administrator roles
+            comment: Restrict access to this site to only administrator with the following roles.
+            type: checkbox
+
+        allow_roles:
+            type: taglist
+            cssClass: field-indent
+            options: true
+            useKey: true
+            trigger:
+                action: show
+                field: is_role_restricted
+                condition: checked
 
         is_styled:
             label: Display a style for this site

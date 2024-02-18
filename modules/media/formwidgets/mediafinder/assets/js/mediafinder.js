@@ -6,9 +6,9 @@
  * - data-option="value" - an option with a value
  *
  * JavaScript API:
- * $('a#someElement').recordFinder({ option: 'value' })
+ * $('a#someElement').mediaFinder({ option: 'value' })
  *
- * Dependences:
+ * Dependencies:
  * - Some other plugin (filename.js)
  */
 
@@ -72,15 +72,16 @@
         this.$el.on('click', 'input[data-record-selector]', this.proxy(this.onClickCheckbox));
         this.$el.on('change', 'input[data-record-selector]', this.proxy(this.onSelectionChanged));
 
-        this.initToolbarExtensionPoint();
-        this.initExternalToolbarEventBus();
-        this.mountExternalToolbarEventBusEvents();
-
         if (this.options.isSortable) {
             this.bindSortable();
         }
 
-        this.extendExternalToolbar();
+        // External toolbar
+        setTimeout(() => {
+            this.initToolbarExtensionPoint();
+            this.mountExternalToolbarEventBusEvents();
+            this.extendExternalToolbar();
+        }, 0);
     }
 
     MediaFinder.prototype.dispose = function() {
@@ -118,29 +119,15 @@
             return;
         }
 
-        // Expected format: tailor.app::toolbarExtensionPoint
-        const parts = this.options.externalToolbarAppState.split('::');
-        if (parts.length !== 2) {
-            throw new Error('Invalid externalToolbarAppState format. Expected format: module.name::stateElementName');
+        const point = $.oc.vueUtils.getToolbarExtensionPoint(
+            this.options.externalToolbarAppState,
+            this.$el.get(0)
+        );
+
+        if (point) {
+            this.toolbarExtensionPoint = point.state;
+            this.externalToolbarEventBusObj = point.bus;
         }
-
-        const app = oc.Module.import(parts[0]);
-        this.toolbarExtensionPoint = app.state[parts[1]];
-    }
-
-    MediaFinder.prototype.initExternalToolbarEventBus = function() {
-        if (!this.options.externalToolbarEventBus) {
-            return;
-        }
-
-        // Expected format: tailor.app::eventBus
-        const parts = this.options.externalToolbarEventBus.split('::');
-        if (parts.length !== 2) {
-            throw new Error('Invalid externalToolbarEventBus format. Expected format: module.name::stateElementName');
-        }
-
-        const module = oc.Module.import(parts[0]);
-        this.externalToolbarEventBusObj = module.state[parts[1]];
     }
 
     MediaFinder.prototype.mountExternalToolbarEventBusEvents = function() {
@@ -270,15 +257,42 @@
         });
     }
 
-    MediaFinder.prototype.makeFilePreview = function(options) {
+    MediaFinder.prototype.makeFilePreview = function(item) {
         var $preview = $(this.previewTemplate);
 
-        $preview.attr('data-path', options.path);
-        $('[data-public-url]', $preview).attr('src', options.publicUrl);
-        $('[data-thumb-url]', $preview).attr('src', options.thumbUrl);
-        $('[data-title]', $preview).text(options.title);
+        $preview.attr('data-path', item.path);
+        $preview.attr('data-folder', this.makeFolderPath(item));
+        $('[data-public-url]', $preview).attr('src', item.publicUrl);
+        $('[data-thumb-url]', $preview).attr('src', item.thumbUrl);
+        $('[data-title]', $preview).text(item.title).attr('title', item.path);
+
+        // Image is the default but can be swapped out for video and audio
+        if (['video', 'audio'].includes(item.documentType)) {
+            $('[data-document-type]', $preview).each(function() {
+                var $el = $(this).get(0);
+                if ($el.dataset.documentType !== item.documentType) {
+                    $el.remove();
+                }
+            });
+        }
+        else {
+            $('[data-document-type]', $preview).remove();
+        }
 
         return $preview;
+    }
+
+    MediaFinder.prototype.makeFolderPath = function(item) {
+        var path = item.path;
+        if (path.endsWith(item.title)) {
+            path = path.slice(0, item.title.length * -1);
+        }
+
+        if (path.length > 1 && path.endsWith('/')) {
+            path = path.slice(0, -1);
+        }
+
+        return path;
     }
 
     MediaFinder.prototype.getValue = function() {
@@ -353,6 +367,7 @@
 
         new $.oc.mediaManager.popup({
             alias: 'ocmediamanager',
+            mediaFolder: this.getCurrentFolderContext(),
             cropAndInsertButton: true,
             onInsert: function(items) {
                 if (!items.length) {
@@ -427,6 +442,13 @@
         return true;
     }
 
+    MediaFinder.prototype.getCurrentFolderContext = function() {
+        // Cannot determine context from multiple items
+        if (!this.options.isMulti) {
+            return $('>.item-object:first', this.$filesContainer).data('folder');
+        }
+    }
+
     //
     // Sorting
     //
@@ -437,7 +459,12 @@
             animation: 150,
             draggable: 'div.item-object',
             handle: '.drag-handle',
-            onEnd: this.proxy(this.onSortAttachments)
+            onEnd: this.proxy(this.onSortAttachments),
+
+            // Auto scroll plugin
+            forceAutoScrollFallback: true,
+            scrollSensitivity: 60,
+            scrollSpeed: 20
         });
     }
 

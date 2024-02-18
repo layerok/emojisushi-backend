@@ -3,6 +3,7 @@
 use Cms;
 use Event;
 use Config;
+use BackendAuth;
 use System\Models\SiteDefinition;
 
 /**
@@ -14,12 +15,26 @@ use System\Models\SiteDefinition;
 trait HasEditSite
 {
     /**
+     * @var mixed editSiteCache
+     */
+    protected $editSiteCache;
+
+    /**
      * getEditSite returns the edit theme
      */
     public function getEditSite()
     {
-        return $this->getSiteFromId($this->getEditSiteId())
-            ?: $this->getPrimarySite();
+        if ($this->editSiteCache !== null) {
+            return $this->editSiteCache;
+        }
+
+        $editSite = $this->getSiteFromId($this->getEditSiteId());
+
+        if (!$editSite || !$editSite->matchesRole(BackendAuth::getUser())) {
+            $editSite = $this->getAnyEditSite();
+        }
+
+        return $this->editSiteCache = $editSite;
     }
 
     /**
@@ -43,6 +58,8 @@ trait HasEditSite
      */
     public function setEditSiteId($id)
     {
+        $this->editSiteCache = null;
+
         Config::set('system.edit_site', $id);
 
         /**
@@ -56,7 +73,18 @@ trait HasEditSite
          *     });
          *
          */
-        Event::fire('system.site.setEditSite', compact('id'));
+        Event::fire('system.site.setEditSite', [$id]);
+
+        $this->broadcastSiteChange($id);
+    }
+
+    /**
+     * hasAnyEditSite returns true if there are edit sites
+     */
+    public function getAnyEditSite()
+    {
+        return $this->listEditEnabled()->where('is_primary', true)->first()
+            ?: $this->listEditEnabled()->first();
     }
 
     /**
@@ -64,7 +92,7 @@ trait HasEditSite
      */
     public function hasAnyEditSite(): bool
     {
-        return $this->listSites()->where('is_enabled_edit', true)->count() > 0;
+        return $this->listEditSites()->where('is_enabled_edit', true)->count() > 0;
     }
 
     /**
@@ -72,7 +100,7 @@ trait HasEditSite
      */
     public function hasMultiEditSite(): bool
     {
-        return $this->listSites()->where('is_enabled_edit', true)->count() > 1;
+        return $this->listEditSites()->where('is_enabled_edit', true)->count() > 1;
     }
 
     /**
@@ -80,7 +108,17 @@ trait HasEditSite
      */
     public function listEditEnabled()
     {
-        return $this->listSites()->where('is_enabled_edit', true);
+        return $this->listEditSites()->where('is_enabled_edit', true);
+    }
+
+    /**
+     * listEditSites
+     */
+    public function listEditSites()
+    {
+        return $this->listSites()->filter(function($site) {
+            return $site->matchesRole(BackendAuth::getUser());
+        });
     }
 
     /**

@@ -33,12 +33,13 @@
                 <?php foreach ($items as $item): ?>
                     <li
                         class="<?= strtolower($item->owner) == $context->owner && strtolower($item->code) == $context->itemCode ? 'active' : false ?>"
-                        data-keywords="<?= e(__($item->keywords)) ?>"
+                        data-keywords="<?= e(__($item->keywords ?? '')) ?>"
+                        <?= Html::attributes($item->attributes) ?>
                     >
                         <a href="<?= $item->url ?>" ontouchstart="">
-                            <i class="<?= $item->icon ?>"></i>
-                            <span class="header"><?= e(__($item->label)) ?></span>
-                            <span class="description"><?= e(__($item->description)) ?></span>
+                            <i class="<?= $item->icon ?? '' ?>"></i>
+                            <span class="header"><?= e(__($item->label ?? '')) ?></span>
+                            <span class="description"><?= e(__($item->description ?? '')) ?></span>
                         </a>
                     </li>
                 <?php endforeach ?>

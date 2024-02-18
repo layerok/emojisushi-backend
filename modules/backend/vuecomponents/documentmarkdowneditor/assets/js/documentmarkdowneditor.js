@@ -1,6 +1,6 @@
-oc.Module.register('backend.component.documentmarkdowneditor', function () {
-    const utils = oc.Module.import('backend.vuecomponents.documentmarkdowneditor.utils');
-    const octoberCommands = oc.Module.import('backend.vuecomponents.documentmarkdowneditor.octobercommands');
+oc.Modules.register('backend.component.documentmarkdowneditor', function () {
+    const utils = oc.Modules.import('backend.vuecomponents.documentmarkdowneditor.utils');
+    const octoberCommands = oc.Modules.import('backend.vuecomponents.documentmarkdowneditor.octobercommands');
 
     Vue.component('backend-component-documentmarkdowneditor', {
         props: {
@@ -26,23 +26,23 @@ oc.Module.register('backend.component.documentmarkdowneditor', function () {
                 default: false
             },
             value: String,
-            externalToolbarEventBus: String
+            externalToolbarAppState: String
         },
         data: function() {
-            const imageDropdownItems = [
-                {
-                    command: 'oc-upload-image',
-                    label: 'command_upload_from_computer'
-                }
-            ];
-            const fileDropdownItems = [
-                {
-                    command: 'oc-upload-file',
-                    label: 'command_upload_from_computer'
-                }
-            ];
+            const imageDropdownItems = [];
+            const fileDropdownItems = [];
 
             if (this.useMediaManager) {
+                imageDropdownItems.push({
+                    command: 'oc-upload-image',
+                    label: 'command_upload_from_computer'
+                });
+
+                fileDropdownItems.push({
+                    command: 'oc-upload-file',
+                    label: 'command_upload_from_computer'
+                });
+
                 imageDropdownItems.push({
                     command: 'oc-browse-image',
                     label: 'browse'
@@ -64,12 +64,13 @@ oc.Module.register('backend.component.documentmarkdowneditor', function () {
                 label: 'by_url'
             });
 
-            return {
+            const result = {
                 editor: null,
                 editorId: null,
                 $buttons: null,
                 updateDebounceTimeoutId: null,
                 lastCachedValue: this.value,
+                lastCachedPreview: null,
                 config: null,
                 defaultButtons: [
                     {
@@ -141,6 +142,12 @@ oc.Module.register('backend.component.documentmarkdowneditor', function () {
                     },
                     '|',
                     {
+                        name: 'snippet',
+                        action: 'snippet',
+                        className: 'fa fa-newspaper-o',
+                        title: oc.lang.get('markdowneditor.snippet')
+                    },
+                    {
                         name: 'link',
                         action: EasyMDE.drawLink,
                         className: 'fa fa-link',
@@ -196,6 +203,10 @@ oc.Module.register('backend.component.documentmarkdowneditor', function () {
                     fullscreen: {
                         ignore: true
                     },
+                    snippet: {
+                        ignorePressState: true,
+                        cmd: 'oc-snippet'
+                    },
                     link: {
                         ignorePressState: true,
                         cmd: oc.pageLookup ? 'oc-link' : 'link'
@@ -220,9 +231,12 @@ oc.Module.register('backend.component.documentmarkdowneditor', function () {
                     image: 'text-image',
                     table: 'text-insert-table',
                     'horizontal-rule': 'horizontal-line',
-                    'side-by-side': 'window-split'
+                    'side-by-side': 'window-split',
+                    snippet: 'newspaper-o'
                 }
             };
+
+            return result;
         },
         computed: {
             cssClass: function computeCssClass() {
@@ -246,18 +260,16 @@ oc.Module.register('backend.component.documentmarkdowneditor', function () {
             },
 
             externalToolbarEventBusObj: function computeExternalToolbarEventBusObj() {
-                if (!this.externalToolbarEventBus) {
+                if (!this.externalToolbarAppState) {
                     return null;
                 }
 
-                // Expected format: tailor.app::eventBus
-                const parts = this.externalToolbarEventBus.split('::');
-                if (parts.length !== 2) {
-                    throw new Error('Invalid externalToolbarEventBus format. Expected format: module.name::stateElementName');
-                }
+                const point = $.oc.vueUtils.getToolbarExtensionPoint(
+                    this.externalToolbarAppState,
+                    this.$el
+                );
 
-                const module = oc.Module.import(parts[0]);
-                return module.state[parts[1]];
+                return point ? point.bus : null;
             },
 
             hasExternalToolbar: function computeHasExternalToolbar() {
@@ -383,7 +395,6 @@ oc.Module.register('backend.component.documentmarkdowneditor', function () {
                 }
 
                 let $button = $(this.$el).find('.editor-toolbar button[class*="' + command.editorCommand + '"]');
-
                 if (!$button.length) {
                     return;
                 }
@@ -417,8 +428,6 @@ oc.Module.register('backend.component.documentmarkdowneditor', function () {
         },
         mounted: function onMounted() {
             this.editorId = $.oc.domIdManager.generate('markdowneditor');
-            this.$on('toolbarcmd', this.onToolbarCommand);
-
             this.editor = new EasyMDE({
                 element: this.$refs.textarea,
                 toolbar: this.defaultButtons,
@@ -432,9 +441,25 @@ oc.Module.register('backend.component.documentmarkdowneditor', function () {
                     return DOMPurify.sanitize(htmlText);
                 },
                 previewRender: function(plainText) {
+                    // Optimization: prevent rendering same thing twice
+                    if (this.lastCachedPreview == plainText) {
+                        return null;
+                    }
+                    this.lastCachedPreview = plainText;
+
                     // Process page lookup links
                     if (oc.pageLookup) {
                         plainText = oc.pageLookup.processLinks(plainText);
+                    }
+
+                    // Process snippets
+                    if (oc.snippetLookup) {
+                        plainText = oc.snippetLookup.processSnippets(plainText);
+
+                        // Disable the preview update
+                        if (oc.snippetLookup.pauseRendering) {
+                            return null;
+                        }
                     }
 
                     // Inherit default logic, includes logic processing
@@ -448,19 +473,22 @@ oc.Module.register('backend.component.documentmarkdowneditor', function () {
             this.editor.codemirror.on('focus', this.onFocus);
             this.editor.codemirror.on('blur', this.onBlur);
             $(window).on('oc.updateUi', this.refresh);
+            this.$on('toolbarcmd', this.onToolbarCommand);
 
-            if (this.hasExternalToolbar) {
-                this.extendExternalToolbar();
-            }
-            else {
-                this.extendToolbar();
-            }
+            Vue.nextTick(() => {
+                if (this.hasExternalToolbar) {
+                    this.extendExternalToolbar();
+                }
+                else {
+                    this.extendToolbar();
+                }
 
-            this.mountEventBus();
+                this.mountEventBus();
 
-            if (this.sideBySide) {
-                this.enableSideBySide();
-            }
+                if (this.sideBySide) {
+                    this.enableSideBySide();
+                }
+            });
         },
         beforeDestroy: function beforeDestroy() {
             if (this.editor) {

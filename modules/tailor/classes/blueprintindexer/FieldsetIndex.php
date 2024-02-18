@@ -114,7 +114,6 @@ trait FieldsetIndex
         $result = [];
 
         // Sections
-        //
         foreach (EntryBlueprint::listInProject() as $section) {
             if (is_array($section->groups)) {
                 foreach ($section->groups as $group => $definition) {
@@ -143,7 +142,6 @@ trait FieldsetIndex
         }
 
         // Globals
-        //
         foreach (GlobalBlueprint::listInProject() as $global) {
             $result[$global->uuid] = [
                 'name' => $global->name,

@@ -1,10 +1,10 @@
 <?php namespace System\Classes;
 
 use Db;
+use App;
+use Date;
 use File;
 use Yaml;
-use Carbon\Carbon;
-use October\Rain\Database\Updater;
 use Exception;
 
 /**
@@ -47,11 +47,6 @@ class VersionManager
     protected $databaseHistory;
 
     /**
-     * @var \October\Rain\Database\Updater
-     */
-    protected $updater;
-
-    /**
      * @var \System\Classes\PluginManager
      */
     protected $pluginManager;
@@ -61,8 +56,16 @@ class VersionManager
      */
     protected function init()
     {
-        $this->updater = new Updater;
         $this->pluginManager = PluginManager::instance();
+    }
+
+    /**
+     * getUpdater returns the updater service
+     * @return \October\Rain\Database\Updater
+     */
+    public function getUpdater()
+    {
+        return App::make('db.updater');
     }
 
     /**
@@ -332,6 +335,10 @@ class VersionManager
 
         $position = array_search($version, array_keys($versions));
 
+        if ($position === false) {
+            $position = -1;
+        }
+
         return array_slice($versions, ++$position);
     }
 
@@ -431,13 +438,13 @@ class VersionManager
             Db::table('system_plugin_versions')->insert([
                 'code' => $code,
                 'version' => $version,
-                'created_at' => new Carbon
+                'created_at' => Date::now()
             ]);
         }
         elseif ($version && $currentVersion) {
             Db::table('system_plugin_versions')->where('code', $code)->update([
                 'version' => $version,
-                'created_at' => new Carbon
+                'created_at' => Date::now()
             ]);
         }
         elseif ($currentVersion) {
@@ -457,7 +464,7 @@ class VersionManager
             'type' => self::HISTORY_TYPE_COMMENT,
             'version' => $version,
             'detail' => $comment,
-            'created_at' => new Carbon
+            'created_at' => Date::now()
         ]);
     }
 
@@ -487,14 +494,14 @@ class VersionManager
         }
 
         try {
-            $this->updater->setUp($updateFile);
+            $this->getUpdater()->setUp($updateFile);
 
             Db::table('system_plugin_history')->insert([
                 'code' => $code,
                 'type' => self::HISTORY_TYPE_SCRIPT,
                 'version' => $version,
                 'detail' => $script,
-                'created_at' => new Carbon
+                'created_at' => Date::now()
             ]);
         }
         catch (Exception $ex) {
@@ -511,7 +518,7 @@ class VersionManager
         // Execute the database PHP script
         $updateFile = $this->pluginManager->getPluginPath($code) . '/updates/' . $script;
 
-        $this->updater->packDown($updateFile);
+        $this->getUpdater()->packDown($updateFile);
 
         Db::table('system_plugin_history')
             ->where('code', $code)

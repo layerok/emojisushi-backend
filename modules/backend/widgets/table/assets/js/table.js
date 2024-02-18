@@ -1,7 +1,7 @@
 /*
  * Table control class
  *
- * Dependences:
+ * Dependencies:
  * - Scrollbar (october.scrollbar.js)
  */
 +function ($) { "use strict";
@@ -216,6 +216,11 @@
     }
 
     Table.prototype.buildUi = function() {
+        var existingTable = this.el.querySelector('div.table-container');
+        if (existingTable) {
+            existingTable.remove();
+        }
+
         this.tableContainer = document.createElement('div');
         this.tableContainer.setAttribute('class', 'table-container');
 

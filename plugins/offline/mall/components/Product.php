@@ -1,9 +1,8 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace OFFLINE\Mall\Components;
 
 use Auth;
-use DB;
 use Flash;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\RedirectResponse;
@@ -161,7 +160,7 @@ class Product extends MallComponent
      */
     public function getProductOptions()
     {
-        return [':slug' => trans('offline.mall::lang.components.category.properties.use_url')]
+        return [':slug' => trans('offline.mall::lang.components.products.properties.use_url')]
             + ProductModel::get()->pluck('name', 'id')->toArray();
     }
 
@@ -174,10 +173,10 @@ class Product extends MallComponent
     {
         $product = Request::input('product');
         if ( ! $product || $product === ':slug') {
-            return [':slug' => trans('offline.mall::lang.components.category.properties.use_url')];
+            return [':slug' => trans('offline.mall::lang.components.products.properties.use_url')];
         }
 
-        return [':slug' => trans('offline.mall::lang.components.category.properties.use_url')]
+        return [':slug' => trans('offline.mall::lang.components.products.properties.use_url')]
             + ProductModel::find($product)->variants->pluck('name', 'id')->toArray();
     }
 

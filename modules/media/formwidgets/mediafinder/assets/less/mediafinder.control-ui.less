@@ -1,6 +1,6 @@
 .field-mediafinder {
     .mediafinder-control-container {
-        border-radius: 4px;
+        border-radius: @input-border-radius;
         border: 1px solid @input-border;
         background: @input-bg;
 
@@ -17,6 +17,8 @@
         }
 
         &.external-toolbar {
+            background: transparent;
+
             .mediafinder-control-toolbar {
                 display: none;
             }

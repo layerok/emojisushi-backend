@@ -69,7 +69,9 @@
                 padding: 10px 45px 10px 20px;
                 outline: none;
 
-                &:hover, &:focus, &:active {text-decoration: none;}
+                &:hover, &:focus, &:active {
+                    text-decoration: none;
+                }
 
                 span {
                     display: block;
@@ -443,5 +445,34 @@
                 }
             }
         }
+    }
+}
+
+.control-filelist.snippet-list {
+    li > a {
+        position: relative;
+        color: @toolbar-color;
+
+        &:before {
+            .icon-OctoFont();
+            content: @octo-icon-code-snippet;
+            font-size: 19.5px;
+
+            position: absolute;
+            width: 17px;
+            height: 19px;
+            left: 18px;
+            top: 12px;
+        }
+
+        &:hover {
+            &:before {
+                color: @filelist-hero-hover-text;
+            }
+        }
+    }
+
+    li.group ul li > a:before {
+        left: 34px;
     }
 }

@@ -10,7 +10,6 @@ use Request;
 use Backend;
 use Redirect;
 use Response;
-use Exception;
 use BackendAuth;
 use Backend\Models\UserPreference;
 use Backend\Models\Preference as BackendPreference;
@@ -22,6 +21,7 @@ use October\Rain\Extension\Extendable;
 use Illuminate\Database\Eloquent\MassAssignmentException;
 use Illuminate\Http\RedirectResponse;
 use ForbiddenException;
+use Exception;
 
 /**
  * Controller is a backend base controller class used by all Backend controllers
@@ -93,7 +93,7 @@ class Controller extends Extendable
     public $pageTitleTemplate;
 
     /**
-     * @var string bodyClass property used for customising the layout on a controller basis.
+     * @var string bodyClass property used for customizing the layout on a controller basis.
      */
     public $bodyClass;
 
@@ -140,13 +140,15 @@ class Controller extends Extendable
         $this->layoutPath[] = '~/modules/' . $relativePath . '/layouts';
         $this->layoutPath[] = '~/plugins/' . $relativePath . '/layouts';
 
+        // Disable turbo router everywhere
+        if (!Config::get('backend.turbo_router', true)) {
+            $this->turboVisitControl = 'disable';
+        }
+
         // Create a new instance of the admin user
         $this->user = BackendAuth::getUser();
 
-        // Boot behavior constructors
-        parent::__construct();
-
-        // Site switcher
+        // Site switcher, activates the edit site context
         if ($this->user && Site::hasAnyEditSite()) {
             (new \Backend\Widgets\SiteSwitcher($this))->bindToController();
         }
@@ -156,10 +158,8 @@ class Controller extends Extendable
             (new \Backend\Widgets\RoleImpersonator($this))->bindToController();
         }
 
-        // Disable turbo router everywhere
-        if (!Config::get('backend.turbo_router', true)) {
-            $this->turboVisitControl = 'disable';
-        }
+        // Boot behavior constructors
+        parent::__construct();
 
         // Register Vue defaults
         $this->registerDefaultVueComponents();
@@ -217,6 +217,10 @@ class Controller extends Extendable
 
             if (System::hasModule('Cms') && \Cms\Models\MaintenanceSetting::isEnabledForBackend()) {
                 return View::make('backend::in_maintenance');
+            }
+
+            if ($this->user->hasPasswordExpired() && !$this instanceof \Backend\Controllers\AuthGates) {
+                return Backend::redirect('backend/authgates/expired');
             }
         }
 
@@ -280,7 +284,7 @@ class Controller extends Extendable
      *
      * @param string $name Specifies the action name.
      * @param bool $internal Allow protected actions.
-     * @return boolean
+     * @return bool
      */
     public function actionExists($name, $internal = false)
     {
@@ -466,6 +470,11 @@ class Controller extends Extendable
                     $responseContents['#layout-flash-messages'] = $this->makeLayoutPartial('flash_messages');
                 }
 
+                // Look for browser events
+                if ($browserEvents = $this->getBrowserEvents()) {
+                    $responseContents['X_OCTOBER_DISPATCHES'] = $browserEvents;
+                }
+
                 // Detect assets
                 if ($this->hasAssetsDefined()) {
                     $responseContents['X_OCTOBER_ASSETS'] = $this->getAssetPaths();
@@ -492,7 +501,16 @@ class Controller extends Extendable
                 $responseContents = [];
                 $responseContents['#layout-flash-messages'] = $this->makeLayoutPartial('flash_messages');
                 $responseContents['X_OCTOBER_ERROR_FIELDS'] = $ex->getFields();
+                if ($browserEvents = $this->getBrowserEvents()) {
+                    $responseContents['X_OCTOBER_DISPATCHES'] = $browserEvents;
+                }
                 throw new AjaxException($responseContents);
+            }
+            catch (AjaxException $ex) {
+                if ($browserEvents = $this->getBrowserEvents()) {
+                    $ex->addContent('X_OCTOBER_DISPATCHES', $browserEvents);
+                }
+                throw $ex;
             }
             catch (MassAssignmentException $ex) {
                 throw new ApplicationException(Lang::get('backend::lang.model.mass_assignment_failed', ['attribute' => $ex->getMessage()]));
@@ -520,9 +538,27 @@ class Controller extends Extendable
             return null;
         }
 
-        $handlerResponse = $this->runAjaxHandler($handler);
-        if ($handlerResponse && $handlerResponse !== true) {
-            return $handlerResponse;
+        try {
+            $handlerResponse = $this->runAjaxHandler($handler);
+            if ($handlerResponse && $handlerResponse !== true) {
+                return $handlerResponse;
+            }
+        }
+        catch (ValidationException $ex) {
+            $errors = $this->vars['errors'] ?? new \Illuminate\Support\ViewErrorBag;
+            $this->vars['errors'] = $errors->put('default', $ex->getErrors());
+            Flash::error($ex->getMessage());
+        }
+        catch (ApplicationException $ex) {
+            Flash::error($ex->getMessage());
+        }
+        catch (Exception $ex) {
+            if (method_exists($ex, 'getSafeMessage')) {
+                Flash::error($ex->{'getSafeMessage'}());
+            }
+            else {
+                throw $ex;
+            }
         }
 
         return null;
@@ -530,8 +566,9 @@ class Controller extends Extendable
 
     /**
      * runAjaxHandler tries to find and run an AJAX handler in the page action.
-     * The method stops as soon as the handler is found.
-     * @return boolean Returns true if the handler was found. Returns false otherwise.
+     * The method stops as soon as the handler is found. Returns true if the
+     * handler was found. Returns false otherwise.
+     * @return bool
      */
     protected function runAjaxHandler($handler)
     {
@@ -747,7 +784,7 @@ class Controller extends Extendable
     /**
      * isBackendHintHidden checks if a hint has been hidden by the user.
      * @param  string $name Unique key name
-     * @return boolean
+     * @return bool
      */
     public function isBackendHintHidden($name)
     {

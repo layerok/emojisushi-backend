@@ -1,7 +1,7 @@
-oc.Module.register('cms.editor.intellisense.hoverprovider.twigfilters', function() {
+oc.Modules.register('cms.editor.intellisense.hoverprovider.twigfilters', function() {
     'use strict';
 
-    const HoverProviderBase = oc.Module.import('cms.editor.intellisense.hoverprovider.base');
+    const HoverProviderBase = oc.Modules.import('cms.editor.intellisense.hoverprovider.base');
 
     class HoverProviderTwigFilters extends HoverProviderBase {
         getTwigFilters() {

@@ -116,7 +116,7 @@ trait HasPivotMode
             foreach ($hydratedModels as $hydratedModel) {
                 $modelsToSave = $this->prepareModelsToSave($hydratedModel, $saveData);
                 foreach ($modelsToSave as $modelToSave) {
-                    $modelToSave->save(null, $this->pivotWidget->getSessionKey());
+                    $modelToSave->save(['sessionKey' => $this->pivotWidget->getSessionKey()]);
                 }
             }
         });
@@ -138,7 +138,7 @@ trait HasPivotMode
         $modelsToSave = $this->prepareModelsToSave($this->pivotModel, $saveData);
 
         foreach ($modelsToSave as $modelToSave) {
-            $modelToSave->save(null, $this->pivotWidget->getSessionKey());
+            $modelToSave->save(['sessionKey' => $this->pivotWidget->getSessionKey()]);
         }
 
         $this->showFlashMessage('flashUpdate');

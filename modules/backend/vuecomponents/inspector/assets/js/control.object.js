@@ -1,7 +1,7 @@
 /*
  * Vue Inspector object control implementation
  */
-oc.Module.register('backend.component.inspector.control.object', function () {
+oc.Modules.register('backend.component.inspector.control.object', function () {
     Vue.component('backend-component-inspector-control-object', {
         extends: $.oc.vueComponentHelpers.inspector.controlBase,
         props: {

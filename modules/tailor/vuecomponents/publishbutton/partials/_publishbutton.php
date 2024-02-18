@@ -1,4 +1,5 @@
 <button
+    type="button"
     class="record-management-button has-menu record-status-button"
     :class="buttonCssClass"
     @click.prevent="onClick($event)"

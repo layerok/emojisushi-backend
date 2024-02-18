@@ -1,6 +1,7 @@
 <?php namespace Cms\Classes\EditorExtension;
 
 use Cms\Classes\EditorExtension;
+use Backend\Helpers\Inspector as InspectorHelper;
 
 /**
  * HasExtensionExtensibility implements CMS extensibility features
@@ -8,11 +9,11 @@ use Cms\Classes\EditorExtension;
 trait HasExtensionExtensibility
 {
     /**
-     * loadAndExtendCmsSettingsFile
+     * loadAndExtendCmsSettingsFields
      */
-    protected function loadAndExtendCmsSettingsFile($extensionDir, $entityName)
+    protected function loadAndExtendCmsSettingsFields($fieldsClass, $entityName)
     {
-        $settings = $this->loadSettingsFile($extensionDir, $entityName);
+        $settings = $this->loadSettingsFields($fieldsClass);
 
         $dataHolder = (object) ['settings' => [], 'templateType' => $entityName];
 
@@ -59,6 +60,11 @@ trait HasExtensionExtensibility
      */
     protected function getTemplateToolbarCustomSettingsButtons($entityName)
     {
+        $buttons = [];
+        if ($entityName === 'partial') {
+            $buttons = $this->loadCustomSettingsButtons(\Cms\Classes\Partial\Fields::class);
+        }
+
         $dataHolder = (object) ['buttons' => [], 'templateType' => $entityName];
 
         /**
@@ -97,6 +103,25 @@ trait HasExtensionExtensibility
             }
         }
 
-        return $dataHolder->buttons;
+        foreach ($dataHolder->buttons as &$buttonDefinition) {
+            $buttons[] = $buttonDefinition;
+        }
+
+        return $buttons;
+    }
+
+    /**
+     * loadCustomSettingsButtons
+     * @see \Editor\Classes\ExtensionBase::loadSettingsFields()
+     */
+    protected function loadCustomSettingsButtons(string $fieldsClass): array
+    {
+        $buttons = (new $fieldsClass)->defineSettingsButtons();
+
+        foreach ($buttons as &$button) {
+            $button['properties'] = InspectorHelper::getPropertyConfig($button['properties'] ?? []);
+        }
+
+        return $buttons;
     }
 }

@@ -1,7 +1,7 @@
-oc.Module.register('cms.editor.intellisense.clickhandler.template', function() {
+oc.Modules.register('cms.editor.intellisense.clickhandler.template', function() {
     'use strict';
 
-    const ClickHandlerBase = oc.Module.import('cms.editor.intellisense.clickhandler.base');
+    const ClickHandlerBase = oc.Modules.import('cms.editor.intellisense.clickhandler.base');
 
     class ClickHandlerTemplate extends ClickHandlerBase {
         get canManagePartials() {
@@ -102,7 +102,7 @@ oc.Module.register('cms.editor.intellisense.clickhandler.template', function() {
             };
 
             if (this.canManagePartials) {
-                this.makeLinks(model, /\{%\s+partial\s+("|')([a-zA-Z0-9\-\/_]+)\1/gm, result.links, 'cms-partial');
+                this.makeLinks(model, /\{%\s+(?:partial|ajaxPartial)\s+("|')([a-zA-Z0-9\-\/_]+)\1/gm, result.links, 'cms-partial');
             }
 
             if (this.canManageContent) {

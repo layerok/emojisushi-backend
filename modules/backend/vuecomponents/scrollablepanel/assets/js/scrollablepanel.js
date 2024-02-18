@@ -4,7 +4,7 @@
  * The panel is positioned using position=absolute. The hosting
  * element must have position=relative.
  */
-oc.Module.register('backend.component.scrollable.panel', function () {
+oc.Modules.register('backend.component.scrollable.panel', function () {
     Vue.component('backend-component-scrollable-panel', {
         props: {
             relativeLayout: {

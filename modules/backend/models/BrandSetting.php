@@ -121,11 +121,15 @@ class BrandSetting extends SettingModel
     {
         $settings = self::instance();
 
+        if (isset($_COOKIE['admin_color_mode_user'])) {
+            return $_COOKIE['admin_color_mode_user'];
+        }
+
         if (
             $settings->color_mode === 'auto' &&
-            isset($_COOKIE['admin_color_mode'])
+            isset($_COOKIE['admin_color_mode_setting'])
         ) {
-            return (string) $_COOKIE['admin_color_mode'];
+            return (string) $_COOKIE['admin_color_mode_setting'];
         }
 
         return (string) $settings->color_mode;
@@ -145,7 +149,7 @@ class BrandSetting extends SettingModel
                 return $settings->favicon->getPath();
             }
 
-            return self::getBaseConfigPath('favicon_path', Backend::skinAsset('assets/images/favicon.png'));
+            return self::getBaseConfigPath('favicon_path');
         });
     }
 
@@ -215,7 +219,7 @@ class BrandSetting extends SettingModel
             return $settings->login_background_wallpaper->getPath();
         }
 
-        return null;
+        return self::getBaseConfigPath('login_background_wallpaper');
     }
 
     /**
@@ -233,12 +237,7 @@ class BrandSetting extends SettingModel
             return $settings->login_custom_image->getPath();
         }
 
-        $customImage = File::symbolizePath(self::getBaseConfig('login_custom_image'));
-        if ($customImage && File::exists($customImage)) {
-            return Url::asset(File::localToPublic($customImage));
-        }
-
-        return null;
+        return self::getBaseConfigPath('login_custom_image');
     }
 
     /**
@@ -302,7 +301,7 @@ class BrandSetting extends SettingModel
     }
 
     /**
-     * getLoginPageCustomization returns customization properites used by the login page
+     * getLoginPageCustomization returns customization properties used by the login page
      */
     public static function getLoginPageCustomization()
     {
@@ -340,7 +339,6 @@ class BrandSetting extends SettingModel
         }
 
         $configPath = File::symbolizePath($configValue);
-
         if ($configPath && File::exists($configPath)) {
             return Url::asset(File::localToPublic($configPath));
         }

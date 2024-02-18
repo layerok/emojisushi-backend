@@ -57,9 +57,11 @@ trait ManagesPlugins
         }
 
         // Remove via composer
-        if ($composerCode = $this->pluginManager->getComposerCode($name)) {
+        $composer = ComposerManager::instance();
+        $composerCode = $this->pluginManager->getComposerCode($name);
+
+        if ($composerCode && $composer->hasPackage($composerCode)) {
             $this->rollbackPlugin($name);
-            $composer = ComposerManager::instance();
             $composer->remove([$composerCode]);
         }
 
@@ -83,9 +85,20 @@ trait ManagesPlugins
     }
 
     /**
-     * updatePlugin runs update on a single plugin
+     * migratePlugins migrates all plugins
      */
-    public function updatePlugin(string $name)
+    public function migratePlugins()
+    {
+        $plugins = $this->pluginManager->getPlugins();
+        foreach ($plugins as $code => $plugin) {
+            $this->migratePlugin($code);
+        }
+    }
+
+    /**
+     * migratePlugin runs update on a single plugin
+     */
+    public function migratePlugin(string $name)
     {
         // Update the plugin database and version
         $plugin = $this->pluginManager->findByIdentifier($name);
@@ -100,6 +113,15 @@ trait ManagesPlugins
         if ($this->versionManager->updatePlugin($plugin)) {
             $this->migrateCount++;
         }
+    }
+
+    /**
+     * updatePlugin
+     * @deprecated use migratePlugin
+     */
+    public function updatePlugin(string $name)
+    {
+        $this->migratePlugin($name);
     }
 
     /**

@@ -1,7 +1,7 @@
 /*
  * Vue Inspector panel implementation
  */
-oc.Module.register('backend.component.inspector.panel', function () {
+oc.Modules.register('backend.component.inspector.panel', function () {
     Vue.component('backend-component-inspector-panel', {
         props: {
             controls: {

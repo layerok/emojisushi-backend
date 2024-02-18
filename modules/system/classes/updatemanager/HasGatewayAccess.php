@@ -85,7 +85,7 @@ trait HasGatewayAccess
      */
     protected function createServerUrl($uri)
     {
-        $gateway = env('APP_UPDATE_GATEWAY', Config::get('system.update_gateway', 'https://gateway.octobercms.com/api'));
+        $gateway = Config::get('system.update_gateway', 'https://gateway.octobercms.com/api');
         if (substr($gateway, -1) !== '/') {
             $gateway .= '/';
         }

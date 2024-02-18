@@ -124,7 +124,8 @@ class ImportExportController extends ControllerBehavior
             return null;
         }
 
-        if ($fieldConfig = $this->getConfig($type.'[form]')) {
+        $fieldConfig = $this->getConfig($type.'[form]');
+        if ($fieldConfig !== null) {
             $widgetConfig = $this->makeConfig($fieldConfig);
             $widgetConfig->model = $this->getModelForType($type);
             $widgetConfig->alias = $type.'OptionsForm';

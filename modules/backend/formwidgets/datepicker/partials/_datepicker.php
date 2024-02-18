@@ -17,6 +17,7 @@
         <?php if ($minDate): ?>data-min-date="<?= $minDate ?>"<?php endif ?>
         <?php if ($maxDate): ?>data-max-date="<?= $maxDate ?>"<?php endif ?>
         <?php if ($yearRange): ?>data-year-range="<?= $yearRange ?>"<?php endif ?>
+        <?php if ($disableDays): ?>data-disable-days="<?= e(json_encode($disableDays)) ?>"<?php endif ?>
         <?php if ($firstDay): ?>data-first-day="<?= $firstDay ?>"<?php endif ?>
         <?php if ($twelveHour): ?>data-twelve-hour="1"<?php endif ?>
         <?php if ($defaultTimeMidnight): ?>data-default-time-midnight="1"<?php endif ?>

@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace OFFLINE\Mall\Components;
 
@@ -19,6 +19,7 @@ use OFFLINE\Mall\Models\Order;
 use OFFLINE\Mall\Models\PaymentMethod;
 use OFFLINE\Mall\Models\ShippingMethod;
 use OFFLINE\Mall\Models\User;
+use OFFLINE\Mall\Models\Variant;
 use RainLab\Location\Models\Country;
 use RainLab\User\Facades\Auth as FrontendAuth;
 use Validator;
@@ -464,10 +465,22 @@ class QuickCheckout extends MallComponent
         $this->setVar('accountPage', GeneralSettings::get('account_page'));
 
         $this->setVar('user', Auth::getUser());
+
         $cart = Cart::byUser($this->user);
         if ( ! $cart->payment_method_id) {
             $cart->setPaymentMethod(PaymentMethod::getDefault());
         }
+
+        if ($this->user) {
+            $cart->forgetFallbackShippingCountryId();
+        } else {
+            $shippingCountry = post('billing_country_id');
+            if (post('use_different_shipping')) {
+                $shippingCountry = post('shipping_country_id');
+            }
+            $cart->setFallbackShippingCountryId($shippingCountry);
+        }
+
         $this->setVar('cart', $cart);
 
         $paymentMethod = PaymentMethod::find($cart->payment_method_id);
@@ -477,7 +490,6 @@ class QuickCheckout extends MallComponent
         }
         $this->setVar('paymentMethods', PaymentMethod::orderBy('sort_order', 'ASC')->get());
         $this->setVar('customerPaymentMethods', $this->getCustomerMethods());
-
 
 //        $this->setVar('dataLayer', $this->handleDataLayer());
 
@@ -489,6 +501,8 @@ class QuickCheckout extends MallComponent
             $orderId = $this->decode($orderId);
             $this->setVar('order', Order::byCustomer($this->user->customer)->find($orderId));
         }
+        
+        $this->setVar('productPage', GeneralSettings::get('product_page'));
     }
 
     /**
@@ -531,10 +545,13 @@ class QuickCheckout extends MallComponent
     private function dataLayerArray($product = null, $variant = null)
     {
         $item = $variant ?? $product;
+        if (!($item instanceof Product || $item instanceof Variant)) {
+            return [];
+        }
 
         return [
             'id' => $item->prefixedId,
-            'name' => $product->name,
+            'name' => $product ? $product->name : $item->name,
             'price' => $item->price()->decimal,
             'brand' => optional($item->brand)->name,
             'category' => optional($item->categories->first())->name,

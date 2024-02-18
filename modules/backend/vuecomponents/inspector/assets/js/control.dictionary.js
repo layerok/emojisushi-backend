@@ -1,7 +1,7 @@
 /*
  * Vue Inspector dictionary control implementation
  */
-oc.Module.register('backend.component.inspector.control.dictionary', function () {
+oc.Modules.register('backend.component.inspector.control.dictionary', function () {
     Vue.component('backend-component-inspector-control-dictionary', {
         extends: $.oc.vueComponentHelpers.inspector.controlBase,
         props: {

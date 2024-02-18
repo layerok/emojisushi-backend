@@ -248,7 +248,11 @@ trait ViewMaker
             $extraParams = [];
         }
 
-        $vars = array_merge($this->vars, $extraParams);
+        $vars = array_merge(
+            $this->vars,
+            $extraParams,
+            ['_context' => $extraParams]
+        );
 
         $obLevel = ob_get_level();
 

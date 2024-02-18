@@ -135,7 +135,7 @@ class Extension extends TwigExtension
      */
     public function resizeFilter($image, $width = null, $height = null, $options = [])
     {
-        return Url::to(ResizeImages::resize($image, $width, $height, $options));
+        return ResizeImages::resize($image, $width, $height, $options);
     }
 
     /**
@@ -147,7 +147,7 @@ class Extension extends TwigExtension
             return \Cms::makeCarbon($value);
         }
 
-        return \System\Helpers\DateTimeHelper::makeCarbon($value);
+        return \System\Helpers\DateTime::makeCarbon($value);
     }
 
     /**

@@ -63,7 +63,7 @@ trait HasTablePatches
                     $table->$wantType($fieldName)->nullable();
                 });
 
-                $schemaObj->setDroppedColumn($fieldName, $droppedName);
+                $schemaObj->setDroppedColumn($fieldName, $droppedName, true);
             }
 
             $this->actionCount++;

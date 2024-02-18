@@ -2,6 +2,7 @@
 
 use October\Rain\Database\Model;
 use Backend\Classes\FormWidgetBase;
+use SystemException;
 
 /**
  * Tag List Form Widget
@@ -17,7 +18,7 @@ class TagList extends FormWidgetBase
     const MODE_RELATION = 'relation';
 
     //
-    // Configurable properties
+    // Configurable Properties
     //
 
     /**
@@ -61,7 +62,7 @@ class TagList extends FormWidgetBase
     public $placeholder = '';
 
     //
-    // Object properties
+    // Object Properties
     //
 
     /**
@@ -169,7 +170,7 @@ class TagList extends FormWidgetBase
             return $this->getLoadValueFromRelation($value);
         }
 
-        if ($this->mode === static::MODE_STRING) {
+        if (!is_array($value) && $this->mode === static::MODE_STRING) {
             return $this->getLoadValueFromString($value);
         }
 
@@ -189,6 +190,12 @@ class TagList extends FormWidgetBase
         }
         elseif ($this->mode === static::MODE_RELATION) {
             $options = $this->getFieldOptionsForRelation();
+        }
+
+        foreach ($options as $value) {
+            if (!is_scalar($value)) {
+                throw new SystemException("Field options for [{$this->fieldName}] must be scalar value when used in a taglist.");
+            }
         }
 
         return $options;

@@ -1,8 +1,8 @@
-oc.Module.register('editor.extension.documentcomponent.base', function() {
+oc.Modules.register('editor.extension.documentcomponent.base', function() {
     'use strict';
 
-    const EditorTimeoutPromise = oc.Module.import('editor.timeoutpromise');
-    const DocumentUri = oc.Module.import('editor.documenturi');
+    const EditorTimeoutPromise = oc.Modules.import('editor.timeoutpromise');
+    const DocumentUri = oc.Modules.import('editor.documenturi');
 
     function patchDocumentMetadata(documentMetadata, responseMetadata) {
         if (!responseMetadata) {

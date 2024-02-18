@@ -8,8 +8,10 @@ use System;
 use October\Rain\Exception\ErrorHandler as ErrorHandlerBase;
 use October\Rain\Exception\ApplicationException;
 use October\Rain\Exception\ForbiddenException;
+use October\Rain\Exception\SystemException;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
+use Illuminate\Http\Exceptions\HttpResponseException;
 use Illuminate\Validation\ValidationException;
 use Illuminate\Contracts\Debug\ExceptionHandler;
 use Exception;
@@ -50,7 +52,11 @@ class ErrorHandler extends ErrorHandlerBase
         // }
 
         // Convert HTTP exceptions
-        if ($previousException instanceof HttpException) {
+        if (
+            $previousException instanceof SystemException ||
+            $previousException instanceof HttpException ||
+            $previousException instanceof HttpResponseException
+        ) {
             $exception = $previousException;
         }
 
@@ -162,17 +168,17 @@ class ErrorHandler extends ErrorHandlerBase
     {
         // Access denied error
         if ($exception instanceof ForbiddenException) {
-            return __('Access Denied');
+            return $exception->getMessage() ?: __("Access Denied");
         }
 
         // Not found error
         if ($exception instanceof NotFoundHttpException) {
-            return __('Not Found');
+            return $exception->getMessage() ?: __("Not Found");
         }
 
         // ApplicationException never displays a detailed error
         if ($exception instanceof ApplicationException) {
-            return $exception->getMessage();
+            return $exception->getMessage() ?: __("An Error Occurred");
         }
 
         // ValidationException should be shown to user
