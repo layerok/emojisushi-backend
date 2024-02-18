@@ -56,7 +56,7 @@ abstract class SortOrder implements CallsAnyMethod
      */
     public static function default()
     {
-        return 'bestseller';
+        return 'latest';
     }
 
     /**
