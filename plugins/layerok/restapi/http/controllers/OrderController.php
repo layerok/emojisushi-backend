@@ -161,6 +161,13 @@ class OrderController extends Controller
             ]);
         }
 
+        if(!isset($posterResult->response)) {
+            // probably poster pos api is down
+            throw new \ValidationException([
+                \Lang::get('layerok.restapi::validation.send_order_error')
+            ]);
+        }
+
         $poster_order_id = $posterResult->response->incoming_order_id + $add_to_poster_id;
 
         $receiptProducts = $cart->products()->get()->map(function (CartProduct $cartProduct) {
