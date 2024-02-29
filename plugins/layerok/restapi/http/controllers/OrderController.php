@@ -163,58 +163,35 @@ class OrderController extends Controller
 
         if(!isset($posterResult->response)) {
             // probably poster pos api is down
-            throw new \ValidationException([
-                \Lang::get('layerok.restapi::validation.send_order_error')
+            $api = new Api($spot->bot->token);
+
+            $api->sendMessage([
+                'text' => $this->generateReceipt(
+                    "Помилка відправки замовлення",
+                    $cart,
+                    $shippingMethod,
+                    $paymentMethod
+                ),
+                'parse_mode' => "html",
+                'chat_id' => $spot->chat->internal_id
             ]);
+
+             throw new \ValidationException([
+                 \Lang::get('layerok.restapi::validation.send_order_error')
+             ]);
         }
-
-        $poster_order_id = $posterResult->response->incoming_order_id + $add_to_poster_id;
-
-        $receiptProducts = $cart->products()->get()->map(function (CartProduct $cartProduct) {
-            $item = [];
-            $product = $cartProduct->product()->first();
-            $item['name'] = $product['name'];
-            $item['count'] = $cartProduct['quantity'];
-            return $item;
-        });
 
         $api = new Api($spot->bot->token);
 
-        $money = app()->make(Money::class);
-        $receipt = new Receipt();
-
-        $receipt
-            ->headline(\Lang::get('layerok.restapi::lang.receipt.new_order') . ' #' . $poster_order_id)
-            ->field(\Lang::get('layerok.restapi::lang.receipt.first_name'), $data['firstname'] ?? null)
-            ->field(\Lang::get('layerok.restapi::lang.receipt.last_name'), $data['lastname'] ?? null)
-            ->field(\Lang::get('layerok.restapi::lang.receipt.phone'), $data['phone'])
-            ->field(\Lang::get('layerok.restapi::lang.receipt.delivery_method'), $shippingMethod->name)
-            ->field(\Lang::get('layerok.restapi::lang.receipt.address'), $data['address'])
-            ->field(\Lang::get('layerok.restapi::lang.receipt.payment_method'), $paymentMethod->name)
-            ->field(\Lang::get('layerok.restapi::lang.receipt.change'), $data['change'] ?? null)
-            ->field(\Lang::get('layerok.restapi::lang.receipt.persons_amount'), $data['sticks'] ?? null)
-            ->field(\Lang::get('layerok.restapi::lang.receipt.comment'), $data['comment'] ?? null)
-            ->newLine()
-            ->b(\Lang::get('layerok.restapi::lang.receipt.order_items'))
-            ->colon()
-            ->newLine()
-            ->map($receiptProducts, function ($item) {
-                $this->product(
-                    $item['name'],
-                    $item['count']
-                )->newLine();
-            })
-            ->newLine()
-            ->field(\Lang::get('layerok.restapi::lang.receipt.total'), $money->format(
-                $cart->totals()->totalPostTaxes(),
-                null,
-                Currency::$defaultCurrency
-            ))
-            ->field(\Lang::get('layerok.restapi::lang.receipt.target'), 'site');
-
+        $poster_order_id = $posterResult->response->incoming_order_id + $add_to_poster_id;
 
         $telegramRes = $api->sendMessage([
-            'text' => $receipt->getText(),
+            'text' => $this->generateReceipt(
+                \Lang::get('layerok.restapi::lang.receipt.new_order') . ' #' . $poster_order_id,
+                $cart,
+                $shippingMethod,
+                $paymentMethod
+            ),
             'parse_mode' => "html",
             'chat_id' => $spot->chat->internal_id
         ]);
@@ -303,4 +280,51 @@ class OrderController extends Controller
         }
     }
 
+    public function generateReceipt(
+        string $headline,
+        Cart $cart,
+        ShippingMethod $shippingMethod,
+        PaymentMethod $paymentMethod
+    ): string {
+        $money = app()->make(Money::class);
+        $receipt = new Receipt();
+
+        $receiptProducts = $cart->products()->get()->map(function (CartProduct $cartProduct) {
+            $item = [];
+            $product = $cartProduct->product()->first();
+            $item['name'] = $product['name'];
+            $item['count'] = $cartProduct['quantity'];
+            return $item;
+        });
+
+        $receipt
+            ->headline($headline)
+            ->field(\Lang::get('layerok.restapi::lang.receipt.first_name'), $data['firstname'] ?? null)
+            ->field(\Lang::get('layerok.restapi::lang.receipt.last_name'), $data['lastname'] ?? null)
+            ->field(\Lang::get('layerok.restapi::lang.receipt.phone'), $data['phone'])
+            ->field(\Lang::get('layerok.restapi::lang.receipt.delivery_method'), $shippingMethod->name)
+            ->field(\Lang::get('layerok.restapi::lang.receipt.address'), $data['address'])
+            ->field(\Lang::get('layerok.restapi::lang.receipt.payment_method'), $paymentMethod->name)
+            ->field(\Lang::get('layerok.restapi::lang.receipt.change'), $data['change'] ?? null)
+            ->field(\Lang::get('layerok.restapi::lang.receipt.persons_amount'), $data['sticks'] ?? null)
+            ->field(\Lang::get('layerok.restapi::lang.receipt.comment'), $data['comment'] ?? null)
+            ->newLine()
+            ->b(\Lang::get('layerok.restapi::lang.receipt.order_items'))
+            ->colon()
+            ->newLine()
+            ->map($receiptProducts, function ($item) {
+                $this->product(
+                    $item['name'],
+                    $item['count']
+                )->newLine();
+            })
+            ->newLine()
+            ->field(\Lang::get('layerok.restapi::lang.receipt.total'), $money->format(
+                $cart->totals()->totalPostTaxes(),
+                null,
+                Currency::$defaultCurrency
+            ));
+
+        return $receipt->getText();
+    }
 }
