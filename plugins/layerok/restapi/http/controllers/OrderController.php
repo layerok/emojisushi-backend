@@ -13,6 +13,7 @@ use Layerok\PosterPos\Models\Cart;
 use Layerok\PosterPos\Models\CartProduct;
 use Layerok\PosterPos\Models\Spot;
 use Layerok\PosterPos\Models\WayforpaySettings;
+use Layerok\Restapi\Classes\Calver;
 use Maksa988\WayForPay\Facades\WayForPay;
 use October\Rain\Exception\ValidationException;
 use OFFLINE\Mall\Classes\Utils\Money;
@@ -170,15 +171,32 @@ class OrderController extends Controller
                     "Помилка відправки замовлення",
                     $cart,
                     $shippingMethod,
-                    $paymentMethod
+                    $paymentMethod,
+                    $data
                 ),
                 'parse_mode' => "html",
                 'chat_id' => $spot->chat->internal_id
             ]);
 
-             throw new \ValidationException([
-                 \Lang::get('layerok.restapi::validation.send_order_error')
-             ]);
+            $version = request()->header('x-web-client-version');
+
+            if(!$version) {
+                throw new \ValidationException([
+                    \Lang::get('layerok.restapi::validation.send_order_error')
+                ]);
+            }
+
+            $userWebClientVersion = Calver::fromString($version);
+
+            if($userWebClientVersion->isOlderThan(Calver::fromString('2024.2.11'))) {
+                throw new \ValidationException([
+                    \Lang::get('layerok.restapi::validation.send_order_error')
+                ]);
+            }
+
+            return response()->json([
+                'success' => true,
+            ]);
         }
 
         $api = new Api($spot->bot->token);
@@ -190,7 +208,8 @@ class OrderController extends Controller
                 \Lang::get('layerok.restapi::lang.receipt.new_order') . ' #' . $poster_order_id,
                 $cart,
                 $shippingMethod,
-                $paymentMethod
+                $paymentMethod,
+                $data
             ),
             'parse_mode' => "html",
             'chat_id' => $spot->chat->internal_id
@@ -284,7 +303,8 @@ class OrderController extends Controller
         string $headline,
         Cart $cart,
         ShippingMethod $shippingMethod,
-        PaymentMethod $paymentMethod
+        PaymentMethod $paymentMethod,
+        $data
     ): string {
         $money = app()->make(Money::class);
         $receipt = new Receipt();

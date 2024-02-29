@@ -13,13 +13,13 @@ class UserController extends Controller
     public function fetch(): JsonResponse
     {
         $jwtGuard = app('JWTGuard');
-        $data = User::with([
+        $user = User::with([
             'customer.addresses',
             'customer.orders.products.product.image_sets',
             'customer.orders.order_state'
         ])
             ->find($jwtGuard->user()->id);
-        return response()->json($data);
+        return response()->json($user);
     }
 
     public function save()
