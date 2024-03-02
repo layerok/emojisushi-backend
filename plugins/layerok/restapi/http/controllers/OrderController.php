@@ -178,6 +178,7 @@ class OrderController extends Controller
                 'chat_id' => $spot->chat->internal_id
             ]);
 
+            // todo: validate calver version
             $version = request()->header('x-web-client-version');
 
             if(!$version) {
@@ -346,5 +347,9 @@ class OrderController extends Controller
             ));
 
         return $receipt->getText();
+    }
+
+    public function isDebugOn() {
+        return !!request()->header('x-debug-mode');
     }
 }
