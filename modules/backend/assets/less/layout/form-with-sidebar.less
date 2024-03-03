@@ -1,0 +1,49 @@
+.form-with-sidebar {
+    .form-with-sidebar-canvas {
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        left: 0;
+        right: 0;
+    }
+
+    > .form-sidebar {
+        width: 300px;
+        background: var(--bs-tertiary-bg);
+        border-left: 1px solid @primary-border;
+    }
+}
+
+@media (max-width: @screen-md) {
+    .form-with-sidebar {
+        flex-direction: column-reverse;
+
+        .form-with-sidebar-canvas {
+            position: relative;
+        }
+
+        > .form-contents {
+            height: auto;
+
+            .control-breadcrumb {
+                display: none;
+            }
+        }
+
+        > .form-sidebar {
+            width: 100% !important;
+            height: auto;
+            border-left: none;
+            border-bottom: 1px solid @primary-border;
+
+            .control-scrollbar {
+                overflow: visible;
+                height: auto;
+
+                .scrollbar-scrollbar {
+                    display: none !important;
+                }
+            }
+        }
+    }
+}

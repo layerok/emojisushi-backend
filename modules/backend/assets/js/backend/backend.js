@@ -17,18 +17,6 @@ function unregisterServiceWorkers() {
     }
 }
 
-// Persist site selection
-//
-addEventListener('ajax:setup', function(event) {
-    var siteId = $('meta[name="backend-site"]').attr('content');
-    if (siteId) {
-        var options = event.detail.context.options;
-        if (!options.headers) {
-            options.headers = {};
-        }
-        options.headers['X-SITE-ID'] = siteId;
-    }
-});
 
 // Path helpers
 //
@@ -166,11 +154,11 @@ oc.registerControl('color-mode-switcher', class extends oc.ControlBase {
     updateUi() {
         if (this.getCurrentMode() === 'dark') {
             this.$label.innerText = this.element.dataset.langLightMode;
-            this.$icon.setAttribute('class', 'icon-sun-o');
+            this.$icon.setAttribute('class', 'icon-sun');
         }
         else {
             this.$label.innerText = this.element.dataset.langDarkMode;
-            this.$icon.setAttribute('class', 'icon-moon-o');
+            this.$icon.setAttribute('class', 'icon-moon');
         }
     }
 

@@ -833,7 +833,7 @@
             message = 'Error uploading file'
         }
 
-        $.oc.alert(message)
+        oc.alert(message)
     }
 
     //
@@ -911,11 +911,11 @@
         var items = this.$el.get(0).querySelectorAll('[data-type="media-item"].selected')
 
         if (!items.length) {
-            $.oc.alert(this.options.deleteEmpty)
+            oc.alert(this.options.deleteEmpty)
             return
         }
 
-        $.oc.confirm(this.options.deleteConfirm, this.proxy(this.deleteConfirmation))
+        oc.confirm(this.options.deleteConfirm, this.proxy(this.deleteConfirmation))
     }
 
     MediaManager.prototype.deleteConfirmation = function(confirmed) {
@@ -990,7 +990,7 @@
         var items = this.$el.get(0).querySelectorAll('[data-type="media-item"].selected')
 
         if (!items.length) {
-            $.oc.alert(this.options.moveEmpty)
+            oc.alert(this.options.moveEmpty)
             return
         }
 

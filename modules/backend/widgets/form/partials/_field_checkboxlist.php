@@ -54,7 +54,7 @@
                     <?= $field->disabled ? 'disabled' : '' ?>
                     <?= $field->readOnly ? 'readonly' : '' ?>
                     data-field-checkboxlist-all>
-                    <i class="octo-icon-check-multi"></i>
+                    <i class="icon-check-multi"></i>
                     <span class="button-label"><?= e(trans('backend::lang.form.select_all')) ?></span>
                 </a>
 
@@ -63,7 +63,7 @@
                     <?= $field->disabled ? 'disabled' : '' ?>
                     <?= $field->readOnly ? 'readonly' : '' ?>
                     data-field-checkboxlist-none>
-                    <i class="octo-icon-eraser"></i>
+                    <i class="icon-eraser"></i>
                     <span class="button-label"><?= e(trans('backend::lang.form.select_none')) ?></span>
                 </a>
             </div>

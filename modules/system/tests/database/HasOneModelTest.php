@@ -85,7 +85,7 @@ class HasOneModelTest extends PluginTestCase
         $phone = Phone::create(['number' => '0404040404', 'author_id' => $author->id]);
         Model::reguard();
 
-        $this->assertEquals($phone->id, $author->getRelationValue('phone'));
+        $this->assertEquals($phone->id, $author->getRelationSimpleValue('phone'));
     }
 
     public function testDeferredBinding()

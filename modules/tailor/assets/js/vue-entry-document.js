@@ -57,7 +57,7 @@ oc.registerControl('vue-entry-document', class extends oc.VueControlBase {
         if (this.isDraftable() && this.state.initial.isDraft && !this.state.initial.isFirstDraft) {
             this.state.toolbarExtraButtons.push({
                 type: 'button',
-                icon: 'octo-icon-notes-edit',
+                icon: 'icon-notes-edit',
                 label: oc.lang.get('draft_notes'),
                 pressed: this.state.showDraftNotes,
                 command: 'togglenotes'
@@ -110,7 +110,7 @@ oc.registerControl('vue-entry-document', class extends oc.VueControlBase {
         if (this.state.initial.canRestore) {
                 this.state.toolbarElements.push({
                     type: 'button',
-                    icon: 'octo-icon-refresh',
+                    icon: 'icon-refresh',
                     label: oc.lang.get('form_restore'),
                     tooltip: oc.lang.get('form_restore'),
                     hotkey: 'ctrl+enter, cmd+enter',
@@ -125,7 +125,7 @@ oc.registerControl('vue-entry-document', class extends oc.VueControlBase {
             if (!this.state.initial.isSingular && (this.state.initial.canPublish || this.state.initial.isDraft)) {
                 this.state.toolbarElements.push({
                     type: 'button',
-                    icon: 'octo-icon-keyboard-return',
+                    icon: 'icon-keyboard-return',
                     label: oc.lang.get('form_save_close'),
                     tooltip: oc.lang.get('form_save_close'),
                     hotkey: 'ctrl+enter, cmd+enter',
@@ -152,7 +152,7 @@ oc.registerControl('vue-entry-document', class extends oc.VueControlBase {
         if (this.state.initial.hasPreviewPage && !this.state.initial.isCreateAction) {
             this.state.toolbarElements.push({
                 type: 'button',
-                icon: 'octo-icon-location-target',
+                icon: 'icon-location-target',
                 command: 'onPreview',
                 label: oc.lang.get('preview')
             });
@@ -185,7 +185,7 @@ oc.registerControl('vue-entry-document', class extends oc.VueControlBase {
 
         return {
             type: 'button',
-            icon: 'octo-icon-save',
+            icon: 'icon-save-cloud',
             label: saveButtonLabel,
             tooltip: saveButtonLabel,
             hotkey: 'ctrl+s, cmd+s',
@@ -283,7 +283,7 @@ oc.registerControl('vue-entry-document', class extends oc.VueControlBase {
 
         return {
             type: 'button',
-            icon: 'octo-icon-delete',
+            icon: 'icon-delete',
             command: deleteButtonCmd,
             hotkey: 'shift+option+d',
             label: deleteButtonLabel,
@@ -389,7 +389,7 @@ oc.registerControl('vue-entry-document', class extends oc.VueControlBase {
         }
 
         try {
-            await $.oc.confirmPromise(oc.lang.get('confirm_create_draft'));
+            await oc.confirmPromise(oc.lang.get('confirm_create_draft'));
 
             this.onCommand('form:onCreateDraft', isHotkey, ev, targetElement, customData, throwOnError);
         }

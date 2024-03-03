@@ -131,7 +131,7 @@ class MorphOneModelTest extends PluginTestCase
         ]);
         Model::reguard();
 
-        $this->assertEquals($meta->id, $author->getRelationValue('meta'));
+        $this->assertEquals($meta->id, $author->getRelationSimpleValue('meta'));
     }
 
     public function testDeferredBinding()

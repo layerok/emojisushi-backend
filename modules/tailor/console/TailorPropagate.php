@@ -78,12 +78,14 @@ class TailorPropagate extends Command
 
         if ($this->siteObj) {
             [$records, $otherSites] = Site::withContext($this->siteObj->id, function() use ($blueprint) {
-                return [EntryRecord::inSectionUuid($blueprint->uuid)->get(), Site::listSiteIdsInContext()];
+                $instance = EntryRecord::inSectionUuid($blueprint->uuid);
+                return [$instance->get(), $instance->getMultisiteSyncSites()];
             });
         }
         else {
-            $otherSites = Site::listSiteIdsInContext();
-            $records = EntryRecord::inSectionUuid($blueprint->uuid)->get();
+            $instance = EntryRecord::inSectionUuid($blueprint->uuid);
+            $otherSites = $instance->getMultisiteSyncSites();
+            $records = $instance->get();
         }
 
         $this->line('- <info>'.$blueprint->name.'</info>: '.$records->count() .' record(s)');

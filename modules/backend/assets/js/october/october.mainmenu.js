@@ -13,7 +13,7 @@
             $leftMenuMainMenu = $leftMenuElement.find('[data-control=toolbar]'),
             $leftMenuExtrasMenu = $leftMenuElement.find('.mainmenu-extras'),
             $mainMenuToolbar = $('.layout-mainmenu [data-control=toolbar]'),
-            $menuContainer = $('#layout-mainmenu').closest('.layout-row'),
+            $menuContainer = $('#layout-mainmenu'),
             menuHeight = $.oc.backendCalculateTopContainerOffset(),
             responsiveMenu = new $.oc.responsiveMenu(hideMenus),
             leftMenuDebounceTimer = null,

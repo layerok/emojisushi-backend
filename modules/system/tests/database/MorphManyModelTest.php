@@ -76,7 +76,7 @@ class MorphManyModelTest extends PluginTestCase
         $event2 = EventLog::create(['action' => "user-updated", 'related_id' => $author->id, 'related_type' => 'Database\Tester\Models\Author']);
         Model::reguard();
 
-        $this->assertEquals([$event1->id, $event2->id], $author->getRelationValue('event_log'));
+        $this->assertEquals([$event1->id, $event2->id], $author->getRelationSimpleValue('event_log'));
     }
 
     public function testDeferredBinding()

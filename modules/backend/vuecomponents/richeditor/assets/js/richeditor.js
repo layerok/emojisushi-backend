@@ -3,6 +3,7 @@ oc.Modules.register('backend.component.richeditor', function () {
         const options = JSON.parse(component.$el.getAttribute('data-configuration'));
         const $textarea = $(component.$refs.textarea);
         let froalaOptions = {
+            ...component.editorOptions,
             editorClass: 'control-richeditor',
             language: options.editorLang,
             toolbarSticky: false
@@ -163,6 +164,7 @@ oc.Modules.register('backend.component.richeditor', function () {
             },
             readOnly: Boolean,
             useLineBreaks: Boolean,
+            editorOptions: Object,
             toolbarButtons: Array,
             fullPage: {
                 type: Boolean,

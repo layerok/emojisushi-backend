@@ -279,10 +279,10 @@ trait NavigationRegistry
         return [
             'tailor' => [
                 'label' => 'Content',
-                'icon' => 'icon-pencil-square-o',
+                'icon' => 'icon-pencil-square',
                 'iconSvg' => 'modules/tailor/assets/images/tailor-icon.svg',
                 'url' => Backend::url('tailor/entries'),
-                'order' => 100,
+                'order' => 140,
                 'sideMenu' => $sideMenu,
                 'permissions' => $this->buildParentNavigationPermissions($sideMenu),
             ]

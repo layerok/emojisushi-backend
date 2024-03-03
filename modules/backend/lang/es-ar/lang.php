@@ -95,10 +95,6 @@
     'prev_page' => 'Página anterior',
     'next_page' => 'Página siguiente',
     'loading' => 'Cargando...',
-    'setup_title' => 'Configuración de la lista',
-    'setup_help' => 'Utilice las casillas de verificación para seleccionar las columnas que desea ver en la lista. Puede cambiar la posición de las columnas arrastrándolas hacia arriba o hacia abajo.',
-    'records_per_page' => 'Registros por página',
-    'records_per_page_help' => 'Seleccione el número de registros por página para mostrar. Tenga en cuenta que un alto número de registros en una sola página puede reducir el rendimiento.',
   ],
   'fileupload' => [],
   'form' => [
@@ -144,7 +140,6 @@
     'invalid_action_multi' => 'Esta acción no se puede realizar en una relación múltiple.',
     'help' => 'Haga clic en un elemento para añadir.',
     'add' => 'Agregar',
-    'add_selected' => 'Agregar seleccionado',
     'cancel' => 'Cancelar',
     'create' => 'Crear',
     'update' => 'Actualizar',

@@ -56,12 +56,11 @@
         <?php endif ?>
     <?php endforeach ?>
 
-    <?php if ($showSetup): ?>
-        <th class="list-setup">
+    <?php if (!$useStructure): ?>
+        <th class="list-setup setup-show-structure">
             <a href="javascript:;"
-                title="<?= e(trans('backend::lang.list.setup_title')) ?>"
-                data-control="popup"
-                data-handler="<?= $this->getEventHandler('onLoadSetup') ?>"><span></span></a>
+                title="<?= __("Show Structure") ?>"
+                data-request="<?= $this->getEventHandler('onShowStructure') ?>"><span></span></a>
         </th>
     <?php endif ?>
 </tr>

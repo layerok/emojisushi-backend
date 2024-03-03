@@ -1,7 +1,7 @@
 <?php namespace Backend\FormWidgets;
 
 use App;
-use File;
+use Config;
 use Request;
 use BackendAuth;
 use Backend\Classes\FormWidgetBase;
@@ -58,6 +58,15 @@ class RichEditor extends FormWidgetBase
      */
     public $externalToolbarAppState = null;
 
+    /**
+     * @var array|null editorOptions configured in the Froala editor. For example:
+     *
+     * - imageDefaultWidth: Sets the default width of the image when it is inserted in the rich text editor. Setting it to `0` will not set any width.
+     * - imageDefaultAlign: Sets the default image alignment when it is inserted in the rich text editor. Possible values are `left`, `center` and `right`.
+     * - imageDefaultDisplay: Sets the default display for an image when is is inserted in the rich text. Possible options are: `inline` and `block`.
+     */
+    public $editorOptions = null;
+
     //
     // Object Properties
     //
@@ -83,6 +92,7 @@ class RichEditor extends FormWidgetBase
             'legacyMode',
             'showMargins',
             'useLineBreaks',
+            'editorOptions',
             'externalToolbarAppState',
             'externalToolbarEventBus'
         ]);
@@ -108,6 +118,7 @@ class RichEditor extends FormWidgetBase
     {
         $this->vars['field'] = $this->formField;
         $this->vars['editorLang'] = $this->getValidEditorLang();
+        $this->vars['editorOptions'] = $this->getValidEditorOptions();
         $this->vars['fullPage'] = $this->fullPage;
         $this->vars['useLineBreaks'] = $this->useLineBreaks;
         $this->vars['stretch'] = $this->formField->stretch;
@@ -169,9 +180,8 @@ class RichEditor extends FormWidgetBase
 
     /**
      * getValidEditorLang returns a proposed language code for Froala.
-     * @return string|null
      */
-    protected function getValidEditorLang()
+    protected function getValidEditorLang(): ?string
     {
         $locale = App::getLocale();
 
@@ -181,5 +191,23 @@ class RichEditor extends FormWidgetBase
         }
 
         return null;
+    }
+
+    /**
+     * getValidEditorOptions returns custom editor options passed directly to the JS control
+     */
+    protected function getValidEditorOptions(): array
+    {
+        $config = [];
+
+        if (is_array($this->editorOptions)) {
+            $config += $this->editorOptions;
+        }
+
+        if (is_array($fileConfig = Config::get('editor.html_defaults.editor_options'))) {
+            $config += $fileConfig;
+        }
+
+        return $config;
     }
 }

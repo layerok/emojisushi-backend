@@ -185,21 +185,4 @@ class Fieldset extends FieldsetDefinition
 
         return $columnNames;
     }
-
-    /**
-     * getRelationControllerFields returns fields that should be registered with the
-     * RelationController behavior
-     */
-    public function getRelationControllerFields(): array
-    {
-        $fields = [];
-
-        foreach ($this->getAllFields() as $fieldObj) {
-            if ($fieldObj->type === 'entries' && $fieldObj->displayMode === 'controller') {
-                $fields[] = $fieldObj;
-            }
-        }
-
-        return $fields;
-    }
 }

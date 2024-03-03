@@ -40,6 +40,7 @@
         stylesheet: null,
         fullpage: false,
         editorLang: 'en',
+        editorOptions: null,
         useMediaManager: false,
         toolbarButtons: null,
         allowEmptyTags: null,
@@ -80,6 +81,7 @@
 
     RichEditor.prototype.initFroala = function() {
         var froalaOptions = {
+            ...this.options.editorOptions || {},
             editorClass: 'control-richeditor',
             language: this.options.editorLang,
             fullPage: this.options.fullpage,

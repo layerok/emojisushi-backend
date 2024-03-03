@@ -181,7 +181,7 @@
 
         $buttons.each(function() {
             var $button = $(this),
-                $icon = $button.find('i[class^=octo-icon]');
+                $icon = $button.find('i[class^=icon]');
 
             that.toolbarExtensionPoint.push(
                 {
@@ -514,7 +514,7 @@
             $button = $(ev.target).closest('.toolbar-clear-file'),
             $currentObject = $('.upload-object:first', this.$filesContainer);
 
-        $.oc.confirm($button.attr('data-request-confirm'), function() {
+        oc.confirm($button.attr('data-request-confirm'), function() {
             self.removeObjectInternal($form, $button, $currentObject);
         });
 
@@ -528,7 +528,7 @@
             $button = $(ev.target).closest('.toolbar-delete-selected'),
             $currentObjects = $('.upload-object:has(input[data-record-selector]:checked)', this.$filesContainer);
 
-        $.oc.confirm($button.attr('data-request-confirm'), function() {
+        oc.confirm($button.attr('data-request-confirm'), function() {
             $currentObjects.addClass('is-loading');
 
             $currentObjects.each(function() {

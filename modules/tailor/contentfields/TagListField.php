@@ -3,9 +3,10 @@
 use Backend\FormWidgets\TagList;
 use October\Contracts\Element\ListElement;
 use October\Contracts\Element\FilterElement;
+use October\Contracts\Element\FormElement;
 
 /**
- * TagListField
+ * TagListField is locked to array mode for JSON query support
  *
  * @package october\tailor
  * @author Alexey Bobkov, Samuel Georges
@@ -13,13 +14,24 @@ use October\Contracts\Element\FilterElement;
 class TagListField extends FallbackField
 {
     /**
+     * defineFormField will define how a field is displayed in a form.
+     */
+    public function defineFormField(FormElement $form, $context = null)
+    {
+        $form->addFormField($this->fieldName, $this->label)
+            ->useConfig($this->config)
+            ->mode(TagList::MODE_ARRAY)
+        ;
+    }
+
+    /**
      * defineListColumn
      */
     public function defineListColumn(ListElement $list, $context = null)
     {
         if (is_array($this->column)) {
             $list->defineColumn($this->fieldName, $this->label)
-                ->displayAs($this->isModeUsingArray() ? 'selectable' : 'text')
+                ->displayAs('selectable')
                 ->shortLabel($this->shortLabel)
                 ->options($this->options)
                 ->useConfig($this->column ?: [])
@@ -40,7 +52,7 @@ class TagListField extends FallbackField
             }
 
             $filter->defineScope($this->fieldName, $this->label)
-                ->displayAs($this->isModeUsingArray() ? 'group' : 'text')
+                ->displayAs('group')
                 ->shortLabel($this->shortLabel)
                 ->options($options)
                 ->useConfig($this->scope ?: [])
@@ -53,9 +65,7 @@ class TagListField extends FallbackField
      */
     public function extendModelObject($model)
     {
-        if ($this->isModeUsingArray()) {
-            $model->addJsonable($this->fieldName);
-        }
+        $model->addJsonable($this->fieldName);
     }
 
     /**
@@ -63,21 +73,6 @@ class TagListField extends FallbackField
      */
     public function extendDatabaseTable($table)
     {
-        // @deprecated should be mediumText in v4
-        $table->text($this->fieldName)->nullable();
-        // $table->mediumText($this->fieldName)->nullable();
-    }
-
-    /**
-     * isModeUsingArray
-     */
-    protected function isModeUsingArray()
-    {
-        // @deprecated default to array in v4
-        if (!$this->mode) {
-            return false;
-        }
-
-        return !$this->mode || $this->mode === TagList::MODE_ARRAY;
+        $table->mediumText($this->fieldName)->nullable();
     }
 }

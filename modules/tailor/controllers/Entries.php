@@ -16,7 +16,6 @@ use Tailor\Classes\Blueprint\StructureBlueprint;
 use ApplicationException;
 use ForbiddenException;
 use NotFoundException;
-use SystemException;
 
 /**
  * Entries controller
@@ -47,11 +46,6 @@ class Entries extends WildcardController
      * @var string formConfig is `FormController` configuration.
      */
     public $formConfig = 'config_form.yaml';
-
-    /**
-     * @var string relationConfig is `RelationController` configuration.
-     */
-    public $relationConfig = 'config_relation.yaml';
 
     /**
      * @var \Tailor\Classes\Blueprint\EntryBlueprint activeSource
@@ -489,9 +483,9 @@ class Entries extends WildcardController
     {
         // Relation Controller
         if (post('_relation_field')) {
-            $widget = $this->relationGetManageWidget();
+            $widget = $this->relationGetManageFormWidget();
             $this->onRelationManageForm();
-            $this->relationGetManageWidget()->setFormValues();
+            $widget->setFormValues();
             return ['#'.$widget->getId('managePopup') => $this->relationMakePartial('manage_form')];
         }
 
@@ -519,59 +513,6 @@ class Entries extends WildcardController
         $config->widgetAlias = camel_case(
             $definition . '-' . $section->handleSlug
         );
-
-        return $config;
-    }
-
-    /**
-     * relationGetConfig
-     */
-    public function relationGetConfig()
-    {
-        $config = $this->asExtension('RelationController')->relationGetConfig();
-
-        $indexer = BlueprintIndexer::instance();
-
-        $fields = $indexer
-            ->findContentFieldset($this->activeSource->uuid)
-            ->getRelationControllerFields();
-
-        foreach ($fields as $fieldObj) {
-            $uuid = $indexer->hasSection($fieldObj->source);
-            if (!$uuid) {
-                throw new SystemException("Invalid source '{$fieldObj->source}' for '{$fieldObj->fieldName}'.");
-            }
-
-            $blueprint = BlueprintIndexer::instance()->findSection($uuid);
-
-            $customMessages = array_merge((array) $blueprint->customMessages, (array) $fieldObj->customMessages);
-
-            $toolbarButtons = $fieldObj->toolbarButtons;
-            if (!$toolbarButtons) {
-                $toolbarButtons = $blueprint->navigation ? 'add|remove' : 'create|delete';
-            }
-
-            $fieldName = $fieldObj->fieldName;
-            $fieldConfig = $config->_default_config;
-            $fieldConfig['label'] = $fieldObj->label;
-            $fieldConfig['customMessages'] = $customMessages;
-            $fieldConfig['popupSize'] = $fieldObj->popupSize;
-            $fieldConfig['view']['toolbarButtons'] = $toolbarButtons;
-            $fieldConfig['view']['recordsPerPage'] = $fieldObj->recordsPerPage;
-
-            if ($blueprint instanceof StructureBlueprint) {
-                $fieldConfig['structure'] = [
-                    'maxDepth' => $blueprint->getMaxDepth(),
-                    'showTree' => $blueprint->hasTree(),
-                ] + ((array) $blueprint->structure);
-            }
-
-            if ($fieldObj->span === 'adaptive') {
-                $fieldConfig['externalToolbarAppState'] = 'toolbarExtensionPoint';
-            }
-
-            $config->{$fieldName} = $fieldConfig;
-        }
 
         return $config;
     }

@@ -28,5 +28,6 @@ module.exports = [
     "october/october.tabformexpandcontrols.js",
 
     "backend/backend.js",
+    "backend/backend.ajax.js",
     "backend/backend.fixes.js",
 ];

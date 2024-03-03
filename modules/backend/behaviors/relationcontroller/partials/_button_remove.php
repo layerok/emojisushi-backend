@@ -17,6 +17,6 @@
         data-list-checked-request
         data-stripe-load-indicator
     >
-        <i class="octo-icon-list-remove"></i> <?= e($this->relationGetMessage('buttonRemoveMany')) ?> <span data-list-checked-counter></span>
+        <i class="icon-list-remove"></i> <?= e($this->relationGetMessage('buttonRemoveMany')) ?> <span data-list-checked-counter></span>
     </button>
 <?php endif ?>

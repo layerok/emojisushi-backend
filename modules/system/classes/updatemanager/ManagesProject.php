@@ -2,6 +2,7 @@
 
 use File;
 use Cache;
+use System as SystemHelper;
 use System\Models\Parameter;
 use October\Rain\Composer\Manager as ComposerManager;
 
@@ -200,7 +201,8 @@ trait ManagesProject
 
         $data = $this->requestServerData('package/browse', [
             'type' => $type,
-            'page' => $page
+            'page' => $page,
+            'version' => SystemHelper::VERSION
         ]);
 
         // 60 minutes

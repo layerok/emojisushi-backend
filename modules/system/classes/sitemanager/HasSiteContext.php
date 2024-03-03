@@ -23,15 +23,31 @@ trait HasSiteContext
     protected $siteContext = null;
 
     /**
-     * listSiteIdsInContext
+     * listSiteIdsInGroup
      */
-    public function listSiteIdsInContext()
+    public function listSiteIdsInGroup($siteId = null)
     {
-        if ($groupId = $this->getSiteFromContext()?->group_id) {
+        $site = $siteId ? $this->getSiteFromId($siteId) : $this->getSiteFromContext();
+
+        if ($groupId = $site?->group_id) {
             return $this->listSites()->where('group_id', $groupId)->pluck('id')->all();
         }
 
         return $this->listSiteIds();
+    }
+
+    /**
+     * listSiteIdsInLocale
+     */
+    public function listSiteIdsInLocale($siteId = null)
+    {
+        $site = $siteId ? $this->getSiteFromId($siteId) : $this->getSiteFromContext();
+
+        if ($localeCode = $site?->hard_locale) {
+            return $this->listSites()->where('locale', $localeCode)->pluck('id')->all();
+        }
+
+        return [];
     }
 
     /**
@@ -47,6 +63,21 @@ trait HasSiteContext
         }
 
         return (int) $site->id;
+    }
+
+    /**
+     * getSiteCodeFromContext
+     * @return string|null
+     */
+    public function getSiteCodeFromContext()
+    {
+        $site = $this->getSiteFromContext();
+
+        if (!$site || !$site->code) {
+            return null;
+        }
+
+        return (string) $site->code;
     }
 
     /**
@@ -114,5 +145,13 @@ trait HasSiteContext
                 $this->broadcastSiteChange($previousId);
             }
         }
+    }
+
+    /**
+     * @deprecated
+     */
+    public function listSiteIdsInContext()
+    {
+        return $this->listSiteIdsInGroup();
     }
 }

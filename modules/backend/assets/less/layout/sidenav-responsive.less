@@ -74,7 +74,7 @@
     padding-bottom: 0;
 }
 
-.layout > .layout-row.secondary-nav {
+.secondary-nav {
     display: none;
 }
 
@@ -86,18 +86,16 @@ body:not(.drag) {
     }
 }
 
-.show-responsive-sidenav() {
-    .layout > .layout-row.secondary-nav {
-        display: table-row;
-    }
-}
-
 body.sidenav-responsive,
 html.user-touch {
     // Touch devices use responsive secondary nav
-    .show-responsive-sidenav();
+    .secondary-nav {
+        display: block;
+    }
 }
 
 @media (max-width: @screen-xs-max) {
-    .show-responsive-sidenav();
+    .secondary-nav {
+        display: block;
+    }
 }

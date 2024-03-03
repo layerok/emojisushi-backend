@@ -5,6 +5,7 @@ use System\Classes\MailManager;
 use System\Classes\SettingsManager;
 use Backend\Models\UserRole;
 use Backend\Models\BrandSetting;
+use Backend\Models\Dashboard;
 use October\Rain\Support\ModuleServiceProvider;
 
 /**
@@ -20,7 +21,6 @@ class ServiceProvider extends ModuleServiceProvider
         parent::register('backend');
 
         $this->registerSingletons();
-        $this->registerMailer();
     }
 
     /**
@@ -36,22 +36,38 @@ class ServiceProvider extends ModuleServiceProvider
      */
     protected function registerSingletons()
     {
-        // See notes in \System\ServiceProvider::registerSingletons
-        // this had to be moved kept there so it is available before
-        // plugins. The load order is system, plugins, modules.
+        $this->app->singleton('backend.helper', \Backend\Helpers\Backend::class);
+        $this->app->singleton('backend.menu', \Backend\Classes\NavigationManager::class);
+        $this->app->singleton('backend.roles', \Backend\Classes\RoleManager::class);
+        $this->app->singleton('backend.widgets', \Backend\Classes\WidgetManager::class);
+        $this->app->singleton('backend.dashboards', \Backend\Classes\DashboardManager::class);
+        $this->app->singleton('backend.reports', \Backend\Classes\ReportDataSourceManager::class);
+
+        $this->app->singleton('backend.auth', fn () => \Backend\Classes\AuthManager::instance());
     }
 
     /**
-     * registerMailer templates
+     * registerReportWidgets
      */
-    protected function registerMailer()
+    public function registerReportWidgets()
     {
-        MailManager::registerCallback(function ($manager) {
-            $manager->registerMailTemplates([
-                'backend::mail.invite',
-                'backend::mail.restore',
-            ]);
-        });
+        return [
+            \Backend\ReportWidgets\Welcome::class => [
+                'label' => 'backend::lang.dashboard.welcome.widget_title_default',
+                'context' => 'dashboard'
+            ],
+        ];
+    }
+
+    /**
+     * registerMailTemplates
+     */
+    public function registerMailTemplates()
+    {
+        return [
+            'backend:invite' => 'backend::mail.invite',
+            'backend:restore' => 'backend::mail.restore',
+        ];
     }
 
     /**
@@ -65,22 +81,9 @@ class ServiceProvider extends ModuleServiceProvider
                 'icon' => 'icon-dashboard',
                 'iconSvg' => 'modules/backend/assets/images/dashboard-icon.svg',
                 'url' => Backend::url('backend'),
-                'permissions' => ['dashboard'],
+                'permissions' => ['dashboard.*', 'dashboard'],
                 'order' => 10
             ]
-        ];
-    }
-
-    /**
-     * registerReportWidgets
-     */
-    public function registerReportWidgets()
-    {
-        return [
-            \Backend\ReportWidgets\Welcome::class => [
-                'label' => 'backend::lang.dashboard.welcome.widget_title_default',
-                'context' => 'dashboard'
-            ],
         ];
     }
 
@@ -110,27 +113,18 @@ class ServiceProvider extends ModuleServiceProvider
 
             // Dashboard
             'dashboard' => [
-                'label' => 'View the Dashboard',
+                'label' => 'Access the Dashboard',
+                'comment' => 'backend::lang.permissions.access_dashboard',
                 'tab' => 'Dashboard',
-                'order' => 200
-            ],
-            'dashboard.create' => [
-                'label' => 'Create Widgets',
-                'tab' => 'Dashboard',
-                'order' => 300,
+                'order' => 600
             ],
             'dashboard.manage' => [
-                'label' => 'Manage Widgets',
+                'label' => 'Manage Dashboards',
+                'comment' => 'backend::lang.permissions.create_edit_dashboards',
                 'tab' => 'Dashboard',
-                'order' => 400,
+                'order' => 600
             ],
-            'dashboard.defaults' => [
-                'label' => 'Set the Default Dashboard',
-                'tab' => 'Dashboard',
-                'order' => 500,
-                'roles' => UserRole::CODE_DEVELOPER,
-            ],
-
+            // ] + Dashboard::getPermissionDefinitions() + [
             // Administrators
             'admins.manage' => [
                 'label' => 'Manage Admins',
@@ -243,7 +237,7 @@ class ServiceProvider extends ModuleServiceProvider
                 'label' => "Administrators",
                 'description' => "Manage back-end administrator users, groups and permissions.",
                 'category' => SettingsManager::CATEGORY_TEAM,
-                'icon' => 'octo-icon-users',
+                'icon' => 'icon-text-users',
                 'url' => Backend::url('backend/users'),
                 'permissions' => ['admins.manage'],
                 'order' => 400
@@ -252,7 +246,7 @@ class ServiceProvider extends ModuleServiceProvider
                 'label' => "Manage Roles",
                 'description' => "Define permissions for administrators based on their role.",
                 'category' => SettingsManager::CATEGORY_TEAM,
-                'icon' => 'octo-icon-id-card-1',
+                'icon' => 'icon-id-card-1',
                 'url' => Backend::url('backend/userroles'),
                 'permissions' => ['admins.roles'],
                 'order' => 410
@@ -261,7 +255,7 @@ class ServiceProvider extends ModuleServiceProvider
                 'label' => "Manage Groups",
                 'description' => "Add administrators to groups used for notifications and features.",
                 'category' => SettingsManager::CATEGORY_TEAM,
-                'icon' => 'octo-icon-user-group',
+                'icon' => 'icon-user-group',
                 'url' => Backend::url('backend/usergroups'),
                 'permissions' => ['admins.groups'],
                 'order' => 420
@@ -270,7 +264,7 @@ class ServiceProvider extends ModuleServiceProvider
                 'label' => "Customize Backend",
                 'description' => "Customize the administration area such as name, colors and logo.",
                 'category' => SettingsManager::CATEGORY_SYSTEM,
-                'icon' => 'octo-icon-paint-brush-1',
+                'icon' => 'icon-text-paint-brush',
                 'class' => \Backend\Models\BrandSetting::class,
                 'permissions' => ['settings.customize_backend'],
                 'order' => 500,
@@ -290,7 +284,7 @@ class ServiceProvider extends ModuleServiceProvider
                 'label' => "My Account",
                 'description' => "Update your account details such as name, email address and password.",
                 'category' => SettingsManager::CATEGORY_MYSETTINGS,
-                'icon' => 'octo-icon-user-account',
+                'icon' => 'icon-user-account',
                 'url' => Backend::url('backend/users/myaccount'),
                 'order' => 500,
                 'context' => 'mysettings',
@@ -300,7 +294,7 @@ class ServiceProvider extends ModuleServiceProvider
                 'label' => "Backend Preferences",
                 'description' => "Manage your account preferences such as desired language.",
                 'category' => SettingsManager::CATEGORY_MYSETTINGS,
-                'icon' => 'octo-icon-app-window',
+                'icon' => 'icon-app-window',
                 'url' => Backend::url('backend/preferences'),
                 'permissions' => ['preferences'],
                 'order' => 510,
@@ -324,7 +318,7 @@ class ServiceProvider extends ModuleServiceProvider
                 'label' => 'Access Log',
                 'description' => 'View a list of successful back-end user sign ins.',
                 'category' => SettingsManager::CATEGORY_LOGS,
-                'icon' => 'octo-icon-lock',
+                'icon' => 'icon-text-lock',
                 'url' => Backend::url('backend/accesslogs'),
                 'permissions' => ['utilities.logs'],
                 'order' => 920

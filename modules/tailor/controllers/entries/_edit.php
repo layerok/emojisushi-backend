@@ -1,8 +1,8 @@
 <?php if (!$this->fatalError): ?>
-    <?= Form::open(['id' => 'tailor-form', 'class' => 'layout stretch', 'data-change-monitor' => true]) ?>
-        <div class="layout-row" data-control="vue-app">
-            <div class="padded-container layout form-document-layout">
-                <div class="layout-row min-size">
+    <?= Form::open(['id' => 'tailor-form', 'class' => 'position-relative h-100', 'data-change-monitor' => true]) ?>
+        <div class="position-relative h-100" data-control="vue-app">
+            <div class="padded-container d-flex flex-column h-100 form-document-layout">
+                <div>
                     <div class="d-flex">
                         <div class="flex-grow-1">
                             <?= $this->formRender([
@@ -16,7 +16,7 @@
                     </div>
                 </div>
 
-                <div class="layout-row min-size" data-control="vue-entry-document">
+                <div data-control="vue-entry-document">
                     <div class="compensate-container-padding-h" data-vue-template>
                         <template>
                             <backend-component-document
@@ -48,7 +48,7 @@
                     </div>
                 </div>
 
-                <div class="layout-row" id="entryPrimaryTabs">
+                <div class="flex-grow-1" id="entryPrimaryTabs">
                     <?= $this->makePartial('primary_tabs') ?>
                 </div>
             </div>

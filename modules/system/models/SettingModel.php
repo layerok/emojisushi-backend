@@ -217,7 +217,10 @@ class SettingModel extends ExpandoModel
     {
         $key = 'system::setting.' . $this->settingsCode;
 
-        if ($this->isClassInstanceOf(\October\Contracts\Database\MultisiteInterface::class)) {
+        if (
+            $this->isClassInstanceOf(\October\Contracts\Database\MultisiteInterface::class) &&
+            $this->isMultisiteEnabled()
+        ) {
             $key .= '-' . ($this->site_id ?: Site::getSiteIdFromContext());
         }
 

@@ -13,6 +13,7 @@ use October\Rain\Element\Lists\ColumnDefinition;
  * @method ListColumn sqlSelect(string $sqlSelect) sqlSelect is a custom SQL for selecting this record display value, the `@` symbol is replaced with the table name.
  * @method ListColumn relation(string $relation) Relation name, if this column represents a model relationship.
  * @method ListColumn relationCount(bool $relationCount) Count mode to display the number of related records.
+ * @method ListColumn relationWith(string $relationWith) Eager load this dot-notated relation definition with the list query.
  * @method ListColumn width(string $width) sets the column width, can be specified in percents (10%) or pixels (50px).
  * @method ListColumn cssClass(string $cssClass) Specify a CSS class to attach to the list cell element.
  * @method ListColumn headCssClass(string $headCssClass) Specify a CSS class to attach to the list header cell element.

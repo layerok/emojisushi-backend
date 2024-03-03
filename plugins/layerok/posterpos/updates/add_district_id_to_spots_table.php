@@ -9,7 +9,7 @@ use October\Rain\Database\Updates\Migration;
 /**
  * some_upgrade_file.php
  */
-class AddTabletIdToSpotsTable extends Migration
+class AddDistrictIdToSpotsTable extends Migration
 {
     ///
     public function up()

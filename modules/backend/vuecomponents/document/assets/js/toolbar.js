@@ -71,7 +71,7 @@ oc.Modules.register('backend.component.toolbar', function () {
                 $(this.$refs.scrollable).dragScroll('fixScrollClasses');
             },
             disabled: function watchDisabled() {
-                Vue.nextTick($.oc.octoberTooltips.clear, 1);
+                Vue.nextTick(oc.octoberTooltips.clear, 1);
             }
         },
         template: '#backend_vuecomponents_document_toolbar'

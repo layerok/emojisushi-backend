@@ -7,6 +7,10 @@ form: ~/modules/system/models/sitegroup/fields.yaml
 modelClass: System\Models\SiteGroup
 defaultRedirect: system/sitegroups
 
+design:
+    displayMode: basic
+    size: 950
+
 create:
     redirect: system/sitegroups/update/:id
     redirectClose: system/sitegroups

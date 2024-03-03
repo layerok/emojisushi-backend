@@ -14,13 +14,13 @@
     <div class="mediafinder-control-container <?= $externalToolbarAppState ? 'external-toolbar' : null ?>">
         <div class="mediafinder-control-toolbar">
             <a href="javascript:;" class="backend-toolbar-button control-button toolbar-find-button">
-                <i class="octo-icon-common-file-star"></i>
+                <i class="icon-common-file-star"></i>
                 <span class="button-label"><?= $singleFile ? __("Replace") : __("Select") ?></span>
             </a>
             <button
                 class="backend-toolbar-button control-button find-remove-button populated-only"
             >
-                <i class="octo-icon-common-file-remove"></i>
+                <i class="icon-common-file-remove"></i>
                 <span class="button-label"><?= __("Clear") ?></span>
             </button>
         </div>

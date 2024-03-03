@@ -3,7 +3,11 @@
 // --------------------------------------------------
 
 .layout-sidenav-container {
-    width: 240px;
+    > .layout-sidenav-spacer {
+        position: relative;
+        height: 100%;
+        width: 240px;
+    }
 }
 
 nav.layout-sidenav {
@@ -94,7 +98,7 @@ nav.layout-sidenav {
                 color: @sidebar-color;
                 padding: 7px 0 7px 17px;
                 white-space: nowrap;
-                font-weight: 500;
+                font-weight: 600;
                 margin-bottom: 0;
                 transition: margin 0.1s ease-in-out;
                 transition-delay: .25s;
@@ -117,7 +121,7 @@ nav.layout-sidenav {
 
                     .nav-label {
                         color: @sidebar-active-color;
-                        font-weight: 500;
+                        font-weight: 600;
                     }
 
                     .nav-icon {
@@ -135,7 +139,7 @@ nav.layout-sidenav {
 
                 > a {
                     margin-left: 15px;
-                    background: @color-grey-6;
+                    background: @brand-primary;
                     padding: 9px 38px 0 13px;
                     border-radius: 5px;
                     transition: all 0.1s ease-in-out;
@@ -145,7 +149,7 @@ nav.layout-sidenav {
                     min-width: 40px;
 
                     &:hover {
-                        background: @color-grey-6-darker;
+                        background: @primary-darker;
                     }
 
                     &:active {
@@ -171,7 +175,7 @@ nav.layout-sidenav {
                         transition-delay: .25s;
                         opacity: 1;
                         color: white;
-                        font-weight: 500;
+                        font-weight: 600;
                     }
                 }
 
@@ -188,7 +192,7 @@ nav.layout-sidenav {
 }
 
 @media (max-width: @screen-md-max) {
-    .layout-sidenav-container {
+    .layout-sidenav-container > .layout-sidenav-spacer {
         width: 70px;
     }
 
@@ -277,7 +281,7 @@ body:not(.drag) {
 }
 
 .hide-sidenav() {
-    .layout > .layout-cell.layout-sidenav-container {
+    .layout-sidenav-container {
         display: none!important;
     }
 }

@@ -24,13 +24,21 @@ oc.Modules.register('backend.component.richeditor.document.connector.formwidgetc
                     this.toolbarExtensionPoint,
                     {
                         type: 'button',
-                        icon: this.fullScreen ? 'octo-icon-fullscreen-collapse' : 'octo-icon-fullscreen',
+                        icon: this.fullScreen ? 'icon-fullscreen-collapse' : 'icon-fullscreen',
                         command: 'document:toggleFullscreen',
                         pressed: this.fullScreen,
                         fixedRight: true,
                         tooltip: this.lang.langFullscreen
                     }
                 ];
+            },
+
+            editorOptions: function computeEditorOptions() {
+                if (typeof this.options.editorOptions !== 'object') {
+                    return {};
+                }
+
+                return this.options.editorOptions;
             },
 
             toolbarButtons: function computeToolbarButtons() {

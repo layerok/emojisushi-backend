@@ -67,12 +67,12 @@ class CodeEditor extends FormWidgetBase
     public $theme = 'twilight';
 
     /**
-     * @var bool Show invisible characters.
+     * @var bool showInvisibles characters.
      */
     public $showInvisibles = false;
 
     /**
-     * @var bool Highlight the active line.
+     * @var bool highlightActiveLine highlights the active line.
      */
     public $highlightActiveLine = true;
 

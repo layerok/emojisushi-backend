@@ -1119,7 +1119,7 @@ class MediaManager extends WidgetBase
 
         switch ($itemType) {
             case MediaLibraryItem::FILE_TYPE_IMAGE:
-                return "icon-picture-o";
+                return "icon-photo";
             case MediaLibraryItem::FILE_TYPE_VIDEO:
                 return "icon-video-camera";
             case MediaLibraryItem::FILE_TYPE_AUDIO:

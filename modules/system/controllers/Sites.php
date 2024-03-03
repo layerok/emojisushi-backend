@@ -76,6 +76,16 @@ class Sites extends Controller
     }
 
     /**
+     * onRefreshList
+     */
+    public function onRefreshList()
+    {
+        return array_merge($this->listRefresh(), [
+            '#' . $this->getId('listTabs') => $this->makePartial('list_tabs')
+        ]);
+    }
+
+    /**
      * formExtendFields adds available permission fields to the User form.
      * Mark default groups as checked for new Users.
      */
@@ -148,10 +158,6 @@ class Sites extends Controller
             $classes[] = 'disabled';
         }
 
-        if ($record->is_primary) {
-            $classes[] = 'important';
-        }
-
         if (count($classes) > 0) {
             return join(' ', $classes);
         }
@@ -169,15 +175,5 @@ class Sites extends Controller
         if (post('SiteDefinition[is_enabled]')) {
             $this->formSetSaveValue('is_enabled_edit', true);
         }
-    }
-
-    /**
-     * onRefreshList
-     */
-    public function onRefreshList()
-    {
-        return array_merge($this->listRefresh(), [
-            '#' . $this->getId('listTabs') => $this->makePartial('list_tabs')
-        ]);
     }
 }

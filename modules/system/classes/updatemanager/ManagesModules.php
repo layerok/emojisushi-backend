@@ -34,16 +34,18 @@ trait ManagesModules
      */
     public function migrateModule(string $module)
     {
+        $migrator = $this->getMigrator();
+
         // Suppress the "Nothing to migrate" message
         if (isset($this->notesOutput)) {
-            $this->migrator->setOutput(new \Symfony\Component\Console\Output\NullOutput);
+            $migrator->setOutput(new \Symfony\Component\Console\Output\NullOutput);
 
-            Event::listen(\Illuminate\Database\Events\MigrationsStarted::class, function() {
-                $this->migrator->setOutput($this->notesOutput);
+            Event::listen(\Illuminate\Database\Events\MigrationsStarted::class, function() use ($migrator) {
+                $migrator->setOutput($this->notesOutput);
             });
         }
 
-        if ($this->migrator->run(base_path('modules/'.strtolower($module).'/database/migrations'))) {
+        if ($migrator->run(base_path('modules/'.strtolower($module).'/database/migrations'))) {
             $this->migrateCount++;
         }
     }

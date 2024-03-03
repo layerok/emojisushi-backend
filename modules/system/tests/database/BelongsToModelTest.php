@@ -55,7 +55,7 @@ class BelongsToModelTest extends PluginTestCase
         $post = Post::make(['title' => "First post", 'author_id' => $author->id]);
         Model::reguard();
 
-        $this->assertEquals($author->id, $post->getRelationValue('author'));
+        $this->assertEquals($author->id, $post->getRelationSimpleValue('author'));
     }
 
     public function testDeferredBinding()

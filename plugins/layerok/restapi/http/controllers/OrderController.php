@@ -2,6 +2,7 @@
 
 namespace Layerok\Restapi\Http\Controllers;
 
+use Composer\Semver\Comparator;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Routing\Controller;
 use Illuminate\Support\Collection;
@@ -13,7 +14,6 @@ use Layerok\PosterPos\Models\Cart;
 use Layerok\PosterPos\Models\CartProduct;
 use Layerok\PosterPos\Models\Spot;
 use Layerok\PosterPos\Models\WayforpaySettings;
-use Layerok\Restapi\Classes\Calver;
 use Maksa988\WayForPay\Facades\WayForPay;
 use October\Rain\Exception\ValidationException;
 use OFFLINE\Mall\Classes\Utils\Money;
@@ -178,18 +178,16 @@ class OrderController extends Controller
                 'chat_id' => $spot->chat->internal_id
             ]);
 
-            // todo: validate calver version
-            $version = request()->header('x-web-client-version');
+            // todo: validate version
+            $userWebClientVersion = request()->header('x-web-client-version');
 
-            if(!$version) {
+            if(!$userWebClientVersion) {
                 throw new \ValidationException([
                     \Lang::get('layerok.restapi::validation.send_order_error')
                 ]);
             }
 
-            $userWebClientVersion = Calver::fromString($version);
-
-            if($userWebClientVersion->isOlderThan(Calver::fromString('2024.2.11'))) {
+            if(Comparator::compare($userWebClientVersion, '<', '2024.2.11')) {
                 throw new \ValidationException([
                     \Lang::get('layerok.restapi::validation.send_order_error')
                 ]);

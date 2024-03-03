@@ -13,12 +13,7 @@
 oc.Modules.register('backend.formwidget.repeater.builder', function() {
     const BaseClass = oc.Modules.import('backend.formwidget.repeater.base');
 
-    class RepeaterFormWidgetBuilder extends BaseClass
-    {
-        constructor(element, config) {
-            super(element, config);
-        }
-
+    oc.registerControl('repeaterbuilder', class RepeaterFormWidgetAccordion extends BaseClass {
         init() {
             // Overrides
             this.selectorToolbar = '> .field-repeater-builder > .field-repeater-toolbar:first';
@@ -26,6 +21,10 @@ oc.Modules.register('backend.formwidget.repeater.builder', function() {
             this.selectorSortable = '> .field-repeater-builder > .field-repeater-groups';
             this.selectorChecked = '> .field-repeater-builder > .field-repeater-groups > .field-repeater-group > .repeater-header input[type=checkbox]:checked';
 
+            super.init();
+        }
+
+        connect() {
             // Locals
             this.$sidebar = $('> .field-repeater-builder > .field-repeater-groups:first', this.$el);
             this.$sidebar.on('click', '> li:not(.is-placeholder)', this.proxy(this.clickBuilderItem));
@@ -35,11 +34,10 @@ oc.Modules.register('backend.formwidget.repeater.builder', function() {
             this.transferBuilderItemHeaders();
 
             this.selectBuilderItem();
-
-            super.init();
+            super.connect();
         }
 
-        dispose() {
+        disconnect() {
             // Locals
             this.$sidebar.off('click', '> li:not(.is-placeholder)', this.proxy(this.clickBuilderItem));
 
@@ -48,7 +46,7 @@ oc.Modules.register('backend.formwidget.repeater.builder', function() {
 
             this.$sidebar = null;
 
-            super.dispose();
+            super.disconnect();
         }
 
         builderOnRender() {
@@ -166,13 +164,6 @@ oc.Modules.register('backend.formwidget.repeater.builder', function() {
             this.disposeItem($containerItem);
             $containerItem.remove();
         }
-    }
-
-    addEventListener('render', function() {
-        document.querySelectorAll('[data-control=repeaterbuilder]').forEach(function(el) {
-            RepeaterFormWidgetBuilder.getOrCreateInstance(el);
-        });
     });
 
-    return RepeaterFormWidgetBuilder;
 });

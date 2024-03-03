@@ -5,7 +5,7 @@
 <li class="mainmenu-item">
     <a href="<?= Backend::url('system/sites') ?>">
         <span class="nav-icon">
-            <i class="octo-icon-globe"></i>
+            <i class="icon-globe-site"></i>
         </span>
         <span class="nav-label">
             <?= __("Manage Sites") ?>
@@ -19,7 +19,7 @@
             target="_blank"
             rel="noopener noreferrer">
             <span class="nav-icon">
-                <i class="octo-icon-location-target"></i>
+                <i class="icon-location-target"></i>
             </span>
             <span class="nav-label">
                 <?= __("Preview the Website") ?>

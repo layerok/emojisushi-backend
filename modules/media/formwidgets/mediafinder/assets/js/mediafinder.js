@@ -178,7 +178,7 @@
 
         $buttons.each(function () {
             var $button = $(this),
-                $icon = $button.find('i[class^=octo-icon]');
+                $icon = $button.find('i[class^=icon]');
 
             that.toolbarExtensionPoint.push(
                 {

@@ -154,7 +154,7 @@ class ErrorHandler extends ErrorHandlerBase
     public function handleDetailedError($exception)
     {
         // Ensure System view path is registered
-        View::addNamespace('system', base_path().'/modules/system/views');
+        View::addNamespace('system', base_path('modules/system/views'));
 
         return View::make('system::exception', ['exception' => $exception]);
     }

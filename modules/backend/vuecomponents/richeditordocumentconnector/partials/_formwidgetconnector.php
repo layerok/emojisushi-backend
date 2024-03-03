@@ -30,6 +30,7 @@
                         :read-only="options.readOnly"
                         :use-line-breaks="options.useLineBreaks"
                         :full-page="fullPage"
+                        :editor-options="editorOptions"
                         :toolbar-buttons="toolbarButtons"
                         ref="richeditor"
                         @blur="onBlur"

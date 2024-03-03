@@ -18,7 +18,7 @@
                     <div class="record-data-container">
                         <div class="record-data-container-inner">
                             <div class="icon-container">
-                                <i class="octo-icon-chain"></i>
+                                <i class="icon-chain"></i>
                             </div>
                             <div class="info">
                                 <span class="recordname"><?= e($nameValue) ?: 'Undefined' ?></span>
@@ -40,7 +40,7 @@
                     data-handler="<?= $this->getEventHandler('onFindRecord') ?>"
                     data-request-data="recordfinder_flag: 1"
                     type="button">
-                    <i class="octo-icon-common-file-star"></i>
+                    <i class="icon-common-file-star"></i>
                     <?php if ($value): ?>
                         <?= __("Replace") ?>
                     <?php else: ?>
@@ -55,7 +55,7 @@
                         data-request-confirm="<?= e(trans('backend::lang.form.action_confirm')) ?>"
                         data-request-success="$('#<?= $field->getId() ?>').val('').trigger('change')"
                         aria-label="Remove">
-                        <i class="octo-icon-common-file-remove"></i>
+                        <i class="icon-common-file-remove"></i>
                         <?= __("Clear") ?>
                     </button>
                 <?php endif ?>

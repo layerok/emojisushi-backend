@@ -10,7 +10,7 @@
                 </span>
             <?php else: ?>
                 <span class="nav-icon">
-                    <i class="octo-icon-globe"></i>
+                    <i class="icon-globe-site"></i>
                 </span>
             <?php endif ?>
 
@@ -38,7 +38,7 @@
                 </span>
             <?php else: ?>
                 <span class="nav-icon">
-                    <i class="octo-icon-location-target"></i>
+                    <i class="icon-location-target"></i>
                 </span>
             <?php endif ?>
 

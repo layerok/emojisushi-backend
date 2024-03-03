@@ -17,6 +17,7 @@ module.exports = [
     "tooltip/tooltip.js",
     "checkbox/checkbox.js",
     "loader/loader.js",
+    "select/select.js",
 
     "inspector/inspector.surface.js",
     "inspector/inspector.manager.js",

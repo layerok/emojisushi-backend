@@ -25,7 +25,7 @@ class MailBrandSetting extends SettingModel
     public $settingsCode = 'system_mail_brand_settings';
 
     /**
-     * @var mixed settingsFields defitions
+     * @var mixed settingsFields definitions
      */
     public $settingsFields = 'fields.yaml';
 

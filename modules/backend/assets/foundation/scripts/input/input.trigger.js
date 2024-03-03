@@ -255,19 +255,18 @@
         }
     });
 
-    // Magic attribute
+    // MAGIC ATTRIBUTE
+    // ============================
+
     addEventListener('render', () => {
         document.querySelectorAll('[data-trigger]:not([data-control~="input-trigger"])').forEach((element) => {
-            if (element.dataset.control) {
-                element.dataset.control = element.dataset.control + ' input-trigger';
-            }
-            else {
-                element.dataset.control = 'input-trigger';
-            }
+            element.dataset.control = ((element.dataset.control || '') + ' input-trigger').trim();
         });
     });
 
-    // jQuery Plugin
+    // JQUERY PLUGIN DEFINITION
+    // ============================
+
     $.fn.triggerOn = function (config) {
         this.each((index, element) => {
             config = config || {};
@@ -275,6 +274,10 @@
                 if (key.startsWith('trigger')) {
                     element.dataset[key] = config[key];
                 }
+            }
+
+            if (!element.matches('[data-control~="input-trigger"]')) {
+                element.dataset.control = ((element.dataset.control || '') + ' input-trigger').trim();
             }
         });
     };
