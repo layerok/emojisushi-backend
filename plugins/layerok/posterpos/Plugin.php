@@ -88,9 +88,54 @@ class Plugin extends PluginBase
             return AuthManager::instance();
         });
 
+        Event::listen('backend.form.extendFields', function (\Backend\Widgets\Form $widget) {
+
+            if (!$widget->model instanceof Product) {
+                return;
+            }
+
+            if(!$widget->model->exists) {
+                $widget->removeField('user_defined_id');
+                $widget->removeField('meta_title');
+                $widget->removeField('meta_description');
+                $widget->removeField('is_virtual');
+                return;
+            }
+
+            if($widget->model->exists) {
+                // Add a new field named example_field
+                $widget->removeTab('offline.mall::lang.common.accessories');
+                $widget->removeTab('offline.mall::lang.common.seo');
+                $widget->removeTab('offline.mall::lang.common.reviews');
+                $widget->removeTab('offline.mall::lang.common.taxes');
+                $widget->removeTab('offline.mall::lang.common.properties');
+                $widget->removeTab('offline.mall::lang.product.details');
+                $widget->removeTab('offline.mall::lang.common.cart');
+                //$widget->removeTab('offline.mall::lang.common.shipping');
+
+                /** @var \Backend\Classes\FormField $weightField */
+                $weightField = $widget->getField('weight');
+                $weightField->span('left');
+                $weightField->tab('offline.mall::lang.product.description');
+
+
+                $widget->removeField('downloads');
+                $widget->removeField('links');
+                $widget->removeField('embeds');
+                $widget->removeField('shippable');
+                $widget->removeField('width');
+                $widget->removeField('height');
+                $widget->removeField('length');
+                $widget->removeField('gtin');
+                $widget->removeField('mpn');
+                $widget->removeField('brand');
+                $widget->removeField('description');
+                $widget->removeField('user_defined_id');
+            }
+
+        });
+
         Event::listen('system.extendConfigFile', function ( $path, $config) {
-
-
             if ($path === '/plugins/offline/mall/models/property/fields_pivot.yaml') {
                 $config['fields']['options']['form']['fields']['poster_id'] = [
                     'label' => 'Poster ID',
