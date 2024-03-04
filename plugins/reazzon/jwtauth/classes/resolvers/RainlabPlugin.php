@@ -19,7 +19,7 @@ final class RainlabPlugin implements Plugin
      * @return JWTSubject
      * @throws PluginModelResolverException
      */
-    public function resolve(Model $model): JWTSubject
+    public function resolve($model): JWTSubject
     {
         if (!$model instanceof RainlabUserModel) {
             throw new PluginModelResolverException;
