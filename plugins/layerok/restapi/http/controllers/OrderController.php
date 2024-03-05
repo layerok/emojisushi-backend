@@ -12,6 +12,7 @@ use Layerok\PosterPos\Classes\ShippingMethodCode;
 use Layerok\PosterPos\Models\Cart;
 use Layerok\PosterPos\Models\CartProduct;
 use Layerok\PosterPos\Models\Spot;
+use Layerok\PosterPos\Models\User;
 use Layerok\PosterPos\Models\WayforpaySettings;
 use Maksa988\WayForPay\Facades\WayForPay;
 use October\Rain\Exception\ValidationException;
@@ -37,19 +38,27 @@ class OrderController extends Controller
 
         $jwtGuard = app('JWTGuard');
 
-        $user = $jwtGuard->user();
-        $cart = Cart::byUser($user);
+        $rainlablUser = $jwtGuard->user();
+        $cart = Cart::byUser($rainlablUser);
+
+        /** @var User | null $user */
+        $user = $rainlablUser ? User::find($rainlablUser->id): null;
 
         /**
          * @var Spot $spot
          */
         $spot = Spot::find($data['spot_id']);
+
+        if($spot->temporarily_unavailable && !($user && $user->isCallCenterAdmin())) {
+            // admins are allowed to bypass this check
+            throw new \ValidationException([trans('layerok.restapi::validation.temporarily_unavailable')]);
+        }
+
         $poster_account = $spot->tablet->poster_account;
 
         if (!$cart->products()->get()->count()) {
             throw new ValidationException([trans('layerok.restapi::validation.cart_empty')]);
         }
-
 
         $shippingMethod = ShippingMethod::where('id', $data['shipping_method_id'])->first();
         $paymentMethod = PaymentMethod::where('id', $data['payment_method_id'])->first();

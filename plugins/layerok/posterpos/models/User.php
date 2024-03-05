@@ -18,4 +18,8 @@ class User extends UserBase
         'last_ip_address',
         'phone'
     ];
+
+    public function isCallCenterAdmin(): bool {
+        return $this->email === 'callcenter@emojisushi.com.ua';
+    }
 }
