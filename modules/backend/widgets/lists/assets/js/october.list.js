@@ -105,6 +105,7 @@
 
         $(this.options.checkboxSelector, this.$body)
             .prop('checked', checked)
+            .first()
             .trigger('change');
 
         if (checked) {
@@ -244,6 +245,15 @@
 
     // LIST HELPER DATA-API
     // ==============
+
+    oc.listOnLoadForm = function(recordId) {
+        $('<a />').popup({
+            handler: 'onLoadPopupForm',
+            extraData: {
+                'form_record_id': recordId,
+            }
+        });
+    }
 
     $.fn.listCheckedTriggerOn = function() {
         this.each(function() {

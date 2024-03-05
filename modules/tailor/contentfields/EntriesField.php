@@ -3,6 +3,7 @@
 use Tailor\Models\EntryRecord;
 use Tailor\Models\RepeaterItem;
 use Tailor\Classes\BlueprintIndexer;
+use Tailor\Classes\Blueprint\StructureBlueprint;
 use Tailor\Classes\Relations\CustomMultiJoinRelation;
 use Tailor\Classes\Relations\CustomNestedJoinRelation;
 use October\Contracts\Element\FormElement;
@@ -90,8 +91,8 @@ class EntriesField extends FallbackField
             ? $this->displayMode
             : 'relation');
 
-        if ($this->displayMode !== 'controller') {
-            $field->useController(false);
+        if ($this->displayMode === 'controller') {
+            $this->defineFormFieldAsRelationController($field);
         }
 
         // @deprecated this should be default
@@ -245,6 +246,46 @@ class EntriesField extends FallbackField
                 'parentKey' => $parentMultisite ? 'site_root_id' : 'id'
             ];
         }
+    }
+
+    /**
+     * defineFormFieldAsRelationController
+     */
+    protected function defineFormFieldAsRelationController($field)
+    {
+        $blueprint = $this->getSourceBlueprint();
+
+        $customMessages = array_merge((array) $blueprint->customMessages, (array) $this->customMessages);
+
+        $toolbarButtons = $this->toolbarButtons;
+        if (!$toolbarButtons) {
+            $toolbarButtons = $blueprint->navigation ? 'add|remove' : 'create|delete';
+        }
+
+        $fieldConfig = [
+            'label' => $this->label,
+            'list' => [],
+            'form' => [],
+            'customMessages' => $customMessages,
+            'popupSize' => $this->popupSize,
+            'view' => [
+                'toolbarButtons' => $toolbarButtons,
+                'recordsPerPage' => $this->recordsPerPage,
+            ]
+        ];
+
+        if ($blueprint instanceof StructureBlueprint) {
+            $fieldConfig['structure'] = [
+                'maxDepth' => $blueprint->getMaxDepth(),
+                'showTree' => $blueprint->hasTree(),
+            ] + ((array) $blueprint->structure);
+        }
+
+        if ($this->span === 'adaptive') {
+            $fieldConfig['externalToolbarAppState'] = 'toolbarExtensionPoint';
+        }
+
+        $field->controller($fieldConfig);
     }
 
     /**

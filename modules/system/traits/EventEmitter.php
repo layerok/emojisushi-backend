@@ -42,9 +42,7 @@ trait EventEmitter
         $longArgs = array_merge([$this], $params);
 
         // Local event first
-        // if (!is_null($response = $this->fireEvent($shortEvent, $params, $halt))) {
-        // @deprecated should be as above
-        if ($response = $this->fireEvent($shortEvent, $params, $halt)) {
+        if (!is_null($response = $this->fireEvent($shortEvent, $params, $halt))) {
             if ($halt) {
                 return $response;
             }
@@ -53,9 +51,7 @@ trait EventEmitter
         }
 
         // Global event second
-        // if (!is_null($response = Event::fire($event, $longArgs, $halt))) {
-        // @deprecated should be as above
-        if ($response = Event::fire($event, $longArgs, $halt)) {
+        if (!is_null($response = Event::fire($event, $longArgs, $halt))) {
             if ($halt) {
                 return $response;
             }

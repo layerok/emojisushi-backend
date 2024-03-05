@@ -12,9 +12,14 @@ use Backend\Widgets\ListStructure as ListStructureWidget;
 trait HasViewMode
 {
     /**
-     * @var Backend\Classes\WidgetBase viewWidget used for viewing (list or form)
+     * @var ListWidget|null viewListWidget used for viewing as a list
      */
-    protected $viewWidget;
+    protected $viewListWidget;
+
+    /**
+     * @var FormWidget|null viewFormWidget used for viewing as a form
+     */
+    protected $viewFormWidget;
 
     /**
      * @var \Backend\Widgets\Filter viewFilterWidget
@@ -32,46 +37,61 @@ trait HasViewMode
     protected $viewMode;
 
     /**
-     * @var string forceViewMode
+     * relationGetManageFormWidget returns the manage form widget used by this behavior
      */
-    protected $forceViewMode;
+    public function relationGetViewFormWidget(): ?FormWidget
+    {
+        return $this->viewFormWidget;
+    }
+
+    /**
+     * relationGetViewListWidget returns the manage list widget used by this behavior
+     */
+    public function relationGetViewListWidget(): ?ListWidget
+    {
+        return $this->viewListWidget;
+    }
 
     /**
      * relationGetViewWidget returns the view widget used by this behavior
+     * @deprecated use relationGetViewListWidget or relationGetViewFormWidget
      * @return \Backend\Classes\WidgetBase
      */
     public function relationGetViewWidget()
     {
-        return $this->viewWidget;
-    }
-
-    /**
-     * makeViewWidget returns a form or list widget based on configuration
-     */
-    protected function makeViewWidget()
-    {
         // Multiple (has many, belongs to many)
         if ($this->viewMode === 'multi') {
-            return $this->makeViewWidgetAsList();
+            return $this->viewListWidget;
         }
+
         // Single (belongs to, has one)
-        elseif ($this->viewMode === 'single') {
-            return $this->makeViewWidgetAsForm();
+        if ($this->viewMode === 'single') {
+            return $this->viewFormWidget;
         }
 
         return null;
     }
 
     /**
-     * makeViewWidgetAsList prepares the list widget for viewing
+     * makeViewListWidget prepares the list widget for viewing
      */
-    protected function makeViewWidgetAsList(): ?ListWidget
+    protected function makeViewListWidget(): ?ListWidget
     {
+        if ($this->viewMode !== 'multi') {
+            return null;
+        }
+
+        if (!$config = $this->makeConfigForMode('view', 'list')) {
+            return null;
+        }
+
+        $this->viewModel = $this->relationModel;
+
         $isPivot = in_array($this->relationType, ['belongsToMany', 'morphedByMany', 'morphToMany']);
 
-        $config = $this->makeConfigForMode('view', 'list');
-        $config->model = $this->relationModel;
+        $config->model = $this->viewModel;
         $config->alias = $this->alias . 'ViewList';
+        $config->showSetup = $this->getConfig('view[showSetup]', false);
         $config->showSorting = $this->getConfig('view[showSorting]', true);
         $config->defaultSort = $this->getConfig('view[defaultSort]');
         $config->recordsPerPage = $this->getConfig('view[recordsPerPage]');
@@ -81,19 +101,18 @@ trait HasViewMode
         $config->customPageName = $this->getConfig('view[customPageName]', camel_case(class_basename($this->relationModel).'Page'));
 
         $defaultOnClick = sprintf(
-            "oc.relationBehavior.clickViewListRecord(':%s', '%s', '%s', '%s')",
-            $this->relationModel->getKeyName(),
+            "oc.relationBehavior.clickViewListRecord(this, ':%s', '%s', '%s')",
+            $this->viewModel->getKeyName(),
             $this->relationGetId(),
-            $this->relationGetSessionKey(),
-            $this->popupSize
+            $this->relationSessionKey
         );
 
         if ($config->recordUrl) {
             $defaultOnClick = null;
         }
         elseif (
-            !$this->makeConfigForMode('manage', 'form', false) &&
-            !$this->makeConfigForMode('pivot', 'form', false)
+            !$this->makeConfigForMode('manage', 'form') &&
+            !$this->makeConfigForMode('pivot', 'form')
         ) {
             $defaultOnClick = null;
         }
@@ -105,7 +124,7 @@ trait HasViewMode
         }
 
         if ($isPivot) {
-            $config->model->setRelation('pivot', $this->relationObject->newPivot());
+            $this->viewModel->setRelation('pivot', $this->relationObject->newPivot());
         }
 
         // Make structure enabled widget
@@ -120,18 +139,25 @@ trait HasViewMode
         // Linkage for JS plugins
         if ($this->toolbarWidget) {
             $this->toolbarWidget->listWidgetId = $widget->getId();
+
+            // Pass the list setup AJAX handler to the toolbar
+            if ($config->showSetup) {
+                $this->toolbarWidget->setupHandler = $widget->getEventHandler('onLoadSetup');
+            }
         }
 
         // Custom structure reordering logic
         if (
-            $this->model->isClassInstanceOf(\October\Contracts\Database\SortableRelationInterface::class) &&
-            $this->model->isSortableRelation($this->field)
+            $this->relationParent->isClassInstanceOf(\October\Contracts\Database\SortableRelationInterface::class) &&
+            $this->relationParent->isSortableRelation($this->relationName)
         ) {
             $widget->bindEvent('list.beforeReorderStructure', function () {
-                $this->model->setSortableRelationOrder($this->field, post('sort_orders'), true);
-                // return false;
-                // @deprecated should be as above
-                return true;
+                // Set sort orders in deferred bindings as well
+                if ($this->deferredBinding) {
+                    $this->relationParent->sessionKey = $this->relationSessionKey;
+                }
+                $this->relationParent->setSortableRelationOrder($this->relationName, post('sort_orders'), true);
+                return false;
             }, -1);
         }
 
@@ -143,18 +169,12 @@ trait HasViewMode
         }
         elseif ($scopeMethod = $this->getConfig('view[scope]')) {
             $widget->bindEvent('list.extendQueryBefore', function ($query) use ($scopeMethod) {
-                $query->$scopeMethod($this->model);
+                $query->$scopeMethod($this->relationParent);
             });
         }
         else {
             $widget->bindEvent('list.extendQueryBefore', function ($query) {
                 $this->relationObject->addDefinedConstraintsToQuery($query);
-
-                // Reset any orders that may have come from the definition
-                // because it has a tendency to break things.
-                if (!$this->model->exists) {
-                    $query->getQuery()->reorder();
-                }
             });
         }
 
@@ -162,12 +182,11 @@ trait HasViewMode
         $widget->bindEvent('list.extendQuery', function ($query) use ($isPivot) {
             $this->relationObject->setQuery($query);
 
-            $sessionKey = $this->deferredBinding ? $this->relationGetSessionKey() : null;
-
+            $sessionKey = $this->deferredBinding ? $this->relationSessionKey : null;
             if ($sessionKey) {
-                $this->relationObject->withDeferred($sessionKey);
+                $this->relationObject->withDeferredQuery(null, $sessionKey);
             }
-            elseif ($this->model->exists) {
+            elseif ($this->relationParent->exists) {
                 $this->relationObject->addConstraints();
             }
 
@@ -218,14 +237,21 @@ trait HasViewMode
     }
 
     /**
-     * makeViewWidgetAsForm prepares the form widget for viewing
+     * makeViewFormWidget prepares the form widget for viewing
      */
-    protected function makeViewWidgetAsForm(): ?FormWidget
+    protected function makeViewFormWidget(): ?FormWidget
     {
+        if ($this->viewMode !== 'single') {
+            return null;
+        }
+
+        if (!$config = $this->makeConfigForMode('view', 'form')) {
+            return null;
+        }
+
         $this->viewModel = $this->relationObject->getResults()
             ?: $this->relationModel;
 
-        $config = $this->makeConfigForMode('view', 'form');
         $config->model = $this->viewModel;
         $config->arrayName = class_basename($this->relationModel);
         $config->context = 'relation';
@@ -248,8 +274,8 @@ trait HasViewMode
         }
 
         if (
-            $this->model->isClassInstanceOf(\October\Contracts\Database\SortableRelationInterface::class) &&
-            $this->model->isSortableRelation($this->field)
+            $this->relationParent->isClassInstanceOf(\October\Contracts\Database\SortableRelationInterface::class) &&
+            $this->relationParent->isSortableRelation($this->relationName)
         ) {
             $structureConfig['includeSortOrders'] = true;
         }
@@ -379,10 +405,6 @@ trait HasViewMode
      */
     protected function evalViewMode()
     {
-        if ($this->forceViewMode) {
-            return $this->forceViewMode;
-        }
-
         switch ($this->relationType) {
             case 'hasMany':
             case 'morphMany':
@@ -407,7 +429,7 @@ trait HasViewMode
      */
     protected function resetViewWidgetModel()
     {
-        $this->viewWidget->model = $this->relationModel;
-        $this->viewWidget->setFormValues([]);
+        $this->viewFormWidget->model = $this->relationModel;
+        $this->viewFormWidget->setFormValues([]);
     }
 }

@@ -35,7 +35,7 @@
                 </button>
                 <button
                     type="button"
-                    class="oc-icon-trash-o btn-icon danger pull-right"
+                    class="oc-icon-trash btn-icon danger pull-right"
                     data-request="onDelete"
                     data-load-indicator="<?= e(trans('backend::lang.form.deleting')) ?>"
                     data-request-confirm="<?= e(trans('backend::lang.user.group.delete_confirm')) ?>">

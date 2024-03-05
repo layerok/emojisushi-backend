@@ -2,9 +2,9 @@
 
 use Db;
 use Str;
+use Url;
 use Html;
 use Lang;
-use View;
 use Backend;
 use DbDongle;
 use Carbon\Carbon;
@@ -420,7 +420,7 @@ class Lists extends WidgetBase implements ListElement
                 // Related
                 if ($this->isColumnRelated($column)) {
                     $table = $this->model->makeRelation($column->relation)->getTable();
-                    $columnName = isset($column->sqlSelect)
+                    $columnName = $column->sqlSelect
                         ? DbDongle::raw($this->parseTableName($column->sqlSelect, $table))
                         : $table . '.' . $column->valueFrom;
 
@@ -428,7 +428,7 @@ class Lists extends WidgetBase implements ListElement
                 }
                 // Primary
                 else {
-                    $columnName = isset($column->sqlSelect)
+                    $columnName = $column->sqlSelect
                         ? DbDongle::raw($this->parseTableName($column->sqlSelect, $primaryTable))
                         : $primaryTable . '.' . $column->columnName;
 
@@ -439,15 +439,22 @@ class Lists extends WidgetBase implements ListElement
 
         // Prepare related eager loads (withs) and custom selects (joins)
         foreach ($this->getVisibleColumns() as $column) {
+            // Column wants to count the value
             if ($column->useRelationCount()) {
                 $query->withCount($column->relation);
             }
 
-            if (!$this->isColumnRelated($column) || (!isset($column->sqlSelect) && !isset($column->valueFrom))) {
+            // Column wants to eager load something
+            if ($column->relationWith) {
+                $withs[] = $column->relationWith;
+            }
+
+            // Column is not a related column selection (relation + select)
+            if (!$this->isColumnRelated($column) || (!$column->sqlSelect && !$column->valueFrom)) {
                 continue;
             }
 
-            if (isset($column->valueFrom)) {
+            if ($column->valueFrom) {
                 $withs[] = $column->relation;
             }
 
@@ -485,14 +492,14 @@ class Lists extends WidgetBase implements ListElement
 
         // Custom select queries
         foreach ($this->getVisibleColumns() as $column) {
-            if (!isset($column->sqlSelect)) {
+            if (!$column->sqlSelect) {
                 continue;
             }
 
             $alias = $query->getQuery()->getGrammar()->wrap($column->columnName);
 
             // Relation column
-            if (isset($column->relation)) {
+            if ($column->relation) {
                 // @todo Find a way...
                 $relationType = $this->model->getRelationType($column->relation);
                 if ($relationType === 'morphTo') {
@@ -534,19 +541,40 @@ class Lists extends WidgetBase implements ListElement
         if (
             $this->useSorting() &&
             ($sortColumn = $this->getSortColumn()) &&
-            $this->isColumnSortable($sortColumn)
+            $this->isColumnSortable($sortColumn) &&
+            ($column = $this->allColumns[$sortColumn] ?? null)
         ) {
-            if (($column = array_get($this->allColumns, $sortColumn)) && $column->valueFrom) {
+            if ($column->useRelationCount()) {
+                $sortColumn = $column->relation . '_count';
+            }
+            elseif ($column->valueFrom) {
                 $sortColumn = $this->isColumnPivot($column)
                     ? 'pivot_' . $column->valueFrom
                     : $column->valueFrom;
             }
 
-            if ($column->useRelationCount()) {
-                $sortColumn = $column->relation . '_count';
-            }
+            $sortDirection = $this->getSortDirection();
+            $query->reorder($sortColumn, $sortDirection);
 
-            $query->orderBy($sortColumn, $this->getSortDirection());
+            /**
+             * @event backend.list.extendSortColumn
+             * Provides an opportunity to customize the sort column and direction
+             *
+             * Example usage:
+             *
+             *     Event::listen('backend.list.extendSortColumn', function ($listWidget, $query, $sortColumn, $sortDirection) {
+             *         $query->reorder('secondary_order', 'asc);
+             *         $query->orderBy($sortColumn, $sortDirection);
+             *     });
+             *
+             * Or
+             *
+             *     $listWidget->bindEvent('list.extendSortColumn', function ($query, $sortColumn, $sortDirection) {
+             *         $query->orderBy('secondary_order');
+             *     });
+             *
+             */
+            $this->fireSystemEvent('backend.list.extendSortColumn', [$query, $sortColumn, $sortDirection]);
         }
 
         // Apply filters
@@ -769,7 +797,14 @@ class Lists extends WidgetBase implements ListElement
             return null;
         }
 
-        $recordOnClick = RouterHelper::replaceParameters($record, $this->recordOnClick);
+        $recordOnClick = $this->recordOnClick;
+
+        // FormController popup design integration
+        if ($recordOnClick === 'popup' && $this->controller->isClassExtendedWith(\Backend\Behaviors\FormController::class)) {
+            $recordOnClick = 'oc.listOnLoadForm(:id)';
+        }
+
+        $recordOnClick = RouterHelper::replaceParameters($record, $recordOnClick);
 
         return Html::attributes(['onclick' => $recordOnClick]);
     }
@@ -1002,7 +1037,7 @@ class Lists extends WidgetBase implements ListElement
         }
 
         // Auto configure pivot relation
-        if (starts_with($name, 'pivot[') && strpos($name, ']') !== false) {
+        if (str_starts_with($name, 'pivot[') && str_contains($name, ']')) {
             $_name = HtmlHelper::nameToArray($name);
             $relationName = array_shift($_name);
             $valueFrom = array_shift($_name);
@@ -1016,7 +1051,7 @@ class Lists extends WidgetBase implements ListElement
             $config['searchable'] = false;
         }
         // Auto configure standard relation
-        elseif (strpos($name, '[') !== false && strpos($name, ']') !== false) {
+        elseif (str_contains($name, '[') && str_contains($name, ']')) {
             $config['valueFrom'] = $name;
             $config['sortable'] = false;
             $config['searchable'] = false;
@@ -1050,10 +1085,6 @@ class Lists extends WidgetBase implements ListElement
         $total = count($columns);
 
         if ($this->showCheckboxes) {
-            $total++;
-        }
-
-        if ($this->showSetup) {
             $total++;
         }
 
@@ -1625,7 +1656,9 @@ class Lists extends WidgetBase implements ListElement
             'label' => $column->label
         ]);
 
-        $fieldOptions = $column->optionsMethod ?: $column->options;
+        $fieldOptions = $column->optionsPreset
+            ? 'preset:' . $column->optionsPreset
+            : ($column->optionsMethod ?: $column->options);
 
         if (!is_array($fieldOptions)) {
             $model = $this->isColumnRelated($column)
@@ -1663,6 +1696,14 @@ class Lists extends WidgetBase implements ListElement
             $linkText = $column->linkText;
         }
 
+        if (str_starts_with($linkUrl, 'october://')) {
+            $isDefault = $linkUrl === $linkText;
+            $linkUrl = \Cms\Classes\PageManager::url($linkUrl);
+            if ($isDefault) {
+                $linkText = Url::makeRelative($linkUrl);
+            }
+        }
+
         return $this->makePartial('column_linkage', [
             'attributes' => (array) $column->attributes,
             'linkText' => $linkText,
@@ -1677,21 +1718,11 @@ class Lists extends WidgetBase implements ListElement
      */
     protected function evalPartialTypeValue($record, $column, $value)
     {
-        $vars = [
-            'listColumn' => $column,
-            'listRecord' => $record,
-            'listValue' => $value,
-            'column' => $column,
+        return $this->makePartial('column_partial', [
             'record' => $record,
+            'column' => $column,
             'value' => $value
-        ];
-
-        if (strpos($column->path, '::') !== false) {
-            return View::make($column->path, $vars);
-        }
-        else {
-            return $this->controller->makePartial($column->path ?: $column->columnName, $vars);
-        }
+        ]);
     }
 
     /**
@@ -1740,12 +1771,10 @@ class Lists extends WidgetBase implements ListElement
     /**
      * isColumnRelated checks if column refers to a relation of the model, with a toggle
      * switch for checking only relationships with multiple records.
-     * @param ListColumn $column
-     * @param bool $isMulti
      */
-    protected function isColumnRelated($column, bool $isMulti = false): bool
+    protected function isColumnRelated(ListColumn $column, bool $isMulti = false): bool
     {
-        if (!isset($column->relation) || $this->isColumnPivot($column)) {
+        if (!$column->relation || $this->isColumnPivot($column)) {
             return false;
         }
 
@@ -1765,11 +1794,10 @@ class Lists extends WidgetBase implements ListElement
 
     /**
      * isColumnPivot checks if a column refers to a pivot model specifically.
-     * @param  ListColumn  $column List column object
      */
-    protected function isColumnPivot($column): bool
+    protected function isColumnPivot(ListColumn $column): bool
     {
-        if (!isset($column->relation) || $column->relation !== 'pivot') {
+        if (!$column->relation || $column->relation !== 'pivot') {
             return false;
         }
 

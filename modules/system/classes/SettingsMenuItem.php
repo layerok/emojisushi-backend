@@ -31,7 +31,7 @@ class SettingsMenuItem extends ItemDefinition
         $this
             ->order(500)
             ->context('system')
-            ->size('large')
+            ->size(750)
             ->attributes([])
             ->permissions([])
         ;

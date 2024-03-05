@@ -10,15 +10,12 @@ use Exception;
 /**
  * VersionManager manages the versions and database updates for plugins
  *
- * @method static VersionManager instance()
- *
  * @package october\system
  * @author Alexey Bobkov, Samuel Georges
  */
 class VersionManager
 {
     use \System\Traits\NoteMaker;
-    use \October\Rain\Support\Traits\Singleton;
 
     /**
      * Value when no updates are found.
@@ -52,20 +49,19 @@ class VersionManager
     protected $pluginManager;
 
     /**
-     * init
+     * __construct this class
      */
-    protected function init()
+    public function __construct()
     {
         $this->pluginManager = PluginManager::instance();
     }
 
     /**
-     * getUpdater returns the updater service
-     * @return \October\Rain\Database\Updater
+     * instance creates a new instance of this singleton
      */
-    public function getUpdater()
+    public static function instance(): static
     {
-        return App::make('db.updater');
+        return App::make('system.versions');
     }
 
     /**
@@ -606,5 +602,14 @@ class VersionManager
         }
 
         return [$comments, $scripts];
+    }
+
+    /**
+     * getUpdater returns the updater service
+     * @return \October\Rain\Database\Updater
+     */
+    protected function getUpdater()
+    {
+        return App::make('db.updater');
     }
 }

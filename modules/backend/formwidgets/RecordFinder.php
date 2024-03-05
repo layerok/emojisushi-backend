@@ -2,6 +2,7 @@
 
 use Lang;
 use ApplicationException;
+use Backend\Classes\FormField;
 use Backend\Classes\FormWidgetBase;
 use Illuminate\Database\Eloquent\Collection;
 
@@ -71,6 +72,16 @@ class RecordFinder extends FormWidgetBase
     public $conditions;
 
     /**
+     * @var mixed defaultSort column to look for.
+     */
+    public $defaultSort;
+
+    /**
+     * @var bool showSetup in the search list.
+     */
+    public $showSetup = false;
+
+    /**
      * @var string searchMode if searching the records, specifies a policy to use.
      * - all: result must contain all words
      * - any: result can contain any word
@@ -121,16 +132,19 @@ class RecordFinder extends FormWidgetBase
     protected $relationKeyValue = -1;
 
     /**
-     * @var \Backend\Classes\WidgetBase listWidget reference to the widget used for
-     * viewing (list or form).
+     * @var \Backend\Widgets\Lists listWidget reference to the widget used for viewing (list or form).
      */
     protected $listWidget;
 
     /**
-     * @var \Backend\Classes\WidgetBase searchWidget reference to the widget used for
-     * searching.
+     * @var \Backend\Widgets\Search searchWidget reference to the widget used for searching
      */
     protected $searchWidget;
+
+    /**
+     * @var \Backend\Widgets\Filter filterWidget reference to the widget used for filtering
+     */
+    protected $filterWidget;
 
     /**
      * @inheritDoc
@@ -143,6 +157,8 @@ class RecordFinder extends FormWidgetBase
             'nameFrom',
             'descriptionFrom',
             'scope',
+            'defaultSort',
+            'showSetup',
             'conditions',
             'searchMode',
             'searchScope',
@@ -156,13 +172,15 @@ class RecordFinder extends FormWidgetBase
             throw new ApplicationException(Lang::get('backend::lang.recordfinder.invalid_model_class', ['modelClass' => $this->modelClass]));
         }
 
-        if (post('recordfinder_flag')) {
-            $this->listWidget = $this->makeListWidget();
-            $this->listWidget->bindToController();
+        if (!post('recordfinder_flag')) {
+            return;
+        }
 
-            $this->searchWidget = $this->makeSearchWidget();
-            $this->searchWidget->bindToController();
+        $this->listWidget = $this->makeListWidget();
+        $this->listWidget->bindToController();
 
+        // Search widget
+        if ($this->searchWidget = $this->makeSearchWidget()) {
             $this->listWidget->setSearchTerm($this->searchWidget->getActiveTerm());
 
             // Link the Search Widget to the List Widget
@@ -170,6 +188,20 @@ class RecordFinder extends FormWidgetBase
                 $this->listWidget->setSearchTerm($this->searchWidget->getActiveTerm());
                 return $this->listWidget->onRefresh();
             });
+
+            $this->searchWidget->bindToController();
+        }
+
+        // Filter widget
+        if ($this->filterWidget = $this->makeFilterWidget()) {
+            $this->listWidget->addFilter([$this->filterWidget, 'applyAllScopesToQuery']);
+
+            // Filter the list when the scopes are changed
+            $this->filterWidget->bindEvent('filter.update', function() {
+                return $this->listWidget->onFilter();
+            });
+
+            $this->filterWidget->bindToController();
         }
     }
 
@@ -210,6 +242,7 @@ class RecordFinder extends FormWidgetBase
         $this->vars['descriptionValue'] = $this->getDescriptionValue();
         $this->vars['listWidget'] = $this->listWidget;
         $this->vars['searchWidget'] = $this->searchWidget;
+        $this->vars['filterWidget'] = $this->filterWidget;
         $this->vars['title'] = $this->title;
     }
 
@@ -386,17 +419,11 @@ class RecordFinder extends FormWidgetBase
     protected function makeListWidget()
     {
         $config = $this->makeConfig($this->getConfig('list'));
-
-        if ($this->useRelation) {
-            $config->model = $this->getRelationModel();
-        }
-        else {
-            $config->model = new $this->modelClass;
-        }
-
+        $config->model = $this->useRelation ? $this->getRelationModel() : new $this->modelClass;
         $config->alias = $this->alias . 'List';
-        $config->showSetup = false;
+        $config->showSetup = $this->showSetup;
         $config->showCheckboxes = false;
+        $config->defaultSort = $this->defaultSort;
         $config->recordsPerPage = $this->recordsPerPage;
         $config->recordOnClick = sprintf("$('#%s').recordFinder('updateRecord', this, ':" . $this->getKeyFromAttributeName() . "')", $this->getId());
         $widget = $this->makeWidget(\Backend\Widgets\Lists::class, $config);
@@ -450,6 +477,24 @@ class RecordFinder extends FormWidgetBase
         $config->prompt = 'backend::lang.list.search_prompt';
         $widget = $this->makeWidget(\Backend\Widgets\Search::class, $config);
         $widget->cssClasses[] = 'recordfinder-search';
+        return $widget;
+    }
+
+    /**
+     * makeFilterWidget
+     */
+    protected function makeFilterWidget()
+    {
+        $filterConfig = $this->getConfig('filter');
+        if (!$filterConfig) {
+            return null;
+        }
+
+        $config = $this->makeConfig($filterConfig);
+        $config->model = $this->useRelation ? $this->getRelationModel() : new $this->modelClass;
+        $config->alias = $this->alias . 'Filter';
+        $widget = $this->makeWidget(\Backend\Widgets\Filter::class, $config);
+        $widget->cssClasses[] = 'recordfinder-filter';
         return $widget;
     }
 }

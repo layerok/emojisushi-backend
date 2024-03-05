@@ -21,11 +21,13 @@ class VueApp extends oc.ControlBase
     }
 
     connect() {
+        this.element.vueAppInstance = this;
         this.loadLangMessagesInternal();
         this.loadInitialStateInternal();
     }
 
     disconnect() {
+        this.element.vueAppInstance = null;
         for (const name in this.methods) {
             this.methods[name] = null;
         }
@@ -70,9 +72,8 @@ class VueApp extends oc.ControlBase
         const controlName = this.getContainerNameFromControl(control);
         this.containers[controlName] = vm;
 
-        const controlObj = oc.fetchControl(element);
-        if (controlObj) {
-            controlObj.vm = vm;
+        if (element.vueContainerInstance) {
+            element.vueContainerInstance.vm = vm;
         }
     }
 
@@ -117,7 +118,7 @@ class VueApp extends oc.ControlBase
 
         if (customDataOptions.confirm) {
             try {
-                await $.oc.confirmPromise(customDataOptions.confirm);
+                await oc.confirmPromise(customDataOptions.confirm);
             }
             catch (error) {
                 return Promise.reject();
@@ -153,8 +154,8 @@ class VueApp extends oc.ControlBase
 
     static getFromElement(element) {
         const appEl = element.closest('[data-control="vue-app"]');
-        if (appEl) {
-            return oc.fetchControl(appEl);
+        if (appEl && appEl.vueAppInstance) {
+            return appEl.vueAppInstance;
         }
     }
 }

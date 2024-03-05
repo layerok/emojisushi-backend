@@ -110,6 +110,11 @@ class Controller
     protected $partialWatcher;
 
     /**
+     * @var bool pageCycled
+     */
+    protected $pageCycled = false;
+
+    /**
      * __construct the controller.
      * @param \Cms\Classes\Theme $theme Specifies the CMS theme.
      * If the theme is not specified, the current active theme used.
@@ -121,8 +126,8 @@ class Controller
             throw new CmsException(Lang::get('cms::lang.theme.active.not_found'));
         }
 
-        $this->assetPath = $this->getThemeAssetPath();
-        $this->assetLocalPath = $this->theme->getPath();
+        $this->assetPath = $this->getThemeAssetRelativePath();
+        $this->assetUrlPath = $this->getThemeAssetUrl();
         $this->router = new Router($this->theme);
         $this->initTwigEnvironment();
 
@@ -154,6 +159,8 @@ class Controller
         if ($page && $page->is_hidden && !BackendAuth::getUser()) {
             $page = null;
         }
+
+        $originalPageFound = !!$page;
 
         // Maintenance mode
         if (MaintenanceSetting::isEnabled() && !Cms::urlHasException($url, 'maintenance')) {
@@ -249,10 +256,13 @@ class Controller
             $result = $event;
         }
 
-        /*
-         * Prepare and return response
-         * @see \System\Traits\ResponseMaker
-         */
+        // Log the pageview
+        if ($originalPageFound && !App::runningUnitTests()) {
+            TrafficLogger::logPageview();
+        }
+
+        // Prepare and return response
+        // @see \System\Traits\ResponseMaker
         return $this->makeResponse($result);
     }
 
@@ -306,6 +316,7 @@ class Controller
 
         $this->page = $page;
         $this->layout = $layout;
+        $this->pageCycled = false;
 
         // The 'this' variable is reserved for default variables.
         $this->vars['this'] = new ThisVariable([
@@ -428,7 +439,9 @@ class Controller
      */
     public function pageCycle()
     {
-        return $this->execPageCycle();
+        if (!$this->pageCycled) {
+            $this->execPageCycle();
+        }
     }
 
     /**
@@ -438,6 +451,8 @@ class Controller
      */
     protected function execPageCycle()
     {
+        $this->pageCycled = true;
+
         /**
          * @event cms.page.start
          * Fires before all of the page & layout lifecycle handlers are run
@@ -528,29 +543,31 @@ class Controller
      */
     protected function postProcessResult($page, $url, $content)
     {
-        $content = MediaViewHelper::instance()->processHtml($content);
-
         /**
-         * @event cms.page.postprocess
+         * @event cms.page.postProcessContent
          * Provides opportunity to hook into the post-processing of page HTML code before being sent to the client. `$dataHolder` = {content: $htmlContent}
          *
          * Example usage:
          *
-         *     Event::listen('cms.page.postprocess', function ((\Cms\Classes\Controller) $controller, (string) $url, (\Cms\Classes\Page) $page, (object) $dataHolder) {
-         *         $dataHolder->content = str_replace('<a href=', '<a rel="nofollow" href=', $dataHolder->content);
+         *     Event::listen('cms.page.postProcessContent', function ((\Cms\Classes\Controller) $controller, (string) $url, (\Cms\Classes\Page) $page, (string) &$content) {
+         *         $content = str_replace('<a href=', '<a rel="nofollow" href=', $dataHolder->content);
          *     });
          *
          * Or
          *
-         *     $controller->bindEvent('page.postprocess', function ((string) $url, (\Cms\Classes\Page) $page, (object) $dataHolder) {
-         *         $dataHolder->content = 'My custom content';
+         *     $controller->bindEvent('page.postProcessContent', function ((string) $url, (\Cms\Classes\Page) $page, (string) &$content) {
+         *         $content = 'My custom content';
          *     });
          *
          */
+        $this->fireSystemEvent('cms.page.postProcessContent', [$url, $page, &$content]);
+
+        // @deprecated this event will be removed in a later version
         $dataHolder = (object) ['content' => $content];
         $this->fireSystemEvent('cms.page.postprocess', [$url, $page, $dataHolder]);
+        $content = $dataHolder->content;
 
-        return $dataHolder->content;
+        return $content;
     }
 
     //
@@ -727,20 +744,12 @@ class Controller
             return $this->combineAssets($url);
         }
 
-        $themeUrl = $this->getThemeAssetPath($url);
-
-        // @deprecated uncomment this in v4
-        // if (Config::get('system.themes_asset_url')) {
-        //     return $themeUrl;
-        // }
-
-        if (Config::get('system.relative_links') === true) {
-            return Url::toRelative($themeUrl);
+        $themeUrl = $this->getThemeAssetUrl($url);
+        if (Config::get('system.themes_asset_url')) {
+            return $themeUrl;
         }
 
-        // @deprecated v4 this should be toRelative since this is controlled by
-        // config system.themes_asset_url
-        return Url::asset($themeUrl);
+        return Url::toRelative($themeUrl);
     }
 
     /**

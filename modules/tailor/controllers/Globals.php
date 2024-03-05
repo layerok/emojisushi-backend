@@ -66,6 +66,7 @@ class Globals extends WildcardController
         }
 
         $this->setPageTitleFromMessage('titleUpdateForm', "Update Global");
+        $this->pageSize = Backend::sizeToPixels($this->activeSource->formSize ?? 950) ?: null;
 
         // Uses "create" context to enable default values on newly introduced fields
         $response = $this->asExtension('FormController')->update(null, FormField::CONTEXT_CREATE);
@@ -83,7 +84,6 @@ class Globals extends WildcardController
     {
         $this->vars['entityName'] = $this->activeSource->name ?? '';
         $this->vars['activeSource'] = $this->activeSource;
-        $this->vars['formSize'] = Backend::sizeToPixels($this->activeSource->formSize ?? 950) ?: 'auto';
     }
 
     /**
@@ -92,6 +92,16 @@ class Globals extends WildcardController
     public function onSave()
     {
         return $this->asExtension('FormController')->update_onSave();
+    }
+
+    /**
+     * onCancel
+     */
+    public function onCancel()
+    {
+        $this->asExtension('FormController')->update_onCancel();
+
+        return Redirect::refresh();
     }
 
     /**

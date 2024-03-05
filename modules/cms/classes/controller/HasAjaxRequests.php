@@ -89,7 +89,7 @@ trait HasAjaxRequests
 
             foreach ($partials as $partial) {
                 if (!Partial::validateRequestName($partial)) {
-                    throw new CmsException(Lang::get('cms::lang.partial.invalid_name', ['name'=>$partial]));
+                    throw new CmsException(Lang::get('cms::lang.partial.invalid_name', ['name'=>e($partial)]));
                 }
             }
 
@@ -109,7 +109,7 @@ trait HasAjaxRequests
             try {
                 // Validate the handler name
                 if (!preg_match('/^(?:\w+\:{2})?on[A-Z]{1}[\w+]*$/', $handler)) {
-                    throw new CmsException(Lang::get('cms::lang.ajax_handler.invalid_name', ['name'=>$handler]));
+                    throw new CmsException(Lang::get('cms::lang.ajax_handler.invalid_name', ['name'=>e($handler)]));
                 }
 
                 // Validates the handler partial list
@@ -129,7 +129,7 @@ trait HasAjaxRequests
                     $result = $this->runAjaxHandler($handler);
                 }
                 if (!$result) {
-                    throw new CmsException(Lang::get('cms::lang.ajax_handler.not_found', ['name'=>$handler]));
+                    throw new CmsException(Lang::get('cms::lang.ajax_handler.not_found', ['name'=>e($handler)]));
                 }
 
                 // If the handler returned a redirect, process the URL and dispose of it so

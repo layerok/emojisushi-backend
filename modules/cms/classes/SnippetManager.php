@@ -11,7 +11,7 @@ use System\Classes\PluginManager;
 /**
  * SnippetManager returns information about snippets based on partials and components.
  *
- * @package rainlab\pages
+ * @package october\cms
  * @author Alexey Bobkov, Samuel Georges
  */
 class SnippetManager

@@ -64,6 +64,13 @@ class BulkActions extends WildcardController
         $this->checkSourcePermission();
 
         $this->setNavigationContext();
+
+        if ($this->actionMethod === 'import') {
+            $this->beforeDisplayImport();
+        }
+        elseif ($this->actionMethod === 'export') {
+            $this->beforeDisplayExport();
+        }
     }
 
     /**

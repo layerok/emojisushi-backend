@@ -73,7 +73,7 @@ class EntryBlueprint extends Blueprint
      */
     public function useMultisiteSync(): bool
     {
-        if ($this->multisite === 'sync') {
+        if (in_array($this->multisite, ['sync', 'locale', 'all', 'group'])) {
             return true;
         }
 
@@ -82,6 +82,23 @@ class EntryBlueprint extends Blueprint
         }
 
         return (bool) array_get($this->multisite, 'sync', false);
+    }
+
+    /**
+     * getMultisiteConfig requests configuration for the multisite implementation, such as
+     * the sync group (all, group, locale) and the general propagation logic.
+     */
+    public function getMultisiteConfig($key, $default = null)
+    {
+        if ($key === 'sync' && is_string($this->multisite)) {
+            return $this->multisite;
+        }
+
+        if (!is_array($this->multisite)) {
+            return $default;
+        }
+
+        return array_get($this->multisite, $key, $default);
     }
 
     /**
@@ -94,10 +111,28 @@ class EntryBlueprint extends Blueprint
         }
 
         if (is_string($this->pagefinder)) {
-            return in_array($context, explode('|', $this->pagefinder));
+            return $this->pagefinder === $context;
+        }
+
+        if (is_array($this->pagefinder) && isset($this->pagefinder['context'])) {
+            return $this->pagefinder['context'] === $context;
         }
 
         return true;
+    }
+
+    /**
+     * getPageReplacements returns the replacements to be included when resolving the page
+     * link. Each replacement key should match a URL parameter name and use a dot notation
+     * path to the attribute value. eg: `[category => categories.0.slug]`
+     */
+    public function getPageFinderReplacements(): array
+    {
+        if (!is_array($this->pagefinder) || !is_array($this->pagefinder['replacements'])) {
+            return [];
+        }
+
+        return $this->pagefinder['replacements'];
     }
 
     /**

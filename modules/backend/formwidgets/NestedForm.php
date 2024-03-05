@@ -136,7 +136,7 @@ class NestedForm extends FormWidgetBase
 
         foreach ($modelsToSave as $attrChain => $modelToSave) {
             try {
-                $modelToSave->save(['sessionKey' => $widget->getSessionKey()]);
+                $modelToSave->save(['sessionKey' => $widget->getSessionKeyWithSuffix()]);
             }
             catch (ValidationException $ve) {
                 $ve->setFieldPrefix(array_merge(
@@ -170,6 +170,7 @@ class NestedForm extends FormWidgetBase
         $config->context = $this->formField->context;
         $config->arrayName = $this->getFieldName();
         $config->sessionKey = $this->sessionKey;
+        $config->sessionKeySuffix = $this->sessionKeySuffix;
 
         $this->tagTabbedFormFields($config->tabs);
         $this->tagTabbedFormFields($config->secondaryTabs);

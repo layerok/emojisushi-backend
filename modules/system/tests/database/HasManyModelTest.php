@@ -69,7 +69,7 @@ class HasManyModelTest extends PluginTestCase
         $post2 = Post::create(['title' => "Second post", 'author_id' => $author->id]);
         Model::reguard();
 
-        $this->assertEquals([$post1->id, $post2->id], $author->getRelationValue('posts'));
+        $this->assertEquals([$post1->id, $post2->id], $author->getRelationSimpleValue('posts'));
     }
 
     public function testDeferredBinding()

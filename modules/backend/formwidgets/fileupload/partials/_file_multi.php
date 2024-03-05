@@ -24,7 +24,7 @@
     <div class="uploader-control-container <?= $externalToolbarAppState ? 'external-toolbar' : null ?>">
         <div class="uploader-control-toolbar">
             <a href="javascript:;" class="backend-toolbar-button control-button toolbar-upload-button">
-                <i class="octo-icon-common-file-upload"></i>
+                <i class="icon-common-file-upload"></i>
                 <span class="button-label"><?= __("Upload") ?></span>
             </a>
 
@@ -35,7 +35,7 @@
                 data-request="<?= $this->getEventHandler('onRemoveAttachment') ?>"
                 disabled
             >
-                <i class="octo-icon-common-file-remove"></i>
+                <i class="icon-common-file-remove"></i>
                 <span class="button-label"><?= __("Delete Selected") ?> <span></span></span>
             </button>
         </div>

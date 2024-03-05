@@ -1,9 +1,9 @@
 <?php namespace Backend\FormWidgets;
 
-use Db;
 use DbDongle;
 use Backend\Classes\FormField;
 use Backend\Classes\FormWidgetBase;
+use October\Rain\Html\Helper as HtmlHelper;
 use SystemException;
 
 /**
@@ -19,16 +19,6 @@ class Relation extends FormWidgetBase
     //
     // Configurable Properties
     //
-
-    /**
-     * @var bool useController to completely replace this widget the `RelationController` behavior.
-     */
-    public $useController;
-
-    /**
-     * @var array useControllerConfig manually configures the `RelationController` behavior.
-     */
-    public $useControllerConfig;
 
     /**
      * @var string nameFrom is the model column to use for the name reference
@@ -60,6 +50,21 @@ class Relation extends FormWidgetBase
      */
     public $defaultSort;
 
+    /**
+     * @var mixed excludeFrom identifiers from the specified model attribute.
+     */
+    public $excludeFrom;
+
+    /**
+     * @var bool useController to completely replace this widget the `RelationController` behavior.
+     */
+    public $useController;
+
+    /**
+     * @var array useControllerConfig manually configures the `RelationController` behavior.
+     */
+    public $useControllerConfig;
+
     //
     // Object Properties
     //
@@ -83,6 +88,7 @@ class Relation extends FormWidgetBase
             'nameFrom',
             'emptyOption',
             'defaultSort',
+            'excludeFrom',
             'scope',
             'conditions',
         ]);
@@ -155,9 +161,13 @@ class Relation extends FormWidgetBase
             $this->applyDefaultSortToQuery($query);
         }
 
+        // Exclude values from the specified parent model attribute
+        if ($this->excludeFrom) {
+            $query->whereNotIn($relationModel->getKeyName(), (array) $model->{$this->excludeFrom});
+        }
         // It is safe to assume that if the model and related model are of
         // the exact same class, then it cannot be related to itself
-        if ($model->exists && ($relationModel->getTable() === $model->getTable())) {
+        elseif ($model->exists && ($relationModel->getTable() === $model->getTable())) {
             $query->where($relationModel->getKeyName(), '<>', $model->getKey());
         }
 
@@ -182,8 +192,8 @@ class Relation extends FormWidgetBase
         else {
             $relationObject->addDefinedConstraintsToQuery($query);
 
-            // Reset any orders that may have come from these definitions
-            // because it has a tendency to break things.
+            // Reset any orders that come from the definition since they may
+            // reference the pivot table that isn't included in this query
             if (in_array($relationType, ['belongsToMany', 'morphedByMany', 'morphToMany'])) {
                 $query->getQuery()->reorder();
             }
@@ -256,7 +266,7 @@ class Relation extends FormWidgetBase
             return false;
         }
 
-        if (!$this->controller->relationHasField($this->valueFrom)) {
+        if (!$this->controller->relationHasField($this->getRelationControllerFieldName())) {
             return false;
         }
 
@@ -277,7 +287,21 @@ class Relation extends FormWidgetBase
             $this->controller->asExtension('RelationController')->beforeDisplay();
         }
 
-        $this->controller->relationRegisterField($this->valueFrom, $this->useControllerConfig);
+        $this->controller->relationRegisterField($this->getRelationControllerFieldName(), $this->useControllerConfig);
+    }
+
+    /**
+     * getRelationControllerFieldName
+     */
+    protected function getRelationControllerFieldName()
+    {
+        $relationName = $this->valueFrom;
+
+        if ($parentFieldName = $this->getParentForm()->parentField) {
+            $relationName = $parentFieldName . '['.implode('][', HtmlHelper::nameToArray($relationName)).']';
+        }
+
+        return $relationName;
     }
 
     /**

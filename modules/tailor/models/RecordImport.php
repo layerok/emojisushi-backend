@@ -113,7 +113,7 @@ class RecordImport extends ImportModel
                 $this->decodeRepeaterItems($model, $attr, $value, $sessionKey);
             }
             else {
-                $model->setRelationValue($attr, $value);
+                $model->setRelationSimpleValue($attr, $value);
             }
         }
         else {

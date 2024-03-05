@@ -113,7 +113,7 @@ class ResizeImages
     {
         $cacheInfo = $this->getCache($cacheKey);
         if (!$cacheInfo || !isset($cacheInfo['path'])) {
-            throw new ApplicationException(Lang::get('system::lang.resizer.not_found', ['name'=>$cacheKey]));
+            throw new ApplicationException(Lang::get('system::lang.resizer.not_found', ['name' => e($cacheKey)]));
         }
 
         $imageItem = (new ResizeImageItem)->fromCacheInfo($cacheKey, $cacheInfo);

@@ -7,12 +7,10 @@ use Config;
 use Schema;
 use System;
 use Backend;
-use BackendMenu;
 use System\Models\EventLog;
 use System\Models\MailSetting;
 use System\Classes\MailManager;
 use System\Classes\ErrorHandler;
-use System\Classes\UpdateManager;
 use System\Classes\PluginManager;
 use System\Classes\SettingsManager;
 use System\Twig\Engine as TwigEngine;
@@ -22,6 +20,7 @@ use System\Twig\SecurityPolicy as TwigSecurityPolicy;
 use October\Rain\Support\ModuleServiceProvider;
 use Illuminate\Pagination\Paginator;
 use Twig\Environment as TwigEnvironment;
+use System\Classes\SystemReportDataSource;
 
 /**
  * ServiceProvider for System module
@@ -35,12 +34,7 @@ class ServiceProvider extends ModuleServiceProvider
     {
         parent::register('system');
 
-        $this->forgetSingletons();
         $this->registerSingletons();
-
-        // Register all plugins
-        PluginManager::instance()->registerFromProvider();
-
         $this->registerErrorHandler();
         $this->registerLogging();
         $this->registerTwigParser();
@@ -57,6 +51,9 @@ class ServiceProvider extends ModuleServiceProvider
             }
         }
 
+        // Register all plugins
+        PluginManager::instance()->registerFromProvider();
+
         // Register app service provider
         if (class_exists(\App\Provider::class)) {
             $this->app->register(\App\Provider::class);
@@ -64,6 +61,7 @@ class ServiceProvider extends ModuleServiceProvider
 
         // Backend specific
         if ($this->app->runningInBackend()) {
+            $this->registerDashboardDatasource();
             $this->extendBackendNavigation();
             $this->extendBackendSettings();
         }
@@ -101,41 +99,24 @@ class ServiceProvider extends ModuleServiceProvider
     }
 
     /**
-     * forgetSingletons that may linger from previous instances,
-     * useful for testing and booting secondary instances
-     */
-    protected function forgetSingletons()
-    {
-        PluginManager::forgetInstance();
-        UpdateManager::forgetInstance();
-    }
-
-    /**
      * registerSingletons
      */
     protected function registerSingletons()
     {
-        $this->app->singleton('cms.helper', \Cms\Helpers\Cms::class);
+        $this->app->singleton('system.cacher', \System\Helpers\Cache::class);
         $this->app->singleton('system.helper', \System\Helpers\System::class);
         $this->app->singleton('system.manifest', \System\Classes\ManifestCache::class);
         $this->app->singleton('system.preset', \System\Classes\PresetManager::class);
         $this->app->singleton('system.ui', \System\Classes\UiManager::class);
         $this->app->singleton('system.sites', \System\Classes\SiteManager::class);
         $this->app->singleton('system.resizer', \System\Classes\ResizeImages::class);
-
-        // @deprecated
-        $this->app->singleton('backend.ui', \System\Classes\UiManager::class);
-        $this->app->singleton('site.manager', \System\Classes\SiteManager::class);
-
-        // @todo v4 - these belong in the backend provider, and the load order
-        // should be changed to system, modules, plugins
-        $this->app->singleton('backend.helper', \Backend\Helpers\Backend::class);
-        $this->app->singleton('backend.menu', function () {
-            return \Backend\Classes\NavigationManager::instance();
-        });
-        $this->app->singleton('backend.auth', function () {
-            return \Backend\Classes\AuthManager::instance();
-        });
+        $this->app->singleton('system.combiner', \System\Classes\CombineAssets::class);
+        $this->app->singleton('system.mailer', \System\Classes\MailManager::class);
+        $this->app->singleton('system.markup', \System\Classes\MarkupManager::class);
+        $this->app->singleton('system.settings', \System\Classes\SettingsManager::class);
+        $this->app->singleton('system.updater', \System\Classes\UpdateManager::class);
+        $this->app->singleton('system.versions', \System\Classes\VersionManager::class);
+        $this->app->singleton('system.plugins', \System\Classes\PluginManager::class);
     }
 
     /**
@@ -360,16 +341,31 @@ class ServiceProvider extends ModuleServiceProvider
     }
 
     /**
+     * registerDashboardDatasource
+     */
+    protected function registerDashboardDatasource()
+    {
+        $this->callAfterResolving('backend.reports', function($manager) {
+            $manager->registerDataSourceClass(
+                SystemReportDataSource::class,
+                'system::lang.dashboard.report_data_source.data_source_name'
+            );
+        });
+    }
+
+    /**
      * extendBackendNavigation
      */
     protected function extendBackendNavigation()
     {
         // Register the sidebar for the System main menu
-        BackendMenu::registerContextSidenavPartial(
-            'October.System',
-            'system',
-            '~/modules/system/partials/_system_sidebar.php'
-        );
+        $this->callAfterResolving('backend.menu', function ($manager) {
+            $manager->registerContextSidenavPartial(
+                'October.System',
+                'system',
+                '~/modules/system/partials/_system_sidebar.php'
+            );
+        });
 
         // Remove the October.System.system main menu item if there is no subpages to display
         Event::listen('backend.menu.extendItems', function ($manager) {
@@ -439,7 +435,7 @@ class ServiceProvider extends ModuleServiceProvider
                 'label' => 'System Updates',
                 'description' => 'Update the system modules and plugins.',
                 'category' => SettingsManager::CATEGORY_SYSTEM,
-                'icon' => 'octo-icon-download',
+                'icon' => 'icon-download-cloud',
                 'url' => Backend::url('system/updates'),
                 'permissions' => ['general.backend.perform_updates'],
                 'order' => 300
@@ -448,17 +444,17 @@ class ServiceProvider extends ModuleServiceProvider
                 'label' => 'System Updates',
                 'description' => 'Update the system modules and plugins.',
                 'category' => SettingsManager::CATEGORY_MYSETTINGS,
-                'icon' => 'octo-icon-components',
+                'icon' => 'icon-components',
                 'url' => Backend::url('system/updates'),
                 'permissions' => ['general.backend.perform_updates'],
                 'order' => 520,
                 'context' => 'mysettings'
             ],
             'sites' => !Site::hasFeature() ? null : [
-                'label' => 'Manage Sites',
+                'label' => "Site Definitions",
                 'description' => 'Manage the websites available for this application.',
                 'category' => SettingsManager::CATEGORY_SYSTEM,
-                'icon' => 'octo-icon-globe',
+                'icon' => 'icon-globe-site',
                 'url' => Backend::url('system/sites'),
                 'permissions' => ['settings.manage_sites'],
                 'order' => 350
@@ -467,7 +463,7 @@ class ServiceProvider extends ModuleServiceProvider
                 'label' => "Mail Templates",
                 'description' => "Modify the mail templates that are sent to users and administrators, manage email layouts.",
                 'category' => SettingsManager::CATEGORY_MAIL,
-                'icon' => 'octo-icon-mail-messages',
+                'icon' => 'icon-mail-messages',
                 'url' => Backend::url('system/mailtemplates'),
                 'permissions' => ['mail.templates'],
                 'order' => 610
@@ -476,7 +472,7 @@ class ServiceProvider extends ModuleServiceProvider
                 'label' => "Mail Configuration",
                 'description' => "Manage email configuration.",
                 'category' => SettingsManager::CATEGORY_MAIL,
-                'icon' => 'octo-icon-mail-settings',
+                'icon' => 'icon-mail-settings',
                 'class' => \System\Models\MailSetting::class,
                 'permissions' => ['mail.settings'],
                 'order' => 620
@@ -485,7 +481,7 @@ class ServiceProvider extends ModuleServiceProvider
                 'label' => "Mail Branding",
                 'description' => "Modify the colors and appearance of mail templates.",
                 'category' => SettingsManager::CATEGORY_MAIL,
-                'icon' => 'octo-icon-mail-branding',
+                'icon' => 'icon-mail-branding',
                 'url' => Backend::url('system/mailbrandsettings'),
                 'permissions' => ['mail.templates'],
                 'order' => 630
@@ -494,7 +490,7 @@ class ServiceProvider extends ModuleServiceProvider
                 'label' => "Event Log",
                 'description' => "View system log messages with their recorded time and details.",
                 'category' => SettingsManager::CATEGORY_LOGS,
-                'icon' => 'octo-icon-text-format-ul',
+                'icon' => 'icon-text-format-ul',
                 'url' => Backend::url('system/eventlogs'),
                 'permissions' => ['utilities.logs'],
                 'order' => 900,
@@ -504,7 +500,7 @@ class ServiceProvider extends ModuleServiceProvider
                 'label' => "Request Log",
                 'description' => "View bad or redirected requests, such as Page not found (404).",
                 'category' => SettingsManager::CATEGORY_LOGS,
-                'icon' => 'icon-file-o',
+                'icon' => 'icon-file',
                 'url' => Backend::url('system/requestlogs'),
                 'permissions' => ['utilities.logs'],
                 'order' => 910,
@@ -514,7 +510,7 @@ class ServiceProvider extends ModuleServiceProvider
                 'label' => "Log Settings",
                 'description' => "Specify which areas should use logging.",
                 'category' => SettingsManager::CATEGORY_LOGS,
-                'icon' => 'octo-icon-log-settings',
+                'icon' => 'icon-log-settings',
                 'class' => \System\Models\LogSetting::class,
                 'permissions' => ['system.manage_logs'],
                 'order' => 990

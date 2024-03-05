@@ -88,6 +88,11 @@ class Controller extends Extendable
     public $pageTitle;
 
     /**
+     * @var mixed pageSize defines the maximum page size
+     */
+    public $pageSize;
+
+    /**
      * @var string pageTitleTemplate
      */
     public $pageTitleTemplate;
@@ -422,7 +427,7 @@ class Controller extends Extendable
     }
 
     /**
-     * execAjaxHandlers is used internally and unvokes a controller event handler and
+     * execAjaxHandlers is used internally and invokes a controller event handler and
      * loads the supplied partials.
      */
     protected function execAjaxHandlers()
@@ -435,7 +440,7 @@ class Controller extends Extendable
 
                     foreach ($partialList as $partial) {
                         if (!preg_match('/^(?!.*\/\/)[a-z0-9\_][a-z0-9\_\-\/]*$/i', $partial)) {
-                            throw new ApplicationException(Lang::get('backend::lang.partial.invalid_name', ['name'=>$partial]));
+                            throw new ApplicationException(Lang::get('backend::lang.partial.invalid_name', ['name'=>e($partial)]));
                         }
                     }
                 }
@@ -450,7 +455,7 @@ class Controller extends Extendable
 
                 // Execute the handler
                 if (!$result = $this->runAjaxHandler($handler)) {
-                    throw new ApplicationException(Lang::get('backend::lang.ajax_handler.not_found', ['name'=>$handler]));
+                    throw new ApplicationException(Lang::get('backend::lang.ajax_handler.not_found', ['name'=>e($handler)]));
                 }
 
                 // If the handler returned a redirect, process the URL and dispose of it so

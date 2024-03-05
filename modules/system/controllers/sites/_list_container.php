@@ -11,12 +11,12 @@
         <?= $list->render() ?>
     </div>
 <?php else: ?>
-    <div class="ps-md-4">
-        <div class="row gx-0">
-            <div class="col-md-3 col-lg-2 mb-3" id="<?= $this->getId('listTabs') ?>">
+    <div class="ps-lg-4">
+        <div class="list-with-sidebar">
+            <div class="sidebar-area" id="<?= $this->getId('listTabs') ?>">
                 <?= $this->makePartial('list_tabs') ?>
             </div>
-            <div class="col-md-9 col-lg-10">
+            <div class="sidebar-list">
                 <div class="layout-row">
                     <div class="list-widget-container">
                         <?php if ($filter): ?>

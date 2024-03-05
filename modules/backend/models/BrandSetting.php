@@ -28,10 +28,13 @@ class BrandSetting extends SettingModel
     public $settingsCode = 'backend_brand_settings';
 
     /**
-     * @var mixed settingsFields defition file
+     * @var mixed settingsFields definition file
      */
     public $settingsFields = 'fields.yaml';
 
+    /**
+     * @var array attachOne relations
+     */
     public $attachOne = [
         'favicon' => \System\Models\File::class,
         'logo' => \System\Models\File::class,
@@ -149,7 +152,7 @@ class BrandSetting extends SettingModel
                 return $settings->favicon->getPath();
             }
 
-            return self::getBaseConfigPath('favicon_path');
+            return self::getBaseConfigPath('favicon_path', '');
         });
     }
 
@@ -181,7 +184,7 @@ class BrandSetting extends SettingModel
                 return $settings->menu_logo->getPath();
             }
 
-            return self::getBaseConfigPath('menu_logo_path');
+            return self::getBaseConfigPath('menu_logo_path', '');
         });
     }
 
@@ -199,7 +202,7 @@ class BrandSetting extends SettingModel
                 return $settings->dashboard_icon->getPath();
             }
 
-            return self::getBaseConfigPath('dashboard_icon_path');
+            return self::getBaseConfigPath('dashboard_icon_path', '');
         });
     }
 
@@ -249,7 +252,7 @@ class BrandSetting extends SettingModel
             $cacheKey = self::instance()->cacheKey . '.stylesheet';
 
             $customCss = Cache::rememberForever($cacheKey, function() {
-                return self::compileCss();
+                return self::compileCss() ?: '';
             });
         }
         catch (Exception $ex) {

@@ -71,7 +71,7 @@ class RecordExport extends ExportModel
                 $value = $this->encodeRepeaterItems($model, $attr);
             }
             else {
-                $value = $model->getRelationValue($attr);
+                $value = $model->getRelationSimpleValue($attr);
             }
         }
         else {

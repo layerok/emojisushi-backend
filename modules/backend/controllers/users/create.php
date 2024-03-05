@@ -48,7 +48,7 @@
     <?php Block::endPut() ?>
 
     <?php Block::put('body') ?>
-        <?= Form::open(['class'=>'layout stretch']) ?>
+        <?= Form::open(['class'=>'position-relative h-100']) ?>
             <?= $this->makeLayout('form-with-sidebar') ?>
         <?= Form::close() ?>
     <?php Block::endPut() ?>

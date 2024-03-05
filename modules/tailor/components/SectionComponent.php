@@ -29,7 +29,8 @@ class SectionComponent extends ComponentModuleBase
     {
         return [
             'name' => 'Section',
-            'description' => 'Defines a website section with a supporting entry.'
+            'description' => 'Defines a website section with a supporting entry.',
+            'icon' => 'icon-columns'
         ];
     }
 

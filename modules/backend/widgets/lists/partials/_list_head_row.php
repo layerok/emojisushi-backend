@@ -46,13 +46,4 @@
             </th>
         <?php endif ?>
     <?php endforeach ?>
-
-    <?php if ($showSetup): ?>
-        <th class="list-setup">
-            <a href="javascript:;"
-                title="<?= e(trans('backend::lang.list.setup_title')) ?>"
-                data-control="popup"
-                data-handler="<?= $this->getEventHandler('onLoadSetup') ?>"><span></span></a>
-        </th>
-    <?php endif ?>
 </tr>

@@ -90,7 +90,7 @@
 
             $buttons.each((index, button) => {
                 var $button = $(button),
-                    $icon = $button.find('i[class^=octo-icon]');
+                    $icon = $button.find('i[class^=icon]');
 
                 this.toolbarExtensionPoint.push(
                     {
@@ -108,14 +108,13 @@
             $(el).closest('.control-list').listWidget('toggleChecked', [el]);
         }
 
-        static clickViewListRecord(recordId, relationId, sessionKey, popupSize) {
-            var newPopup = $('<a />'),
+        static clickViewListRecord(target, recordId, relationId, sessionKey) {
+            var newPopup = $(target),
                 $container = $('#'+relationId),
                 requestData = paramToObj('data-request-data', $container.data('request-data'));
 
             newPopup.popup({
                 handler: 'onRelationClickViewList',
-                size: popupSize,
                 extraData: $.extend({}, requestData, {
                     'manage_id': recordId,
                     '_session_key': sessionKey
@@ -123,30 +122,29 @@
             });
         }
 
-        static clickManageListRecord(recordId, relationId, sessionKey) {
-            var self = this,
-                oldPopup = $('#relationManagePopup'),
+        static clickManageListRecord(target, recordId, relationId, sessionKey) {
+            var oldPopup = $('#relationManagePopup'),
                 $container = $('#'+relationId),
                 requestData = paramToObj('data-request-data', $container.data('request-data'));
 
-            $.request('onRelationClickManageList', {
+            $(target).request('onRelationClickManageList', {
                 data: $.extend({}, requestData, {
                     'record_id': recordId,
                     '_session_key': sessionKey
                 })
             })
-            .done(function() {
+            .done(() => {
                 if (requestData['_relation_field']) {
-                    self.changed(requestData['_relation_field'], 'added');
+                    this.changed(requestData['_relation_field'], 'added');
                 }
             });
 
             oldPopup.popup('hide');
         }
 
-        static clickManagePivotListRecord(foreignId, relationId, sessionKey, popupSize) {
+        static clickManagePivotListRecord(target, foreignId, relationId, sessionKey) {
             var oldPopup = $('#relationManagePivotPopup'),
-                newPopup = $('<a />'),
+                newPopup = $(target),
                 $container = $('#'+relationId),
                 requestData = paramToObj('data-request-data', $container.data('request-data'));
 
@@ -156,7 +154,6 @@
 
             newPopup.popup({
                 handler: 'onRelationClickManageListPivot',
-                size: popupSize,
                 extraData: $.extend({}, requestData, {
                     'foreign_id': foreignId,
                     '_session_key': sessionKey
@@ -171,16 +168,9 @@
             $('[data-field-name="' + relationId + '"]').trigger('change.oc.formwidget', { event: event });
         }
 
-        // This function transfers the supplied variables as hidden form inputs,
-        // to any popup that is spawned within the supplied container. The spawned
-        // popup must contain a form element.
+        // @deprecated use oc.popup.bindToPopups
         static bindToPopups(container, vars) {
-            $(container).on('show.oc.popup', function(event, $trigger, $modal){
-                var $form = $('form', $modal)
-                $.each(vars, function(name, value){
-                    $form.prepend($('<input />').attr({ type: 'hidden', name: name, value: value }))
-                })
-            })
+            return oc.popup.bindToPopups(container, vars);
         }
     }
 

@@ -36,7 +36,7 @@ class FieldManager
     protected $customFieldHints;
 
     /**
-     * @var System\Classes\PluginManager
+     * @var PluginManager
      */
     protected $pluginManager;
 

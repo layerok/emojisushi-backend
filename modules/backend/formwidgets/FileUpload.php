@@ -165,9 +165,9 @@ class FileUpload extends FormWidgetBase
         }
 
         $this->vars['name'] = $this->getFieldName();
-        $this->vars['size'] = $this->formField->size;
         $this->vars['fileList'] = $fileList = $this->getFileList();
         $this->vars['singleFile'] = $fileList->first();
+        $this->vars['size'] = $this->formField->size;
         $this->vars['displayMode'] = $this->getDisplayMode();
         $this->vars['emptyIcon'] = $this->getConfig('emptyIcon', 'icon-upload');
         $this->vars['imageHeight'] = $this->imageHeight;
@@ -220,21 +220,52 @@ class FileUpload extends FormWidgetBase
      */
     protected function getFileList()
     {
-        $list = $this
-            ->getRelationObject()
-            ->withDeferred($this->getSessionKey())
-            ->orderBy('sort_order')
-            ->get()
-        ;
+        if ($eagerList = $this->getFileListFromRelation()) {
+            $list = $eagerList;
+        }
+        else {
+            $list = $this
+                ->getRelationObject()
+                ->withDeferred($this->getSessionKey())
+                ->orderBy('sort_order')
+                ->get()
+            ;
+        }
 
-        /*
-         * Decorate each file with thumb and custom download path
-         */
+        // Decorate each file with thumb and custom download path
         $list->each(function ($file) {
             $this->decorateFileAttributes($file);
         });
 
         return $list;
+    }
+
+    /**
+     * getFileListFromRelation loads the file list from the model relation in memory
+     * only if the request is not in a postback state
+     */
+    protected function getFileListFromRelation()
+    {
+        // Field name for this widget detected in postback
+        if (post($this->getFieldName()) !== null) {
+            return;
+        }
+
+        [$model, $attribute] = $this->resolveModelAttribute($this->valueFrom);
+        if (!$model->hasRelation($attribute)) {
+            return;
+        }
+
+        $value = $model->{$attribute};
+        if (!$value) {
+            return $model->newCollection();
+        }
+
+        if ($model->isRelationTypeSingular($attribute)) {
+            return $model->newCollection([$value]);
+        }
+
+        return $value;
     }
 
     /**

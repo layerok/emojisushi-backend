@@ -2,6 +2,7 @@
 
 namespace Layerok\Restapi\Http\Controllers;
 
+use Composer\Semver\Comparator;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Routing\Controller;
 use Illuminate\Support\Collection;
@@ -170,53 +171,54 @@ class OrderController extends Controller
             ]);
         }
 
-        $poster_order_id = $posterResult->response->incoming_order_id + $add_to_poster_id;
+        if(!isset($posterResult->response)) {
+            // probably poster pos api is down
+            $api = new Api($spot->bot->token);
 
-        $receiptProducts = $cart->products()->get()->map(function (CartProduct $cartProduct) {
-            $item = [];
-            $product = $cartProduct->product()->first();
-            $item['name'] = $product['name'];
-            $item['count'] = $cartProduct['quantity'];
-            return $item;
-        });
+            $api->sendMessage([
+                'text' => $this->generateReceipt(
+                    "Помилка відправки замовлення",
+                    $cart,
+                    $shippingMethod,
+                    $paymentMethod,
+                    $data
+                ),
+                'parse_mode' => "html",
+                'chat_id' => $spot->chat->internal_id
+            ]);
+
+            // todo: validate version
+            $userWebClientVersion = request()->header('x-web-client-version');
+
+            if(!$userWebClientVersion) {
+                throw new \ValidationException([
+                    \Lang::get('layerok.restapi::validation.send_order_error')
+                ]);
+            }
+
+            if(Comparator::compare($userWebClientVersion, '<', '2024.2.11')) {
+                throw new \ValidationException([
+                    \Lang::get('layerok.restapi::validation.send_order_error')
+                ]);
+            }
+
+            return response()->json([
+                'success' => true,
+            ]);
+        }
 
         $api = new Api($spot->bot->token);
 
-        $money = app()->make(Money::class);
-        $receipt = new Receipt();
-
-        $receipt
-            ->headline(\Lang::get('layerok.restapi::lang.receipt.new_order') . ' #' . $poster_order_id)
-            ->field(\Lang::get('layerok.restapi::lang.receipt.first_name'), $data['firstname'] ?? null)
-            ->field(\Lang::get('layerok.restapi::lang.receipt.last_name'), $data['lastname'] ?? null)
-            ->field(\Lang::get('layerok.restapi::lang.receipt.phone'), $data['phone'])
-            ->field(\Lang::get('layerok.restapi::lang.receipt.delivery_method'), $shippingMethod->name)
-            ->field(\Lang::get('layerok.restapi::lang.receipt.address'), $data['address'])
-            ->field(\Lang::get('layerok.restapi::lang.receipt.payment_method'), $paymentMethod->name)
-            ->field(\Lang::get('layerok.restapi::lang.receipt.change'), $data['change'] ?? null)
-            ->field(\Lang::get('layerok.restapi::lang.receipt.persons_amount'), $data['sticks'] ?? null)
-            ->field(\Lang::get('layerok.restapi::lang.receipt.comment'), $data['comment'] ?? null)
-            ->newLine()
-            ->b(\Lang::get('layerok.restapi::lang.receipt.order_items'))
-            ->colon()
-            ->newLine()
-            ->map($receiptProducts, function ($item) {
-                $this->product(
-                    $item['name'],
-                    $item['count']
-                )->newLine();
-            })
-            ->newLine()
-            ->field(\Lang::get('layerok.restapi::lang.receipt.total'), $money->format(
-                $cart->totals()->totalPostTaxes(),
-                null,
-                Currency::$defaultCurrency
-            ))
-            ->field(\Lang::get('layerok.restapi::lang.receipt.target'), 'site');
-
+        $poster_order_id = $posterResult->response->incoming_order_id + $add_to_poster_id;
 
         $telegramRes = $api->sendMessage([
-            'text' => $receipt->getText(),
+            'text' => $this->generateReceipt(
+                \Lang::get('layerok.restapi::lang.receipt.new_order') . ' #' . $poster_order_id,
+                $cart,
+                $shippingMethod,
+                $paymentMethod,
+                $data
+            ),
             'parse_mode' => "html",
             'chat_id' => $spot->chat->internal_id
         ]);
@@ -305,4 +307,56 @@ class OrderController extends Controller
         }
     }
 
+    public function generateReceipt(
+        string $headline,
+        Cart $cart,
+        ShippingMethod $shippingMethod,
+        PaymentMethod $paymentMethod,
+        $data
+    ): string {
+        $money = app()->make(Money::class);
+        $receipt = new Receipt();
+
+        $receiptProducts = $cart->products()->get()->map(function (CartProduct $cartProduct) {
+            $item = [];
+            $product = $cartProduct->product()->first();
+            $item['name'] = $product['name'];
+            $item['count'] = $cartProduct['quantity'];
+            return $item;
+        });
+
+        $receipt
+            ->headline($headline)
+            ->field(\Lang::get('layerok.restapi::lang.receipt.first_name'), $data['firstname'] ?? null)
+            ->field(\Lang::get('layerok.restapi::lang.receipt.last_name'), $data['lastname'] ?? null)
+            ->field(\Lang::get('layerok.restapi::lang.receipt.phone'), $data['phone'])
+            ->field(\Lang::get('layerok.restapi::lang.receipt.delivery_method'), $shippingMethod->name)
+            ->field(\Lang::get('layerok.restapi::lang.receipt.address'), $data['address'])
+            ->field(\Lang::get('layerok.restapi::lang.receipt.payment_method'), $paymentMethod->name)
+            ->field(\Lang::get('layerok.restapi::lang.receipt.change'), $data['change'] ?? null)
+            ->field(\Lang::get('layerok.restapi::lang.receipt.persons_amount'), $data['sticks'] ?? null)
+            ->field(\Lang::get('layerok.restapi::lang.receipt.comment'), $data['comment'] ?? null)
+            ->newLine()
+            ->b(\Lang::get('layerok.restapi::lang.receipt.order_items'))
+            ->colon()
+            ->newLine()
+            ->map($receiptProducts, function ($item) {
+                $this->product(
+                    $item['name'],
+                    $item['count']
+                )->newLine();
+            })
+            ->newLine()
+            ->field(\Lang::get('layerok.restapi::lang.receipt.total'), $money->format(
+                $cart->totals()->totalPostTaxes(),
+                null,
+                Currency::$defaultCurrency
+            ));
+
+        return $receipt->getText();
+    }
+
+    public function isDebugOn() {
+        return !!request()->header('x-debug-mode');
+    }
 }

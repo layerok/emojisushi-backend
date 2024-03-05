@@ -6,7 +6,7 @@
         data-request-confirm="<?= e($this->relationGetMessage('confirmUnlink')) ?>"
         data-stripe-load-indicator
     >
-        <i class="octo-icon-unlink"></i> <?= e($this->relationGetMessage('buttonUnlink')) ?>
+        <i class="icon-unlink"></i> <?= e($this->relationGetMessage('buttonUnlink')) ?>
     </button>
 <?php else: ?>
     <button
@@ -19,6 +19,6 @@
         data-list-checked-request
         data-stripe-load-indicator
     >
-        <i class="octo-icon-unlink"></i> <?= e($this->relationGetMessage('buttonUnlinkMany')) ?> <span data-list-checked-counter></span>
+        <i class="icon-unlink"></i> <?= e($this->relationGetMessage('buttonUnlinkMany')) ?> <span data-list-checked-counter></span>
     </button>
 <?php endif ?>

@@ -114,8 +114,14 @@ class CmsController extends ControllerBase
         // Apply redirect policy
         $site = $this->determineSiteFromPolicy($site);
 
+        // Preserve query string
+        $redirectUrl = $site->attachRoutePrefix($originalUrl);
+        if ($queryString = Request::getQueryString()) {
+            $redirectUrl .= '?'.$queryString;
+        }
+
         // No prefix detected, attach one with redirect
-        return Redirect::to($site->attachRoutePrefix($originalUrl), 301);
+        return Redirect::to($redirectUrl, 301);
     }
 
     /**

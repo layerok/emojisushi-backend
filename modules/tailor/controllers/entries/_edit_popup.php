@@ -1,5 +1,5 @@
 <?php
-    $model = $relationManageWidget->getModel();
+    $model = $relationManageFormWidget->getModel();
     if (!$relationManageId) {
         $model->setDefaultContentGroup($model->exists ? post('EntryRecord[content_group]') : null);
     }
@@ -7,7 +7,7 @@
     $langState = $this->makeLangState();
 ?>
 <div
-    id="<?= $relationManageWidget->getId('managePopup') ?>"
+    id="<?= $relationManageFormWidget->getId('managePopup') ?>"
     class="tailor-entry-edit-popup"
     data-control="vue-app">
     <?php if ($relationManageId): ?>
@@ -17,12 +17,9 @@
             'data-popup-load-indicator' => true,
             'data-request-success' => "oc.relationBehavior.changed('" . e($relationField) . "', 'updated')",
         ]) ?>
-
             <!-- Passable fields -->
-            <input type="hidden" name="manage_id" value="<?= $relationManageId ?>" />
             <input type="hidden" name="_relation_field" value="<?= $relationField ?>" />
-            <input type="hidden" name="_relation_mode" value="form" />
-            <input type="hidden" name="_relation_session_key" value="<?= $relationSessionKey ?>" />
+            <input type="hidden" name="_relation_extra_config" value="<?= e($relationExtraConfig) ?>" />
             <input type="hidden" name="EntryRecord[content_group]" value="<?= e($formModel->content_group) ?>"/>
 
             <div class="modal-header">
@@ -36,7 +33,7 @@
             </div>
 
             <div class="modal-body">
-                <?= $relationManageWidget->render(['preview' => $this->readOnly]) ?>
+                <?= $relationManageFormWidget->render(['preview' => $this->readOnly]) ?>
             </div>
 
             <div class="modal-footer">
@@ -61,7 +58,6 @@
                     </button>
                 <?php endif ?>
             </div>
-
         <?= Form::close() ?>
 
     <?php else: ?>
@@ -71,11 +67,9 @@
             'data-popup-load-indicator' => true,
             'data-request-success' => "oc.relationBehavior.changed('" . e($relationField) . "', 'created')",
         ]) ?>
-
             <!-- Passable fields -->
             <input type="hidden" name="_relation_field" value="<?= $relationField ?>" />
-            <input type="hidden" name="_relation_mode" value="form" />
-            <input type="hidden" name="_relation_session_key" value="<?= $relationSessionKey ?>" />
+            <input type="hidden" name="_relation_extra_config" value="<?= e($relationExtraConfig) ?>" />
             <input type="hidden" name="EntryRecord[content_group]" value="<?= e($formModel->content_group) ?>"/>
 
             <div class="modal-header">
@@ -89,7 +83,7 @@
             </div>
 
             <div class="modal-body">
-                <?= $relationManageWidget->render() ?>
+                <?= $relationManageFormWidget->render() ?>
             </div>
 
             <div class="modal-footer">
@@ -114,9 +108,8 @@
 </div>
 
 <script>
-    oc.relationBehavior.bindToPopups('#<?= $relationManageWidget->getId("managePopup") ?>', {
-        _relation_field: '<?= $relationField ?>',
-        _relation_mode: 'form'
+    oc.popup.bindToPopups('#<?= $relationManageFormWidget->getId("managePopup") ?>', {
+        _relation_field: '<?= $relationField ?>'
     });
 </script>
 

@@ -25,6 +25,7 @@ class SitePicker extends ComponentModuleBase
         return [
             'name' => 'Site Picker',
             'description' => 'Displays links for selecting a different site.',
+            'icon' => 'icon-globe'
         ];
     }
 

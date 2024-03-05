@@ -46,7 +46,7 @@
                 </button>
                 <button
                     type="button"
-                    class="oc-icon-trash-o btn-icon danger pull-right"
+                    class="oc-icon-trash btn-icon danger pull-right"
                     data-request="onDelete"
                     data-load-indicator="<?= e(trans('system::lang.mail_templates.deleting_layout')) ?>"
                     data-request-confirm="<?= e(trans('system::lang.mail_templates.delete_layout_confirm')) ?>">

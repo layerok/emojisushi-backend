@@ -18,7 +18,7 @@
 <li class="mainmenu-item">
     <a href="<?= Backend::url('backend/auth/signout') ?>">
         <span class="nav-icon">
-            <i class="octo-icon-exit"></i>
+            <i class="icon-exit"></i>
         </span>
         <span class="nav-label">
             <?= e(trans('backend::lang.account.sign_out')) ?>

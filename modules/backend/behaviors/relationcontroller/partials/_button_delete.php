@@ -1,6 +1,6 @@
 <?php if ($relationViewMode == 'single'): ?>
     <button
-        class="btn btn-sm btn-secondary oc-icon-trash-o relation-button-delete"
+        class="btn btn-sm btn-secondary oc-icon-trash relation-button-delete"
         data-request="onRelationButtonDelete"
         data-request-confirm="<?= e($this->relationGetMessage('confirmDelete')) ?>"
         data-request-success="oc.relationBehavior.changed('<?= e($relationField) ?>', 'deleted')"
@@ -19,6 +19,6 @@
         data-list-checked-request
         data-stripe-load-indicator
     >
-        <i class="octo-icon-delete"></i> <?= e($this->relationGetMessage('buttonDeleteMany')) ?> <span data-list-checked-counter></span>
+        <i class="icon-delete"></i> <?= e($this->relationGetMessage('buttonDeleteMany')) ?> <span data-list-checked-counter></span>
     </button>
 <?php endif ?>

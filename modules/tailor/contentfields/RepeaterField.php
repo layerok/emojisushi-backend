@@ -62,7 +62,7 @@ class RepeaterField extends ContentFieldBase
             $config['externalToolbarAppState'] = 'toolbarExtensionPoint';
         }
 
-        $form->addFormField($this->fieldName, $this->label)->useConfig($config);
+        $field = $form->addFormField($this->fieldName, $this->label)->useConfig($config);
     }
 
     /**

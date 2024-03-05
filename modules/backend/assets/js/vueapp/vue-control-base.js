@@ -29,6 +29,7 @@ class VueControlBase extends oc.ControlBase
     }
 
     connectAfter() {
+        this.vueContainerInstance = this;
         super.connectAfter();
         this.initContainerInternal();
     }
@@ -36,6 +37,7 @@ class VueControlBase extends oc.ControlBase
     disconnectAfter() {
         this.destroyContainerInternal();
         super.disconnectAfter();
+        this.vueContainerInstance = null;
     }
 
     // Internals

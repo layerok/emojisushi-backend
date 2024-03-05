@@ -81,6 +81,7 @@ class PreviewController extends ControllerBehavior
         $controller = new Controller(Theme::getEditTheme());
         $url = $controller->pageUrl($pageName, [
             'id' => $model->id,
+            'code' => $model->code,
             'slug' => $model->slug,
             'fullslug' => $model->fullslug
         ]);

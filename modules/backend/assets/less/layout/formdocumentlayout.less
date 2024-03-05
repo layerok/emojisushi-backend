@@ -34,15 +34,22 @@
 
                     > span.title {
                         padding: 0;
+                        margin: 0;
 
                         &:before, &:after {
                             display: none;
                         }
 
                         > span {
+                            &:before, &:after {
+                                display: none;
+                            }
+
                             margin: 0;
                             padding: 0;
                             border-top: none;
+                            color: inherit;
+                            background-color: transparent;
                         }
                     }
                 }

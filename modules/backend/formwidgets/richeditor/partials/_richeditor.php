@@ -24,6 +24,7 @@
         <?php if (isset($paragraphFormats)): ?>data-paragraph-format="<?= e(json_encode($paragraphFormats)) ?>"<?php endif ?>
         <?php if (isset($tableStyles)): ?>data-table-styles="<?= e(json_encode($tableStyles)) ?>"<?php endif ?>
         <?php if (isset($tableCellStyles)): ?>data-table-cell-styles="<?= e(json_encode($tableCellStyles)) ?>"<?php endif ?>
+        <?php if (isset($editorOptions)): ?>data-editor-options="<?= e(json_encode($editorOptions)) ?>"<?php endif ?>
         <?php if ($showMargins): ?>data-show-margins="true"<?php endif ?>
         <?php if ($externalToolbarAppState): ?>data-external-toolbar-app-state="<?= e($externalToolbarAppState)?>"<?php endif ?>
         data-lang-fullscreen="<?= e(trans('backend::lang.form.toggle_full_screen')) ?>"

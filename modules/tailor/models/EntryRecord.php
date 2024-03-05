@@ -127,7 +127,7 @@ class EntryRecord extends BlueprintModel
     {
         $entryName = $this->getContentFieldsetDefinition()->name ?? '';
 
-        $host->addFormField('title', 'Title')->autoFocus()->cssClass('primary-title-field')->placeholder(__("New :name Entry", ['name' => __($entryName)]));
+        $host->addFormField('title', 'Title')->autoFocus()->cssClass('primary-title-field')->placeholder(__("Create :name Entry", ['name' => __($entryName)]));
         $this->applyCoreFieldModifiers($host);
     }
 
@@ -483,5 +483,13 @@ class EntryRecord extends BlueprintModel
     public function isMultisiteSyncEnabled()
     {
         return $this->useMultisiteSync();
+    }
+
+    /**
+     * getMultisiteConfig returns an sync option configured for multisite
+     */
+    public function getMultisiteConfig($key, $default = null)
+    {
+        return $this->getBlueprintDefinition()->getMultisiteConfig($key, $default);
     }
 }

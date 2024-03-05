@@ -303,22 +303,6 @@ class Repeater extends FormWidgetBase
             ? $this->getLoadValueFromRelation()
             : $this->getLoadValue();
 
-        // This lets record finder work inside a repeater with some hacks
-        // since record finder spawns outside the form and its AJAX calls
-        // don't reinitialize this repeater's items. We a need better way
-        // remove if year >= 2025 @deprecated -sg
-        $handler = $this->controller->getAjaxHandler();
-        if (!$this->isLoaded && starts_with($handler, $this->alias . 'Form')) {
-            $handler = str_after($handler, $this->alias . 'Form');
-            preg_match("~^(\d+)~", $handler, $matches);
-
-            if (isset($matches[1])) {
-                $index = $matches[1];
-                $this->makeItemFormWidget($index);
-                unset($this->formWidgets[$index]);
-            }
-        }
-
         // Pad current value with minimum items and disable for groups,
         // which cannot predict their item types
         if (!$this->useGroups && $this->minItems > 0) {
@@ -378,6 +362,7 @@ class Repeater extends FormWidgetBase
         $config->arrayName = $this->getFieldName().'['.$index.']';
         $config->sessionKey = $this->sessionKey;
         $config->sessionKeySuffix = $this->sessionKeySuffix . '-' . $index;
+        $config->parentField = $this->formField;
 
         $widget = $this->makeWidget(\Backend\Widgets\Form::class, $config);
         $widget->previewMode = $this->previewMode;
@@ -577,13 +562,17 @@ class Repeater extends FormWidgetBase
             }
 
             foreach ($groups as $code => $config) {
+                if (str_starts_with($code, '_')) {
+                    continue;
+                }
+
                 if (is_string($config)) {
                     $config = $this->makeConfig($config);
                 }
 
                 $palette[$code] = ['code' => $code] + ((array) $config) + [
                     'name' => '',
-                    'icon' => 'icon-square-o',
+                    'icon' => 'icon-square',
                     'description' => '',
                     'titleFrom' => '',
                     'fields' => [],

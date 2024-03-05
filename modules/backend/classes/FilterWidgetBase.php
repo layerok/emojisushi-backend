@@ -26,12 +26,12 @@ abstract class FilterWidgetBase extends WidgetBase
     protected $filterScope;
 
     /**
-     * @var string scopeName
+     * @var string scopeName contains the raw scope name
      */
     protected $scopeName;
 
     /**
-     * @var string valueFrom
+     * @var string valueFrom contains the attribute value source
      */
     protected $valueFrom;
 

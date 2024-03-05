@@ -144,7 +144,7 @@ oc.Modules.register('backend.component.documentmarkdowneditor', function () {
                     {
                         name: 'snippet',
                         action: 'snippet',
-                        className: 'fa fa-newspaper-o',
+                        className: 'fa fa-newspaper',
                         title: oc.lang.get('markdowneditor.snippet')
                     },
                     {
@@ -156,7 +156,7 @@ oc.Modules.register('backend.component.documentmarkdowneditor', function () {
                     {
                         name: 'image',
                         action: EasyMDE.drawImage,
-                        className: 'fa fa-picture-o',
+                        className: 'fa fa-picture',
                         title: oc.lang.get('markdowneditor.image')
                     },
                     {
@@ -227,12 +227,12 @@ oc.Modules.register('backend.component.documentmarkdowneditor', function () {
                     code: 'text-code-block',
                     'unordered-list': 'text-format-ul',
                     'ordered-list': 'text-format-ol',
-                    'clean-block': 'eraser',
+                    'clean-block': 'text-eraser',
                     image: 'text-image',
                     table: 'text-insert-table',
                     'horizontal-rule': 'horizontal-line',
                     'side-by-side': 'window-split',
-                    snippet: 'newspaper-o'
+                    snippet: 'newspaper'
                 }
             };
 
