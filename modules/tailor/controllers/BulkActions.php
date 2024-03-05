@@ -94,7 +94,10 @@ class BulkActions extends WildcardController
      */
     public function actionUrl($action = null, $path = null)
     {
-        $url = 'tailor/bulkactions/'.$this->activeSource->handleSlug.'/'.$action;
+        $url = $action === 'download'
+            ? 'tailor/bulkactions/'.$this->activeSource->handleSlug.'/'.$action
+            : 'tailor/entries/'.$this->activeSource->handleSlug;
+
         if ($path) {
             $url .= '/'.$path;
         }

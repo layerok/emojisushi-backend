@@ -59,12 +59,12 @@ trait ActionImport
     public function actionImportLoadColumnSampleForm()
     {
         if (($columnId = post('file_column_id', false)) === false) {
-            throw new ApplicationException(Lang::get('backend::lang.import_export.missing_column_id_error'));
+            throw new ApplicationException(__("Missing column identifier"));
         }
 
         $columns = $this->getImportFileColumns();
         if (!array_key_exists($columnId, $columns)) {
-            throw new ApplicationException(Lang::get('backend::lang.import_export.unknown_column_error'));
+            throw new ApplicationException(__("Unknown column"));
         }
 
         $path = $this->getImportFilePath();
@@ -139,7 +139,7 @@ trait ActionImport
         $columns = $this->controller->importExportExtendColumns($columns, 'import');
 
         if (empty($columns)) {
-            throw new ApplicationException(Lang::get('backend::lang.import_export.empty_import_columns_error'));
+            throw new ApplicationException(__("Please specify some columns to import."));
         }
 
         return $this->importColumns = $columns;
@@ -245,7 +245,7 @@ trait ActionImport
     protected function checkRequiredImportColumns()
     {
         if (!$matches = post('column_match', [])) {
-            throw new ApplicationException(Lang::get('backend::lang.import_export.match_some_column_error'));
+            throw new ApplicationException(__("Please match some columns first."));
         }
 
         $dbColumns = $this->getImportDbColumns();
@@ -263,8 +263,8 @@ trait ActionImport
             }
 
             if (!$found) {
-                throw new ApplicationException(Lang::get('backend::lang.import_export.required_match_column_error', [
-                    'label' => Lang::get($label)
+                throw new ApplicationException(__("Please specify a match for the required field :label.", [
+                    'label' => __($label)
                 ]));
             }
         }

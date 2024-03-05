@@ -185,7 +185,8 @@ oc.Modules.register('editor.extension.documentcomponent.base', function() {
                     this.documentMetadata = data.metadata;
 
                     return data;
-                } catch (error) {
+                }
+                catch (error) {
                     if (!suppressGlobalDocumentError) {
                         this.$emit('tabfatalerror');
                     }

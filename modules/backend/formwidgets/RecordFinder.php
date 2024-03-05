@@ -90,6 +90,13 @@ class RecordFinder extends FormWidgetBase
     public $searchMode;
 
     /**
+     * @var bool inlineOptions displays the field with buttons alongside the selected record
+     * with an assumed amount of horizontal space to accommodate it. Disable this mode
+     * if horizontal space is limited.
+     */
+    public $inlineOptions = true;
+
+    /**
      * @var string searchScope uses a custom scope method for performing searches.
      */
     public $searchScope;
@@ -160,6 +167,7 @@ class RecordFinder extends FormWidgetBase
             'defaultSort',
             'showSetup',
             'conditions',
+            'inlineOptions',
             'searchMode',
             'searchScope',
             'recordsPerPage',
@@ -234,7 +242,7 @@ class RecordFinder extends FormWidgetBase
             $this->previewMode = true;
         }
 
-        $this->vars['displayMode'] = 'single';
+        $this->vars['displayMode'] = $this->inlineOptions ? 'single' : 'multi';
         $this->vars['popupSize'] = $this->popupSize;
         $this->vars['value'] = $this->getKeyValue();
         $this->vars['field'] = $this->formField;

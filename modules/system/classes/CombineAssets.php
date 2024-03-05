@@ -226,7 +226,7 @@ class CombineAssets
     {
         $cacheInfo = $this->getCache($cacheKey);
         if (!$cacheInfo) {
-            throw new ApplicationException(Lang::get('system::lang.combiner.not_found', ['name' => e($cacheKey)]));
+            throw new ApplicationException(__("The combiner file ':name' is not found.", ['name' => e($cacheKey)]));
         }
 
         // Ensure defaults

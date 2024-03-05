@@ -23,7 +23,7 @@ addEventListener('ajax:setup', function(event) {
     const context = event.detail.context,
         $el = context.el;
 
-    if (!$el) {
+    if (!$el || !$el.closest) {
         return;
     }
 

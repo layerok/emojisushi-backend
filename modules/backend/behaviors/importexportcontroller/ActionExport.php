@@ -131,7 +131,7 @@ trait ActionExport
         $columns = $this->controller->importExportExtendColumns($columns, 'export');
 
         if (empty($columns)) {
-            throw new ApplicationException(Lang::get('backend::lang.import_export.empty_export_columns_error'));
+            throw new ApplicationException(__("Please specify some columns to export."));
         }
 
         return $this->exportColumns = $columns;

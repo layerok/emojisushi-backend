@@ -918,9 +918,10 @@
         oc.confirm(this.options.deleteConfirm, this.proxy(this.deleteConfirmation))
     }
 
-    MediaManager.prototype.deleteConfirmation = function(confirmed) {
-        if (!confirmed)
-            return
+    MediaManager.prototype.deleteConfirmation = function(isConfirm) {
+        if (!isConfirm) {
+            return;
+        }
 
         var items = this.$el.get(0).querySelectorAll('[data-type="media-item"].selected'),
             paths = []
@@ -937,21 +938,24 @@
         }
 
         var data = {
-                paths: paths
-            }
+            paths: paths
+        };
 
-        $.oc.stripeLoadIndicator.show()
-        this.$form.request(this.options.alias+'::onDeleteItem', {
-            data: data
-        }).always(function() {
-            $.oc.stripeLoadIndicator.hide()
-        }).done(this.proxy(this.afterNavigate))
+        $.oc.stripeLoadIndicator.show();
+        this.$form
+            .request(this.options.alias+'::onDeleteItem', {
+                data: data
+            })
+            .always(function() {
+                $.oc.stripeLoadIndicator.hide()
+            })
+            .done(this.proxy(this.afterNavigate));
     }
 
     MediaManager.prototype.createFolder = function(ev) {
         $(ev.target).popup({
             content: this.$el.find('[data-control="new-folder-template"]').html()
-        })
+        });
     }
 
     MediaManager.prototype.onFolderPopupShown = function(ev, button, popup) {

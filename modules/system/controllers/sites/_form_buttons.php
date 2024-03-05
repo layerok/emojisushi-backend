@@ -5,7 +5,7 @@
             ->hotkey('ctrl+s', 'cmd+s')
             ->loadingMessage(__("Creating :name...", ['name' => $formRecordName])) ?>
 
-        <?= Ui::ajaxButton(__("Create and Close"), 'onSave')
+        <?= Ui::ajaxButton(__("Create & Close"), 'onSave')
             ->secondary()
             ->redirectBack()
             ->ajaxData(['close' => true])

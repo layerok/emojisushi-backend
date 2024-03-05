@@ -90,7 +90,7 @@ class CustomMultiJoinRelation extends MorphToMany
     {
         parent::addWhereConstraints();
 
-        $this->wherePivot($this->table.'.field_name', $this->fieldName);
+        $this->where($this->qualifyPivotColumn('field_name'), $this->fieldName);
 
         return $this;
     }
@@ -102,7 +102,7 @@ class CustomMultiJoinRelation extends MorphToMany
     {
         parent::addEagerConstraints($models);
 
-        $this->wherePivot($this->table.'.field_name', $this->fieldName);
+        $this->where($this->qualifyPivotColumn('field_name'), $this->fieldName);
     }
 
     /**

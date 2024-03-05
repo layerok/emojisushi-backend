@@ -362,7 +362,7 @@ class Repeater extends FormWidgetBase
         $config->arrayName = $this->getFieldName().'['.$index.']';
         $config->sessionKey = $this->sessionKey;
         $config->sessionKeySuffix = $this->sessionKeySuffix . '-' . $index;
-        $config->parentField = $this->formField;
+        $config->parentFieldName = $this->formField->fieldName;
 
         $widget = $this->makeWidget(\Backend\Widgets\Form::class, $config);
         $widget->previewMode = $this->previewMode;

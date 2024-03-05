@@ -514,7 +514,11 @@
             $button = $(ev.target).closest('.toolbar-clear-file'),
             $currentObject = $('.upload-object:first', this.$filesContainer);
 
-        oc.confirm($button.attr('data-request-confirm'), function() {
+        oc.confirm($button.attr('data-request-confirm'), function(isConfirm) {
+            if (!isConfirm) {
+                return;
+            }
+
             self.removeObjectInternal($form, $button, $currentObject);
         });
 
@@ -528,7 +532,11 @@
             $button = $(ev.target).closest('.toolbar-delete-selected'),
             $currentObjects = $('.upload-object:has(input[data-record-selector]:checked)', this.$filesContainer);
 
-        oc.confirm($button.attr('data-request-confirm'), function() {
+        oc.confirm($button.attr('data-request-confirm'), function(isConfirm) {
+            if (!isConfirm) {
+                return;
+            }
+
             $currentObjects.addClass('is-loading');
 
             $currentObjects.each(function() {

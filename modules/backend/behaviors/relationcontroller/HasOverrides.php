@@ -88,6 +88,16 @@ trait HasOverrides
     }
 
     /**
+     * relationExtendManageFormQuery extends the query used for finding the form model. Extra conditions
+     * can be applied to the query, for example, $query->withTrashed();
+     * @param October\Rain\Database\Builder $query
+     * @return void
+     */
+    public function relationExtendManageFormQuery($field, $query)
+    {
+    }
+
+    /**
      * relationExtendViewListWidget provides an opportunity to manipulate the view widget.
      * @param \Backend\Widgets\List $widget
      * @param string $field

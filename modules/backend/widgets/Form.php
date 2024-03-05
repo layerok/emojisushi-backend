@@ -123,10 +123,9 @@ class Form extends WidgetBase implements FormElement
     public $sessionKeySuffix;
 
     /**
-     * @var \Backend\Classes\FormField|string|null parentField if this form is nested in a field,
-     * this can be a string for basic field name chaining used by RelationController.
+     * @var string|null parentFieldName if this form is nested in a field.
      */
-    public $parentField = null;
+    public $parentFieldName = null;
 
     /**
      * @var bool previewMode renders this form with uneditable preview data.
@@ -157,9 +156,9 @@ class Form extends WidgetBase implements FormElement
             'context',
             'arrayName',
             'isNested',
-            'parentField',
             'useModelFields',
             'sessionKeySuffix',
+            'parentFieldName',
             'previewMode',
             'surveyMode',
             'horizontalMode',
@@ -1299,18 +1298,6 @@ class Form extends WidgetBase implements FormElement
     public function getContext()
     {
         return $this->context;
-    }
-
-    /**
-     * getParentFormField returns the form field that spawned this form, if applicable.
-     */
-    public function getParentFormField(): ?FormField
-    {
-        if ($this->parentField instanceof FormField) {
-            return $this->parentField;
-        }
-
-        return null;
     }
 
     /**
