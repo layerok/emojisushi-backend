@@ -363,6 +363,11 @@ class Plugin extends PluginBase
                 'permissions' => ['layerok.posterpos.*'],
                 'order'       => 500,
                 'sideMenu' => [
+                    'posterpos-banners' => [
+                        'label' => "Banners",
+                        'icon'   => 'icon-text-image',
+                        'url'    => Backend::url('layerok/posterpos/banner'),
+                    ],
                     'posterpos-spots' => [
                         'label' => "Spots",
                         'icon'   => 'icon-map-marker',

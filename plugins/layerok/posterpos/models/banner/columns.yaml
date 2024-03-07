@@ -1,0 +1,15 @@
+columns:
+    id:
+        label: ID
+        searchable: true
+    is_active:
+        label: Статус
+        type: partial
+        path: $/offline/mall/models/product/_published.htm
+    title:
+        label: Name
+        searchable: true
+    product[name]:
+        label: Product
+
+

@@ -108,3 +108,6 @@
 1.1.36:
     - 'Add availability fields'
     - add_availability_fields.php
+1.1.37:
+    - 'Add banners table'
+    - add_banners_table.php
