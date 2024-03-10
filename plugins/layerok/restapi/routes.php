@@ -18,12 +18,14 @@ use Layerok\Restapi\Http\Controllers\AuthController;
 use Layerok\Restapi\Http\Controllers\RefreshController;
 use \Layerok\Restapi\Http\Controllers\CityController;
 use \Layerok\Restapi\Http\Controllers\PromotionController;
+use \Layerok\Restapi\Http\Controllers\BannerController;
+use \Fruitcake\Cors\HandleCors;
 
 Route::group([
     'middleware' => [
         ExceptionsMiddleware::class,
         CustomSession::class,
-        \Fruitcake\Cors\HandleCors::class,
+        HandleCors::class,
     ],
     'prefix' => 'api'
 ], function () {
@@ -37,6 +39,7 @@ Route::group([
     Route::get('city-main', [CityController::class, 'main']);
     Route::get('shipping', [ShippingMethodController::class, 'all']);
     Route::get('payments', [PaymentMethodController::class, 'all']);
+    Route::get('banners', [BannerController::class, 'all']);
     Route::get('ingredients', [IngredientController::class, 'all']);
     Route::prefix('order')->group(function() {
         Route::post('place', [OrderController::class, 'place']);

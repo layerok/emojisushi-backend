@@ -1,18 +1,10 @@
 {
-    "name": "reazzon/jwtauth-plugin",
+    "name": "reazzon/jwtauth-pluginn",
     "type": "october-plugin",
     "description": "No description provided yet...",
     "require": {
         "php": ">=7.4",
         "ext-json": "*",
-        "composer/installers": "~1.0",
-        "php-open-source-saver/jwt-auth": "1.4.2"
-    },
-    "extra": {
-        "laravel": {
-            "dont-discover": [
-                "php-open-source-saver/jwt-auth"
-            ]
-        }
+        "composer/installers": "~1.0"
     }
 }

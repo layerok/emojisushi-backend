@@ -1,5 +1,6 @@
 <?php namespace Tailor\Models;
 
+use Site;
 use Backend\Models\ImportModel;
 use October\Contracts\Element\ListElement;
 use October\Contracts\Element\FormElement;
@@ -63,15 +64,22 @@ class RecordImport extends ImportModel
             $record = $this->findDuplicateRecord($data) ?: $this->resolveBlueprintModel();
             $exists = $record->exists;
 
-            if ($exists && !$this->update_existing) {
-                $this->logSkipped($row, "Record ID already exists");
-                continue;
+            if ($exists) {
+                if (!$this->update_existing) {
+                    $this->logSkipped($row, "Record ID already exists");
+                    continue;
+                }
+
+                if ($record->site_id && $record->site_id !== Site::getSiteIdFromContext()) {
+                    $this->logSkipped($row, "Record ID exists in another site");
+                    continue;
+                }
             }
 
+            // Update record
             foreach ($data as $attr => $value) {
                 $this->decodeModelAttribute($record, $attr, $value, $sessionKey);
             }
-
             $record->forceSave(null, $sessionKey);
 
             if ($exists) {
@@ -88,7 +96,7 @@ class RecordImport extends ImportModel
      */
     protected function findDuplicateRecord($data)
     {
-        $query = $this->resolveBlueprintModel();
+        $query = $this->resolveBlueprintModel()->newQueryWithoutScopes();
 
         if ($id = array_get($data, 'id')) {
             return $query->find($id);

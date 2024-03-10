@@ -309,7 +309,7 @@ class ImportExportController extends ControllerBehavior
 
         $modelClass = $this->getConfig($type.'[modelClass]');
         if (!$modelClass) {
-            throw new ApplicationException(Lang::get('backend::lang.import_export.missing_model_class_error', [
+            throw new ApplicationException(__("Please specify the modelClass property for :type", [
                 'type' => $type
             ]));
         }

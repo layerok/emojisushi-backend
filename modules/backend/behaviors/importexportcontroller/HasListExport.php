@@ -19,7 +19,7 @@ trait HasListExport
         }
 
         if (!$this->controller->isClassExtendedWith(\Backend\Behaviors\ListController::class)) {
-            throw new ApplicationException(Lang::get('backend::lang.import_export.behavior_missing_uselist_error'));
+            throw new ApplicationException(__("You must implement the controller behavior ListController with the export 'useList' option enabled."));
         }
 
         if (is_array($useList)) {

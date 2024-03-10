@@ -171,6 +171,7 @@ class NestedForm extends FormWidgetBase
         $config->arrayName = $this->getFieldName();
         $config->sessionKey = $this->sessionKey;
         $config->sessionKeySuffix = $this->sessionKeySuffix;
+        $config->parentFieldName = $this->formField->fieldName;
 
         $this->tagTabbedFormFields($config->tabs);
         $this->tagTabbedFormFields($config->secondaryTabs);

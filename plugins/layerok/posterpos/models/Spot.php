@@ -9,6 +9,7 @@ use OFFLINE\Mall\Models\Product;
 
 /**
  * @property Tablet|null $tablet
+ * @property int $temporarily_unavailable
  */
 class Spot extends Model
 {

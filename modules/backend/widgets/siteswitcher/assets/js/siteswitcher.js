@@ -28,8 +28,8 @@ oc.Modules.register('backend.widget.siteswitcher', function() {
             oc.request($anchor, $anchor.dataset.handler).done((data) => {
                 oc.Events.dispatch('backend:hidemenus');
                 if (data.confirm) {
-                    oc.confirm(data.confirm, (isConfirmed) => {
-                        if (isConfirmed) {
+                    oc.confirm(data.confirm, (isConfirm) => {
+                        if (isConfirm) {
                             oc.visit(this.makeAnchorLink($anchor));
                         }
                     });

@@ -368,6 +368,7 @@ class RelationController extends ControllerBehavior
             ]));
         }
 
+        // Configuration details
         if (!$this->relationHasField($field)) {
             throw new ApplicationException(Lang::get('backend::lang.relation.missing_definition', compact('field')));
         }
@@ -382,6 +383,10 @@ class RelationController extends ControllerBehavior
 
         // Relationship details
         [$nestedModel, $nestedField] = $this->makeNestedRelationModel($this->model, $this->config->valueFrom ?? $field);
+        if (!$nestedModel->hasRelation($nestedField)) {
+            throw new ApplicationException(Lang::get('backend::lang.model.missing_relation', ['class' => get_class($nestedModel), 'relation' => $nestedField]));
+        }
+
         $this->relationParent = $nestedModel;
         $this->relationName = $nestedField;
         $this->relationType = $nestedModel->getRelationType($nestedField);

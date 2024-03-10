@@ -4,8 +4,8 @@ namespace Layerok\Restapi\Http\Controllers;
 
 use Illuminate\Http\JsonResponse;
 use Illuminate\Routing\Controller;
+use Layerok\PosterPos\Models\User;
 use OFFLINE\Mall\Models\Address;
-use OFFLINE\Mall\Models\User;
 use RainLab\Location\Models\Country;
 
 class UserController extends Controller
@@ -13,13 +13,17 @@ class UserController extends Controller
     public function fetch(): JsonResponse
     {
         $jwtGuard = app('JWTGuard');
+        /** @var User $user */
         $user = User::with([
             'customer.addresses',
             'customer.orders.products.product.image_sets',
             'customer.orders.order_state'
         ])
             ->find($jwtGuard->user()->id);
-        return response()->json($user);
+
+        return response()->json(array_merge($user->toArray(), [
+            'is_call_center_admin' => $user->isCallCenterAdmin()
+        ]));
     }
 
     public function save()

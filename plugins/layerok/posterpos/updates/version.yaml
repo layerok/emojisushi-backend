@@ -105,3 +105,9 @@
 1.1.35:
     - 'Update products table by adding poster_id2 field'
     - add_poster_id2_field_to_products_table.php
+1.1.36:
+    - 'Add availability fields'
+    - add_availability_fields.php
+1.1.37:
+    - 'Add banners table'
+    - add_banners_table.php

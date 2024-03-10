@@ -1,0 +1,34 @@
+# ===================================
+#  Form Behavior Config
+# ===================================
+
+# Record name
+name: Banner
+
+# Model Form Field configuration
+form: $/layerok/posterpos/models/banner/fields.yaml
+
+# Model Class name
+modelClass: Layerok\PosterPos\Models\Banner
+
+# Default redirect location
+defaultRedirect: layerok/posterpos/banner
+
+# Create page
+create:
+    title: backend::lang.form.create_title
+    redirect: layerok/posterpos/banner/update/:id
+    redirectClose: layerok/posterpos/banner
+    form: $/layerok/posterpos/models/banner/fields_create.yaml
+
+# Update page
+update:
+    title: backend::lang.form.update_title
+    redirect: layerok/posterpos/banner
+    redirectClose: layerok/posterpos/banner
+    form: $/layerok/posterpos/models/banner/fields_update.yaml
+
+
+# Preview page
+preview:
+    title: backend::lang.form.preview_title

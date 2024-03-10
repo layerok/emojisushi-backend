@@ -33,6 +33,10 @@ fields:
         label: Основний
         span: auto
         type: switch
+    temporarily_unavailable:
+        label: Временно недоступен
+        span: auto
+        type: switch
     html_content:
         type: richeditor
         toolbarButtons: fullscreen, bold, italic, underline, strikeThrough, subscript, superscript, fontFamily, fontSize, |, color, emoticons, inlineStyle, paragraphStyle, |, paragraphFormat, align, formatOL, formatUL, outdent, indent, quote, insertHR, -, insertLink, insertImage, insertVideo, insertAudio, insertFile, insertTable, undo, redo, clearFormatting, selectAll, html

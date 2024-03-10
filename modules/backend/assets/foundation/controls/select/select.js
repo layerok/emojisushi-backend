@@ -89,7 +89,10 @@ oc.registerControl('custom-select', class extends oc.ControlBase {
         this.$el.off('disable', this.proxy(this.disableSelect));
 
         this.$el.off('select2:open', this.select2OpenWorkaround);
-        this.$el.select2('destroy');
+
+        if (this.$el.data('select2') != null) {
+            this.$el.select2('destroy');
+        }
     }
 
     bindCustomSelectWorkaround() {

@@ -297,7 +297,7 @@ class Relation extends FormWidgetBase
     {
         $relationName = $this->valueFrom;
 
-        if ($parentFieldName = $this->getParentForm()->parentField) {
+        if ($parentFieldName = $this->getParentForm()->parentFieldName) {
             $relationName = $parentFieldName . '['.implode('][', HtmlHelper::nameToArray($relationName)).']';
         }
 

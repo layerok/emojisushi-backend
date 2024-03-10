@@ -206,7 +206,7 @@ trait HasManageMode
 
         // Existing record
         if ($this->manageId) {
-            $this->manageModel = $this->manageModel->find($this->manageId);
+            $this->manageModel = $this->findManageModelObject($this->manageId);
 
             if (!$this->manageModel) {
                 throw new ApplicationException(Lang::get('backend::lang.model.not_found', [
@@ -220,7 +220,7 @@ trait HasManageMode
         $config->arrayName = class_basename($this->relationModel);
         $config->context = $this->evalFormContext('manage', !!$this->manageId);
         $config->alias = $this->alias . 'ManageForm';
-        $config->parentField = $this->field;
+        $config->parentFieldName = $this->field;
 
         $widget = $this->makeWidget(FormWidget::class, $config);
 
@@ -341,7 +341,7 @@ trait HasManageMode
         if ($this->viewMode === 'multi') {
             if (($checkedIds = post('checked')) && is_array($checkedIds)) {
                 foreach ($checkedIds as $relationId) {
-                    if (!$obj = $this->relationModel->find($relationId)) {
+                    if (!$obj = $this->findManageModelObject($relationId)) {
                         continue;
                     }
 
@@ -401,7 +401,7 @@ trait HasManageMode
         }
         // Link
         elseif ($this->viewMode === 'single') {
-            if ($recordId && ($model = $this->relationModel->find($recordId))) {
+            if ($recordId && ($model = $this->findManageModelObject($recordId))) {
                 $this->relationObject->add($model, $sessionKey);
                 $this->viewFormWidget->setFormValues($model->attributes);
 
@@ -453,7 +453,7 @@ trait HasManageMode
                 $this->relationObject->getParent()->save();
             }
             elseif ($this->relationType === 'hasOne' || $this->relationType === 'morphOne') {
-                if ($obj = $relatedModel->find($recordId)) {
+                if ($obj = $this->findManageModelObject($recordId)) {
                     $this->relationObject->remove($obj, $sessionKey);
                 }
                 elseif ($this->viewModel->exists) {
@@ -545,5 +545,21 @@ trait HasManageMode
 
                 return 'form';
         }
+    }
+
+    /**
+     * findManageModelObject for the current field
+     */
+    protected function findManageModelObject($recordId)
+    {
+        if (!strlen($recordId)) {
+            return null;
+        }
+
+        $query = $this->relationModel->newQuery();
+
+        $this->controller->relationExtendManageFormQuery($this->field, $query);
+
+        return $query->find($recordId);
     }
 }

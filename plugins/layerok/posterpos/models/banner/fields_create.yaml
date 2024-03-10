@@ -1,0 +1,31 @@
+# ===================================
+#  Form Field Definitions
+# ===================================
+
+fields:
+    title:
+        label: Название
+        description: Название этого заведения
+        span: auto
+        required: true
+    product:
+        label: Product
+        type: relation
+        span: auto
+        emptyOption: Select related product
+    image:
+        label: Big image
+        type: fileupload
+        span: auto
+    image_small:
+        label: Small image
+        type: fileupload
+        span: auto
+    is_active:
+        label: 'layerok.posterpos::lang.extend.published'
+        span: left
+        type: switch
+        default: true
+
+
+

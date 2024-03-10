@@ -29,7 +29,7 @@ trait CanFormatCsv
 
         // Prevents unfriendly error to be thrown due to bad encoding at response time.
         if (json_encode($firstRow) === false) {
-            throw new ApplicationException(Lang::get('backend::lang.import_export.encoding_not_supported_error'));
+            throw new ApplicationException(__("Source file encoding is not recognized. Please select the custom file format option with the proper encoding to import your file."));
         }
 
         return $firstRow;

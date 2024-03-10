@@ -107,7 +107,11 @@ oc.Modules.register('backend.component.dashboard.container', function () {
                 const dashboardPage = oc.Modules.import('backend.dashboard.page.instance');
                 const dashboardManager = oc.Modules.import('backend.vuecomponents.dashboard.manager');
 
-                oc.confirm(dashboardPage.trans('delete-confirm', this.$el), async () => {
+                oc.confirm(dashboardPage.trans('delete-confirm', this.$el), async (isConfirm) => {
+                    if (!isConfirm) {
+                        return;
+                    }
+
                     try {
                         await dashboardManager.deleteDashboard(this.store);
                         $.oc.snackbar.show(dashboardPage.trans('delete-success', this.$el));
