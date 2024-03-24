@@ -3,6 +3,8 @@
 use Layerok\Restapi\Classes\Sort\Category;
 use Model;
 use OFFLINE\Mall\Models\Product;
+use OFFLINE\Mall\Models\Property;
+use OFFLINE\Mall\Models\PropertyGroup;
 use OFFLINE\Mall\Models\Variant;
 
 /**
@@ -32,6 +34,8 @@ class PosterAccount extends Model
         'posts'  => [Product::class, 'name' => 'poster_accountable'],
         'videos' => [Variant::class, 'name' => 'poster_accountable'],
         'categories' => [Category::class, 'name' => 'poster_accountable'],
+        'properties' => [Property::class, 'name' => 'poster_accountable'],
+        'property_groups' => [PropertyGroup::class, 'name' => 'poster_accountable'],
     ];
 
     public $table = 'layerok_posterpos_poster_accounts';
