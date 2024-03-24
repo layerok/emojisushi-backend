@@ -7,6 +7,7 @@ return [
       ]
   ],
     'receipt' => [
+        'order_sending_error' => 'Ошибка отправки заказа',
         'new_order' => 'Новый заказ',
         'first_name' => 'Имя',
         'last_name' => 'Фамилия',
@@ -30,5 +31,6 @@ return [
         'site' => 'Заказ сделан через сайт',
         'bot' => 'Заказ сделан через чат-бот',
         "confirm_order_question" => "Подтверждаете заказ?",
+
     ],
 ];
