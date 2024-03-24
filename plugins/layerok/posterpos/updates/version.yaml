@@ -112,5 +112,5 @@
     - 'Add banners table'
     - add_banners_table.php
 1.1.38:
-    - 'Add poster_account_poster_product table'
-    - add_poster_account_poster_product_table.php
+    - 'Add poster_accountable table'
+    - add_poster_accountable_table.php

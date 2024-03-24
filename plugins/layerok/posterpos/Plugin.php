@@ -21,7 +21,6 @@ use Maatwebsite\Excel\ExcelServiceProvider;
 use Maatwebsite\Excel\Facades\Excel;
 use OFFLINE\Mall\Controllers\Categories;
 use OFFLINE\Mall\Controllers\Products;
-use OFFLINE\Mall\Controllers\Variants;
 
 use OFFLINE\Mall\Models\Category;
 use OFFLINE\Mall\Models\Order;
@@ -76,6 +75,54 @@ class Plugin extends PluginBase
         App::registerClassAlias('Excel',  Excel::class);
     }
 
+    public function posterAccountsRelationConfig() {
+        // todo: move to yaml file
+        return [
+            'label'   => 'Poster account',
+            'view' => [
+                'list' => [
+                    'columns' => [
+                        'account_name' => [
+                            'label' => 'Account name',
+                        ],
+                        'pivot[poster_id]' => [
+                            'label' => 'Poster ID'
+                        ]
+                    ]
+                ]
+            ],
+            'manage' => [
+                'list' => [
+                    'columns' => [
+                        'account_name' => [
+                            'label' => 'Account Name'
+                        ]
+                    ]
+                ]
+            ],
+            'pivot' => [
+                'form' => [
+                    'fields' => [
+                        'pivot[poster_id]' => [
+                            'label' => 'Poster ID',
+                            'type' => 'text'
+                        ]
+                    ]
+                ]
+            ]
+        ];
+    }
+
+    public function posterAccountModelRelation() {
+        return [
+            PosterAccount::class,
+            'table'    => 'layerok_posterpos_poster_accountable',
+            'name' => 'poster_accountable',
+            'otherKey' => 'poster_account_id',
+            'pivot' => ['poster_id']
+        ];
+    }
+
     /**
      * Boot method, called right before the request route.
      *
@@ -83,6 +130,26 @@ class Plugin extends PluginBase
      */
     public function boot()
     {
+
+        Product::deleted(function($model) {
+            $model->poster_accounts()->sync([]);
+        });
+
+        Variant::deleted(function($model) {
+            $model->poster_accounts()->sync([]);
+        });
+
+        PropertyGroup::deleted(function($model) {
+            $model->poster_accounts()->sync([]);
+        });
+
+        Property::deleted(function($model) {
+            $model->poster_accounts()->sync([]);
+        });
+
+        Category::deleted(function($model) {
+            $model->poster_accounts()->sync([]);
+        });
 
         // Use custom user model
         App::singleton('user.auth', function () {
@@ -104,7 +171,6 @@ class Plugin extends PluginBase
             }
 
             if($widget->model->exists) {
-                // Add a new field named example_field
                 $widget->removeTab('offline.mall::lang.common.accessories');
                 $widget->removeTab('offline.mall::lang.common.seo');
                 $widget->removeTab('offline.mall::lang.common.reviews');
@@ -136,85 +202,79 @@ class Plugin extends PluginBase
 
         });
 
+        // extend property
         Event::listen('system.extendConfigFile', function ( $path, $config) {
             if ($path === '/plugins/offline/mall/models/property/fields_pivot.yaml') {
                 $config['fields']['options']['form']['fields']['poster_id'] = [
                     'label' => 'Poster ID',
-                    'type' => 'text',
+                    'type' => 'relation',
                     'span' => 'left'
                 ];
                 $config['fields']['options']['form']['fields']['value']['span'] = 'right';
-                return $config;
             }
 
+            return $config;
+        });
+
+
+        // extend property group
+        Event::listen('system.extendConfigFile', function ( $path, $config) {
             if ($path === '/plugins/offline/mall/models/propertygroup/fields.yaml') {
-                $config['fields']['poster_id'] = [
-                    'label' => 'Poster ID',
-                    'type' => 'text',
-                    'span' => 'auto'
+                $config['fields']['poster_accounts'] = [
+                    'label' => 'Poster accounts',
+                    'type' => 'relation',
                 ];
-
-                return $config;
             }
 
+            if($path === '/plugins/offline/mall/controllers/propertygroups/config_relation.yaml') {
+                $config['poster_accounts'] = $this->posterAccountsRelationConfig();
+            }
+
+            return $config;
+        });
+
+        // extend category
+        Event::listen('system.extendConfigFile', function ( $path, $config) {
             if ($path === '/plugins/offline/mall/models/category/fields.yaml') {
+                $config['fields']['poster_accounts'] = [
+                    'label' => 'Poster accounts',
+                    'type' => 'relation',
+                ];
                 $config['fields']['hide_categories_in_spot'] = [
                     'label' => 'Скрыть категорию в заведении',
                     'type' => 'relation',
                 ];
-                return $config;
             }
 
+            if($path === '/plugins/offline/mall/controllers/categories/config_relation.yaml') {
+                $config['poster_accounts'] = $this->posterAccountsRelationConfig();
+            }
+
+            return $config;
+        });
+
+        // extend shipping method
+        Event::listen('system.extendConfigFile', function ( $path, $config) {
             if ($path === '/plugins/offline/mall/models/shippingmethod/fields.yaml') {
                 $config['fields']['code'] = [
                     'label' => 'Code',
                     'span' => 'auto'
                 ];
-                return $config;
             }
 
             if ($path === '/plugins/offline/mall/models/shippingmethod/columns.yaml') {
                 $config['columns']['code'] = [
                     'label' => 'Code',
                 ];
-                return $config;
             }
 
+            return $config;
+        });
+
+        // extend product
+        Event::listen('system.extendConfigFile', function ( $path, $config) {
             if($path === '/plugins/offline/mall/controllers/products/config_relation.yaml') {
-                $config['poster_accounts'] = [
-                    'label'   => 'Poster account',
-                    'view' => [
-                        'list' => [
-                            'columns' => [
-                                'account_name' => [
-                                    'label' => 'Account name',
-                                ],
-                                'pivot[poster_product_id]' => [
-                                    'label' => 'Poster ID'
-                                ]
-                            ]
-                        ]
-                    ],
-                    'manage' => [
-                        'list' => [
-                            'columns' => [
-                                'account_name' => [
-                                    'label' => 'Account Name'
-                                ]
-                            ]
-                        ]
-                    ],
-                    'pivot' => [
-                        'form' => [
-                            'fields' => [
-                                'pivot[poster_product_id]' => [
-                                    'label' => 'Poster ID',
-                                    'type' => 'text'
-                                ]
-                            ]
-                        ]
-                    ]
-                ];
+                $config['poster_accounts'] = $this->posterAccountsRelationConfig();
                 return $config;
             }
 
@@ -226,7 +286,6 @@ class Plugin extends PluginBase
                 return $config;
             }
 
-
             if($path === '/plugins/offline/mall/models/product/fields_edit.yaml') {
 //                $config['tabs']['fields']['hide_products_in_spot'] = [
 //                    'type' => 'relation',
@@ -236,11 +295,12 @@ class Plugin extends PluginBase
                     'type' => 'relation',
                     'tab' => 'offline.mall::lang.product.general'
                 ];
-
-                return $config;
-
             }
+
+            return $config;
         });
+
+
         Event::listen('backend.form.extendFields', function ($widget) {
             if ($widget->model instanceof Category) {
                 $widget->addFields([
@@ -256,11 +316,6 @@ class Plugin extends PluginBase
         // Extend all backend list usage
         Event::listen('backend.list.extendColumns', function ($widget) {
             if ($widget->model instanceof Category && $widget->getController() instanceof Categories) {
-                $widget->addColumns([
-                    'poster_id' => [
-                        'label' => 'layerok.posterpos::lang.extend.poster_id'
-                    ]
-                ]);
                 $widget->addColumns([
                     'published' => [
                         'label' => 'layerok.posterpos::lang.extend.published',
@@ -286,7 +341,6 @@ class Plugin extends PluginBase
         }));
 
         Category::extend(function($model){
-            $model->fillable[] = 'poster_id';
             $model->fillable[] = 'published';
 
             $model->casts['published'] = 'boolean';
@@ -298,38 +352,35 @@ class Plugin extends PluginBase
                 'key'      => 'category_id',
                 'otherKey' => 'spot_id',
             ];
+
+            $model->morphToMany['poster_accounts'] = $this->posterAccountModelRelation();
         });
 
         Product::extend(function($model){
-
             $model->belongsToMany['hide_products_in_spot'] = [
                 Spot::class,
                 'table'    => 'layerok_posterpos_hide_products_in_spot',
                 'key'      => 'product_id',
                 'otherKey' => 'spot_id',
             ];
-            $model->belongsToMany['poster_accounts'] = [
-                PosterAccount::class,
-                'table'    => 'layerok_posterpos_poster_account_poster_product',
-                'key'      => 'product_id',
-                'otherKey' => 'poster_account_id',
-                'pivot' => ['poster_product_id']
-            ];
+
+            $model->morphToMany['poster_accounts'] = $this->posterAccountModelRelation();
         });
 
         Variant::extend(function($model){
             //$model->addFillable('poster_id');
+            $model->morphToMany['poster_accounts'] = $this->posterAccountModelRelation();
         });
 
         Property::extend(function($model){
-            $model->fillable[] = 'poster_id';
             $model->fillable[] = 'poster_type'; // dish or product
+
+            $model->morphToMany['poster_accounts'] = $this->posterAccountModelRelation();
         });
 
         PropertyGroup::extend(function($model){
-            $model->fillable[] = 'poster_id';
+            $model->morphToMany['poster_accounts'] = $this->posterAccountModelRelation();
         });
-
 
 
         Cart::extend(function ($model) {

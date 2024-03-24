@@ -1,6 +1,9 @@
 <?php namespace Layerok\PosterPos\Models;
 
+use Layerok\Restapi\Classes\Sort\Category;
 use Model;
+use OFFLINE\Mall\Models\Product;
+use OFFLINE\Mall\Models\Variant;
 
 /**
  * @property string $access_token
@@ -23,6 +26,12 @@ class PosterAccount extends Model
     public $hasMany = [
         'spots' => Spot::class,
         'tablets' => Tablet::class
+    ];
+
+    public $morphedByMany = [
+        'posts'  => [Product::class, 'name' => 'poster_accountable'],
+        'videos' => [Variant::class, 'name' => 'poster_accountable'],
+        'categories' => [Category::class, 'name' => 'poster_accountable'],
     ];
 
     public $table = 'layerok_posterpos_poster_accounts';

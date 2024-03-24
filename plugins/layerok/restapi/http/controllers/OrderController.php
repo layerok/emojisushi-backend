@@ -86,7 +86,7 @@ class OrderController extends Controller
                 $emojibar_bar_account // default poster account
             );
 
-            $item['product_id'] = $product_poster_account->pivot->poster_product_id;
+            $item['product_id'] = $product_poster_account->pivot->poster_id;
 
             if (isset($cartProduct['variant_id'])) {
                 $variant = $cartProduct->getItemDataAttribute();
