@@ -7,6 +7,7 @@ return [
       ]
   ],
     'receipt' => [
+        'order_sending_error' => 'Помилка відправки замовлення',
         'new_order' => 'Нове замовлення',
         'first_name' => "Ім'я",
         'last_name' => 'Прізвище',

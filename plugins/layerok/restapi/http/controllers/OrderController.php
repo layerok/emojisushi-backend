@@ -21,6 +21,7 @@ use OFFLINE\Mall\Classes\Utils\Money;
 use OFFLINE\Mall\Models\Currency;
 use OFFLINE\Mall\Models\PaymentMethod;
 use Layerok\PosterPos\Models\ShippingMethod;
+use Layerok\PosterPos\Models\PosterAccount;
 use OFFLINE\Mall\Models\Product;
 use poster\src\PosterApi;
 use Telegram\Bot\Api;
@@ -30,6 +31,9 @@ use Maksa988\WayForPay\Domain\Client;
 
 class OrderController extends Controller
 {
+    const STICKS_POSTER_ID = 492;
+    const DEFAULT_POSTER_ACCOUNT_NAME = 'emoji-bar2';
+
     public function place(): JsonResponse
     {
         // to make wayforpay order unique
@@ -66,17 +70,23 @@ class OrderController extends Controller
 
         /** @var Collection $posterProducts */
         $posterProducts = $cart->products()->get()->map(function (CartProduct $cartProduct) use($poster_account) {
-            $item = [];
-            $product = $cartProduct->product()->first();
-            $item['name'] = $product['name'];
-            $item['count'] = $cartProduct['quantity'];
+            $product = $cartProduct->product()->with('poster_accounts')->first();
 
-            // todo: find another solution how to support multiple poster accounts
-            if ($poster_account->account_name === 'emojisushikador') {
-                $item['product_id'] = $product['poster_id2'] ?: $product['poster_id'];
-            } else {
-                $item['product_id'] = $product['poster_id'];
-            }
+            $item = [
+                'name' => $product['name'],
+                'count' => $cartProduct['quantity']
+            ];
+
+            $emojibar_bar_account = $product->poster_accounts->first(
+                fn(PosterAccount $account) => $account->account_name === self::DEFAULT_POSTER_ACCOUNT_NAME
+            );
+
+            $product_poster_account = $product->poster_accounts->first(
+                fn(PosterAccount $account) => $account->id === $poster_account->id,
+                $emojibar_bar_account // default poster account
+            );
+
+            $item['product_id'] = $product_poster_account->pivot->poster_id;
 
             if (isset($cartProduct['variant_id'])) {
                 $variant = $cartProduct->getItemDataAttribute();
@@ -86,7 +96,7 @@ class OrderController extends Controller
         });
 
         if (intval($data['sticks']) > 0) {
-            $product = Product::where('poster_id', 492)->first();
+            $product = Product::where('poster_id', self::STICKS_POSTER_ID)->first();
 
             $posterSticks = $posterProducts->first(function($posterProduct) use($product) {
                 return $posterProduct['product_id'] === $product->poster_id;
@@ -172,12 +182,12 @@ class OrderController extends Controller
         }
 
         if(!isset($posterResult->response)) {
-            // probably poster pos api is down
+            // probably poster pos services are down
             $api = new Api($spot->bot->token);
 
             $api->sendMessage([
                 'text' => $this->generateReceipt(
-                    "Помилка відправки замовлення",
+                    trans("layerok.restapi::lang.receipt.order_sending_error"),
                     $cart,
                     $shippingMethod,
                     $paymentMethod,
