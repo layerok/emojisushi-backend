@@ -22,7 +22,6 @@ use OFFLINE\Mall\Models\Currency;
 use OFFLINE\Mall\Models\PaymentMethod;
 use Layerok\PosterPos\Models\ShippingMethod;
 use Layerok\PosterPos\Models\PosterAccount;
-use OFFLINE\Mall\Models\Product;
 use poster\src\PosterApi;
 use Telegram\Bot\Api;
 use WayForPay\SDK\Domain\Product as WayForPayProduct;
@@ -90,31 +89,28 @@ class OrderController extends Controller
 
             if (isset($cartProduct['variant_id'])) {
                 $variant = $cartProduct->getItemDataAttribute();
-                $item['modificator_id'] = $variant['poster_id'];
+                $item['modificator_id'] = $variant['poster_id']; // todo: fix this, variant no longer has poster_id attribute
             }
             return $item;
         });
 
         if (intval($data['sticks']) > 0) {
-            $product = Product::where('poster_id', self::STICKS_POSTER_ID)->first();
-
-            $posterSticks = $posterProducts->first(function($posterProduct) use($product) {
-                return $posterProduct['product_id'] === $product->poster_id;
+            $posterSticks = $posterProducts->first(function($posterProduct) {
+                return $posterProduct['product_id'] === self::STICKS_POSTER_ID;
             });
 
             if($posterSticks) {
-                $posterProducts = $posterProducts->filter(function($posterProduct) use($product) {
-                    return $posterProduct['product_id'] !== $product->poster_id;
+                $posterProducts = $posterProducts->filter(function($posterProduct)  {
+                    return $posterProduct['product_id'] !== self::STICKS_POSTER_ID;
                 });
             }
 
             $posterProducts->add([
-                'name' => $product->name,
-                'product_id' => $product->poster_id,
+                'name' => 'Палички для суші',
+                'product_id' => self::STICKS_POSTER_ID,
                 // merge sticks count from checkout form and from the cart
                 'count' => $data['sticks'] + ($posterSticks['count'] ?? 0)
             ]);
-
         }
 
 //        $posterProducts = [
