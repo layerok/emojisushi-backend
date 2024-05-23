@@ -15,7 +15,9 @@ class BannerController extends Controller
             'image_small',
             'product',
             'product.categories'
-        ])->where('is_active', true)->get();
+        ])->where('is_active', true)
+            ->orderBy('id', 'desc')
+            ->get();
 
         return response()->json([
             'data' => $banners->toArray(),
