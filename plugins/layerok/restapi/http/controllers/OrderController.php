@@ -43,8 +43,13 @@ class OrderController extends Controller
         $jwtGuard = app('JWTGuard');
 
         $rainlablUser = $jwtGuard->user();
+
+        // todo: micro optimization.
+        // Query the cart under temporarily_unavailable check
+        // This way we won't run an unnecessary query if the exception is thrown in temporarily_unavailable branch
         $cart = Cart::byUser($rainlablUser);
 
+        // todo: micro optimization. Query the user only if the spot is temporarily unavailable
         /** @var User | null $user */
         $user = $rainlablUser ? User::find($rainlablUser->id): null;
 
@@ -57,7 +62,7 @@ class OrderController extends Controller
             // admins are allowed to bypass this check
             throw new \ValidationException([trans('layerok.restapi::validation.temporarily_unavailable')]);
         }
-
+        // todo: micro optimization. Query cart here. So if we bailout faster
         $poster_account = $spot->tablet->poster_account;
 
         if (!$cart->products()->get()->count()) {
