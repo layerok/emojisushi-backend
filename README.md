@@ -1,5 +1,8 @@
 # Emojisushi backend
 
+## Requirements
+PHP 8.2
+
 ## Getting started
 
 1. Create ```.env``` file based on ```.env.example```
