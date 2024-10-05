@@ -147,6 +147,7 @@ class FormController extends ControllerBehavior
         $config->arrayName = class_basename($model);
         $config->context = $context;
         $config->surveyMode = $this->isSurveyDesign();
+        $config->sessionKey = post('_form_session_key');
         $config->horizontalMode = $this->isHorizontalForm();
 
         // Make Form Widget and apply extensions
@@ -200,6 +201,7 @@ class FormController extends ControllerBehavior
         $this->controller->vars['formModel'] = $model;
         $this->controller->vars['formContext'] = $this->formGetContext();
         $this->controller->vars['formRecordName'] = Lang::get($this->getConfig('name', 'backend::lang.model.name'));
+        $this->controller->vars['formSidebarWidth'] = $this->getDesignFormSize('sidebarSize');
     }
 
     //
@@ -259,6 +261,8 @@ class FormController extends ControllerBehavior
 
         $this->controller->formBeforeSave($model);
         $this->controller->formBeforeCreate($model);
+        $this->controller->fireSystemEvent('backend.form.beforeSave', [$model]);
+        $this->controller->fireSystemEvent('backend.form.beforeCreate', [$model]);
 
         $this->performSaveOnModel(
             $model,
@@ -268,6 +272,8 @@ class FormController extends ControllerBehavior
 
         $this->controller->formAfterSave($model);
         $this->controller->formAfterCreate($model);
+        $this->controller->fireSystemEvent('backend.form.afterSave', [$model]);
+        $this->controller->fireSystemEvent('backend.form.afterCreate', [$model]);
 
         Flash::success($this->getCustomLang('flashCreate'));
 
@@ -297,6 +303,7 @@ class FormController extends ControllerBehavior
         $model->cancelDeferred($this->formWidget->getSessionKey());
 
         $this->controller->formAfterCancel($model);
+        $this->controller->fireSystemEvent('backend.form.afterCancel', [$model]);
 
         if ($redirect = $this->makeRedirect('cancel')) {
             return $redirect;
@@ -369,6 +376,8 @@ class FormController extends ControllerBehavior
 
         $this->controller->formBeforeSave($model);
         $this->controller->formBeforeUpdate($model);
+        $this->controller->fireSystemEvent('backend.form.beforeSave', [$model]);
+        $this->controller->fireSystemEvent('backend.form.beforeUpdate', [$model]);
 
         $this->performSaveOnModel(
             $model,
@@ -378,6 +387,8 @@ class FormController extends ControllerBehavior
 
         $this->controller->formAfterSave($model);
         $this->controller->formAfterUpdate($model);
+        $this->controller->fireSystemEvent('backend.form.afterSave', [$model]);
+        $this->controller->fireSystemEvent('backend.form.afterUpdate', [$model]);
 
         Flash::success($this->getCustomLang('flashUpdate'));
 
@@ -409,6 +420,7 @@ class FormController extends ControllerBehavior
         $model->delete();
 
         $this->controller->formAfterDelete($model);
+        $this->controller->fireSystemEvent('backend.form.afterDelete', [$model]);
 
         Flash::success($this->getCustomLang('flashDelete'));
 
@@ -436,6 +448,7 @@ class FormController extends ControllerBehavior
         $model->cancelDeferred($this->formWidget->getSessionKey());
 
         $this->controller->formAfterCancel($model);
+        $this->controller->fireSystemEvent('backend.form.afterCancel', [$model]);
 
         if ($redirect = $this->makeRedirect('cancel')) {
             return $redirect;
@@ -468,6 +481,16 @@ class FormController extends ControllerBehavior
             $this->controller->pageTitle ??= $this->getLang('preview[title]', 'backend::lang.form.preview_title');
 
             $model = $this->controller->formFindModelObject($recordId);
+
+            // Multisite
+            if ($this->controller->formHasMultisite($model)) {
+                if ($redirect = $this->makeMultisiteRedirect('preview', $model)) {
+                    return $redirect;
+                }
+
+                $this->addHandlerToSiteSwitcher();
+            }
+
             $this->initForm($model);
         }
         catch (Exception $ex) {
@@ -527,7 +550,7 @@ class FormController extends ControllerBehavior
 
         $this->vars['options'] = $options;
 
-        $displayMode = strtolower($options['displayMode'] ?? '');
+        $displayMode = strtolower($options['displayMode'] ?? 'basic');
         switch ($displayMode) {
             case 'popup':
             case 'sidebar':

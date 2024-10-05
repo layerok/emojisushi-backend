@@ -1,20 +1,22 @@
 <?php
 
-
 namespace OFFLINE\Mall\Classes\Traits;
 
-
+use Event;
 use October\Rain\Support\Collection;
+use OFFLINE\Mall\Classes\User\Auth;
 use OFFLINE\Mall\Models\Cart;
 use OFFLINE\Mall\Models\Tax;
-use RainLab\User\Facades\Auth;
 
 /**
  * This trait is used to filter a Collection of taxes based
  * on a provided shipping destination country.
  */
+
 trait FilteredTaxes
 {
+    public $countryId;
+
     /**
      * Filter a tax collection based on the shipping destination country.
      *
@@ -24,7 +26,7 @@ trait FilteredTaxes
      */
     public function getFilteredTaxes($taxes)
     {
-        if ( ! $taxes instanceof Collection) {
+        if (!$taxes instanceof Collection) {
             $taxes = Collection::wrap($taxes);
         }
 
@@ -33,19 +35,19 @@ trait FilteredTaxes
             return $taxes;
         }
 
-        $countryId = $this->getCartCountryId();
+        $this->countryId = $this->getCartCountryId();
+
+        Event::fire('mall.cart.setCountry', $this);
 
         // If the shipping destination is not yet known, return the default tax.
-        if ($countryId === null) {
+        if ($this->countryId === null) {
             return Tax::defaultTaxes();
         }
 
         // If the shipping destination is known, return all taxes that have
         // no country attached (valid for all countries) and all taxes that have
         // the shipping country attached.
-        return $taxes->filter(function ($tax) use ($countryId) {
-            return $tax->countries->count() === 0 || $tax->countries->pluck('id')->search($countryId) !== false;
-        });
+        return $taxes->filter(fn ($tax) => $tax->countries->count() === 0 || $tax->countries->pluck('id')->search($this->countryId) !== false);
     }
 
     /**
@@ -54,12 +56,12 @@ trait FilteredTaxes
      */
     public function getCartCountryId()
     {
-        $cart = Cart::byUser(Auth::getUser());
-        if ( ! $cart) {
-            return null;
-        }
+        $cart = Cart::byUser(Auth::user());
 
-        return optional($cart->shipping_address)->country_id
-            ?? $cart->getFallbackShippingCountryId();
+        if (!$cart) {
+            return null;
+        } else {
+            return optional($cart->shipping_address)->country_id ?? $cart->getFallbackShippingCountryId();
+        }
     }
 }

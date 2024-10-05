@@ -25,18 +25,41 @@ trait HasGlobalBlueprint
      */
     public function initializeHasGlobalBlueprint()
     {
-        $this->bindEvent('model.saveInternal', function() {
-            $this->storeBlueprintContent();
-        });
+        $this->bindEvent('model.afterFetch', [$this, 'globalAfterFetchEvent']);
 
-        $this->bindEvent('model.afterFetch', function() {
-            $this->fetchBlueprintContent();
-            $this->extendWithBlueprint();
-        });
+        $this->bindEvent('model.afterSave', [$this, 'globalAfterSave']);
+
+        // Process attributes last for traits with attribute modifiers
+        $this->bindEvent('model.beforeSaveDone', [$this, 'globalBeforeSaveDone'], -1);
 
         $this->bindEvent('model.newInstance', function($model) {
             $model->extendWithBlueprint($this->blueprint_uuid);
         });
+    }
+
+    /**
+     * globalAfterSave
+     */
+    public function globalAfterSave()
+    {
+        $this->attributes = array_merge($this->content, $this->attributes);
+    }
+
+    /**
+     * globalAfterFetchEvent
+     */
+    public function globalAfterFetchEvent()
+    {
+        $this->fetchBlueprintContent();
+        $this->extendWithBlueprint();
+    }
+
+    /**
+     * globalBeforeSaveDone
+     */
+    public function globalBeforeSaveDone()
+    {
+        $this->storeBlueprintContent();
     }
 
     /**

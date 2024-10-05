@@ -7,7 +7,7 @@ use October\Rain\Database\Updates\Migration;
 /**
  * CreateTabletsTable Migration
  */
-class CreateCitiesTable extends Migration
+class CreateDistrictsTable extends Migration
 {
     public function up()
     {

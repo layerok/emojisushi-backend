@@ -7,6 +7,7 @@ use Cms\Classes\Theme;
 use Backend\Models\User;
 use Backend\Models\UserRole;
 use System\Helpers\Preset as PresetHelper;
+use System\Classes\SiteCollection;
 use ValidationException;
 
 /**
@@ -20,6 +21,7 @@ use ValidationException;
  * @property string $app_url
  * @property string $theme
  * @property string $locale
+ * @property string $fallback_locale
  * @property string $timezone
  * @property bool $is_host_restricted
  * @property array $allow_hosts
@@ -67,6 +69,12 @@ class SiteDefinition extends Model
     public $belongsTo = [
         'group' => SiteGroup::class
     ];
+
+    /**
+     * @var bool isFallbackMatch is used when a site is matched by its hostname
+     * but not by its prefix and becomes the basis for a redirect
+     */
+    public $isFallbackMatch = false;
 
     /**
      * @var string urlOverride
@@ -124,6 +132,29 @@ class SiteDefinition extends Model
         if ($this->is_prefixed && (substr($this->route_prefix, 0, 1) !== '/' || $this->route_prefix === '/')) {
             throw new ValidationException(['route_prefix' => __("Route prefix must start with a forward slash (/)")]);
         }
+
+        if ($this->is_host_restricted && !$this->isAllowHostsValid()) {
+            throw new ValidationException(['allow_hosts' => __("Please specify a valid hostname")]);
+        }
+
+        $this->fallback_locale = $this->getFallbackLocale($this->locale);
+    }
+
+    /**
+     * getFallbackLocale attempts to extract the fallback language from the locale.
+     * @return string
+     */
+    protected function getFallbackLocale($locale)
+    {
+        if ($position = strpos($locale, '-')) {
+            $target = substr($locale, 0, $position);
+            $available = $this->getLocaleOptions();
+            if (isset($available[$target])) {
+                return $target;
+            }
+        }
+
+        return '';
     }
 
     /**
@@ -171,15 +202,37 @@ class SiteDefinition extends Model
     }
 
     /**
-     * matchesBaseHostname
+     * isAllowHostsValid returns true if the allowable host names are valid
      */
-    public function matchesBaseUrl(string $hostname): bool
+    protected function isAllowHostsValid(): bool
+    {
+        foreach ($this->getAllowHostsAsArray() as $domain) {
+            if (!preg_match(
+                '/^(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9\-]*[A-Za-z0-9])$/',
+                str_replace('*', 'x', $domain)
+            )) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    /**
+     * matchesBaseUrl matches a URL with the custom app URL, if specified
+     */
+    public function matchesBaseUrl(string $url): bool
     {
         if (!$this->is_custom_url) {
             return true;
         }
 
-        return $hostname === parse_url($this->app_url, PHP_URL_HOST);
+        // @deprecated
+        if (!str_contains($url, '://')) {
+            return $url === parse_url($this->app_url, PHP_URL_HOST);
+        }
+
+        return str_starts_with($url, rtrim($this->app_url, '/'));
     }
 
     /**
@@ -251,7 +304,7 @@ class SiteDefinition extends Model
         }
 
         // Starts with segment (prefix/)
-        if (starts_with($uri, $prefix.'/')) {
+        if (str_starts_with($uri, $prefix.'/')) {
             return true;
         }
 
@@ -296,7 +349,7 @@ class SiteDefinition extends Model
     public function getThemeOptions(): array
     {
         $result = [
-            '' => '— '.__('Use Default').' —',
+            '' => '- '.__('Use Default').' -',
         ];
 
         foreach (Theme::all() as $theme) {
@@ -320,9 +373,9 @@ class SiteDefinition extends Model
     public function getLocaleOptions()
     {
         return [
-            '' => '— '.__('Use Default').' —',
+            '' => '- '.__('Use Default').' -',
         ] + PresetHelper::flags() + [
-            'custom' => '— '.__('Use Custom').' —'
+            'custom' => '- '.__('Use Custom').' -'
         ];
     }
 
@@ -345,7 +398,7 @@ class SiteDefinition extends Model
     public function getTimezoneOptions()
     {
         return [
-            '' => '— '.__('Use Default').' —',
+            '' => '- '.__('Use Default').' -',
         ] + PresetHelper::timezones();
     }
 
@@ -383,5 +436,14 @@ class SiteDefinition extends Model
         }
 
         return false;
+    }
+
+    /**
+     * newCollection instance.
+     * @return \System\Classes\SiteCollection
+     */
+    public function newCollection(array $models = [])
+    {
+        return new SiteCollection($models);
     }
 }

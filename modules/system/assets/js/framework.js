@@ -197,12 +197,14 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
 /* harmony export */ });
 /* harmony import */ var _util_events__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../util/events */ "./src/util/events.js");
-/* harmony import */ var _namespace__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./namespace */ "./src/core/namespace.js");
+/* harmony import */ var _util_wait__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../util/wait */ "./src/util/wait.js");
+/* harmony import */ var _namespace__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./namespace */ "./src/core/namespace.js");
 function _typeof(obj) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (obj) { return typeof obj; } : function (obj) { return obj && "function" == typeof Symbol && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }, _typeof(obj); }
 
 
 
-/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (_namespace__WEBPACK_IMPORTED_MODULE_1__["default"]);
+
+/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (_namespace__WEBPACK_IMPORTED_MODULE_2__["default"]);
 
 if (!window.oc) {
   window.oc = {};
@@ -210,18 +212,27 @@ if (!window.oc) {
 
 if (!window.oc.AjaxFramework) {
   // Namespace
-  window.oc.AjaxFramework = _namespace__WEBPACK_IMPORTED_MODULE_1__["default"]; // Request on element with builder
+  window.oc.AjaxFramework = _namespace__WEBPACK_IMPORTED_MODULE_2__["default"]; // Request on element with builder
 
-  window.oc.request = _namespace__WEBPACK_IMPORTED_MODULE_1__["default"].requestElement; // JSON parser
+  window.oc.request = _namespace__WEBPACK_IMPORTED_MODULE_2__["default"].requestElement; // JSON parser
 
-  window.oc.parseJSON = _namespace__WEBPACK_IMPORTED_MODULE_1__["default"].parseJSON; // Form serializer
+  window.oc.parseJSON = _namespace__WEBPACK_IMPORTED_MODULE_2__["default"].parseJSON; // Form serializer
 
-  window.oc.serializeJSON = _namespace__WEBPACK_IMPORTED_MODULE_1__["default"].serializeJSON; // Selector events
+  window.oc.serializeJSON = _namespace__WEBPACK_IMPORTED_MODULE_2__["default"].serializeJSON; // Selector events
 
-  window.oc.Events = _util_events__WEBPACK_IMPORTED_MODULE_0__.Events; // Boot controller
+  window.oc.Events = _util_events__WEBPACK_IMPORTED_MODULE_0__.Events; // Wait for a variable to exist
+
+  window.oc.waitFor = _util_wait__WEBPACK_IMPORTED_MODULE_1__.waitFor; // Fallback for turbo
+
+  window.oc.pageReady = _util_wait__WEBPACK_IMPORTED_MODULE_1__.domReady; // Fallback for turbo
+
+  window.oc.visit = function (url) {
+    return window.location.assign(url);
+  }; // Boot controller
+
 
   if (!isAMD() && !isCommonJS()) {
-    _namespace__WEBPACK_IMPORTED_MODULE_1__["default"].start();
+    _namespace__WEBPACK_IMPORTED_MODULE_2__["default"].start();
   }
 }
 
@@ -1004,13 +1015,16 @@ var Actions = /*#__PURE__*/function () {
 
       if (!this.delegate.applicationAllowsUpdate(data, responseCode, xhr)) {
         return updatePromise;
-      }
+      } // Download file and continue with success response here since data is unusable
+
 
       if (this.delegate.options.download && data instanceof Blob) {
-        if (this.invoke('handleFileDownload', [data, xhr])) {
-          return updatePromise;
-        }
-      }
+        this.invoke('handleFileDownload', [data, xhr]);
+        this.delegate.notifyApplicationRequestSuccess(data, responseCode, xhr);
+        this.invokeFunc('successFunc', data);
+        return updatePromise;
+      } // Dispatch flash messages
+
 
       if (this.delegate.options.flash && data['X_OCTOBER_FLASH_MESSAGES']) {
         for (var type in data['X_OCTOBER_FLASH_MESSAGES']) {
@@ -1357,20 +1371,21 @@ var Actions = /*#__PURE__*/function () {
     value: function handleFileDownload(data, xhr) {
       if (this.options.browserTarget) {
         window.open(window.URL.createObjectURL(data), this.options.browserTarget);
-        return true;
+        return;
       }
 
       var fileName = typeof this.options.download === 'string' ? this.options.download : getFilenameFromHttpResponse(xhr);
 
-      if (fileName) {
-        var anchor = document.createElement('a');
-        anchor.href = window.URL.createObjectURL(data);
-        anchor.download = fileName;
-        anchor.target = '_blank';
-        anchor.click();
-        window.URL.revokeObjectURL(anchor.href);
-        return true;
+      if (!fileName) {
+        return;
       }
+
+      var anchor = document.createElement('a');
+      anchor.href = window.URL.createObjectURL(data);
+      anchor.download = fileName;
+      anchor.target = '_blank';
+      anchor.click();
+      window.URL.revokeObjectURL(anchor.href);
     } // Custom function, adds query data to the current URL
 
   }, {
@@ -2139,7 +2154,10 @@ var Request = /*#__PURE__*/function () {
     key: "start",
     value: function start() {
       // Setup
-      this.notifyApplicationAjaxSetup();
+      if (!this.applicationAllowsSetup()) {
+        return;
+      }
+
       this.initOtherElements();
       this.preprocessOptions(); // Prepare actions
 
@@ -2224,6 +2242,12 @@ var Request = /*#__PURE__*/function () {
         this.options.redirect = redirectUrl;
         this.isRedirect = true;
       }
+    }
+  }, {
+    key: "applicationAllowsSetup",
+    value: function applicationAllowsSetup() {
+      var event = this.notifyApplicationAjaxSetup();
+      return !event.defaultPrevented;
     }
   }, {
     key: "applicationAllowsRequest",
@@ -2612,9 +2636,12 @@ var Request = /*#__PURE__*/function () {
         }).done(function (data) {
           resolve(data);
         });
-        onCancel(function () {
-          requestPromise.abort();
-        });
+
+        if (onCancel) {
+          onCancel(function () {
+            requestPromise.abort();
+          });
+        }
       });
     }
   }], [{
@@ -3195,23 +3222,31 @@ var FormSerializer = /*#__PURE__*/function () {
   }, {
     key: "assignObjectInternal",
     value: function assignObjectInternal(obj, fieldName, fieldValue) {
-      this.assignObjectNested(obj, this.nameToArray(fieldName), fieldValue);
+      this.assignObjectNested(obj, this.nameToArray(fieldName), fieldValue, fieldName.endsWith('[]'));
     }
   }, {
     key: "assignObjectNested",
-    value: function assignObjectNested(obj, fieldArr, fieldValue) {
+    value: function assignObjectNested(obj, fieldArr, fieldValue, isArray) {
       var currentTarget = obj,
           lastIndex = fieldArr.length - 1;
       fieldArr.forEach(function (prop, index) {
-        if (currentTarget[prop] === undefined) {
-          currentTarget[prop] = {};
-        }
+        if (isArray && index === lastIndex) {
+          if (!Array.isArray(currentTarget[prop])) {
+            currentTarget[prop] = [];
+          }
 
-        if (index === lastIndex) {
-          currentTarget[prop] = fieldValue;
-        }
+          currentTarget[prop].push(fieldValue);
+        } else {
+          if (currentTarget[prop] === undefined || currentTarget[prop].constructor !== {}.constructor) {
+            currentTarget[prop] = {};
+          }
 
-        currentTarget = currentTarget[prop];
+          if (index === lastIndex) {
+            currentTarget[prop] = fieldValue;
+          }
+
+          currentTarget = currentTarget[prop];
+        }
       });
     }
   }, {
@@ -3971,6 +4006,64 @@ var JsonParser = /*#__PURE__*/function () {
 
   return JsonParser;
 }();
+
+/***/ }),
+
+/***/ "./src/util/wait.js":
+/*!**************************!*\
+  !*** ./src/util/wait.js ***!
+  \**************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "domReady": () => (/* binding */ domReady),
+/* harmony export */   "waitFor": () => (/* binding */ waitFor)
+/* harmony export */ });
+/**
+ * Function to wait for predicates.
+ * @param {function() : Boolean} predicate - A function that returns a bool
+ * @param {Number} [timeout] - Optional maximum waiting time in ms after rejected
+ */
+function waitFor(predicate, timeout) {
+  return new Promise(function (resolve, reject) {
+    var check = function check() {
+      if (!predicate()) {
+        return;
+      }
+
+      clearInterval(interval);
+      resolve();
+    };
+
+    var interval = setInterval(check, 100);
+    check();
+
+    if (!timeout) {
+      return;
+    }
+
+    setTimeout(function () {
+      clearInterval(interval);
+      reject();
+    }, timeout);
+  });
+}
+/**
+ * Function to wait for the DOM to be ready, if not already
+ */
+
+function domReady() {
+  return new Promise(function (resolve) {
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', function () {
+        return resolve();
+      });
+    } else {
+      resolve();
+    }
+  });
+}
 
 /***/ })
 

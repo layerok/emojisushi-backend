@@ -18,6 +18,23 @@ oc.Modules.register('tailor.preview-tracker', function () {
             this.token = token;
             this.url = url;
             this.window = window.open(this.makeUniqueUrl());
+
+            // Fallback in case window.open was blocked
+            setTimeout(() => {
+                if (!this.window) {
+                    $.oc.vueComponentHelpers.modalUtils.showBasic(
+                        $.oc.lang.get('markdowneditor.preview'),
+                        `<div class="modal-footer pt-3">
+                            <a
+                                href="${this.makeUniqueUrl()}"
+                                target="_blank"
+                                onclick="this.closest('.modal').querySelector('.btn-close').click()"
+                                data-default-focus
+                                class="btn btn-primary btn-default-action">${$.oc.lang.get('eventlog.editor.open')}</button>
+                        </div>`
+                    );
+                }
+            }, 500);
         }
 
         refreshPreview(focus) {

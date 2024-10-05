@@ -121,7 +121,7 @@ class Changelog extends WidgetBase
         }
 
         uksort($contents, function ($a, $b) {
-            return version_compare($b, $a);
+            return version_compare((string) $b, (string) $a);
         });
 
         return $contents;

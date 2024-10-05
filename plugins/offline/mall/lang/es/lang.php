@@ -1,4 +1,6 @@
-<?php return [
+<?php
+
+return [
     'plugin' => [
         'name' => 'Mall',
         'description' => 'Solución de E-commerce para October CMS',
@@ -179,7 +181,7 @@
         'index_driver_comment' => 'Si tu base de datos soporta JSON utiliza el controlador de base de datos.',
         'index_driver_filesystem' => 'Sistema de archivos',
         'index_driver_database' => 'Base de Datos (sólo para MySQL 5.7+ o MariaDB 10.2+)',
-        'index_driver_hint' => 'Si cambias esta opción asegúrate de correr "php artisan mall:reindex"en la línea de comandos para reindexar tus productos!',
+        'index_driver_hint' => 'Si cambias esta opción asegúrate de correr :command en la línea de comandos para reindexar tus productos!',
     ],
     'feed_settings' => [
         'description' => 'Configurar feeds para Mall',
@@ -832,7 +834,7 @@
                 ],
                 'currentVariantReviewsOnly' => [
                     'title' => 'Mostrar sólo las reseñas de esta variante',
-                    'description' => "No mostrar las reseñas de otras variantes de este producto.",
+                    'description' => 'No mostrar las reseñas de otras variantes de este producto.',
                 ],
             ],
         ],

@@ -1,5 +1,8 @@
 <?php namespace System\Classes;
 
+use Event;
+use October\Contracts\Element\FormElement;
+
 /**
  * DriverBehavior base class.
  *
@@ -9,6 +12,11 @@
 class DriverBehavior extends ModelBehavior
 {
     use \System\Traits\ConfigMaker;
+
+    /**
+     * @var string driverFields defines form fields for this driver
+     */
+    public $driverFields = 'fields.yaml';
 
     /**
      * @var mixed fieldConfig is extra configuration for the converter type.
@@ -22,9 +30,7 @@ class DriverBehavior extends ModelBehavior
     {
         parent::__construct($model);
 
-        // Parse the config
         $this->configPath = $this->guessConfigPathFrom($this);
-        $this->fieldConfig = $this->makeConfig($this->defineFormFields());
 
         if ($model) {
             $this->initDriverHost($model);
@@ -52,11 +58,27 @@ class DriverBehavior extends ModelBehavior
     }
 
     /**
-     * defineFormFields for extra field configuration for the shipping type.
+     * defineDriverFormFields should be called externally on the form widget.
+     * Do not override this method.
      */
-    public function defineFormFields()
+    public function defineDriverFormFields(FormElement $form, $context = null)
     {
-        return 'fields.yaml';
+        $this->defineFormFields($form, $context);
+
+        Event::fire('system.driver.extendFields', [$this, $form, $context]);
+    }
+
+    /**
+     * defineFormFields is an method for internal use to define fields used by this driver.
+     * Override this method to define form fields.
+     */
+    public function defineFormFields(FormElement $form, $context = null)
+    {
+        $config = $this->getFieldConfig();
+
+        foreach ((array) $config->fields as $name => $config) {
+            $form->addFormField($name)->useConfig($config);
+        }
     }
 
     /**
@@ -73,6 +95,10 @@ class DriverBehavior extends ModelBehavior
      */
     public function getFieldConfig()
     {
-        return $this->fieldConfig;
+        if ($this->fieldConfig !== null) {
+            return $this->fieldConfig;
+        }
+
+        return $this->fieldConfig = $this->makeConfig($this->driverFields);
     }
 }

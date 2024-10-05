@@ -117,7 +117,21 @@
                 handler: 'onRelationClickViewList',
                 extraData: $.extend({}, requestData, {
                     'manage_id': recordId,
-                    '_session_key': sessionKey
+                    '_relation_session_key': sessionKey
+                })
+            });
+        }
+
+        static clickViewPivotListRecord(target, recordId, relationId, sessionKey) {
+            var newPopup = $(target),
+                $container = $('#'+relationId),
+                requestData = paramToObj('data-request-data', $container.data('request-data'));
+
+            newPopup.popup({
+                handler: 'onRelationClickViewListPivot',
+                extraData: $.extend({}, requestData, {
+                    'pivot_id': recordId,
+                    '_relation_session_key': sessionKey
                 })
             });
         }
@@ -130,7 +144,7 @@
             $(target).request('onRelationClickManageList', {
                 data: $.extend({}, requestData, {
                     'record_id': recordId,
-                    '_session_key': sessionKey
+                    '_relation_session_key': sessionKey
                 })
             })
             .done(() => {
@@ -156,7 +170,7 @@
                 handler: 'onRelationClickManageListPivot',
                 extraData: $.extend({}, requestData, {
                     'foreign_id': foreignId,
-                    '_session_key': sessionKey
+                    '_relation_session_key': sessionKey
                 })
             });
         }

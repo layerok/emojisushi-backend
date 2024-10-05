@@ -207,7 +207,7 @@ class FileUpload extends FormWidgetBase
         $config = $this->makeConfig('~/modules/system/models/file/fields.yaml');
         $config->model = $this->getFileRecord() ?: $this->getRelationModel();
         $config->alias = $this->alias . $this->defaultAlias;
-        $config->arrayName = $this->getFieldName();
+        $config->arrayName = 'FileUploadWidget';
 
         $widget = $this->makeWidget(\Backend\Widgets\Form::class, $config);
         $widget->bindToController();
@@ -406,7 +406,7 @@ class FileUpload extends FormWidgetBase
         try {
             $formWidget = $this->getConfigFormWidget();
 
-            $file = $formWidget->model;
+            $file = $formWidget->getModel();
             if (!$file) {
                 throw new ApplicationException('Unable to find file, it may no longer exist');
             }

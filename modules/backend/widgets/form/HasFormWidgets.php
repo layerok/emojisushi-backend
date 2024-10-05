@@ -43,6 +43,19 @@ trait HasFormWidgets
             return $this->formWidgets[$field->fieldName];
         }
 
+        // If options are defined by config but are in an unusable state
+        $fieldOptions = $field->optionsPreset
+            ? 'preset:' . $field->optionsPreset
+            : ($field->optionsMethod ?: $field->options);
+
+        // Defer the execution of option data collection
+        if ($fieldOptions !== null && !$field->hasOptions()) {
+            $field->options(function () use ($field, $fieldOptions) {
+                return $field->getOptionsFromModel($this->model, $fieldOptions, $this->data);
+            });
+        }
+
+        // Create form widget instance
         $widgetConfig = $this->makeConfig($field->config);
         $widgetConfig->alias = $this->alias . studly_case($this->nameToId($field->fieldName));
         $widgetConfig->sessionKey = $this->getSessionKey();
@@ -63,14 +76,6 @@ trait HasFormWidgets
         }
 
         $widget = $this->makeFormWidget($widgetClass, $field, $widgetConfig);
-
-        // If options are defined by config but are in an unusable state
-        if ($field->options !== null && !$field->hasOptions()) {
-            $fieldOptions = $field->optionsMethod ?: $field->options;
-            $field->options(function () use ($field, $fieldOptions) {
-                return $field->getOptionsFromModel($this->model, $fieldOptions, $this->data);
-            });
-        }
 
         return $this->formWidgets[$field->fieldName] = $widget;
     }

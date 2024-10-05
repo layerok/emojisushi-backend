@@ -2,10 +2,15 @@
     $isHorizontal = $this->formGetWidget()->horizontalMode;
 ?>
 <?php Block::put('form-contents') ?>
+
+    <?= Block::placeholder('form:before-form') ?>
+
     <div class="layout-row">
         <?= $this->formRenderOutsideFields(['useContainer' => false]) ?>
         <?= $this->formRenderPrimaryTabs(['useContainer' => false]) ?>
     </div>
+
+    <?= Block::placeholder('form:after-form') ?>
 
     <?php if ($this->formGetContext() !== 'preview'): ?>
         <div class="form-buttons pt-3 <?= $isHorizontal ? 'is-horizontal' : '' ?>">
@@ -30,7 +35,7 @@
             data-refresh-handler="<?= $this->formGetWidget()->getEventHandler('onRefresh') ?>"
             class="form-widget form-elements layout <?= $isHorizontal ? 'form-horizontal' : '' ?>"
             role="form">
-            <?= $this->makeLayout('form-with-sidebar') ?>
+            <?= $this->makeLayout('form-with-sidebar', ['sidebarWidth' => $formSidebarWidth]) ?>
         </div>
     <?= Form::close() ?>
 <?php Block::endPut() ?>

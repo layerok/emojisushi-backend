@@ -44,14 +44,6 @@
 }
 
 //
-// Make the focus ring and textarea fill the whole rich editor container
-//
-
-.fr-element {
-    height: 100%;
-}
-
-//
 // Rich Editor
 //
 
@@ -150,11 +142,6 @@
             }
         }
 
-        .fr-view,
-        textarea {
-            height: 100%;
-        }
-
         .fr-placeholder {
             top: 20px;
             left: 20px;
@@ -174,7 +161,26 @@
 .control-richeditor {
     figure[data-video],
     figure[data-audio] {
-        padding-left: 13px;
+        display: inline-block;
+        width: 100%;
+        margin: 0 0 15px 0;
+        padding: 10px 10px 10px 13px;
+        border: 1px dashed #bdc3c7;
+        background: @input-bg;
+        position: relative;
+        color: @heading-color;
+        font-size: 15px;
+        font-weight: 600;
+        line-height: 150%;
+        font-weight: normal;
+        cursor: pointer;
+
+        &:focus,
+        &.inspector-open {
+            border-color: @brand-primary;
+            border-style: solid;
+            outline: none;
+        }
 
         &:after {
             content: attr(data-label);

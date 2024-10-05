@@ -7,7 +7,7 @@ use Twig\Compiler;
 use Twig\Environment;
 use Twig\Extension\SandboxExtension;
 use Twig\Node\Expression\GetAttrExpression;
-use Illuminate\Support\Collection;
+use Twig\Extension\CoreExtension;
 
 /**
  * GetAttrNode compiles a custom get attribute node.
@@ -86,7 +86,7 @@ class GetAttrNode extends GetAttrExpression
     }
 
     /**
-     * customGetAttribute inherits the logic of twig_get_attribute
+     * customGetAttribute inherits the logic of CoreExtension::getAttribute
      */
     public static function customGetAttribute(Environment $env, Source $source, $object, $item, array $arguments = [], $type = /* Template::ANY_CALL */ 'any', $isDefinedTest = false, $ignoreStrictCheck = false, $sandboxed = false, int $lineno = -1)
     {
@@ -133,7 +133,7 @@ class GetAttrNode extends GetAttrExpression
             }
         }
 
-        return \twig_get_attribute(
+        return CoreExtension::getAttribute(
             $env,
             $source,
             $object,

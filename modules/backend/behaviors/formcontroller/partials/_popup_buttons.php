@@ -26,6 +26,6 @@
             ->textLink()
             ->redirectBack()
             ->ajaxData(['close' => true])
-            ->loadingPopup() ?>
+            ->dismissPopup() ?>
     </span>
 </div>

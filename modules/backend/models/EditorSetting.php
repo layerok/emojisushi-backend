@@ -15,7 +15,6 @@ use Exception;
  */
 class EditorSetting extends SettingModel
 {
-    use \System\Traits\ViewMaker;
     use \October\Rain\Database\Traits\Validation;
 
     /**
@@ -299,8 +298,9 @@ class EditorSetting extends SettingModel
     public static function renderCss()
     {
         $cacheKey = self::instance()->cacheKey;
-        if (Cache::has($cacheKey)) {
-            return Cache::get($cacheKey);
+
+        if ($cache = Cache::get($cacheKey)) {
+            return $cache;
         }
 
         try {

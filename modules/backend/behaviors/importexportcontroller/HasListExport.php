@@ -48,6 +48,7 @@ trait HasListExport
             'delimiter' => $this->getConfig('defaultFormatOptions[delimiter]', ','),
             'enclosure' => $this->getConfig('defaultFormatOptions[enclosure]', '"'),
             'escape' => $this->getConfig('defaultFormatOptions[escape]', '\\'),
+            'encoding' => $this->getConfig('defaultFormatOptions[encoding]', 'utf-8'),
         ], $options);
 
         // Prepare output

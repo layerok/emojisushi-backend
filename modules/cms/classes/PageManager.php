@@ -1,6 +1,7 @@
 <?php namespace Cms\Classes;
 
 use File;
+use Event;
 use Cms\Classes\Theme;
 use Cms\Models\PageLookupItem;
 use Cms\Classes\Controller as CmsController;
@@ -36,7 +37,6 @@ class PageManager
         return PageLookupItem::resolveFromSchema((string) $address, $options);
     }
 
-
     /**
      * processMarkup converts links and snippets
      */
@@ -44,6 +44,20 @@ class PageManager
     {
         $markup = self::processLinks($markup);
         $markup = self::processSnippets($markup);
+
+        /**
+         * @event cms.content.postProcessMarkup
+         * Provides opportunity to hook into the post-processing of content markup
+         *
+         * Example usage:
+         *
+         *     Event::listen('cms.content.postProcessMarkup', function ((string) &$content) {
+         *         $content = str_replace('<a href=', '<a rel="nofollow" href=', $content);
+         *     });
+         *
+         */
+        Event::fire('cms.content.postProcessMarkup', [&$markup]);
+
         return $markup;
     }
 

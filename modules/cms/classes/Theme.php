@@ -77,7 +77,7 @@ class Theme implements CallsMethods
             $dirName = $this->getDirName();
         }
 
-        return themes_path().'/'.$dirName;
+        return themes_path($dirName);
     }
 
     /**

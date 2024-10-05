@@ -72,32 +72,20 @@ class ComponentManager
         foreach (System::listModules() as $module) {
             if ($provider = App::getProvider($module . '\\ServiceProvider')) {
                 $this->loadComponentsFromArray($provider->registerComponents(), $provider);
-
-                // @deprecated in v3.5+ this is part of the OctoberPackage contract
-                if (method_exists($provider, 'registerPageSnippets')) {
-                    $this->loadComponentsFromArray($provider->registerPageSnippets());
-                }
+                $this->loadComponentsFromArray($provider->registerPageSnippets());
             }
         }
 
         // Load plugin components
         foreach (PluginManager::instance()->getPlugins() as $plugin) {
             $this->loadComponentsFromArray($plugin->registerComponents(), $plugin);
-
-            // @deprecated in v3.5+ this is part of the OctoberPackage contract
-            if (method_exists($plugin, 'registerPageSnippets')) {
-                $this->loadComponentsFromArray($plugin->registerPageSnippets());
-            }
+            $this->loadComponentsFromArray($plugin->registerPageSnippets());
         }
 
         // Load app items
         if ($app = App::getProvider(\App\Provider::class)) {
             $this->loadComponentsFromArray($app->registerComponents(), $app);
-
-            // @deprecated in v3.5+ this is part of the OctoberPackage contract
-            if (method_exists($app, 'registerPageSnippets')) {
-                $this->loadComponentsFromArray($app->registerPageSnippets());
-            }
+            $this->loadComponentsFromArray($app->registerPageSnippets());
         }
     }
 

@@ -4,7 +4,6 @@ use App;
 use Url;
 use File;
 use Site;
-use Lang;
 use Event;
 use Cache;
 use Route;
@@ -253,7 +252,7 @@ class CombineAssets
         // Set 304 Not Modified header, if necessary
         $response = Response::make();
         $response->header('Content-Type', $mimeType);
-        $response->header('Cache-Control', 'private, max-age=604800');
+        $response->header('Cache-Control', 'private, max-age=15768000');
         $response->setLastModified(new DateTime($lastModifiedTime));
         $response->setEtag($cacheInfo['etag']);
         $response->setPublic();
@@ -430,7 +429,7 @@ class CombineAssets
     protected function setActiveSiteContext($siteId = null, $theme = null)
     {
         if ($siteId && Site::hasFeature('system_asset_combiner')) {
-            Site::setActiveSiteId($siteId);
+            Site::applyActiveSiteId($siteId);
         }
 
         if ($theme) {
@@ -673,11 +672,11 @@ class CombineAssets
     {
         $cacheKey = 'combiner.'.$cacheKey;
 
-        if (!Cache::has($cacheKey)) {
-            return false;
+        if ($cache = Cache::get($cacheKey)) {
+            return @unserialize(@base64_decode($cache));
         }
 
-        return @unserialize(@base64_decode(Cache::get($cacheKey)));
+        return false;
     }
 
     /**
@@ -719,8 +718,8 @@ class CombineAssets
      */
     public static function resetCache()
     {
-        if (Cache::has('combiner.index')) {
-            $index = (array) @unserialize(@base64_decode(Cache::get('combiner.index'))) ?: [];
+        if ($cache = Cache::get('combiner.index')) {
+            $index = (array) @unserialize(@base64_decode($cache)) ?: [];
 
             foreach ($index as $cacheKey) {
                 Cache::forget($cacheKey);
@@ -741,8 +740,8 @@ class CombineAssets
     {
         $index = [];
 
-        if (Cache::has('combiner.index')) {
-            $index = (array) @unserialize(@base64_decode(Cache::get('combiner.index'))) ?: [];
+        if ($cache = Cache::get('combiner.index')) {
+            $index = (array) @unserialize(@base64_decode($cache)) ?: [];
         }
 
         if (in_array($cacheKey, $index)) {

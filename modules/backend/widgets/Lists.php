@@ -121,6 +121,11 @@ class Lists extends WidgetBase implements ListElement
      */
     public $customPageName = 'page';
 
+    /**
+     * @var string pivotMode targets the pivot relationship on the model for identifiers and replacements.
+     */
+    public $pivotMode = false;
+
     //
     // Object Properties
     //
@@ -188,6 +193,7 @@ class Lists extends WidgetBase implements ListElement
             'showPagination',
             'customViewPath',
             'customPageName',
+            'pivotMode',
         ]);
 
         // Configure the list widget
@@ -446,7 +452,11 @@ class Lists extends WidgetBase implements ListElement
 
             // Column wants to eager load something
             if ($column->relationWith) {
-                $withs[] = $column->relationWith;
+                if (is_array($column->relationWith)) {
+                    $withs = array_merge($withs, $column->relationWith);
+                } else {
+                    $withs[] = $column->relationWith;
+                }
             }
 
             // Column is not a related column selection (relation + select)
@@ -706,7 +716,7 @@ class Lists extends WidgetBase implements ListElement
         }
 
         $url = $this->getRecordUrl($record);
-        $onClick = $this->getRecordOnClick($record);
+        $onClick = $this->getRecordOnClick($record, true);
 
         /**
          * @event backend.list.overrideRecordAction
@@ -739,7 +749,7 @@ class Lists extends WidgetBase implements ListElement
                         $onClick = null;
                     }
                     else {
-                        $onClick = Html::attributes(['onclick' => $event['onclick']]);
+                        $onClick = $event['onclick'];
                     }
                 }
 
@@ -763,7 +773,10 @@ class Lists extends WidgetBase implements ListElement
             }
         }
 
-        return [$url, $onClick];
+        return [
+            $url,
+            $onClick ? Html::attributes(['onclick' => $onClick]) : null
+        ];
     }
 
     /**
@@ -781,6 +794,10 @@ class Lists extends WidgetBase implements ListElement
             return null;
         }
 
+        if ($this->pivotMode) {
+            $url = RouterHelper::replaceParameters($record->pivot, $this->recordUrl);
+        }
+
         $url = RouterHelper::replaceParameters($record, $this->recordUrl);
 
         return Backend::url($url);
@@ -791,7 +808,7 @@ class Lists extends WidgetBase implements ListElement
      * @param  Model $record
      * @return string
      */
-    public function getRecordOnClick($record)
+    public function getRecordOnClick($record, $isRaw = false)
     {
         if (!isset($this->recordOnClick)) {
             return null;
@@ -804,9 +821,14 @@ class Lists extends WidgetBase implements ListElement
             $recordOnClick = 'oc.listOnLoadForm(:id)';
         }
 
+        if ($this->pivotMode) {
+            $recordOnClick = RouterHelper::replaceParameters($record->pivot, $recordOnClick);
+        }
+
         $recordOnClick = RouterHelper::replaceParameters($record, $recordOnClick);
 
-        return Html::attributes(['onclick' => $recordOnClick]);
+        // @deprecated this method will always return isRaw = true
+        return $isRaw ? $recordOnClick : Html::attributes(['onclick' => $recordOnClick]);
     }
 
     /**
@@ -911,18 +933,20 @@ class Lists extends WidgetBase implements ListElement
      */
     protected function defineListColumns(): array
     {
-        if ($this->model && method_exists($this->model, 'defineListColumns')) {
-            $this->model->defineListColumns($this);
-        }
-
-        $hasColumns = ($this->columns && is_array($this->columns)) || $this->allColumns;
-        if (!$hasColumns) {
-            $class = get_class($this->model instanceof Model ? $this->model : $this->controller);
-            throw new ApplicationException(Lang::get('backend::lang.list.missing_columns', compact('class')));
+        if (!isset($this->columns) || !is_array($this->columns)) {
+            $this->columns = [];
         }
 
         if ($this->columns) {
             $this->addColumns($this->columns);
+        }
+        else {
+            $this->addColumnsFromModel();
+        }
+
+        if (!$this->allColumns) {
+            $class = get_class($this->model instanceof Model ? $this->model : $this->controller);
+            throw new ApplicationException(Lang::get('backend::lang.list.missing_columns', compact('class')));
         }
 
         /**
@@ -1213,6 +1237,18 @@ class Lists extends WidgetBase implements ListElement
     }
 
     /**
+     * getColumnKey returns a column key/identifier
+     */
+    public function getColumnKey($record)
+    {
+        if ($this->pivotMode) {
+            return $record->pivot->getKey();
+        }
+
+        return $record->getKey();
+    }
+
+    /**
      * getColumnValue returns a column value, with filters applied
      */
     public function getColumnValue($record, $column)
@@ -1297,6 +1333,21 @@ class Lists extends WidgetBase implements ListElement
     protected function isRowChecked($record): bool
     {
         return in_array($record->getKey(), $this->getCheckedRows());
+    }
+
+    /**
+     * getAllCheckedIds returns all checked IDs, including those not visible on the page,
+     * stored in the list data locker from switching pagination.
+     */
+    public function getAllCheckedIds(): array
+    {
+        $checkedIds = (array) post('checked');
+
+        if ($allChecked = post('checked-all')) {
+            $checkedIds = array_merge((array) json_decode($allChecked, true), $checkedIds);
+        }
+
+        return array_filter($checkedIds, 'is_scalar');
     }
 
     /**
@@ -1564,7 +1615,7 @@ class Lists extends WidgetBase implements ListElement
             'defaultValue' => $value,
             'format' => $column->format,
             'formatAlias' => 'time',
-            'useTimezone' => $this->getColumnTimezonePreference($column),
+            'useTimezone' => $this->getColumnTimezonePreference($column, false),
         ];
 
         return Backend::dateTime($dateTime, $options);
@@ -1593,7 +1644,7 @@ class Lists extends WidgetBase implements ListElement
             'defaultValue' => $value,
             'format' => $column->format,
             'formatAlias' => 'dateLongMin',
-            'useTimezone' => $this->getColumnTimezonePreference($column),
+            'useTimezone' => $this->getColumnTimezonePreference($column, false),
         ];
 
         return Backend::dateTime($dateTime, $options);

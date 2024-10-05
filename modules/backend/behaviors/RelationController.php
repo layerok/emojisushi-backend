@@ -3,6 +3,7 @@
 use Lang;
 use Flash;
 use Request;
+use Form as FormHelper;
 use October\Rain\Html\Helper as HtmlHelper;
 use Backend\Classes\FormField;
 use Backend\Classes\ControllerBehavior;
@@ -258,13 +259,13 @@ class RelationController extends ControllerBehavior
         $this->vars['relationLabel'] = $this->config->label ?: $this->field;
         $this->vars['relationField'] = $this->field;
         $this->vars['relationPopupSize'] = $this->popupSize;
+        $this->vars['relationReadOnly'] = $this->readOnly;
         $this->vars['relationType'] = $this->relationType;
         $this->vars['relationSearchWidget'] = $this->searchWidget;
         $this->vars['relationToolbarWidget'] = $this->toolbarWidget;
         $this->vars['relationToolbarButtons'] = $this->toolbarButtons;
         $this->vars['relationSessionKey'] = $this->relationSessionKey;
-        $this->vars['relationExtraConfig'] = $this->extraConfigString;
-        $this->vars['externalToolbarAppState'] = $this->externalToolbarAppState;
+        $this->vars['relationExtraConfig'] = $this->extraConfig;
 
         // Manage
         $this->vars['relationManageId'] = $this->manageId;
@@ -283,8 +284,13 @@ class RelationController extends ControllerBehavior
         $this->vars['relationViewMode'] = $this->viewMode;
 
         // Pivot
+        $this->vars['relationPivotId'] = $this->pivotId;
         $this->vars['relationPivotTitle'] = $this->pivotTitle;
         $this->vars['relationPivotWidget'] = $this->pivotWidget;
+
+        // Misc
+        $this->vars['externalToolbarAppState'] = $this->externalToolbarAppState;
+        $this->vars['formSessionKey'] = post('_form_session_key', post('_session_key', FormHelper::getSessionKey()));
 
         // @deprecated
         $this->vars['relationManageWidget'] = $this->relationGetManageWidget();
@@ -306,7 +312,7 @@ class RelationController extends ControllerBehavior
         }
 
         $this->validateField();
-        $this->prepareExtraConfig();
+        $this->setExtraConfigForChain();
         $this->prepareVars();
         $this->initialized = true;
     }
@@ -378,6 +384,7 @@ class RelationController extends ControllerBehavior
         $this->config = $this->makeConfig($this->originalConfig->{$field}, $this->requiredRelationProperties);
         $this->controller->relationExtendConfig($this->config, $this->field, $this->model);
         $this->manageId = $this->getManageIdForField($field);
+        $this->pivotId = post('pivot_id');
         $this->foreignId = post('foreign_id');
         [$this->sessionKey, $this->relationSessionKey] = $this->getSessionKeysForField($field);
 
@@ -396,7 +403,7 @@ class RelationController extends ControllerBehavior
             : $this->relationObject->getRelated();
 
         $this->readOnly = $this->getConfig('readOnly');
-        $this->popupSize = $this->getConfig('popupSize', 'huge');
+        $this->popupSize = $this->getConfig('popupSize', 950);
         $this->externalToolbarAppState = $this->getConfig('externalToolbarAppState');
         $this->eventTarget = $this->evalEventTarget();
         $this->deferredBinding = $this->evalDeferredBinding();
@@ -508,7 +515,7 @@ class RelationController extends ControllerBehavior
         // Apply options and extra config
         $allowConfig = ['readOnly', 'readOnlyDefault', 'recordUrl', 'recordOnClick'];
         $extraConfig = array_only($options, $allowConfig);
-        $this->setExtraConfig($extraConfig);
+        $this->setExtraConfigForRender($extraConfig);
         $this->applyExtraConfig($field);
 
         // Initialize

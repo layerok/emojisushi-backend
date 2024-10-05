@@ -116,6 +116,15 @@
     }
 }
 
+// Fixes popups in fullscreen mode getting blocked by the overflow
+body.component-backend-document-fullscreen {
+    .form-group.span-adaptive {
+        > .field-repeater {
+            overflow: inherit;
+        }
+    }
+}
+
 .field-repeater.repeater-mode-builder {
     display: flex;
 

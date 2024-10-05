@@ -53,7 +53,11 @@ oc.Modules.register('backend.vuecomponents.documentmarkdowneditor.octobercommand
 
         uploadMedia(callback, accept) {
             const uploaderUtils = oc.Modules.import('backend.vuecomponents.uploader.utils');
-            uploaderUtils.selectAndUploadMediaManagerFiles(callback, true, accept);
+            uploaderUtils.selectAndUploadMediaManagerFiles(
+                callback,
+                true,
+                accept
+            );
         }
 
         titleFromUrl(url) {

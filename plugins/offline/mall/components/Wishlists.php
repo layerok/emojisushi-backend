@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace OFFLINE\Mall\Components;
 
@@ -8,12 +10,12 @@ use Illuminate\Support\Facades\Redirect;
 use October\Rain\Exception\ValidationException;
 use October\Rain\Support\Facades\Flash;
 use OFFLINE\Mall\Classes\Traits\HashIds;
+use OFFLINE\Mall\Classes\User\Auth;
 use OFFLINE\Mall\Models\Cart;
 use OFFLINE\Mall\Models\GeneralSettings;
 use OFFLINE\Mall\Models\ShippingMethod;
 use OFFLINE\Mall\Models\Wishlist;
 use OFFLINE\Mall\Models\WishlistItem;
-use RainLab\User\Facades\Auth;
 
 class Wishlists extends MallComponent
 {
@@ -25,54 +27,63 @@ class Wishlists extends MallComponent
      * @var Collection<Wishlist>
      */
     public $items;
+
     /**
      * Default minimum quantity.
      *
      * @var int
      */
     public $defaultMinQuantity = 1;
+
     /**
      * Default maximum quantity.
      *
      * @var int
      */
     public $defaultMaxQuantity = 100;
+
     /**
      * Display the DiscountApplier component.
      *
      * @var bool
      */
     public $showDiscountApplier = true;
+
     /**
      * Display a tax summary at the end of the cart.
      *
      * @var bool
      */
     public $showTaxes = true;
+
     /**
      * The currently displayed wishlist.
      *
      * @var Wishlist
      */
     public $currentItem;
+
     /**
      * True if at least one wishlist has at least one item.
      *
      * @var bool
      */
     public $hasItems = false;
+
     /**
      * PDF download is available.
      *
      * @var bool
      */
     public $allowPDFDownload = false;
+
     /**
      * Show shipping method selector.
      *
      * @var bool
      */
     public $showShipping = false;
+
     /**
      * All available shipping methods.
      *
@@ -113,13 +124,11 @@ class Wishlists extends MallComponent
         /** @var Collection<Wishlist>|Wishlist[] items */
         /** @var Wishlist currentItem */
         $this->items       = $this->getWishlists();
-        $this->currentItem = $this->items->find($this->decode($this->param('id'))) ?: $this->items->first();
+        $this->currentItem = $this->items->where('id', $this->decode($this->param('id') ?? ''))->first() ?: $this->items->first();
 
         $this->handleShipping();
 
-        $this->hasItems = $this->items->contains(function ($item) {
-            return $item->items->count() > 0;
-        });
+        $this->hasItems = $this->items->contains(fn ($item) => $item->items->count() > 0);
     }
 
     public function onSelect()
@@ -144,8 +153,8 @@ class Wishlists extends MallComponent
     public function onRemove()
     {
         WishlistItem::where('wishlist_id', $this->decode(post('id')))
-                    ->where('id', $this->decode(post('item_id')))
-                    ->delete();
+            ->where('id', $this->decode(post('item_id')))
+            ->delete();
 
         $this->setCurrentItem();
 
@@ -157,16 +166,18 @@ class Wishlists extends MallComponent
         $this->setCurrentItem();
 
         $quantity = post('quantity', 1);
+
         if ($quantity < 1) {
             $quantity = 1;
         }
+
         if ($quantity > 1000) {
             $quantity = 1000;
         }
 
         WishlistItem::where('wishlist_id', $this->decode(post('id')))
-                    ->where('id', $this->decode(post('item_id')))
-                    ->update(['quantity' => $quantity]);
+            ->where('id', $this->decode(post('item_id')))
+            ->update(['quantity' => $quantity]);
 
         $this->setCurrentItem();
 
@@ -178,11 +189,12 @@ class Wishlists extends MallComponent
         $this->setCurrentItem();
 
         $method = post('shipping_method_id');
-        if ( ! $method || ! $this->shippingMethods->contains($method)) {
+
+        if (! $method || ! $this->shippingMethods->contains($method)) {
             return $this->controller->run('404');
         }
 
-        $this->currentItem->setShippingMethod(ShippingMethod::find($method));
+        $this->currentItem->setShippingMethod(ShippingMethod::where('id', $method)->first());
 
         $this->setCurrentItem();
 
@@ -192,7 +204,7 @@ class Wishlists extends MallComponent
     public function onClear()
     {
         WishlistItem::where('wishlist_id', $this->decode(post('id')))
-                    ->delete();
+            ->delete();
 
         $this->setCurrentItem();
 
@@ -218,8 +230,9 @@ class Wishlists extends MallComponent
     {
         $this->setCurrentItem();
 
-        $allInStock = $this->currentItem->addToCart(Cart::byUser(Auth::getUser()));
-        if ( ! $allInStock) {
+        $allInStock = $this->currentItem->addToCart(Cart::byUser(Auth::user()));
+
+        if (! $allInStock) {
             Flash::warning(trans('offline.mall::frontend.wishlists.stockmissing'));
         } else {
             Flash::success(trans('offline.mall::frontend.wishlists.addedtocart'));
@@ -237,7 +250,7 @@ class Wishlists extends MallComponent
      */
     public function getWishlists()
     {
-        return Wishlist::byUser(Auth::getUser());
+        return Wishlist::byUser(Auth::user());
     }
 
     /**
@@ -250,12 +263,12 @@ class Wishlists extends MallComponent
     protected function handlePDFDownload(string $download)
     {
         $id        = $this->decode($download);
-        $wishlists = Wishlist::byUser(Auth::getUser());
+        $wishlists = Wishlist::byUser(Auth::user());
 
         /** @var Wishlist $wishlist */
-        $wishlist = $wishlists->find($id);
+        $wishlist = $wishlists->where('id', $id)->first();
 
-        if ( ! $wishlist) {
+        if (! $wishlist) {
             return $this->controller->run('404');
         }
 
@@ -269,11 +282,12 @@ class Wishlists extends MallComponent
     {
         $this->setVar('showShipping', (bool)$this->property('showShipping'));
 
-        if ( ! $this->showShipping || !$this->currentItem) {
+        if (! $this->showShipping || !$this->currentItem) {
             return;
         }
 
         $this->shippingMethods = ShippingMethod::getAvailableByWishlist($this->currentItem);
+
         if ($this->currentItem->shipping_method_id === null) {
             $this->currentItem->setShippingMethod(ShippingMethod::getDefault());
             $this->currentItem = $this->currentItem->fresh('shipping_method');
@@ -290,9 +304,9 @@ class Wishlists extends MallComponent
     protected function setCurrentItem(): void
     {
         $this->items       = $this->getWishlists();
-        $this->currentItem = $this->items->find($this->decode(post('id')));
+        $this->currentItem = $this->items->where('id', $this->decode(post('id')))->first();
 
-        if ( ! $this->currentItem) {
+        if (! $this->currentItem) {
             throw new ValidationException(['id' => 'Invalid wishlist ID specified']);
         }
 

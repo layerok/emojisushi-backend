@@ -3,7 +3,7 @@
 namespace Layerok\PosterPos\Classes\Customer;
 
 use Layerok\PosterPos\Models\User;
-use \OFFLINE\Mall\Classes\Customer\AuthManager as AuthManagerBase;
+use RainLab\User\Classes\AuthManager as AuthManagerBase;
 
 class AuthManager extends AuthManagerBase
 {

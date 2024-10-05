@@ -2,17 +2,18 @@
 
 namespace OFFLINE\Mall\Classes\Index;
 
+use Event;
 use Illuminate\Support\Collection;
 use OFFLINE\Mall\Models\Currency;
 use OFFLINE\Mall\Models\CustomerGroup;
 use OFFLINE\Mall\Models\Product;
-use Event;
 
 class ProductEntry implements Entry
 {
-    const INDEX = 'products';
+    public const INDEX = 'products';
 
     protected $product;
+
     protected $data;
 
     public function __construct(Product $product)
@@ -31,6 +32,7 @@ class ProductEntry implements Entry
         $data['property_values']       = $this->mapProps($product->property_values);
         $data['prices']                = $this->mapPrices($product);
         $data['customer_group_prices'] = $this->mapCustomerGroupPrices($product);
+
         if ($product->brand) {
             $data['brand'] = ['id' => $product->brand->id, 'slug' => $product->brand->slug];
         }
@@ -60,19 +62,16 @@ class ProductEntry implements Entry
 
     protected function mapPrices(Product $product): Collection
     {
-        return $product->withForcedPriceInheritance(function() use ($product) {
-            return Currency::getAll()->mapWithKeys(function ($currency) use ($product) {
-                return [$currency->code => $product->price($currency)->integer];
-            });
-        });
+        return $product->withForcedPriceInheritance(fn () => Currency::get()->mapWithKeys(fn ($currency) => [$currency->code => $product->price($currency)->integer]));
     }
 
     protected function mapCustomerGroupPrices($model): Collection
     {
         return CustomerGroup::get()->mapWithKeys(function ($group) use ($model) {
             return [
-                $group->id => Currency::getAll()->mapWithKeys(function ($currency) use ($model, $group) {
+                $group->id => Currency::get()->mapWithKeys(function ($currency) use ($model, $group) {
                     $price = $model->groupPrice($group, $currency);
+
                     if ($price) {
                         return [$price->currency->code => $price->integer];
                     }
@@ -89,8 +88,6 @@ class ProductEntry implements Entry
             return collect();
         }
 
-        return $input->groupBy('property_id')->map(function ($value) {
-            return $value->pluck('index_value')->unique()->filter()->values();
-        })->filter();
+        return $input->groupBy('property_id')->map(fn ($value) => $value->pluck('index_value')->unique()->filter(fn ($item) => !empty($item) || $item === 0 || $item === '0')->values())->filter();
     }
 }

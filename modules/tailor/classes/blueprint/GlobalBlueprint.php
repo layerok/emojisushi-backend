@@ -42,4 +42,21 @@ class GlobalBlueprint extends Blueprint
     {
         return (bool) $this->multisite;
     }
+
+    /**
+     * useMultisiteSync defaults to false.
+     */
+    public function useMultisiteSync(): bool
+    {
+        // Strict check since multisite can be set to true
+        if (in_array($this->multisite, ['sync', 'locale', 'all', 'group'], true)) {
+            return true;
+        }
+
+        if (!is_array($this->multisite)) {
+            return false;
+        }
+
+        return (bool) array_get($this->multisite, 'sync', false);
+    }
 }

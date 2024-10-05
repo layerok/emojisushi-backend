@@ -5,9 +5,6 @@ require 'concerns/PerformsMigrations.php';
 require 'concerns/PerformsRegistrations.php';
 
 use Backend\Classes\AuthManager;
-use System\Classes\UpdateManager;
-use System\Classes\PluginManager;
-use System\Classes\VersionManager;
 use October\Rain\Database\Model as ActiveRecord;
 
 abstract class PluginTestCase extends TestCase

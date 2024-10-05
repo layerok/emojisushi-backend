@@ -1,4 +1,6 @@
-<?php return [
+<?php
+
+return [
     'common' => [
         'hello' => 'Bonjour :firstname',
         'view_order_status_online' => 'Consulter l\'état de la commande en ligne',
@@ -63,8 +65,6 @@
             'subject' => 'Erreur de paiement pour la commande #:number',
             'problem_message' => 'Nous sommes vraiment désolés qu\'il y ait eu un problème lors de votre passage à la caisse. Nous examinerons le problème et vous contacterons pour de plus amples informations.',
             'check_order_status' => 'Pour vérifier l\'état de votre commande, vous pouvez vous connecter à notre boutique à tout moment.',
-            'payment_id' => 'Identification du paiement',
-            'error' => 'Message d\'erreur',
         ],
     ],
     'admin' => [
@@ -76,6 +76,8 @@
             'subject' => 'Échec au paiement #:number',
             'not_processed' => 'La commande suivante n\'a pas pu être traitée correctement. Il est possible que vous deviez contacter le client.',
             'error_details' => 'Détails de l\'erreur',
+            'payment_id' => 'Identification du paiement',
+            'error' => 'Message d\'erreur',
         ],
     ],
 ];

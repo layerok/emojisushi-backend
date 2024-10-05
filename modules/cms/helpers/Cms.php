@@ -5,6 +5,7 @@ use Site;
 use View;
 use Route;
 use Config;
+use Request;
 use Redirect;
 use Response;
 use Cms\Classes\Page;
@@ -79,9 +80,8 @@ class Cms
      */
     public function pageUrl($name, $parameters = [])
     {
-        $controller = (Controller::getController() ?: new Controller);
-
-        return $controller->pageUrl($name, $parameters, false);
+        return (Controller::getController() ?: new Controller)
+            ->pageUrl($name, $parameters, false);
     }
 
     /**
@@ -144,39 +144,51 @@ class Cms
      * value. Setting to false or 0 will disable the redirect. This method will only
      * redirect to a relative path for security reasons.
      */
-    public function redirectFromPost($key = 'redirect')
+    public function redirectFromPost($defaultTo = null, $key = null)
     {
-        return $this->makePostRedirect($key);
+        return $this->makePostRedirect($defaultTo, $key);
     }
 
     /**
      * redirectIntendedFromPost
      */
-    public function redirectIntendedFromPost($key = 'redirect')
+    public function redirectIntendedFromPost($defaultTo = null, $key = null)
     {
-        return $this->makePostRedirect($key, 'intended');
+        return $this->makePostRedirect($defaultTo, $key, 'intended');
     }
 
     /**
      * makePostRedirect
      */
-    protected function makePostRedirect($key = 'redirect', $method = 'to')
+    protected function makePostRedirect($defaultTo = null, $key = null, $method = 'to')
     {
+        if ($defaultTo === null) {
+            $defaultTo = Request::path();
+        }
+
+        if ($key === null) {
+            $key = 'redirect';
+        }
+
         $property = post($key);
 
+        // No redirect (false)
         if (!$property || $property === 'false') {
             return;
         }
 
+        // Refresh current page (true)
         if (in_array($property, ['1', 'true'])) {
-            return Redirect::refresh();
+            return Redirect::$method($defaultTo);
         }
 
-        $redirectUrl = $this->pageUrl($property) ?: $property;
-
-        if ($redirectUrl) {
-            return Redirect::$method(Url::toRelative($redirectUrl));
+        // Specify a CMS page name
+        if ($redirectUrl = $this->pageUrl($property)) {
+            return Redirect::$method($redirectUrl);
         }
+
+        // Specify a relative URL
+        return Redirect::$method(Url::makeRelative($property));
     }
 
     /**
@@ -198,16 +210,12 @@ class Cms
      */
     public function pageNotFound()
     {
-        try {
-            $controller = (Controller::getController() ?: new Controller);
+        $controller = (Controller::getController() ?: new Controller);
 
-            $router = $controller->getRouter();
+        $router = $controller->getRouter();
 
-            if ($router->findByUrl('/404')) {
-                return $controller->run('/404');
-            }
-        }
-        catch (Exception $ex) {
+        if ($router->findByUrl('/404')) {
+            return $controller->run('/404');
         }
 
         return Response::make(View::make('cms::404'), 404);

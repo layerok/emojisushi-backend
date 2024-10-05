@@ -169,8 +169,12 @@ class Filter extends WidgetBase implements FilterElement
             $this->scopes = [];
         }
 
-        $this->addScopes($this->scopes);
-        $this->addScopesFromModel();
+        if ($this->scopes) {
+            $this->addScopes($this->scopes);
+        }
+        else {
+            $this->addScopesFromModel();
+        }
 
         /**
          * @event backend.filter.extendScopes

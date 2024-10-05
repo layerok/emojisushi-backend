@@ -49,6 +49,10 @@
         background: @toolbar-hover-bg;
     }
 
+    &:not([disabled]):focus {
+        background: @toolbar-focus-bg;
+    }
+
     &.has-menu {
         &:after {
             .icon-OctoFont();

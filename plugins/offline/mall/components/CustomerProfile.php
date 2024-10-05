@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace OFFLINE\Mall\Components;
 
@@ -56,7 +58,8 @@ class CustomerProfile extends MallComponent
      */
     public function init()
     {
-        $this->user = Auth::getUser();
+        /** @ignore @disregard facade alias for \RainLab\User\Classes\AuthManager */
+        $this->user = Auth::user();
     }
 
     /**
@@ -76,12 +79,15 @@ class CustomerProfile extends MallComponent
             'password',
             'password_repeat',
         ]);
+        $neededRules['email'] = ['required', \Illuminate\Validation\Rule::unique('users', 'email')->ignore($this->user->id)];
+
+        // The password is unchanged, so we don't need to validate it.
         if ($data['password'] === '') {
-            // The password is unchanged so we don't need to validate it.
             unset($neededRules['password'], $neededRules['password_repeat']);
         }
 
         $validation = Validator::make($data, $neededRules, $handler::messages());
+
         if ($validation->fails()) {
             throw new ValidationException($validation);
         }
@@ -92,6 +98,7 @@ class CustomerProfile extends MallComponent
             $this->user->name                = $data['firstname'];
             $this->user->surname             = $data['lastname'];
             $this->user->email               = $data['email'];
+
             if ($data['password']) {
                 $this->user->password              = $data['password'];
                 $this->user->password_confirmation = $data['password_repeat'];
@@ -104,6 +111,7 @@ class CustomerProfile extends MallComponent
         });
 
         // Re-authenticate the user with his new credentials
+        /** @ignore @disregard facade alias for \RainLab\User\Classes\AuthManager */
         Auth::login($this->user);
 
         Flash::success(trans('offline.mall::lang.common.saved_changes'));

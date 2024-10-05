@@ -1,4 +1,8 @@
-<?php namespace OFFLINE\Mall\Tests\Models;
+<?php
+
+declare(strict_types=1);
+
+namespace OFFLINE\Mall\Tests\Models;
 
 use OFFLINE\Mall\Models\CustomField;
 use OFFLINE\Mall\Models\Product;
@@ -6,6 +10,19 @@ use OFFLINE\Mall\Tests\PluginTestCase;
 
 class ProductTest extends PluginTestCase
 {
+    /**
+     * Setup the test environment.
+     * @return void
+     */
+    public function setUp(): void
+    {
+        parent::setUp();
+    }
+
+    /**
+     * Test custom field relationship
+     * @return void
+     */
     public function test_custom_field_relationship()
     {
         $product = Product::first();
@@ -16,6 +33,10 @@ class ProductTest extends PluginTestCase
         $this->assertEquals('Test', $product->fresh()->custom_fields->first()->name);
     }
 
+    /**
+     * Test price accessors
+     * @return void
+     */
     public function test_price_accessors()
     {
         $price          = ['CHF' => 20.50, 'EUR' => 80.50];

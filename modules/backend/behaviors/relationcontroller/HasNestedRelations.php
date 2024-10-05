@@ -28,6 +28,10 @@ trait HasNestedRelations
             return $this->sessionKeys[$field];
         }
 
+        if ($configSessionKey = $this->getConfig('sessionKey')) {
+            return $this->sessionKeys[$field] = [$configSessionKey, $configSessionKey];
+        }
+
         $sessionKey = post('_session_key', FormHelper::getSessionKey());
         $relationSessionKey = post('_relation_session_key', $sessionKey);
 
@@ -96,27 +100,109 @@ trait HasNestedRelations
             return [$model, $field];
         }
 
-        // This function only supports relations with a single hop
+        if ($result = $this->resolveNestedRelationModelFromManageId($model, $field)) {
+            return $result;
+        }
+
+        if ($result = $this->resolveNestedRelationModelFromModelRelationship($model, $field)) {
+            return $result;
+        }
+
+        // Fallback with an empty related model
+        return $this->resolveNestedRelationModelFromDefault($model, $field);
+    }
+
+    /**
+     * resolveNestedRelationModelFromModelRelationship returns a nested relation model
+     * locating it using `array_get` to resolve the value
+     */
+    protected function resolveNestedRelationModelFromModelRelationship($model, $field): ?array
+    {
         $parts = HtmlHelper::nameToArray($field);
         $lastField = array_pop($parts);
-        $parentParts = $parts;
+
+        // Custom array_get() function to look for [id:x] segments
+        $arrayGet = function($model, $parts, $default = null) {
+            foreach ($parts as $segment) {
+                $isPrimaryKey = str_starts_with($segment, 'id:');
+                if ($isPrimaryKey) {
+                    $segment = ltrim($segment, 'id:');
+                }
+
+                if ($isPrimaryKey && $model instanceof \Illuminate\Support\Collection) {
+                    $model = $model->find($segment);
+                }
+                else {
+                    $model = array_get($model, $segment);
+                }
+
+                // Prevents an empty collection resolving as true here
+                if ($model instanceof \Illuminate\Support\Collection && $model->isEmpty()) {
+                    return $default;
+                }
+
+                if (!$model) {
+                    return $default;
+                }
+            }
+
+            return $model;
+        };
+
+        if ($lookupModel = $arrayGet($model, $parts)) {
+            return [$lookupModel, $lastField];
+        }
+
+        return null;
+    }
+
+    /**
+     * resolveNestedRelationModelFromManageId returns a resolved relation with a single hop
+     */
+    protected function resolveNestedRelationModelFromManageId($model, $field): ?array
+    {
+        // Looking for a direct hop up, so pop off the end
+        $parts = HtmlHelper::nameToArray($field);
+        array_pop($parts);
+
+        // Rebuild the field name with the end popped off
+        $parentField = array_shift($parts);
+        if ($parts) {
+            $parentField .= '['.implode('][', $parts).']';
+        }
+
+        // Locate the parent in the manage IDs, populate the model if possible
+        if (array_key_exists($parentField, $this->manageIds)) {
+            [$lastModel, $lastField] = $this->resolveNestedRelationModelFromDefault($model, $field);
+
+            if (
+                ($parentId = $this->manageIds[$parentField]) &&
+                ($manageModel = $lastModel->find($parentId))
+            ) {
+                $lastModel = $manageModel;
+            }
+
+            return [$lastModel, $lastField];
+        }
+
+        return null;
+    }
+
+    /**
+     * resolveNestedRelationModelFromDefault
+     */
+    protected function resolveNestedRelationModelFromDefault($model, $field): array
+    {
+        $parts = array_filter(HtmlHelper::nameToArray($field), function($val) {
+            return !is_numeric(ltrim($val, 'id:'));
+        });
+
+        $lastModel = $model;
+        $lastField = array_pop($parts);
         while ($rootField = array_shift($parts)) {
-            $model = $model->$rootField()->getRelated();
+            $lastModel = $lastModel->$rootField()->getRelated();
         }
 
-        // Locate parent field, with an expected relation defined in the chain
-        $rootParentField = array_shift($parentParts);
-        $parentField = $rootParentField;
-        if ($parentParts) {
-            $parentField .= '['.implode('][', $parentParts).']';
-        }
-
-        // Populate the parent model
-        $parentId = $this->manageIds[$parentField] ?? null;
-        if ($parentId && ($manageModel = $model->find($parentId))) {
-            $model = $manageModel;
-        }
-
-        return [$model, $lastField];
+        return [$lastModel, $lastField];
     }
 }

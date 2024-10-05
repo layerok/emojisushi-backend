@@ -59,7 +59,7 @@ trait SecurityController
             $token = Crypt::decrypt($header, false);
         }
 
-        if (!strlen($token) || !strlen(Session::token())) {
+        if (!is_string($token) || !strlen($token) || !strlen(Session::token())) {
             return false;
         }
 

@@ -1,14 +1,16 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace OFFLINE\Mall\Components;
 
-use Exception;
 use Cms\Classes\Controller;
+use Exception;
 use Illuminate\Http\RedirectResponse;
 use October\Rain\Exception\ValidationException;
 use October\Rain\Support\Facades\Flash;
+use OFFLINE\Mall\Classes\User\Auth;
 use OFFLINE\Mall\Models\GeneralSettings;
-use RainLab\User\Facades\Auth;
 
 /**
  * The MyAccount component displays an overview of a customer's account.
@@ -21,12 +23,14 @@ class MyAccount extends MallComponent
      * @var string
      */
     public $currentPage;
+
     /**
      * The name of the account page.
      *
      * @var string
      */
     public $accountPage;
+
     /**
      * Store any redirects to execute when the component loads.
      *
@@ -110,7 +114,7 @@ class MyAccount extends MallComponent
             return $this->redirect;
         }
 
-        if ( ! $this->isValidPage()) {
+        if (! $this->isValidPage()) {
             return $this->exitRedirect();
         }
     }
@@ -118,12 +122,12 @@ class MyAccount extends MallComponent
     /**
      * Return the URL to a specific sub-page.
      *
-     * @param       $page
+     * @param $page
      * @param array $params
      *
      * @return string
      */
-    public function pageUrl($page, $params = [])
+    public function getPageUrl($page, $params = [])
     {
         return $this->controller->pageUrl(
             $this->page->page->fileName,
@@ -144,21 +148,22 @@ class MyAccount extends MallComponent
             ];
 
             $parts = explode('!', $code);
+
             if (count($parts) !== 2) {
                 throw new ValidationException([$error]);
             }
 
-            list($userId, $code) = $parts;
+            [$userId, $code] = $parts;
 
             if (trim($userId) === '' || trim($code) === '') {
                 throw new ValidationException($error);
             }
 
-            if ( ! $user = Auth::findUserById($userId)) {
+            if (! $user = Auth::findUserById($userId)) {
                 throw new ValidationException($error);
             }
 
-            if ( ! $user->attemptActivation($code)) {
+            if (! $user->attemptActivation($code)) {
                 throw new ValidationException($error);
             }
 
@@ -192,19 +197,19 @@ class MyAccount extends MallComponent
      */
     private function exitRedirect()
     {
-        return redirect()->to($this->pageUrl('orders'));
+        return redirect()->to($this->getPageUrl('orders'));
     }
 
     /**
      * Redirect to cart page.
      *
-     * @return RedirectResponse
      * @throws \Cms\Classes\CmsException
+     * @return RedirectResponse
      */
     private function cartRedirect()
     {
-        $controller = Controller::getController() ?: new Controller;
-        $url = $controller->pageUrl(GeneralSettings::get('cart_page'));
+        $controller = Controller::getController() ?: new Controller();
+        $url = $controller->getPageUrl(GeneralSettings::get('cart_page'));
 
         return redirect()->to($url);
     }

@@ -79,12 +79,8 @@ class PreviewController extends ControllerBehavior
 
         // Get the URL from the CMS controller
         $controller = new Controller(Theme::getEditTheme());
-        $url = $controller->pageUrl($pageName, [
-            'id' => $model->id,
-            'code' => $model->code,
-            'slug' => $model->slug,
-            'fullslug' => $model->fullslug
-        ]);
+
+        $url = $controller->pageUrl($pageName, $model->makePageUrlParams());
 
         // Generate preview token
         $token = PreviewToken::createTokenForUrl($url, [

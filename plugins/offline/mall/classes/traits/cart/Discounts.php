@@ -6,8 +6,8 @@ use Carbon\Carbon;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Support\Facades\DB;
 use October\Rain\Exception\ValidationException;
+use OFFLINE\Mall\Classes\User\Auth;
 use OFFLINE\Mall\Models\Discount;
-use RainLab\User\Facades\Auth;
 
 trait Discounts
 {
@@ -19,7 +19,7 @@ trait Discounts
      * @param Discount $discount
      * @param int $discountCodeLimit
      *
-     * @throws \October\Rain\Exception\ValidationException
+     * @throws ValidationException
      * @throws ValidationException
      */
     public function applyDiscount(Discount $discount, int $discountCodeLimit = 0)
@@ -32,11 +32,10 @@ trait Discounts
         }
 
         $previousOrderDiscounts = collect();
-        $customer = optional(Auth::getUser())->customer;
+        $customer = optional(Auth::user())->customer;
+
         if (optional($customer)->orders) {
-            $previousOrderDiscounts = $customer->orders->map(function ($order) {
-                return array_get($order, 'discounts.0.discount.id');
-            });
+            $previousOrderDiscounts = $customer->orders->map(fn ($order) => array_get($order, 'discounts.0.discount.id'));
         }
 
         if ($discountCodeLimit > 0 && $this->discounts->count() >= $discountCodeLimit) {
@@ -65,6 +64,7 @@ trait Discounts
     public function applyDiscountByCode(string $code, int $discountCodeLimit)
     {
         $code = strtoupper(trim($code));
+
         if ($code === '') {
             throw new ValidationException([
                 'code' => trans('offline.mall::lang.discounts.validation.empty'),
@@ -89,16 +89,21 @@ trait Discounts
     public function updateDiscountUsageCount()
     {
         $this->totals()->appliedDiscounts()->each(function (array $discount) {
-            $discount['discount']->number_of_usages++;
-            $discount['discount']->save();
+            if (is_array($discount) && array_key_exists('discount', $discount)) {
+                $discount = $discount['discount'];
+            }
+            $discount->number_of_usages++;
+            $discount->save();
         });
 
         if ($shippingDiscount = $this->totals()->shippingTotal()->appliedDiscount()) {
-            $shippingDiscount['discount']->number_of_usages++;
-            $shippingDiscount['discount']->save();
+            if (is_array($shippingDiscount) && array_key_exists('discount', $shippingDiscount)) {
+                $shippingDiscount = $shippingDiscount['discount'];
+            }
+            $shippingDiscount->number_of_usages++;
+            $shippingDiscount->save();
         }
     }
-
 
     /**
      * Removes a specific disount from a cart.

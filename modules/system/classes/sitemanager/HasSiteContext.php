@@ -23,34 +23,6 @@ trait HasSiteContext
     protected $siteContext = null;
 
     /**
-     * listSiteIdsInGroup
-     */
-    public function listSiteIdsInGroup($siteId = null)
-    {
-        $site = $siteId ? $this->getSiteFromId($siteId) : $this->getSiteFromContext();
-
-        if ($groupId = $site?->group_id) {
-            return $this->listSites()->where('group_id', $groupId)->pluck('id')->all();
-        }
-
-        return $this->listSiteIds();
-    }
-
-    /**
-     * listSiteIdsInLocale
-     */
-    public function listSiteIdsInLocale($siteId = null)
-    {
-        $site = $siteId ? $this->getSiteFromId($siteId) : $this->getSiteFromContext();
-
-        if ($localeCode = $site?->hard_locale) {
-            return $this->listSites()->where('locale', $localeCode)->pluck('id')->all();
-        }
-
-        return [];
-    }
-
-    /**
      * getSiteIdFromContext
      * @return int|null
      */
@@ -145,13 +117,5 @@ trait HasSiteContext
                 $this->broadcastSiteChange($previousId);
             }
         }
-    }
-
-    /**
-     * @deprecated
-     */
-    public function listSiteIdsInContext()
-    {
-        return $this->listSiteIdsInGroup();
     }
 }

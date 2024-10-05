@@ -1,10 +1,12 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace OFFLINE\Mall\Models;
 
 use DB;
-use Model;
 use Illuminate\Support\Facades\Queue;
+use Model;
 use October\Rain\Database\Traits\NestedTree;
 use October\Rain\Database\Traits\SoftDelete;
 use October\Rain\Database\Traits\Validation;
@@ -33,20 +35,37 @@ class Category extends Model
      * @var string
      */
     public const MAP_CACHE_KEY = 'oc-mall.categories.map';
+
     /**
      * Cache key to store the category tree.
      * @var string
      */
     public const TREE_CACHE_KEY = 'oc-mall.categories.tree';
+
     /**
      * This locale is used if RainLab.Translate is not available.
      * @var string
      */
     public const DEFAULT_LOCALE = 'default';
 
-    protected $dates = [
-        'deleted_at',
+    /**
+     * Implement behaviors for this model.
+     * @var array
+     */
+    public $implement = [
+        '@RainLab.Translate.Behaviors.TranslatableModel',
     ];
+
+    /**
+     * The table associated with this model.
+     * @var string
+     */
+    public $table = 'offline_mall_categories';
+
+    /**
+     * The translatable attributes of this model.
+     * @var array
+     */
     public $translatable = [
         'name',
         ['slug', 'index' => true],
@@ -55,13 +74,20 @@ class Category extends Model
         'description',
         'description_short',
     ];
-    public $implement = [
-        '@RainLab.Translate.Behaviors.TranslatableModel',
-    ];
+
+    /**
+     * The validation rules for the single attributes.
+     * @var array
+     */
     public $rules = [
         'name' => 'required',
         'slug' => ['required', 'regex:/^[a-z0-9\/\:_\-\*\[\]\+\?\|]*$/i'],
     ];
+
+    /**
+     * The attributes that are mass assignable.
+     * @var array<string>
+     */
     public $fillable = [
         'name',
         'slug',
@@ -76,11 +102,29 @@ class Category extends Model
         'sort_order',
         'google_product_category_id',
     ];
+
+    /**
+     * The attributes that should be cast.
+     * @var array
+     */
     public $casts = [
         'inherit_property_groups'   => 'boolean',
         'inherit_review_categories' => 'boolean',
+        'deleted_at'                => 'datetime',
     ];
-    public $table = 'offline_mall_categories';
+
+    /**
+     * The attachOne relationships of this model.
+     * @var array
+     */
+    public $attachOne = [
+        'image' => File::class,
+    ];
+
+    /**
+     * The belongsToMany relationships of this model.
+     * @var array
+     */
     public $belongsToMany = [
         'products'          => [
             Product::class,
@@ -109,9 +153,6 @@ class Category extends Model
             'table' => 'offline_mall_category_review_category',
         ],
     ];
-    public $attachOne = [
-        'image' => File::class,
-    ];
 
     public function __construct(array $attributes = [])
     {
@@ -127,26 +168,38 @@ class Category extends Model
 
             // Fetch all child categories that inherit this categories properties.
             $categories = $this->scopeAllChildren(self::newQuery())
-                               ->where('inherit_property_groups', true)
-                               ->get()
-                               ->concat([$this]);
+                ->where('inherit_property_groups', true)
+                ->get()
+                ->concat([$this]);
 
             // Chunk the deletion and re-indexing since a lot of products and variants
             // might be affected by this change.
             Product::published()
-                   ->orderBy('id')
-                   ->whereHas('categories', function ($q) use ($categories) {
-                       $q->whereIn('category_id', $categories->pluck('id'));
-                   })
-                   ->with('variants')
-                   ->chunk(25, function ($products) use ($properties) {
-                       $data = [
-                           'properties' => $properties,
-                           'products'   => $products->pluck('id'),
-                           'variants'   => $products->flatMap->variants->pluck('id'),
-                       ];
-                       Queue::push(PropertyRemovalUpdate::class, $data);
-                   });
+                ->orderBy('id')
+                ->whereHas('categories', function ($q) use ($categories) {
+                    $q->whereIn('category_id', $categories->pluck('id'));
+                })
+                ->with('variants')
+                ->chunk(25, function ($products) use ($properties) {
+                    $data = [
+                        'properties' => $properties,
+                        'products'   => $products->pluck('id'),
+                        'variants'   => $products->flatMap->variants->pluck('id'),
+                    ];
+                    Queue::push(PropertyRemovalUpdate::class, $data);
+                });
+        });
+
+        $this->bindEvent('model.relation.attach', function ($relationName, $attachedIdList, $insertData) {
+            if ($relationName === 'property_groups') {
+                UniquePropertyValue::updateUsingCategory($this);
+            }
+        });
+
+        $this->bindEvent('model.relation.detach', function ($relationName, $detachedIdList) {
+            if ($relationName === 'property_groups') {
+                UniquePropertyValue::updateUsingCategory($this);
+            }
         });
     }
 
@@ -161,16 +214,20 @@ class Category extends Model
             if ($model->parent_id === null) {
                 $model->inherit_property_groups = false;
             }
+
             if ($model->parent_id === null) {
                 $model->inherit_review_categories = false;
             }
+
             if ($model->inherit_property_groups === true && $model->property_groups()->count() > 0) {
                 $model->property_groups()->detach();
             }
+
             if ($model->inherit_review_categories === true && $model->review_categories()->count() > 0) {
                 $model->review_categories()->detach();
             }
-            if ( ! $model->slug) {
+
+            if (! $model->slug) {
                 $model->slug = str_slug($model->name);
             }
         });
@@ -190,12 +247,15 @@ class Category extends Model
 
     /**
      * Don't show the inherit_* fields if this category i a root node.
+     * @param mixed $fields
+     * @param null|mixed $context
      */
     public function filterFields($fields, $context = null)
     {
         if (isset($fields->inherit_property_groups)) {
             $fields->inherit_property_groups->hidden = $this->parent_id === null;
         }
+
         if (isset($fields->inherit_review_categories)) {
             $fields->inherit_review_categories->hidden = $this->parent_id === null;
         }
@@ -215,9 +275,9 @@ class Category extends Model
         $items = $this->id ? Category::withoutSelf()->get() : Category::getAll();
 
         return [
-                // null key for "no parent"
-                null => '(' . trans('offline.mall::lang.category.no_parent') . ')',
-            ] + $items->listsNested('name', 'id');
+            // null key for "no parent"
+            null => '(' . trans('offline.mall::lang.category.no_parent') . ')',
+        ] + $items->listsNested('name', 'id');
     }
 
     /**
@@ -231,10 +291,10 @@ class Category extends Model
         $created = trans('offline.mall::lang.common.created_at');
 
         return [
-            'name asc'        => "${name}, A->Z",
-            'name desc'       => "${name}, Z->A",
-            'created_at asc'  => "${created}, A->Z",
-            'created_at desc' => "${created}, Z->A",
+            'name asc'        => "{$name}, A->Z",
+            'name desc'       => "{$name}, Z->A",
+            'created_at asc'  => "{$created}, A->Z",
+            'created_at desc' => "{$created}, Z->A",
         ];
     }
 
@@ -243,15 +303,18 @@ class Category extends Model
         return $this->inherit_review_categories ? $this->getInheritedReviewCategories() : $this->review_categories;
     }
 
+    public function afterSave(): void
+    {
+        UniquePropertyValue::updateUsingCategory($this);
+    }
+
     /**
      * Returns the review categories of the first parent
      * that does not inherit them.
      */
     public function getInheritedReviewCategories()
     {
-        $groups = $this->getParents()->first(function (Category $category) {
-            return ! $category->inherit_review_categories;
-        })->review_categories;
+        $groups = $this->getParents()->first(fn (Category $category) => ! $category->inherit_review_categories)->review_categories;
 
         return $groups ?? new Collection();
     }

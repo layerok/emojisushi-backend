@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace OFFLINE\Mall\Components;
 
@@ -17,57 +19,53 @@ use Symfony\Component\HttpFoundation\RedirectResponse;
 
 /**
  * The Checkout component orchestrates the checkout process.
- *
- * @SuppressWarnings(PHPMD.CouplingBetweenObjects)
  */
 class Checkout extends MallComponent
 {
     /**
      * The user's cart.
-     *
      * @var Cart
      */
     public $cart;
+
     /**
      * The error massage received from the PaymentProvider.
-     *
      * @var string
      */
     public $paymentError;
+
     /**
      * The currently active step.
-     *
      * @var string
      */
     public $step;
+
     /**
      * The order that was created during checkout.
-     *
      * @var Order
      */
     public $order;
+
     /**
      * The name of the my account page.
-     *
      * @var string
      */
     public $accountPage;
+
     /**
      * Google Tag Manager dataLayer code.
-     *
      * @var array
      */
     public $dataLayer;
+
     /**
      * Backend setting whether shipping should be before payment.
-     *
      * @var bool
      */
     public $shippingSelectionBeforePayment = false;
 
     /**
      * Component details.
-     *
      * @return array
      */
     public function componentDetails()
@@ -80,7 +78,6 @@ class Checkout extends MallComponent
 
     /**
      * Properties of this component.
-     *
      * @return array
      */
     public function defineProperties()
@@ -95,7 +92,6 @@ class Checkout extends MallComponent
 
     /**
      * Options array for the step dropdown.
-     *
      * @return array
      */
     public function getStepOptions()
@@ -112,9 +108,7 @@ class Checkout extends MallComponent
 
     /**
      * The component is initialized.
-     *
      * All child components get added.
-     *
      * @return void
      */
     public function init()
@@ -142,50 +136,9 @@ class Checkout extends MallComponent
     }
 
     /**
-     * This method sets all variables needed for this component to work.
-     *
-     * @return void
-     */
-    protected function setData()
-    {
-        $user = Auth::getUser();
-        if ( ! $user) {
-            return;
-        }
-
-        $cart = Cart::byUser($user);
-        if ( ! $cart->payment_method_id) {
-            $cart->setPaymentMethod(PaymentMethod::getDefault());
-        }
-        $this->setVar('cart', $cart);
-
-        $paymentMethod = PaymentMethod::find($cart->payment_method_id);
-        if ( ! $paymentMethod) {
-            $paymentMethod = PaymentMethod::getDefault();
-            $cart->setPaymentMethod($paymentMethod);
-        }
-
-        $this->setVar('paymentMethod', $paymentMethod);
-        $this->setVar('step', $this->property('step'));
-        $this->setVar('accountPage', GeneralSettings::get('account_page'));
-        $this->setVar(
-            'shippingSelectionBeforePayment',
-            GeneralSettings::get('shipping_selection_before_payment', false)
-        );
-
-        if ($orderId = request()->get('order')) {
-            $orderId = $this->decode($orderId);
-            $this->setVar('order', Order::byCustomer($user->customer)->find($orderId));
-        }
-
-        $this->setVar('dataLayer', $this->handleDataLayer());
-    }
-
-    /**
      * The component is executed.
-     *
-     * @return RedirectResponse|void
      * @throws \Cms\Classes\CmsException
+     * @return RedirectResponse|void
      */
     public function onRun()
     {
@@ -197,7 +150,8 @@ class Checkout extends MallComponent
         // If no step is provided or the step is invalid, redirect the user to
         // the payment method selection screen.
         $step = $this->property('step');
-        if ( ! $step || ! array_key_exists($step, $this->getStepOptions())) {
+
+        if (! $step || ! array_key_exists($step, $this->getStepOptions())) {
             $url = $this->stepUrl($this->shippingSelectionBeforePayment ? 'shipping' : 'payment');
 
             return redirect()->to($url);
@@ -212,10 +166,9 @@ class Checkout extends MallComponent
 
     /**
      * Handle the checkout process.
-     *
-     * @return \Symfony\Component\HttpFoundation\Response
      * @throws ValidationException
      * @throws \Cms\Classes\CmsException
+     * @return \Symfony\Component\HttpFoundation\Response
      */
     public function onCheckout()
     {
@@ -234,8 +187,8 @@ class Checkout extends MallComponent
             $paymentData = [];
         }
 
-        $paymentMethod = PaymentMethod::findOrFail($this->cart->payment_method_id);
-
+        $paymentMethod = PaymentMethod::where('id', $this->cart->payment_method_id)->firstOrFail();
+        
         // Grab the PaymentGateway from the Service Container.
         $gateway = app(PaymentGateway::class);
         $gateway->init($paymentMethod, $paymentData);
@@ -254,23 +207,9 @@ class Checkout extends MallComponent
     }
 
     /**
-     * The user was redirected back to the store from an
-     * external payment service.
-     *
-     * @param string $type
-     *
-     * @return \Illuminate\Http\RedirectResponse
-     * @throws \Cms\Classes\CmsException
-     */
-    protected function handleOffSiteReturn($type)
-    {
-        return (new PaymentRedirector($this->page->page->fileName))->handleOffSiteReturn($type);
-    }
-
-    /**
      * Return the URL for a specific checkout step.
      *
-     * @param       $step
+     * @param $step
      * @param array $params
      *
      * @return string
@@ -278,6 +217,7 @@ class Checkout extends MallComponent
     public function stepUrl($step, $params = [])
     {
         $via = false;
+
         if (isset($params['via'])) {
             $via = array_pull($params, 'via');
         }
@@ -287,11 +227,96 @@ class Checkout extends MallComponent
             array_merge($params, ['step' => $step])
         );
 
-        if ( ! $via) {
+        if (! $via) {
             return $url;
         }
 
         return $url . '?' . http_build_query(['via' => $via]);
+    }
+
+    /**
+     * This method sets all variables needed for this component to work.
+     * @return void
+     */
+    protected function setData()
+    {
+        $user = Auth::user();
+
+        if (! $user) {
+            return;
+        }
+
+        $cart = Cart::byUser($user);
+
+        if (! $cart->payment_method_id) {
+            $cart->setPaymentMethod(PaymentMethod::getDefault());
+        }
+        $this->setVar('cart', $cart);
+
+        $paymentMethod = PaymentMethod::where('id', $cart->payment_method_id)->first();
+
+        if (! $paymentMethod) {
+            $paymentMethod = PaymentMethod::getDefault();
+            $cart->setPaymentMethod($paymentMethod);
+        }
+
+        $this->setVar('paymentMethod', $paymentMethod);
+        $this->setVar('step', $this->property('step'));
+        $this->setVar('accountPage', GeneralSettings::get('account_page'));
+        $this->setVar(
+            'shippingSelectionBeforePayment',
+            GeneralSettings::get('shipping_selection_before_payment', false)
+        );
+
+        if ($orderId = request()->get('order')) {
+            $orderId = $this->decode($orderId);
+            $this->setVar('order', Order::byCustomer($user->customer)->where('id', $orderId)->first());
+        }
+
+        $this->setVar('dataLayer', $this->handleDataLayer());
+    }
+
+    /**
+     * The user was redirected back to the store from an
+     * external payment service.
+     *
+     * @param string $type
+     *
+     * @throws \Cms\Classes\CmsException
+     * @return \Illuminate\Http\RedirectResponse
+     */
+    protected function handleOffSiteReturn($type)
+    {
+        return (new PaymentRedirector($this->page->page->fileName))->handleOffSiteReturn($type);
+    }
+
+    protected function getDataLayerProductArray($item)
+    {
+        $name    = $item->product->name;
+        $variant = optional($item->variant)->name;
+        $price   = $item->total_post_taxes ?? $item->price()->integer;
+
+        return [
+            'id'       => $item->prefixedId,
+            'name'     => $name,
+            'price'    => (string)round($price / 100, 2),
+            'brand'    => optional($item->product->brand)->name ?? array_get($item->brand, 'name'),
+            'category' => $item->product->categories->first()->name,
+            'variant'  => $variant,
+            'quantity' => $item->quantity,
+        ];
+    }
+
+    protected function getDataLayerCoupon()
+    {
+        $coupon  = null;
+        $coupons = $this->order->discounts ?? [];
+
+        if (count($coupons)) {
+            $coupon = implode(',', array_map(fn ($coupon) => array_get($coupon, 'code'), $coupons));
+        }
+
+        return $coupon;
     }
 
     /**
@@ -301,18 +326,15 @@ class Checkout extends MallComponent
     {
         $isCheckout = request()->get('flow') === 'checkout';
 
-        if ( ! $this->page->layout->hasComponent('enhancedEcommerceAnalytics')) {
+        if (! $this->page->layout->hasComponent('enhancedEcommerceAnalytics')) {
             return;
         }
 
         $useModel = $this->step === 'done' ? $this->order : $this->cart;
-
         $data = [
             'event'     => 'checkout',
             'ecommerce' => [
-                'products' => $useModel->products->map(function ($item, $index) {
-                    return $this->getDataLayerProductArray($item);
-                }),
+                'products' => $useModel->products->map(fn ($item, $index) => $this->getDataLayerProductArray($item)),
                 'checkout' => [
                     'actionField' => [],
                 ],
@@ -346,36 +368,5 @@ class Checkout extends MallComponent
         }
 
         return $data;
-    }
-
-    protected function getDataLayerProductArray($item)
-    {
-        $name    = $item->product->name;
-        $variant = optional($item->variant)->name;
-        $price   = $item->total_post_taxes ?? $item->price()->integer;
-
-        return [
-            'id'       => $item->prefixedId,
-            'name'     => $name,
-            'price'    => (string)round($price / 100, 2),
-            'brand'    => optional($item->product->brand)->name ?? array_get($item->brand, 'name'),
-            'category' => $item->product->categories->first()->name,
-            'variant'  => $variant,
-            'quantity' => $item->quantity,
-        ];
-    }
-
-    protected function getDataLayerCoupon()
-    {
-        $coupon  = null;
-        $coupons = $this->order->discounts ?? [];
-
-        if (count($coupons)) {
-            $coupon = implode(',', array_map(function ($coupon) {
-                return array_get($coupon, 'code');
-            }, $coupons));
-        }
-
-        return $coupon;
     }
 }

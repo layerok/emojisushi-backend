@@ -1571,9 +1571,9 @@ class MediaManager extends WidgetBase
 
             // File name contains non-latin characters, attempt to slug the value
             $autoRename = Config::get('media.auto_rename') === 'slug';
-            if (!$this->validateFileName($fileName) || $autoRename) {
+            if ($autoRename || !$this->validateFileName($fileName)) {
                 $fileNameClean = $this->slugFileName(File::name($fileName));
-                $fileName = $fileNameClean . '.' . $extension;
+                $fileName = "{$fileNameClean}.{$extension}";
             }
 
             // Check for unsafe file extensions
@@ -1649,16 +1649,16 @@ class MediaManager extends WidgetBase
 
     /**
      * validateFileName validates a proposed media item file name.
-     * @param string
+     * @param string $name
      * @return bool
      */
-    protected function validateFileName($name)
+    protected function validateFileName(string $name): bool
     {
-        if (!preg_match('/^[\w@\.\s_\-]+$/iu', $name)) {
+        if (!preg_match('/^[\w@.\s_\-]+$/iu', $name)) {
             return false;
         }
 
-        if (strpos($name, '..') !== false) {
+        if (str_contains($name, '..')) {
             return false;
         }
 
@@ -1689,13 +1689,16 @@ class MediaManager extends WidgetBase
      * @param string $name
      * @return string
      */
-    protected function slugFileName($name)
+    protected function slugFileName(string $name): string
     {
         $title = Str::ascii($name);
 
         // Convert all dashes/underscores into separator
         $flip = $separator = '-';
         $title = preg_replace('!['.preg_quote($flip).']+!u', $separator, $title);
+
+        // Replace all underscores with the separator
+        $title = preg_replace('!['.preg_quote('_').']+!u', $separator, $title);
 
         // Remove all characters that are not the separator, letters, numbers, whitespace or @.
         $title = preg_replace('![^'.preg_quote($separator).'\pL\pN\s@]+!u', '', mb_strtolower($title));

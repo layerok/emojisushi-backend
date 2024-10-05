@@ -1,5 +1,6 @@
 <?php namespace System\Console;
 
+use System as SystemHelper;
 use System\Helpers\Cache as CacheHelper;
 use October\Rain\Composer\Manager as ComposerManager;
 use Symfony\Component\Console\Input\InputOption;
@@ -39,7 +40,7 @@ class PluginCheck extends Command
     protected function installRequiredPlugins()
     {
         $pluginRequire = \System\Classes\PluginManager::instance()->findMissingDependencies();
-        $themeRequire = \Cms\Classes\ThemeManager::instance()->findMissingDependencies();
+        $themeRequire = SystemHelper::hasModule('Cms') ? \Cms\Classes\ThemeManager::instance()->findMissingDependencies() : [];
 
         $deps = array_unique(array_merge($pluginRequire, $themeRequire));
 

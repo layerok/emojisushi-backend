@@ -29,14 +29,20 @@ class TagListField extends FallbackField
      */
     public function defineListColumn(ListElement $list, $context = null)
     {
-        if (is_array($this->column)) {
-            $list->defineColumn($this->fieldName, $this->label)
-                ->displayAs('selectable')
-                ->shortLabel($this->shortLabel)
-                ->options($this->options)
-                ->useConfig($this->column ?: [])
-            ;
+        if (!is_array($this->column)) {
+            return;
         }
+
+        $column = $list->defineColumn($this->fieldName, $this->label)->displayAs('selectable');
+
+        $this->transferConfig($column, [
+            'options',
+            'optionsPreset',
+            'optionsMethod',
+            'shortLabel'
+        ]);
+
+        $column->useConfig($this->column);
     }
 
     /**
@@ -44,20 +50,27 @@ class TagListField extends FallbackField
      */
     public function defineFilterScope(FilterElement $filter, $context = null)
     {
-        if (is_array($this->scope)) {
-            // @deprecated move to the filter class. detect list array and combine there (v4)
-            $options = $this->options;
-            if ($options && !$this->useKey) {
-                $options = array_combine($this->options, $this->options);
-            }
-
-            $filter->defineScope($this->fieldName, $this->label)
-                ->displayAs('group')
-                ->shortLabel($this->shortLabel)
-                ->options($options)
-                ->useConfig($this->scope ?: [])
-            ;
+        if (!is_array($this->scope)) {
+            return;
         }
+
+        $scope = $filter->defineScope($this->fieldName, $this->label)->displayAs('group');
+
+        // @deprecated move to the filter class. detect list array and combine there (v4)
+        $options = $this->options;
+        if ($options && !$this->useKey) {
+            $options = array_combine($this->options, $this->options);
+        }
+        $scope->options($options);
+
+        $this->transferConfig($scope, [
+            // 'options',
+            'optionsPreset',
+            'optionsMethod',
+            'shortLabel'
+        ]);
+
+        $scope->useConfig($this->scope);
     }
 
     /**

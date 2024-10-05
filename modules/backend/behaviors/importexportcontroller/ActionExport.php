@@ -149,7 +149,6 @@ trait ActionExport
         $widgetConfig = $this->makeConfig('~/modules/backend/behaviors/importexportcontroller/partials/fields_export.yaml');
         $widgetConfig->model = $this->exportGetModel();
         $widgetConfig->alias = 'exportUploadForm';
-        $widgetConfig->useModelFields = false;
 
         $widget = $this->makeWidget(\Backend\Widgets\Form::class, $widgetConfig);
 

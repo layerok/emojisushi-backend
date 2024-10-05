@@ -29,8 +29,8 @@ oc.registerControl('pagefinder', class extends oc.ControlBase {
         }
 
         oc.request(this.element, this.config.refreshHandler, {
-            afterUpdate: function() {
-                $(this.$dataLocker).trigger('change');
+            afterUpdate: () => {
+                $(this.config.dataLocker).trigger('change');
             }
         });
     }

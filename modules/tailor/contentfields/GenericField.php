@@ -33,12 +33,15 @@ class GenericField extends ContentFieldBase
 
         $column = $list->defineColumn($this->fieldName, $this->label)->displayAs($displayAs);
 
-        if ($this->options !== null) {
-            $column->options($this->options);
-        }
+        $this->transferConfig($column, [
+            'options',
+            'optionsPreset',
+            'optionsMethod',
+            'shortLabel'
+        ]);
 
-        if ($this->shortLabel !== null) {
-            $column->shortLabel($this->shortLabel);
+        if ($this->isColumnDefaultSearchable()) {
+            $column->searchable();
         }
 
         if (is_array($this->column)) {
@@ -61,13 +64,12 @@ class GenericField extends ContentFieldBase
 
         $scope = $filter->defineScope($this->fieldName, $this->label)->displayAs($displayAs);
 
-        if ($this->options !== null) {
-            $scope->options($this->options);
-        }
-
-        if ($this->shortLabel !== null) {
-            $scope->shortLabel($this->shortLabel);
-        }
+        $this->transferConfig($scope, [
+            'options',
+            'optionsPreset',
+            'optionsMethod',
+            'shortLabel'
+        ]);
 
         if (is_array($this->scope)) {
             $scope->useConfig($this->scope);
@@ -109,7 +111,7 @@ class GenericField extends ContentFieldBase
     }
 
     /**
-     * getDefaultColumnDisplayType
+     * getDefaultScopeDisplayType
      */
     protected function getDefaultScopeDisplayType()
     {
@@ -145,9 +147,6 @@ class GenericField extends ContentFieldBase
             case 'switch':
                 return 'switch';
 
-            case 'number':
-                return 'number';
-
             case 'textarea':
                 return 'summary';
 
@@ -171,6 +170,21 @@ class GenericField extends ContentFieldBase
     protected function isColumnDefaultInvisible()
     {
         switch ($this->type) {
+            case 'textarea':
+                return true;
+
+            default:
+                return false;
+        }
+    }
+
+    /**
+     * isColumnDefaultSearchable
+     */
+    protected function isColumnDefaultSearchable()
+    {
+        switch ($this->type) {
+            case 'text':
             case 'textarea':
                 return true;
 

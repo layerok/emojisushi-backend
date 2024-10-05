@@ -24,6 +24,7 @@ oc.Modules.register('backend.formwidget.repeater.accordion', function() {
         connect() {
             // Items
             var headSelect = this.selectorHeader;
+            this.$el = $(this.element);
             this.$el.on('click', headSelect, this.proxy(this.clickItemHeader));
             this.$el.on('click', headSelect + ' [data-repeater-expand]', this.proxy(this.toggleCollapse));
             this.$el.on('click', headSelect + ' [data-repeater-collapse]', this.proxy(this.toggleCollapse));
@@ -126,6 +127,10 @@ oc.Modules.register('backend.formwidget.repeater.accordion', function() {
             if (!this.config.itemsExpanded) {
                 this.collapseAll();
             }
+        }
+
+        eventOnDuplicateItem($fromItem) {
+            this.eventOnAddItem();
         }
 
         eventMenuFilter($item, $list) {

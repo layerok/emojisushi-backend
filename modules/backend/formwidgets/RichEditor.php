@@ -204,7 +204,10 @@ class RichEditor extends FormWidgetBase
             $config += $this->editorOptions;
         }
 
-        if (is_array($fileConfig = Config::get('editor.html_defaults.editor_options'))) {
+        if (
+            Config::get('editor.html_defaults.enabled', false) &&
+            is_array($fileConfig = Config::get('editor.html_defaults.editor_options'))
+        ) {
             $config += $fileConfig;
         }
 

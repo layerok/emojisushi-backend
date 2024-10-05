@@ -122,7 +122,7 @@ class ServiceProvider extends ModuleServiceProvider
      */
     protected function bootMediaViewEvents()
     {
-        Event::listen('cms.page.postProcessContent', function ($url, $page, &$content) {
+        Event::listen('cms.content.postProcessMarkup', function (&$content) {
             $content = MediaViewHelper::instance()->processHtml($content);
         });
     }

@@ -522,9 +522,11 @@ class Entries extends WildcardController
      */
     public function relationExtendManageWidget($widget, $field, $model)
     {
+        $model = $widget->getModel();
+
         // Entry type switching
-        if ($entryType = post('EntryRecord[content_group]')) {
-            $widget->getModel()->setBlueprintGroup($entryType);
+        if ($model instanceof \Tailor\Classes\BlueprintModel && ($entryType = post('EntryRecord[content_group]'))) {
+            $model->setBlueprintGroup($entryType);
         }
 
         // Disable adaptive fields

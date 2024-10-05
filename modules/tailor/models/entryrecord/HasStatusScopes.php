@@ -52,14 +52,22 @@ trait HasStatusScopes
      */
     public function getStatusCodeOptions()
     {
-        return [
+        $options =  [
             'published' => ['Published', 'var(--bs-green)'],
             'expired' => ['Expired', 'var(--bs-red)'],
             'scheduled' => ['Scheduled', 'var(--bs-indigo)'],
             'hidden' => ['Hidden', '#bdc3c7'],
-            'draft' => ['Draft', 'var(--bs-orange)'],
-            'deleted' => ['Deleted', '#536061']
         ];
+
+        if ($this->useDrafts()) {
+            $options += ['draft' => ['Draft', 'var(--bs-orange)']];
+        }
+
+        if ($this->isSoftDeleteEnabled()) {
+            $options += ['deleted' => ['Deleted', '#536061']];
+        }
+
+        return $options;
     }
 
     /**

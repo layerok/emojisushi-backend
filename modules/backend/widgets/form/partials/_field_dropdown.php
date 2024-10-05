@@ -3,7 +3,7 @@
     $useSearch = $field->getConfig('showSearch', true);
     $emptyOption = $field->getConfig('emptyOption', $field->placeholder);
     if ($emptyOption) {
-        $fieldOptions = ['' => $emptyOption] + $fieldOptions;
+        $fieldOptions = ['' => __($emptyOption)] + $fieldOptions;
     }
 ?>
 <!-- Dropdown -->

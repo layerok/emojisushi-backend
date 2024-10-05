@@ -40,6 +40,11 @@ class EntriesField extends FallbackField
     public $displayMode = 'recordfinder';
 
     /**
+     * @var array controller config for displayMode: controller
+     */
+    public $controller = [];
+
+    /**
      * @var mixed sourceCache of the source blueprint
      */
     protected $sourceCache;
@@ -68,6 +73,10 @@ class EntriesField extends FallbackField
 
         if (isset($config['displayMode'])) {
             $this->displayMode = (string) $config['displayMode'];
+        }
+
+        if (isset($config['controller'])) {
+            $this->controller = (array) $config['controller'];
         }
     }
 
@@ -171,7 +180,10 @@ class EntriesField extends FallbackField
     }
 
     /**
-     * defineModelRelationship
+     * defineModelRelationship for the direct relationship. These definitions
+     * rely on multisite modifying the relation definition.
+     *
+     * @see \October\Rain\Database\Traits\Multisite::defineMultisiteRelation
      */
     protected function defineModelRelationship($model)
     {
@@ -182,8 +194,7 @@ class EntriesField extends FallbackField
         if ($isSingular) {
             $model->belongsTo[$this->fieldName] = [
                 EntryRecord::class,
-                'key' => $this->getSingularKeyName(),
-                'otherKey' => $relatedMultisite ? 'site_root_id' : 'id'
+                'key' => $this->getSingularKeyName()
             ];
         }
         elseif ($isNested) {
@@ -195,20 +206,20 @@ class EntriesField extends FallbackField
             ];
         }
         else {
-            $parentMultisite = $model->getBlueprintDefinition()->useMultisite();
             $model->morphedByMany[$this->fieldName] = [
                 EntryRecord::class,
                 'table' => $model->getBlueprintDefinition()->getJoinTableName(),
                 'name' => $this->fieldName,
                 'relationClass' => CustomMultiJoinRelation::class,
-                'relatedKey' => $relatedMultisite ? 'site_root_id' : 'id',
-                'parentKey' => $parentMultisite ? 'site_root_id' : 'id'
+                'relatedKey' => $relatedMultisite ? 'site_root_id' : 'id'
             ];
         }
     }
 
     /**
-     * defineInverseModelRelationship
+     * defineInverseModelRelationship for the inverse relationship. These definitions
+     * do not rely on multisite via propagatable attribute. Inverse relations do not
+     * replicate and should be treated as read-only.
      */
     protected function defineInverseModelRelationship($model)
     {
@@ -218,32 +229,37 @@ class EntriesField extends FallbackField
         }
 
         $parentMultisite = $model->getBlueprintDefinition()->useMultisite();
+        $relatedMultisite = $this->getSourceBlueprint()->useMultisite();
+
         $isSingular = $this->maxItems === 1;
         $otherIsSingular = $otherField->maxItems === 1;
+        $otherIsPropagatable = $relatedMultisite && ($otherField->translatable === false || $otherField->propagatable === true);
 
         if ($isSingular) {
             $model->hasOne[$this->fieldName] = [
                 EntryRecord::class,
                 'key' => $otherField->getSingularKeyName(),
-                'otherKey' => $parentMultisite ? 'site_root_id' : 'id'
+                'otherKey' => $otherIsPropagatable ? 'site_root_id' : 'id',
+                'replicate' => false
             ];
         }
         elseif ($otherIsSingular) {
             $model->hasMany[$this->fieldName] = [
                 EntryRecord::class,
                 'key' => $otherField->getSingularKeyName(),
-                'otherKey' => $parentMultisite ? 'site_root_id' : 'id'
+                'otherKey' => $otherIsPropagatable ? 'site_root_id' : 'id',
+                'replicate' => false
             ];
         }
         else {
-            $relatedMultisite = $this->getSourceBlueprint()->useMultisite();
             $model->morphToMany[$this->fieldName] = [
                 EntryRecord::class,
                 'table' => $this->getSourceBlueprint()->getJoinTableName(),
                 'name' => $this->inverse,
                 'relationClass' => CustomMultiJoinRelation::class,
-                'relatedKey' => $relatedMultisite ? 'site_root_id' : 'id',
-                'parentKey' => $parentMultisite ? 'site_root_id' : 'id'
+                'relatedKey' => $otherIsPropagatable ? 'site_root_id' : 'id',
+                'parentKey' => $parentMultisite ? 'site_root_id' : 'id',
+                'replicate' => false
             ];
         }
     }
@@ -271,6 +287,9 @@ class EntriesField extends FallbackField
             'view' => [
                 'toolbarButtons' => $toolbarButtons,
                 'recordsPerPage' => $this->recordsPerPage,
+            ],
+            'manage' => [
+                'recordsPerPage' => $this->recordsPerPage,
             ]
         ];
 
@@ -283,6 +302,16 @@ class EntriesField extends FallbackField
 
         if ($this->span === 'adaptive') {
             $fieldConfig['externalToolbarAppState'] = 'toolbarExtensionPoint';
+        }
+
+        // Transfer custom configuration
+        $toTransfer = ['label', 'list', 'form', 'view', 'manage'];
+        foreach ($toTransfer as $transfer) {
+            if (isset($this->controller[$transfer])) {
+                $fieldConfig[$transfer] = is_array($this->controller[$transfer])
+                    ? array_merge($fieldConfig[$transfer], (array) $this->controller[$transfer])
+                    : $this->controller[$transfer];
+            }
         }
 
         $field->controller($fieldConfig);

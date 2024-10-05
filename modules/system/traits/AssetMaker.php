@@ -337,7 +337,7 @@ trait AssetMaker
             $assetPath = $this->assetPath;
         }
 
-        if (substr($fileName, 0, 1) == '/' || $assetPath === null) {
+        if ($assetPath === null || substr($fileName, 0, 1) == '/') {
             return $fileName;
         }
 
@@ -414,7 +414,7 @@ trait AssetMaker
             return $asset;
         }
 
-        if (substr($asset, 0, 1) == '/') {
+        if (substr($asset, 0, 1) === '/') {
             $asset = Url::asset($asset);
         }
 

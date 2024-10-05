@@ -65,6 +65,10 @@ class Locales
         // Sort locales alphabetically
         asort($locales);
 
+        foreach ($locales as $code => &$label) {
+            $label = "{$code} - {$label}";
+        }
+
         return $locales;
     }
 

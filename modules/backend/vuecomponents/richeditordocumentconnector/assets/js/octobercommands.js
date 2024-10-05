@@ -100,8 +100,8 @@ oc.Modules.register('backend.vuecomponents.richeditordocumentconnector.octoberco
                         $textarea.froalaEditor('selection.clear');
                     }
                 },
-                accept,
-                true
+                true,
+                accept
             );
         }
 

@@ -143,11 +143,12 @@ trait FieldProcessor
                 continue;
             }
 
-            // Defer the execution of option data collection
+            // If options are defined by config but are in an unusable state
             $fieldOptions = $field->optionsPreset
                 ? 'preset:' . $field->optionsPreset
                 : ($field->optionsMethod ?: $field->options);
 
+            // Defer the execution of option data collection
             $field->options(function () use ($field, $fieldOptions) {
                 return $field->getOptionsFromModel($this->model, $fieldOptions, $this->data);
             });

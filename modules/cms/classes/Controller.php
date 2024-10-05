@@ -534,7 +534,7 @@ class Controller
     }
 
     /**
-     * Post-processes page HTML code before it's sent to the client.
+     * postProcessResult post-processes page HTML code before it's sent to the client.
      * Note for pre-processing see cms.template.processTwigContent event.
      * @param \Cms\Classes\Page $page Specifies the current CMS page.
      * @param string $url Specifies the current URL.
@@ -545,12 +545,12 @@ class Controller
     {
         /**
          * @event cms.page.postProcessContent
-         * Provides opportunity to hook into the post-processing of page HTML code before being sent to the client. `$dataHolder` = {content: $htmlContent}
+         * Provides opportunity to hook into the post-processing of page HTML code before being sent to the client.
          *
          * Example usage:
          *
          *     Event::listen('cms.page.postProcessContent', function ((\Cms\Classes\Controller) $controller, (string) $url, (\Cms\Classes\Page) $page, (string) &$content) {
-         *         $content = str_replace('<a href=', '<a rel="nofollow" href=', $dataHolder->content);
+         *         $content = str_replace('<a href=', '<a rel="nofollow" href=', $content);
          *     });
          *
          * Or

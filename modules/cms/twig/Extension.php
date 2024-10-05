@@ -2,8 +2,10 @@
 
 use App;
 use Cms;
+use Flash;
 use Block;
 use Event;
+use Request;
 use Response;
 use Cms\Classes\PageManager;
 use Cms\Classes\Controller;
@@ -78,6 +80,7 @@ class Extension extends TwigExtension
             new TwigSimpleFunction('response', [$this, 'responseFunction'], []),
             new TwigSimpleFunction('redirect', [$this, 'redirectFunction'], []),
             new TwigSimpleFunction('abort', [$this, 'abortFunction'], []),
+            new TwigSimpleFunction('flash', [$this, 'flashFunction'], []),
         ];
     }
 
@@ -234,10 +237,32 @@ class Extension extends TwigExtension
     /**
      * ajaxHandlerFunction runs an ajax handler
      * @param string $name
+     * @param array|null $postVars
      */
-    public function ajaxHandlerFunction($name = '')
+    public function ajaxHandlerFunction($name = '', $postVars = null)
     {
+        if (is_array($postVars)) {
+            Request::merge($postVars);
+        }
+
         return $this->controller->runAjaxHandlerAsResponse($name);
+    }
+
+    /**
+     * flashFunction returns flash messages as an object
+     * @param string $type
+     */
+    public function flashFunction($type = null)
+    {
+        if ($type === 'all') {
+            return Flash::messages();
+        }
+
+        if ($type) {
+            return array_first(Flash::{$type}());
+        }
+
+        return Flash::all();
     }
 
     /**
@@ -336,23 +361,6 @@ class Extension extends TwigExtension
     }
 
     /**
-     * startBlock opens a layout block.
-     * @param string $name Specifies the block name
-     */
-    public function startBlock($name)
-    {
-        Block::startBlock($name);
-    }
-
-    /**
-     * setBlock sets a block value as a variable.
-     */
-    public function setBlock(string $name, $value)
-    {
-        Block::set($name, $value);
-    }
-
-    /**
      * displayBlock returns a layout block contents and removes the block.
      * @param string $name Specifies the block name
      * @param string $default The default placeholder contents.
@@ -387,10 +395,45 @@ class Extension extends TwigExtension
     }
 
     /**
-     * endBlock closes a layout block.
+     * setBlock sets a block name as a variable value.
+     */
+    public function setBlock(string $name, $value)
+    {
+        Block::set($name, $value);
+    }
+
+    /**
+     * yieldBlock yields the contents of a block by appending or overwriting,
+     * and storing its name alongside the content.
+     */
+    public function yieldBlock(string $name, $callable, $append = true)
+    {
+        $content = '';
+        foreach ($callable() as $value) {
+            $content .= $value;
+        }
+
+        if ($append) {
+            Block::append($name, $content);
+        }
+        else {
+            Block::set($name, $content);
+        }
+    }
+
+    /**
+     * @deprecated use yieldBlock
      */
     public function endBlock($append = true)
     {
         Block::endBlock($append);
+    }
+
+    /**
+     * @deprecated use yieldBlock
+     */
+    public function startBlock($name)
+    {
+        Block::startBlock($name);
     }
 }

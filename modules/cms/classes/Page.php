@@ -125,21 +125,6 @@ class Page extends CmsCompoundObject
     }
 
     /**
-     * url helper that makes a URL for a page in the active theme.
-     * @param mixed $page Specifies the Cms Page file name.
-     * @param array $params Route parameters to consider in the URL.
-     * @return string
-     */
-    public static function url($page, array $params = [])
-    {
-        // Reuse existing controller or create a new one, assuming that the method is
-        // called not during the front-end request processing.
-        $controller = Controller::getController() ?: new Controller;
-
-        return $controller->pageUrl($page, $params, true);
-    }
-
-    /**
      * getMenuTypeInfo handler for the pages.menuitem.getTypeInfo event.
      * Returns a menu item type information. The type information is returned as array
      * with the following elements:
@@ -227,5 +212,13 @@ class Page extends CmsCompoundObject
         }
 
         return $result;
+    }
+
+    /**
+     * @deprecated use \Cms::pageUrl(...)
+     */
+    public static function url($page, array $params = [])
+    {
+        return (Controller::getController() ?: new Controller)->pageUrl($page, $params, true);
     }
 }

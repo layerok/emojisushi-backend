@@ -20,6 +20,33 @@ trait HasEditSite
     protected $editSiteCache;
 
     /**
+     * applyEditSiteId
+     */
+    public function applyEditSiteId($id)
+    {
+        if ($site = $this->getSiteFromId($id)) {
+            $this->applyEditSite($site);
+        }
+    }
+
+    /**
+     * applyEditSite applies edit site configuration values to the application,
+     * typically used for backend requests.
+     */
+    public function applyEditSite(SiteDefinition $site)
+    {
+        if ($site->theme) {
+            Config::set('cms.edit_theme', $site->theme);
+        }
+
+        if ($site->is_prefixed) {
+            Cms::setUrlPrefix($site->route_prefix);
+        }
+
+        $this->setEditSite($site);
+    }
+
+    /**
      * getEditSite returns the edit theme
      */
     public function getEditSite()
@@ -46,11 +73,46 @@ trait HasEditSite
     }
 
     /**
-     * setEditSite
+     * hasAnyEditSite returns true if there are edit sites
      */
-    public function setEditSite($site)
+    public function getAnyEditSite()
     {
-        $this->setEditSiteId($site->id);
+        return $this->listEditEnabled()->isPrimary()->first()
+            ?: $this->listEditEnabled()->first();
+    }
+
+    /**
+     * hasAnyEditSite returns true if there are edit sites
+     */
+    public function hasAnyEditSite(): bool
+    {
+        return $this->listEditSites()->isEnabledEdit()->count() > 0;
+    }
+
+    /**
+     * hasMultiEditSite returns true if there are multiple sites for editing
+     */
+    public function hasMultiEditSite(): bool
+    {
+        return $this->listEditSites()->isEnabledEdit()->count() > 1;
+    }
+
+    /**
+     * listEditEnabled
+     */
+    public function listEditEnabled()
+    {
+        return $this->listEditSites()->isEnabledEdit();
+    }
+
+    /**
+     * listEditSites
+     */
+    public function listEditSites()
+    {
+        return $this->listSites()->filter(function($site) {
+            return $site->matchesRole(BackendAuth::getUser());
+        });
     }
 
     /**
@@ -79,60 +141,10 @@ trait HasEditSite
     }
 
     /**
-     * hasAnyEditSite returns true if there are edit sites
+     * setEditSite
      */
-    public function getAnyEditSite()
+    public function setEditSite($site)
     {
-        return $this->listEditEnabled()->where('is_primary', true)->first()
-            ?: $this->listEditEnabled()->first();
-    }
-
-    /**
-     * hasAnyEditSite returns true if there are edit sites
-     */
-    public function hasAnyEditSite(): bool
-    {
-        return $this->listEditSites()->where('is_enabled_edit', true)->count() > 0;
-    }
-
-    /**
-     * hasMultiEditSite returns true if there are multiple sites for editing
-     */
-    public function hasMultiEditSite(): bool
-    {
-        return $this->listEditSites()->where('is_enabled_edit', true)->count() > 1;
-    }
-
-    /**
-     * listEditEnabled
-     */
-    public function listEditEnabled()
-    {
-        return $this->listEditSites()->where('is_enabled_edit', true);
-    }
-
-    /**
-     * listEditSites
-     */
-    public function listEditSites()
-    {
-        return $this->listSites()->filter(function($site) {
-            return $site->matchesRole(BackendAuth::getUser());
-        });
-    }
-
-    /**
-     * applyEditSite applies edit site configuration values to the application,
-     * typically used for backend requests.
-     */
-    public function applyEditSite(SiteDefinition $site)
-    {
-        if ($site->theme) {
-            Config::set('cms.edit_theme', $site->theme);
-        }
-
-        if ($site->is_prefixed) {
-            Cms::setUrlPrefix($site->route_prefix);
-        }
+        $this->setEditSiteId($site->id);
     }
 }

@@ -92,7 +92,7 @@ class TagList extends FormWidgetBase
 
         $this->processMode();
 
-        $this->useOptions = $this->formField->options !== null;
+        $this->useOptions = $this->formField->hasOptions();
     }
 
     /**

@@ -13,7 +13,6 @@ use System\Classes\UiElement;
  * @method Button linkUrl(string $linkUrl) linkUrl will use an anchor button
  * @method Button cssClass(string $cssClass) cssClass for the button
  * @method Button replaceCssClass(string $replaceCssClass) replaceCssClass defaults for the button
- * @method Button hotkey(...$hotkey) hotkey patterns
  * @method Button type(string $type) type of button
  * @method Button attributes(array $attributes) attributes in HTML
  * @method Button primary(bool $primary) primary button
@@ -169,6 +168,15 @@ class Button extends UiElement
         $css[] = $this->cssClass;
 
         return implode(' ', $css);
+    }
+
+    /**
+     * hotkey sets a hotkey pattern
+     */
+    public function hotkey(...$hotkeys): static
+    {
+        $this->config['hotkey'] = $hotkeys;
+        return $this;
     }
 
     /**

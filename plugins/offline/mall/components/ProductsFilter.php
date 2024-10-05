@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace OFFLINE\Mall\Components;
 
@@ -17,8 +19,6 @@ use OFFLINE\Mall\Models\Category;
 use OFFLINE\Mall\Models\Currency;
 use OFFLINE\Mall\Models\Property;
 use OFFLINE\Mall\Models\PropertyGroup;
-use Session;
-use Validator;
 
 /**
  * The ProductsFilter component is used to filter items of
@@ -35,120 +35,140 @@ class ProductsFilter extends MallComponent
      * @var Category
      */
     public $category;
+
     /**
      * A Collection of all subcategories.
      *
      * @var Collection
      */
     public $categories;
+
     /**
      * All items in this category.
      *
      * @var Collection<Product|Variant>
      */
     public $items;
+
     /**
      * All available property values.
      *
      * @var Collection
      */
     public $values;
+
     /**
      * All available property filters.
      *
      * @var Collection
      */
     public $propertyGroups;
+
     /**
      * A collection of available Property models.
      *
      * @var Collection
      */
     public $props;
+
     /**
      * All active Filters.
      *
      * @var Collection
      */
     public $filter;
+
     /**
      * Query string representation of the active filter.
      *
      * @var string
      */
     public $queryString;
+
     /**
      * Show the price range filter.
      *
      * @var boolean
      */
     public $showPriceFilter;
+
     /**
      * Show the brand filter.
      *
      * @var boolean
      */
     public $showBrandFilter;
+
     /**
      * Show the on sale filter.
      *
      * @var boolean
      */
     public $showOnSaleFilter;
+
     /**
      * All available brands.
      *
      * @var Collection<Brand>
      */
     public $brands;
+
     /**
      * Include all items from child categories.
      *
      * @var boolean
      */
     public $includeChildren;
+
     /**
      * Also filter Variant properties.
      *
      * @var boolean
      */
     public $includeVariants;
+
     /**
      * The min and max values of the price range.
      *
      * @var array
      */
     public $priceRange;
+
     /**
      * The active Currency.
      *
      * @var Currency
      */
     public $currency;
+
     /**
      * The active sort order.
      *
      * @var string
      */
     public $sortOrder;
+
     /**
      * All available sort Options.
      *
      * @var array
      */
     public $sortOptions;
+
     /**
      * Sort order of the products component.
      *
      * @var string
      */
     public $productsComponentSort;
+
     /**
      * Category of the products component.
      *
      * @var Category
      */
     public $productsComponentCategory;
+    
     /**
      * An instance of the money formatter class.
      *
@@ -237,59 +257,10 @@ class ProductsFilter extends MallComponent
     public function init()
     {
         if ((bool)$this->property('includeSliderAssets')) {
-            $this->addJs('https://cdnjs.cloudflare.com/ajax/libs/noUiSlider/11.0.3/nouislider.min.js');
-            $this->addCss('https://cdnjs.cloudflare.com/ajax/libs/noUiSlider/11.0.3/nouislider.min.css');
+            $this->addJs('assets/js/nouislider.min.js');
+            $this->addCss('assets/css/nouislider.min.css');
         }
         $this->money = app(Money::class);
-    }
-
-    /**
-     * This method sets all variables needed for this component to work.
-     *
-     * @return void
-     */
-    protected function setData()
-    {
-        $this->setVar('currency', Currency::activeCurrency());
-        $this->setVar('showPriceFilter', (bool)$this->property('showPriceFilter'));
-        $this->setVar('showBrandFilter', (bool)$this->property('showBrandFilter'));
-        $this->setVar('showOnSaleFilter', (bool)$this->property('showOnSaleFilter'));
-
-        // The includeChildren and includeVariants properties are set by the
-        // products component. If the user specifies explicit values via the
-        // component props we can use these instead.
-        $includeChildren = $this->property('includeChildren');
-        if ($includeChildren !== null) {
-            $this->setVar('includeChildren', (bool)$includeChildren);
-        }
-        $includeVariants = $this->property('includeVariants');
-        if ($includeVariants !== null) {
-            $this->setVar('includeVariants', (bool)$includeVariants);
-        }
-
-        $this->setVar('category', $this->getCategory());
-
-        $categories = collect([$this->category]);
-        if ($this->includeChildren) {
-            $categories = $this->category->getAllChildrenAndSelf();
-        }
-        $this->setVar('categories', $categories);
-
-        if ($this->showPriceFilter) {
-            $this->setPriceRange();
-        }
-        if ($this->showBrandFilter) {
-            $this->setBrands();
-        }
-
-        $this->setVar('propertyGroups', $this->getPropertyGroups());
-        $this->setProps();
-
-        $nullOption = [null => trans('offline.mall::frontend.select')];
-
-        $this->setVar('filter', $this->getFilter());
-        $this->setVar('sortOrder', $this->getSortOrder());
-        $this->setVar('sortOptions', array_merge($nullOption, SortOrder::options(true)));
     }
 
     /**
@@ -316,6 +287,7 @@ class ProductsFilter extends MallComponent
         $sortOrder = $this->getSortOrder();
 
         $data = collect(post('filter', []));
+
         if ($data->count() < 1) {
             return $this->replaceFilter(collect([]), $sortOrder);
         }
@@ -323,6 +295,7 @@ class ProductsFilter extends MallComponent
         $properties = Property::whereIn('slug', $data->keys())->get();
         $filter     = $data->mapWithKeys(function ($values, $id) use ($properties) {
             $property = Filter::isSpecialProperty($id) ? $id : $properties->where('slug', $id)->first();
+
             if (is_array($values)
                 && array_key_exists('min', $values)
                 && array_key_exists('max', $values)) {
@@ -332,7 +305,8 @@ class ProductsFilter extends MallComponent
 
                 return [
                     $id => new RangeFilter(
-                        $property, [
+                        $property,
+                        [
                             $values['min'] ?? null,
                             $values['max'] ?? null,
                         ]
@@ -341,12 +315,89 @@ class ProductsFilter extends MallComponent
             }
 
             // Remove empty set values
-            $values = array_filter(array_wrap($values));
+            $values = array_filter(array_wrap($values), 'strlen');
 
             return count($values) ? [$id => new SetFilter($property, $values)] : [];
         });
 
         return $this->replaceFilter($filter, $sortOrder);
+    }
+
+    /**
+     * Get the min value of a Collection.
+     *
+     * @param $values
+     *
+     * @return mixed
+     */
+    public function getMinValue(Collection $values)
+    {
+        return $values->min('value');
+    }
+
+    /**
+     * Get the max value of a Collection.
+     *
+     * @param $values
+     *
+     * @return mixed
+     */
+    public function getMaxValue(Collection $values)
+    {
+        return $values->max('value');
+    }
+
+    /**
+     * This method sets all variables needed for this component to work.
+     *
+     * @return void
+     */
+    protected function setData()
+    {
+        $this->setVar('currency', Currency::activeCurrency());
+        $this->setVar('showPriceFilter', (bool)$this->property('showPriceFilter'));
+        $this->setVar('showBrandFilter', (bool)$this->property('showBrandFilter'));
+        $this->setVar('showOnSaleFilter', (bool)$this->property('showOnSaleFilter'));
+
+        // The includeChildren and includeVariants properties are set by the
+        // products component. If the user specifies explicit values via the
+        // component props we can use these instead.
+        $includeChildren = $this->property('includeChildren');
+
+        if ($includeChildren !== null) {
+            $this->setVar('includeChildren', (bool)$includeChildren);
+        }
+        $includeVariants = $this->property('includeVariants');
+
+        if ($includeVariants !== null) {
+            $this->setVar('includeVariants', (bool)$includeVariants);
+        }
+
+        $this->setVar('category', $this->getCategory());
+
+        $categories = collect([$this->category]);
+
+        if ($this->includeChildren) {
+            $categories = $this->category->getAllChildrenAndSelf();
+        }
+        $this->setVar('categories', $categories);
+
+        if ($this->showPriceFilter) {
+            $this->setPriceRange();
+        }
+
+        if ($this->showBrandFilter) {
+            $this->setBrands();
+        }
+
+        $this->setVar('propertyGroups', $this->getPropertyGroups());
+        $this->setProps();
+
+        $nullOption = [null => trans('offline.mall::frontend.select')];
+
+        $this->setVar('filter', $this->getFilter());
+        $this->setVar('sortOrder', $this->getSortOrder());
+        $this->setVar('sortOptions', array_merge($nullOption, SortOrder::options(true)));
     }
 
     /**
@@ -373,7 +424,6 @@ class ProductsFilter extends MallComponent
             $range->max = $this->lower($currencyRange->max, $calculatedMax);
         }
 
-
         $min = $this->money->round($range->min, $this->currency->decimals);
         $max = $this->money->round($range->max, $this->currency->decimals);
 
@@ -387,18 +437,20 @@ class ProductsFilter extends MallComponent
      */
     protected function setBrands()
     {
-        $brands = \DB::table('offline_mall_products')
-                     ->whereIn('offline_mall_category_product.category_id', $this->categories->pluck('id'))
-                     ->select('offline_mall_brands.*')
-                     ->distinct()
-                     ->join('offline_mall_brands', 'offline_mall_products.brand_id', '=', 'offline_mall_brands.id')
-                     ->join(
-                         'offline_mall_category_product',
-                         'offline_mall_products.id', '=', 'offline_mall_category_product.product_id'
-                     )
-                     ->orderBy('offline_mall_brands.name')
-                     ->get()
-                     ->toArray();
+        $brands = DB::table('offline_mall_products')
+            ->whereIn('offline_mall_category_product.category_id', $this->categories->pluck('id'))
+            ->select('offline_mall_brands.*')
+            ->distinct()
+            ->join('offline_mall_brands', 'offline_mall_products.brand_id', '=', 'offline_mall_brands.id')
+            ->join(
+                'offline_mall_category_product',
+                'offline_mall_products.id',
+                '=',
+                'offline_mall_category_product.product_id'
+            )
+            ->orderBy('offline_mall_brands.name')
+            ->get()
+            ->toArray();
 
         $this->setVar('brands', Brand::hydrate($brands));
     }
@@ -414,9 +466,7 @@ class ProductsFilter extends MallComponent
             ->load('property_groups.translations')
             ->inherited_property_groups
             ->load('filterable_properties.translations')
-            ->reject(function (PropertyGroup $group) {
-                return $group->filterable_properties->count() < 1;
-            })->sortBy('pivot.relation_sort_order');
+            ->reject(fn (PropertyGroup $group) => $group->filterable_properties->count() < 1)->sortBy('pivot.relation_sort_order');
     }
 
     /**
@@ -432,16 +482,12 @@ class ProductsFilter extends MallComponent
         $props        = $this->propertyGroups->flatMap->filterable_properties->unique();
 
         // Remove any property that has no available filters.
-        $this->props = $props->filter(function (Property $property) use ($valueKeys) {
-            return $valueKeys->contains($property->id);
-        });
+        $this->props = $props->filter(fn (Property $property) => $valueKeys->contains($property->id));
 
         $groupKeys = $this->props->pluck('pivot.property_group_id');
 
         // Remove any property group that has no available properties.
-        $this->propertyGroups = $this->propertyGroups->filter(function (PropertyGroup $group) use ($groupKeys) {
-            return $groupKeys->contains($group->id);
-        });
+        $this->propertyGroups = $this->propertyGroups->filter(fn (PropertyGroup $group) => $groupKeys->contains($group->id));
     }
 
     /**
@@ -487,7 +533,7 @@ class ProductsFilter extends MallComponent
      * Replace the currently active filter query string.
      *
      * @param Collection $filter
-     * @param            $sortOrder
+     * @param $sortOrder
      *
      * @return array
      */
@@ -502,30 +548,6 @@ class ProductsFilter extends MallComponent
             'sort'        => $sortOrder,
             'queryString' => (new QueryString())->serialize($filter, $sortOrder),
         ];
-    }
-
-    /**
-     * Get the min value of a Collection.
-     *
-     * @param $values
-     *
-     * @return mixed
-     */
-    public function getMinValue(Collection $values)
-    {
-        return $values->min('value');
-    }
-
-    /**
-     * Get the max value of a Collection.
-     *
-     * @param $values
-     *
-     * @return mixed
-     */
-    public function getMaxValue(Collection $values)
-    {
-        return $values->max('value');
     }
 
     /**

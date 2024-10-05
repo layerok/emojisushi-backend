@@ -24,6 +24,17 @@ trait HasOverrides
      */
     public function formBeforeSave($model)
     {
+        /**
+         * @event backend.form.beforeSave
+         * Called before the form model is saved
+         *
+         * Example usage:
+         *
+         *     Event::listen('backend.form.beforeSave', function ((\Backend\Classes\Controller) $controller, (\Model) $model) {
+         *         $model->slug = Str::slug($model->name);
+         *     });
+         *
+         */
     }
 
     /**
@@ -32,6 +43,17 @@ trait HasOverrides
      */
     public function formAfterSave($model)
     {
+        /**
+         * @event backend.form.afterSave
+         * Called after the form model is saved
+         *
+         * Example usage:
+         *
+         *     Event::listen('backend.form.afterSave', function ((\Backend\Classes\Controller) $controller, (\Model) $model) {
+         *         $model->slug = Str::slug($model->name);
+         *     });
+         *
+         */
     }
 
     /**
@@ -40,6 +62,17 @@ trait HasOverrides
      */
     public function formBeforeCreate($model)
     {
+        /**
+         * @event backend.form.beforeCreate
+         * Called before the form model is created
+         *
+         * Example usage:
+         *
+         *     Event::listen('backend.form.beforeCreate', function ((\Backend\Classes\Controller) $controller, (\Model) $model) {
+         *         $model->slug = Str::slug($model->name);
+         *     });
+         *
+         */
     }
 
     /**
@@ -48,6 +81,17 @@ trait HasOverrides
      */
     public function formAfterCreate($model)
     {
+        /**
+         * @event backend.form.afterCreate
+         * Called after the form model is created
+         *
+         * Example usage:
+         *
+         *     Event::listen('backend.form.afterCreate', function ((\Backend\Classes\Controller) $controller, (\Model) $model) {
+         *         $model->slug = Str::slug($model->name);
+         *     });
+         *
+         */
     }
 
     /**
@@ -56,6 +100,17 @@ trait HasOverrides
      */
     public function formBeforeUpdate($model)
     {
+        /**
+         * @event backend.form.beforeUpdate
+         * Called before the form model is updated
+         *
+         * Example usage:
+         *
+         *     Event::listen('backend.form.beforeUpdate', function ((\Backend\Classes\Controller) $controller, (\Model) $model) {
+         *         $model->slug = Str::slug($model->name);
+         *     });
+         *
+         */
     }
 
     /**
@@ -64,6 +119,17 @@ trait HasOverrides
      */
     public function formAfterUpdate($model)
     {
+        /**
+         * @event backend.form.afterUpdate
+         * Called after the form model is updated
+         *
+         * Example usage:
+         *
+         *     Event::listen('backend.form.afterUpdate', function ((\Backend\Classes\Controller) $controller, (\Model) $model) {
+         *         $model->slug = Str::slug($model->name);
+         *     });
+         *
+         */
     }
 
     /**
@@ -72,6 +138,17 @@ trait HasOverrides
      */
     public function formAfterDelete($model)
     {
+        /**
+         * @event backend.form.afterDelete
+         * Called after the form model is deleted
+         *
+         * Example usage:
+         *
+         *     Event::listen('backend.form.afterDelete', function ((\Backend\Classes\Controller) $controller, (\Model) $model) {
+         *         // Delete other records
+         *     });
+         *
+         */
     }
 
     /**
@@ -80,6 +157,17 @@ trait HasOverrides
      */
     public function formAfterCancel($model)
     {
+        /**
+         * @event backend.form.afterCancel
+         * Called after the form model has deferred binding cancelled
+         *
+         * Example usage:
+         *
+         *     Event::listen('backend.form.afterCancel', function ((\Backend\Classes\Controller) $controller, (\Model) $model) {
+         *         // Delete other records
+         *     });
+         *
+         */
     }
 
     /**

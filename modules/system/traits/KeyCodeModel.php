@@ -21,7 +21,7 @@ trait KeyCodeModel
     /**
      * findByKey locates a tax class by its key, cached.
      */
-    public static function findByKey(string $key = null): ?static
+    public static function findByKey(string $key = null): ?self
     {
         if (!$key) {
             return null;
@@ -37,7 +37,7 @@ trait KeyCodeModel
     /**
      * findByCode locates a payment method by its code, cached.
      */
-    public static function findByCode(string $code = null): ?static
+    public static function findByCode(string $code = null): ?self
     {
         if (!$code) {
             return null;

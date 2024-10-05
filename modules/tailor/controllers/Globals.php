@@ -74,6 +74,9 @@ class Globals extends WildcardController
             return $response;
         }
 
+        // Disable site switcher prompt
+        $this->getWidget('siteSwitcher')->setSwitchHandler(null);
+
         $this->prepareVars();
     }
 
@@ -116,6 +119,14 @@ class Globals extends WildcardController
         Flash::success(Lang::get('backend::lang.form.reset_success'));
 
         return Redirect::refresh();
+    }
+
+    /**
+     * formGetRedirectUrl
+     */
+    public function formGetRedirectUrl($context = null, $model = null): string
+    {
+        return 'tailor/globals/'.$this->activeSource->handleSlug;
     }
 
     /**
@@ -226,7 +237,7 @@ class Globals extends WildcardController
         }
 
         // Try by removing the multisite restriction
-        $record = GlobalRecord::inGlobalUuid($uuid)->withSites()->first();
+        $record = GlobalRecord::inGlobalUuid($uuid)->withSyncSites()->first();
         if ($record) {
             return $record;
         }

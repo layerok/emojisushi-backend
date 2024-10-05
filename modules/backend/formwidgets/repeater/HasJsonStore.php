@@ -6,6 +6,38 @@
 trait HasJsonStore
 {
     /**
+     * processItemsForJson processes data and applies it to the form widgets
+     */
+    protected function processItemsForJson()
+    {
+        $currentValue = $this->getLoadValue();
+
+        // Pad current value with minimum items and disable for groups,
+        // which cannot predict their item types
+        if (!$this->useGroups && $this->minItems > 0) {
+            if (!is_array($currentValue)) {
+                $currentValue = [];
+            }
+
+            if (count($currentValue) < $this->minItems) {
+                $currentValue = array_pad($currentValue, $this->minItems, []);
+            }
+        }
+
+        if (!is_array($currentValue)) {
+            return;
+        }
+
+        // Load up the necessary form widgets
+        foreach ($currentValue as $index => $value) {
+            $this->makeItemFormWidget(
+                $index,
+                $this->getGroupCodeFromJson($value)
+            );
+        }
+    }
+
+    /**
      * processSaveForJson
      */
     protected function processSaveForJson($value)

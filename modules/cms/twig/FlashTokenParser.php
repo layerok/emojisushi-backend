@@ -1,7 +1,7 @@
 <?php namespace Cms\Twig;
 
-use Twig\Node\Node as TwigNode;
 use Twig\Token as TwigToken;
+use Twig\Node\Node as TwigNode;
 use Twig\TokenParser\AbstractTokenParser as TwigTokenParser;
 
 /**

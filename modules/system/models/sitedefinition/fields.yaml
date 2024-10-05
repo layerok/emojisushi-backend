@@ -2,6 +2,18 @@
 #  Field Definitions
 # ===================================
 
+fields:
+    name:
+        label: Name
+        span: left
+
+    code:
+        label: Unique Code
+        span: right
+        preset:
+            field: name
+            type: slug
+
 tabs:
     defaultTab: Site Definition
     fields:
@@ -32,17 +44,6 @@ tabs:
             label: Site Group
             type: relation
             required: true
-
-        name:
-            label: Name
-            span: left
-
-        code:
-            label: Unique Code
-            span: right
-            preset:
-                field: name
-                type: slug
 
         theme:
             label: Theme

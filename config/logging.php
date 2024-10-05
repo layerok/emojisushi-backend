@@ -34,7 +34,10 @@ return [
 
         'stack' => [
             'driver' => 'stack',
-            'channels' => ['daily', 'telegram'],
+            'channels' => array_merge(
+                ['daily',],
+                env('APP_ENV') === 'production' ? ['telegram']: []
+            ),
             'ignore_exceptions' => false,
         ],
 

@@ -34,6 +34,7 @@ class RecordImport extends ImportModel
         $host->defineColumn('content_group', 'Entry Type');
 
         if ($this->isEntryStructure()) {
+            $host->defineColumn('fullslug', 'Full Slug');
             $host->defineColumn('parent_id', 'Parent');
         }
 

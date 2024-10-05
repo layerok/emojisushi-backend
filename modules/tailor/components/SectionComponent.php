@@ -63,7 +63,7 @@ class SectionComponent extends ComponentModuleBase
             'isDefault' => [
                 'title' => 'Default View',
                 'type' => 'checkbox',
-                'description' => 'Used as default entry point when previewing the record.',
+                'description' => 'Use this page as a default entry point when previewing the record.',
                 'showExternalParam' => false
             ],
         ];
@@ -225,9 +225,17 @@ class SectionComponent extends ComponentModuleBase
             return;
         }
 
-        $params['id'] = $otherRecord->id;
-        $params['slug'] = $otherRecord->slug;
-        $params['fullslug'] = $otherRecord->fullslug;
+        if ($otherRecord instanceof \Tailor\Classes\BlueprintModel) {
+            $params = array_merge($params, $otherRecord->makePageUrlParams());
+        }
+        else {
+            $params = array_merge($params, [
+                'id' => $otherRecord->id,
+                'code' => $otherRecord->code,
+                'slug' => $otherRecord->slug,
+                'fullslug' => $otherRecord->fullslug,
+            ]);
+        }
 
         if ($paramName = $this->getEntryPointIdentifierParamName()) {
             $columnName = $this->getEntryPointIdentifierKey();

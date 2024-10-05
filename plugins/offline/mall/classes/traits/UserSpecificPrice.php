@@ -2,16 +2,17 @@
 
 namespace OFFLINE\Mall\Classes\Traits;
 
+use OFFLINE\Mall\Classes\User\Auth;
 use OFFLINE\Mall\Models\CustomerGroup;
 use OFFLINE\Mall\Models\Price;
-use RainLab\User\Facades\Auth;
 
 trait UserSpecificPrice
 {
     public function getUserSpecificPrice(Price $original)
     {
-        $group = optional(Auth::getUser())->customer_group;
-        if ( ! $this->hasUserSpecificPrice()) {
+        $group = optional(Auth::user())->customer_group;
+
+        if (! $this->hasUserSpecificPrice()) {
             return $this->checkDiscount($group, $original);
         }
 
@@ -29,13 +30,13 @@ trait UserSpecificPrice
      * Check if the CustomerGroup has a global discount. If so, reduce the price.
      *
      * @param CustomerGroup|null $group
-     * @param Price              $original
+     * @param Price $original
      *
      * @return Price|null
      */
     protected function checkDiscount(?CustomerGroup $group, Price $original): ?Price
     {
-        if ( ! $group || $original->price === null || app()->runningInBackend()) {
+        if (! $group || $original->price === null || app()->runningInBackend()) {
             return null;
         }
 
@@ -50,8 +51,7 @@ trait UserSpecificPrice
     protected function hasUserSpecificPrice(): bool
     {
         return ! app()->runningInBackend()
-            && app()->has('user.auth')
-            && optional(Auth::getUser())->offline_mall_customer_group_id !== null
+            && optional(Auth::user())->offline_mall_customer_group_id !== null
             && $this->customer_group_prices->count() > 0;
     }
 }

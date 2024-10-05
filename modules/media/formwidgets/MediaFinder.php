@@ -59,14 +59,6 @@ class MediaFinder extends FormWidgetBase
      */
     public $externalToolbarAppState = null;
 
-    /**
-     * @var string Defines an event bus for an external toolbar.
-     * Must include a module name that exports the Vue application and a state element name.
-     * Format: module.name::eventBus
-     * Only works in Vue applications and form document layouts.
-     */
-    public $externalToolbarEventBus = null;
-
     //
     // Object Properties
     //

@@ -47,7 +47,11 @@ trait HasThemeAssetMaker
             $assetPath = $this->assetPath;
         }
 
-        if (substr($fileName, 0, 1) == '/' || $assetPath === null) {
+        if (
+            $assetPath === null ||
+            substr($fileName, 0, 1) === '/' ||
+            File::isPathSymbol($fileName)
+        ) {
             return $fileName;
         }
 

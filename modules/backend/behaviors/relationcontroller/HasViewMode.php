@@ -88,6 +88,7 @@ trait HasViewMode
         $this->viewModel = $this->relationModel;
 
         $isPivot = in_array($this->relationType, ['belongsToMany', 'morphedByMany', 'morphToMany']);
+        $isPivotIncrementing = $this->isPivotIncrementing();
 
         $config->model = $this->viewModel;
         $config->alias = $this->alias . 'ViewList';
@@ -99,13 +100,24 @@ trait HasViewMode
         $config->recordUrl = $this->getConfig('view[recordUrl]', null);
         $config->customViewPath = $this->getConfig('view[customViewPath]', null);
         $config->customPageName = $this->getConfig('view[customPageName]', camel_case(class_basename($this->relationModel).'Page'));
+        $config->pivotMode = $isPivotIncrementing;
 
-        $defaultOnClick = sprintf(
-            "oc.relationBehavior.clickViewListRecord(this, ':%s', '%s', '%s')",
-            $this->viewModel->getKeyName(),
-            $this->relationGetId(),
-            $this->relationSessionKey
-        );
+        if ($isPivotIncrementing) {
+            $defaultOnClick = sprintf(
+                "oc.relationBehavior.clickViewPivotListRecord(this, ':%s', '%s', '%s')",
+                $isPivotIncrementing,
+                $this->relationGetId(),
+                $this->relationSessionKey
+            );
+        }
+        else {
+            $defaultOnClick = sprintf(
+                "oc.relationBehavior.clickViewListRecord(this, ':%s', '%s', '%s')",
+                $this->viewModel->getKeyName(),
+                $this->relationGetId(),
+                $this->relationSessionKey
+            );
+        }
 
         if ($config->recordUrl) {
             $defaultOnClick = null;
@@ -268,7 +280,7 @@ trait HasViewMode
      */
     protected function makeListStructureConfig(object $config): ?object
     {
-        $structureConfig = $this->getConfig('structure');
+        $structureConfig = $this->makeConfigForMode('view', 'structure');
         if (!$structureConfig) {
             return null;
         }
@@ -277,7 +289,7 @@ trait HasViewMode
             $this->relationParent->isClassInstanceOf(\October\Contracts\Database\SortableRelationInterface::class) &&
             $this->relationParent->isSortableRelation($this->relationName)
         ) {
-            $structureConfig['includeSortOrders'] = true;
+            $structureConfig->includeSortOrders = true;
         }
 
         return $this->mergeConfig($config, $structureConfig);
@@ -367,6 +379,14 @@ trait HasViewMode
      * onRelationClickViewList
      */
     public function onRelationClickViewList()
+    {
+        return $this->onRelationManageForm();
+    }
+
+    /**
+     * onRelationClickViewListPivot
+     */
+    public function onRelationClickViewListPivot()
     {
         return $this->onRelationManageForm();
     }

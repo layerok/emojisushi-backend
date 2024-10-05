@@ -80,9 +80,9 @@ class Index extends Controller
     {
         $widgetConfig = $this->makeConfig('config_dashboard.yaml');
         $widgetConfig->showConfigure = BackendAuth::userHasAccess('dashboard.manage');
-        $widgetConfig->showAddRemove = BackendAuth::userHasAccess('dashboard.create');
+        $widgetConfig->showAddRemove = BackendAuth::userHasAccess('dashboard.manage');
         $widgetConfig->showReorder = $widgetConfig->showConfigure || $widgetConfig->showAddRemove;
-        $widgetConfig->showMakeDefault = BackendAuth::userHasAccess('dashboard.defaults');
+        $widgetConfig->showMakeDefault = BackendAuth::userHasAccess('dashboard.manage');
 
         $reportWidget = $this->makeWidget(\Backend\Widgets\ReportContainer::class, $widgetConfig);
         $reportWidget->bindToController();

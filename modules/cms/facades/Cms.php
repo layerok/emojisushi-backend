@@ -12,6 +12,7 @@ use October\Rain\Support\Facade;
  * @method static string pageNotFound()
  * @method static string pageError()
  * @method static string flashFromPost($message, $key = 'flash')
+ * @method static bool urlHasException(string $url, string $type)
  * @method static \Illuminate\Http\RedirectResponse|null redirectFromPost($key = 'redirect')
  * @method static \Illuminate\Http\RedirectResponse|null redirectIntendedFromPost($key = 'redirect')
  * @method static \Illuminate\Http\RedirectResponse redirect(string $to, array $parameters = [], int $status = 302)

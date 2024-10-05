@@ -2,6 +2,7 @@
 
 namespace OFFLINE\Mall\Classes\Traits;
 
+use Exception;
 use Hashids\Hashids as Hasher;
 
 trait HashIds
@@ -18,20 +19,32 @@ trait HashIds
     }
 
     /**
+     * Decode string value.
+     * @param string $value
      * @return mixed
      */
-    public function decode($value)
+    public function decode(string $value = null)
     {
-        $value = app(Hasher::class)->decode($value ?? '');
+        if (!$value) {
+            return null;
+        }
 
-        return $value[0] ?? null;
+        try {
+            $result = app(Hasher::class)->decode($value) ?? null;
+
+            return is_array($result) && count($result) === 1 ? $result[0] : $result;
+        } catch (Exception $e) {
+            return null;
+        }
     }
 
     /**
+     * Encode numeric value(s).
+     * @param int|int[] $value
      * @return mixed
      */
     public function encode($value)
     {
-        return app(Hasher::class)->encode($value ?? '');
+        return app(Hasher::class)->encode($value);
     }
 }

@@ -2,7 +2,6 @@
 
 use Lang;
 use ApplicationException;
-use Backend\Classes\FormField;
 use Backend\Classes\FormWidgetBase;
 use Illuminate\Database\Eloquent\Collection;
 
@@ -80,6 +79,11 @@ class RecordFinder extends FormWidgetBase
      * @var bool showSetup in the search list.
      */
     public $showSetup = false;
+
+    /**
+     * @var bool|array|null structure configuration in the search list.
+     */
+    public $structure = null;
 
     /**
      * @var string searchMode if searching the records, specifies a policy to use.
@@ -166,6 +170,7 @@ class RecordFinder extends FormWidgetBase
             'scope',
             'defaultSort',
             'showSetup',
+            'structure',
             'conditions',
             'inlineOptions',
             'searchMode',
@@ -434,7 +439,15 @@ class RecordFinder extends FormWidgetBase
         $config->defaultSort = $this->defaultSort;
         $config->recordsPerPage = $this->recordsPerPage;
         $config->recordOnClick = sprintf("$('#%s').recordFinder('updateRecord', this, ':" . $this->getKeyFromAttributeName() . "')", $this->getId());
-        $widget = $this->makeWidget(\Backend\Widgets\Lists::class, $config);
+
+        // Structure support
+        $structureConfig = $this->makeListStructureConfig($config);
+        if ($structureConfig) {
+            $widget = $this->makeWidget(\Backend\Widgets\ListStructure::class, $structureConfig);
+        }
+        else {
+            $widget = $this->makeWidget(\Backend\Widgets\Lists::class, $config);
+        }
 
         $widget->setSearchOptions([
             'mode' => $this->searchMode,
@@ -475,6 +488,40 @@ class RecordFinder extends FormWidgetBase
     }
 
     /**
+     * makeListStructureConfig
+     */
+    protected function makeListStructureConfig($config)
+    {
+        if ($this->structure === false) {
+            return null;
+        }
+
+        $structureConfig = [];
+        if (is_array($this->structure)) {
+            $structureConfig = $this->structure;
+        }
+        elseif ($this->structure === true) {
+            $structureConfig['showTree'] = true;
+        }
+        // Auto detection, waiting on a tailor refactor
+        // @todo see https://github.com/octobercms/october-private/pull/552
+        // elseif (
+        //     ($model = $config->model) &&
+        //     $model->isClassInstanceOf(\October\Contracts\Database\TreeInterface::class)
+        // ) {
+        //     $structureConfig['showTree'] = true;
+        // }
+
+        // Force read-only mode
+        if ($structureConfig) {
+            $structureConfig = ['showReorder' => false] + $structureConfig;
+            return $this->mergeConfig($config, $structureConfig);
+        }
+
+        return null;
+    }
+
+    /**
      * makeSearchWidget
      */
     protected function makeSearchWidget()
@@ -504,5 +551,13 @@ class RecordFinder extends FormWidgetBase
         $widget = $this->makeWidget(\Backend\Widgets\Filter::class, $config);
         $widget->cssClasses[] = 'recordfinder-filter';
         return $widget;
+    }
+
+    /**
+     * resetFormValue from the form field
+     */
+    public function resetFormValue()
+    {
+        $this->setKeyValue($this->formField->value);
     }
 }

@@ -1,4 +1,6 @@
-<?php return [
+<?php
+
+return [
     'plugin' => [
         'name' => 'E-shop',
         'description' => 'E-shop pro October CMS',
@@ -177,7 +179,7 @@
         'index_driver_comment' => 'Pokud Vaše databáze podporuje JSON, použijte databázový ovladač.',
         'index_driver_filesystem' => 'Souborový systém',
         'index_driver_database' => 'Databáze (pouze pro MySQL 5.7+ ne MariaDB 10.2+)',
-        'index_driver_hint' => 'Pokud změníte tuto možnost, spusťte "php artisan mall:reindex" v příkazovém řádku pro reindexaci Vašich produktů!',
+        'index_driver_hint' => 'Pokud změníte tuto možnost, spusťte :command v příkazovém řádku pro reindexaci Vašich produktů!',
     ],
     'feed_settings' => [
         'description' => 'Konfigurace kanálů',
@@ -824,7 +826,7 @@
                 ],
                 'currentVariantReviewsOnly' => [
                     'title' => 'Zobrazit pouze hodnocení této varianty',
-                    'description' => "Nezobrazovat recenze jiných variant tohoto produktu",
+                    'description' => 'Nezobrazovat recenze jiných variant tohoto produktu',
                 ],
             ],
         ],

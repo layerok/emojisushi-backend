@@ -1,9 +1,7 @@
 <?php namespace Backend\FormWidgets;
 
-use Lang;
 use Backend\Classes\FormField;
 use Backend\Classes\FormWidgetBase;
-use ApplicationException;
 
 /**
  * Repeater Form Widget
@@ -299,34 +297,11 @@ class Repeater extends FormWidgetBase
      */
     protected function processItems()
     {
-        $currentValue = $this->useRelation
-            ? $this->getLoadValueFromRelation()
-            : $this->getLoadValue();
-
-        // Pad current value with minimum items and disable for groups,
-        // which cannot predict their item types
-        if (!$this->useGroups && $this->minItems > 0) {
-            if (!is_array($currentValue)) {
-                $currentValue = [];
-            }
-
-            $emptyItem = $this->useRelation ? $this->getRelationModel() : [];
-            if (count($currentValue) < $this->minItems) {
-                $currentValue = array_pad($currentValue, $this->minItems, $emptyItem);
-            }
+        if ($this->useRelation) {
+            $this->processItemsForRelation();
         }
-
-        if (!is_array($currentValue)) {
-            return;
-        }
-
-        // Load up the necessary form widgets
-        foreach ($currentValue as $index => $value) {
-            $groupType = $this->useRelation
-                ? $this->getGroupCodeFromRelation($value)
-                : $this->getGroupCodeFromJson($value);
-
-            $this->makeItemFormWidget($index, $groupType);
+        else {
+            $this->processItemsForJson();
         }
     }
 
@@ -350,19 +325,21 @@ class Repeater extends FormWidgetBase
 
         if ($this->useRelation) {
             $config->model = $this->getModelFromIndex($index);
+            $indexName = ($modelKey = $config->model->getKey()) ? "id:{$modelKey}" : $index;
         }
         else {
             $config->model = $this->model;
             $config->data = $this->getValueFromIndex($dataIndex);
             $config->isNested = true;
+            $indexName = $index;
         }
 
         $config->alias = $this->alias . 'Form' . $index;
         $config->context = self::$onAddItemCalled ? FormField::CONTEXT_CREATE : FormField::CONTEXT_UPDATE;
         $config->arrayName = $this->getFieldName().'['.$index.']';
         $config->sessionKey = $this->sessionKey;
-        $config->sessionKeySuffix = $this->sessionKeySuffix . '-' . $index;
-        $config->parentFieldName = $this->formField->fieldName;
+        $config->sessionKeySuffix = $this->sessionKeySuffix . "-{$index}";
+        $config->parentFieldName = $this->formField->fieldName . "[{$indexName}]";
 
         $widget = $this->makeWidget(\Backend\Widgets\Form::class, $config);
         $widget->previewMode = $this->previewMode;
@@ -428,6 +405,8 @@ class Repeater extends FormWidgetBase
     public function onAddItem()
     {
         self::$onAddItemCalled = true;
+
+        $this->prepareParentModelData();
 
         $groupCode = post('_repeater_group');
         $index = $this->getNextIndex();
@@ -500,6 +479,8 @@ class Repeater extends FormWidgetBase
      */
     public function onRefresh()
     {
+        $this->prepareParentModelData();
+
         $index = post('_repeater_index');
         $group = post('_repeater_group');
 
@@ -521,6 +502,20 @@ class Repeater extends FormWidgetBase
         }
 
         return 0;
+    }
+
+    /**
+     * prepareParentModelData will ensure the parent model has its form data set
+     * to provide context for newly created items or refreshed existing items.
+     */
+    protected function prepareParentModelData()
+    {
+        // This code is used since it is more efficient than calling setFormValues()
+        // on the form widget, switching to this could be useful if form field value
+        // context is needed in the future.
+        if (($form = $this->getParentForm()) && !$form->isNested) {
+            $this->prepareModelsToSave($form->getModel(), $form->getSaveData());
+        }
     }
 
     //

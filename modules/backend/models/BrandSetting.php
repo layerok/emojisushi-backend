@@ -18,7 +18,6 @@ use Exception;
  */
 class BrandSetting extends SettingModel
 {
-    use \System\Traits\ViewMaker;
     use \October\Rain\Database\Traits\Validation;
     use \Backend\Models\BrandSetting\HasPalettes;
 

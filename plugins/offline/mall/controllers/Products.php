@@ -1,16 +1,19 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace OFFLINE\Mall\Controllers;
 
-use BackendMenu;
-use DB;
-use Event;
-use Flash;
 use Backend\Behaviors\FormController;
 use Backend\Behaviors\ListController;
 use Backend\Behaviors\RelationController;
 use Backend\Classes\Controller;
 use Backend\Facades\Backend;
+use BackendMenu;
+use DB;
+use Event;
+use Flash;
+use OFFLINE\Mall\Classes\Database\IsStatesScope;
 use OFFLINE\Mall\Classes\Index\Index;
 use OFFLINE\Mall\Classes\Observers\ProductObserver;
 use OFFLINE\Mall\Classes\Traits\ProductPriceTable;
@@ -31,20 +34,59 @@ class Products extends Controller
 {
     use ProductPriceTable;
 
+    public $turboVisitControl = 'reload';
+
+    /**
+     * Implement behaviors for this controller.
+     * @var array
+     */
     public $implement = [
-        ListController::class,
         FormController::class,
+        ListController::class,
         RelationController::class,
     ];
-    public $listConfig = 'config_list.yaml';
+
+    /**
+     * The configuration file for the form controller implementation.
+     * @var string
+     */
     public $formConfig = 'config_form.yaml';
+
+    /**
+     * The configuration file for the list controller implementation.
+     * @var string
+     */
+    public $listConfig = 'config_list.yaml';
+
+    /**
+     * The configuration file for the relation controller implementation.
+     * @var string
+     */
     public $relationConfig = 'config_relation.yaml';
+
+    /**
+     * The configuration file for the product price table.
+     * @var string
+     */
     public $productPriceTableConfig = 'config_table.yaml';
+
+    /**
+     * Required admin permission to access this page.
+     * @var array
+     */
     public $requiredPermissions = [
         'offline.mall.manage_products',
     ];
+
+    /**
+     * Option Form Widget
+     * @var mixed
+     */
     protected $optionFormWidget;
 
+    /**
+     * Construct the controller.
+     */
     public function __construct()
     {
         parent::__construct();
@@ -66,15 +108,22 @@ class Products extends Controller
         }
     }
 
+    /**
+     * Update View
+     * @param mixed $id
+     * @return mixed
+     */
     public function update($id)
     {
         parent::update($id);
-        // Something went wrong if no formModel is available. Proceed with default behaviour.
-        if ( ! isset($this->vars['formModel'])) {
+
+        // Something went wrong if no formModel is available. Proceed with default behavior.
+        if (!isset($this->vars['formModel'])) {
             return;
         }
+
         // If the product has no category something is wrong and needs fixing!
-        if ( ! $this->vars['formModel']->categories) {
+        if (!$this->vars['formModel']->categories) {
             Flash::error(trans('offline.mall::lang.common.action_required'));
 
             return redirect(Backend::url('offline/mall/products/change_category/' . $id));
@@ -83,9 +132,15 @@ class Products extends Controller
         // Strike through all old file versions.
         Event::listen('backend.list.injectRowClass', function ($lists, $record) {
             $latestFile = $this->vars['formModel']->latest_file;
-            if ( ! $latestFile || ! $record instanceof ProductFile) {
+
+            if (!$latestFile || !$record instanceof ProductFile) {
                 return '';
             }
+
+            if (empty(trim($latestFile->version))) {
+                return '';
+            }
+
             if ($latestFile->id === $record->id) {
                 return '';
             }
@@ -94,6 +149,11 @@ class Products extends Controller
         });
     }
 
+    /**
+     * Change Category view
+     * @param mixed $id
+     * @return mixed
+     */
     public function change_category($id)
     {
         $this->pageTitle   = trans('offline.mall::lang.common.action_required');
@@ -115,6 +175,10 @@ class Products extends Controller
         $this->vars['form'] = $formWidget;
     }
 
+    /**
+     * Change Category Save Handler
+     * @return mixed
+     */
     public function change_category_onSave()
     {
         $product = Product::findOrFail($this->params[0]);
@@ -127,10 +191,10 @@ class Products extends Controller
     }
 
     /**
-     * Save the initial price into the prices table and create an
-     * initial image set if images have been uploaded.
-     *
+     * Save the initial price into the prices table and create an initial image set if images have
+     * been uploaded.
      * @param Product $model
+     * @return void
      */
     public function formAfterCreate(Product $model)
     {
@@ -143,22 +207,31 @@ class Products extends Controller
                 'product_id'  => $model->id,
             ]);
             DB::table('system_files')
-              ->where('field', 'initial_images')
-              ->where('attachment_type', Product::MORPH_KEY)
-              ->where('attachment_id', $model->id)
-              ->update([
-                  'field'           => 'images',
-                  'attachment_type' => ImageSet::MORPH_KEY,
-                  'attachment_id'   => $imageSet->id,
-              ]);
+                ->where('field', 'initial_images')
+                ->where('attachment_type', Product::MORPH_KEY)
+                ->where('attachment_id', $model->id)
+                ->update([
+                    'field'           => 'images',
+                    'attachment_type' => ImageSet::MORPH_KEY,
+                    'attachment_id'   => $imageSet->id,
+                ]);
         }
     }
 
+    /**
+     * Hook after form updated.
+     * @param ShippingMethod $model
+     * @return void
+     */
     public function formAfterUpdate(Product $model)
     {
         $model->handlePropertyValueUpdates();
     }
 
+    /**
+     * Undocumented function
+     * @return mixed
+     */
     public function onCreateOption()
     {
         $data  = $this->optionFormWidget->getSaveData();
@@ -183,6 +256,10 @@ class Products extends Controller
         return $this->refreshOptionsList();
     }
 
+    /**
+     * Undocumented function
+     * @return mixed
+     */
     public function onDeleteOption()
     {
         $recordId = post('record_id');
@@ -193,19 +270,10 @@ class Products extends Controller
         return $this->refreshOptionsList();
     }
 
-    protected function refreshOptionsList()
-    {
-        $items = $this->getCustomFieldModel()
-                      ->custom_field_options()
-                      ->withDeferred($this->optionFormWidget->getSessionKey())
-                      ->get();
-
-        $this->vars['items'] = $items;
-        $this->vars['type']  = post('type');
-
-        return ['#optionList' => $this->makePartial('$/offline/mall/controllers/customfields/_options_list.htm')];
-    }
-
+    /**
+     * Undocumented function
+     * @return mixed
+     */
     public function onApproveReview()
     {
         Review::findOrFail(post('id'))->approve();
@@ -219,16 +287,10 @@ class Products extends Controller
         ];
     }
 
-    protected function getCustomFieldModel()
-    {
-        $manageId = post('manage_id');
-        $order    = $manageId
-            ? CustomField::find($manageId)
-            : new CustomField();
-
-        return $order;
-    }
-
+    /**
+     * Undocumented function
+     * @return mixed
+     */
     public function onLoadCreateOptionForm()
     {
         $this->vars['optionFormWidget'] = $this->optionFormWidget;
@@ -238,6 +300,10 @@ class Products extends Controller
         return $this->makePartial('$/offline/mall/controllers/customfields/_option_form.htm');
     }
 
+    /**
+     * Undocumented function
+     * @return mixed
+     */
     public function onLoadEditOptionForm()
     {
         $this->vars['optionFormWidget']    = $this->optionFormWidget;
@@ -248,41 +314,26 @@ class Products extends Controller
         return $this->makePartial('$/offline/mall/controllers/customfields/_option_form.htm');
     }
 
-    protected function createOptionFormWidget(CustomFieldOption $model = null)
-    {
-        $config                    = $this->makeConfig('$/offline/mall/models/customfieldoption/fields.yaml');
-        $config->alias             = 'optionForm';
-        $config->arrayName         = 'Option';
-        $config->model             = $model ?? new CustomFieldOption();
-        $config->model->field_type = post('type');
-        $widget                    = $this->makeWidget('Backend\Widgets\Form', $config);
-        $widget->bindToController();
-
-        $this->optionFormWidget = $widget;
-
-        return $widget;
-    }
-
-    protected function relationExtendRefreshResults($field)
-    {
-        if ($field === 'variants') {
-            return [
-                '#Products-update-RelationController-images-view' => $this->relationRenderView('images'),
-            ];
-        }
-    }
-
+    /**
+     * Undocumented function
+     * @param mixed $widget
+     * @param mixed $field
+     * @param mixed $model
+     * @return mixed
+     */
     public function relationExtendViewWidget($widget, $field, $model)
     {
         if ($field !== 'variants') {
             return;
         }
 
-        $widget->bindEvent('list.extendQueryBefore', function ($query) {
-            return $query->with('property_values');
-        });
+        $widget->bindEvent('list.extendQueryBefore', fn ($query) => $query->with('property_values'));
     }
 
+    /**
+     * Undocumented function
+     * @return mixed
+     */
     public function onRelationManageCreate()
     {
         $this->asExtension(RelationController::class)->onRelationManageCreate();
@@ -296,18 +347,22 @@ class Products extends Controller
         if ($this->relationName === 'files') {
             $parent['#Form-field-Product-missing_file_hint-group'] = '';
         }
-        
+
         if ($this->relationName === 'variants') {
             $this->updateProductPrices($this->vars['formModel'], $this->relationModel);
             $this->createImageSetFromTempImages($this->relationModel);
             $this->handlePropertyValueUpdates($this->relationModel);
 
             (new ProductObserver(app(Index::class)))->updated($this->vars['formModel']);
-        }        
+        }
 
         return $this->asExtension(RelationController::class)->relationRefresh();
     }
 
+    /**
+     * Undocumented function
+     * @return mixed
+     */
     public function onRelationManageUpdate()
     {
         $this->asExtension(RelationController::class)->onRelationManageUpdate();
@@ -333,6 +388,10 @@ class Products extends Controller
         return $this->asExtension(RelationController::class)->relationRefresh();
     }
 
+    /**
+     * Ajax handler to duplicate one or more products.
+     * @return mixed
+     */
     public function onDuplicateProducts()
     {
         Product::query()
@@ -347,18 +406,86 @@ class Products extends Controller
     }
 
     /**
+     * Undocumented function
+     * @return mixed
+     */
+    protected function refreshOptionsList()
+    {
+        $items = $this->getCustomFieldModel()
+            ->custom_field_options()
+            ->withDeferred($this->optionFormWidget->getSessionKey())
+            ->get();
+
+        $this->vars['items'] = $items;
+        $this->vars['type']  = post('type');
+
+        return ['#optionList' => $this->makePartial('$/offline/mall/controllers/customfields/_options_list.htm')];
+    }
+
+    /**
+     * Undocumented function
+     * @return mixed
+     */
+    protected function getCustomFieldModel()
+    {
+        $manageId = post('manage_id');
+
+        return $manageId
+            ? CustomField::find($manageId)
+            : new CustomField();
+    }
+
+    /**
+     * Undocumented function
+     * @param null|CustomFieldOption $model
+     * @return mixed
+     */
+    protected function createOptionFormWidget(CustomFieldOption $model = null)
+    {
+        $config                    = $this->makeConfig('$/offline/mall/models/customfieldoption/fields.yaml');
+        $config->alias             = 'optionForm';
+        $config->arrayName         = 'Option';
+        $config->model             = $model ?? new CustomFieldOption();
+        $config->model->field_type = post('type');
+        $widget                    = $this->makeWidget('Backend\Widgets\Form', $config);
+        $widget->bindToController();
+
+        $this->optionFormWidget = $widget;
+
+        return $widget;
+    }
+
+    /**
+     * Undocumented function
+     * @param mixed $field
+     * @return mixed
+     */
+    protected function relationExtendRefreshResults($field)
+    {
+        if ($field === 'variants') {
+            return [
+                '#Products-update-RelationController-images-view' => $this->relationRenderView('images'),
+            ];
+        }
+    }
+
+    /**
      * Handle the form data form the property value form.
+     * @param Variant $variant
+     * @return void
      */
     protected function handlePropertyValueUpdates(Variant $variant)
     {
         $locales = [];
+
         if (class_exists(\RainLab\Translate\Classes\Locale::class)) {
             $locales = \RainLab\Translate\Classes\Locale::listLocales()->where('is_enabled', true)->all();
-        } else if (class_exists(\RainLab\Translate\Models\Locale::class)) {
+        } elseif (class_exists(\RainLab\Translate\Models\Locale::class)) {
             $locales = \RainLab\Translate\Models\Locale::isEnabled()->get();
         }
 
         $formData = array_wrap(post('VariantPropertyValues', []));
+
         if (count($formData) < 1) {
             PropertyValue::where('variant_id', $variant->id)->delete();
         }
@@ -376,6 +503,7 @@ class Products extends Controller
                 ]);
 
             $pv->value = $value;
+
             foreach ($locales as $locale) {
                 $transValue = post(
                     sprintf('RLTranslate.%s.VariantPropertyValues.%d', $locale->code, $id),
@@ -399,47 +527,60 @@ class Products extends Controller
         }
     }
 
+    /**
+     * Create image-set from temp images.
+     * @param Variant $variant
+     * @return mixed
+     */
     protected function createImageSetFromTempImages(Variant $variant)
     {
         $tempImages = $variant->temp_images()->withDeferred(post('_session_key'))->count();
+
         if ($tempImages < 1) {
             return;
+        } else {
+            return DB::transaction(function () use ($variant) {
+                $set             = new ImageSet();
+                $set->name       = $variant->name;
+                $set->product_id = $variant->product_id;
+                $set->save();
+
+                $variant->image_set_id = $set->id;
+                $variant->save();
+
+                $variant->commitDeferred(post('_session_key'));
+
+                return DB::table('system_files')
+                    ->where('attachment_type', Variant::MORPH_KEY)
+                    ->where('attachment_id', $variant->id)
+                    ->where('field', 'temp_images')
+                    ->update([
+                        'attachment_type' => ImageSet::MORPH_KEY,
+                        'attachment_id'   => $set->id,
+                        'field'           => 'images',
+                    ]);
+            });
         }
-
-        return DB::transaction(function () use ($variant) {
-            $set             = new ImageSet();
-            $set->name       = $variant->name;
-            $set->product_id = $variant->product_id;
-            $set->save();
-
-            $variant->image_set_id = $set->id;
-            $variant->save();
-
-            $variant->commitDeferred(post('_session_key'));
-
-            return DB::table('system_files')
-                ->where('attachment_type', Variant::MORPH_KEY)
-                ->where('attachment_id', $variant->id)
-                ->where('field', 'temp_images')
-                ->update([
-                    'attachment_type' => ImageSet::MORPH_KEY,
-                    'attachment_id'   => $set->id,
-                    'field'           => 'images',
-                ]);
-        });
     }
 
+    /**
+     * Update prices.
+     * @param mixed $model
+     * @param string $key
+     * @return void
+     */
     protected function updatePrices($model, $key = 'prices')
     {
         $data = post('MallPrice', []);
-        \DB::transaction(function () use ($model, $key, $data) {
+        DB::transaction(function () use ($model, $key, $data) {
             foreach ($data as $currency => $_data) {
                 $value = array_get($_data, $key);
+
                 if ($value === '') {
                     $value = null;
                 }
 
-                Price::updateOrCreate([
+                Price::withoutGlobalScope(new IsStatesScope())->updateOrCreate([
                     'price_category_id' => null,
                     'priceable_id'      => $model->id,
                     'priceable_type'    => $model::MORPH_KEY,
@@ -451,10 +592,18 @@ class Products extends Controller
         });
     }
 
+    /**
+     * Update product prices.
+     * @param mixed $product
+     * @param mixed $variant
+     * @param string $key
+     * @return void
+     */
     protected function updateProductPrices($product, $variant, $key = '_prices')
     {
-        \DB::transaction(function () use ($product, $variant, $key) {
+        DB::transaction(function () use ($product, $variant, $key) {
             $data = post('MallPrice', []);
+
             foreach ($data as $currency => $_data) {
                 $value = array_get($_data, $key);
                 ProductPrice::updateOrCreate([

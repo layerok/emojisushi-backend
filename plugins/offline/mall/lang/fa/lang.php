@@ -1,4 +1,6 @@
-<?php return [
+<?php
+
+return [
     'plugin' => [
         'name' => 'Mall',
         'description' => 'E-commerce solution for October CMS',
@@ -177,7 +179,7 @@
         'index_driver_comment' => ' اگر پایگاه داده شما جی سون  را پشتیبانی می کند . از درایور پایگاه داده استفاده کنید',
         'index_driver_filesystem' => ' سیستم فایل',
         'index_driver_database' => 'Database (MySQL 5.7+, MariaDB 10.2+, SQLite 3.19+)',
-        'index_driver_hint' => 'If you change this option make sure to run "php artisan mall:reindex" on the command line to re-index your products!',
+        'index_driver_hint' => 'If you change this option make sure to run :command on the command line to re-index your products!',
     ],
     'feed_settings' => [
         'description' => 'تنظیمات خوراک mall',
@@ -826,7 +828,7 @@
                 ],
                 'currentVariantReviewsOnly' => [
                     'title' => 'نمایش فقط رتبه بندی این متغیر',
-                    'description' => " عدم نمایش دیدگاه ها برای دیگر متغیر های این محصول",
+                    'description' => ' عدم نمایش دیدگاه ها برای دیگر متغیر های این محصول',
                 ],
             ],
         ],

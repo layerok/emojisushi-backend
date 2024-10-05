@@ -12,12 +12,12 @@ use OFFLINE\Mall\Classes\Jobs\SendOrderConfirmationToCustomer;
 use OFFLINE\Mall\Classes\PaymentState\FailedState;
 use OFFLINE\Mall\Classes\PaymentState\PaidState;
 use OFFLINE\Mall\Classes\PaymentState\RefundedState;
+use OFFLINE\Mall\Classes\User\Settings as UserSettings;
 use OFFLINE\Mall\Models\GeneralSettings;
 use OFFLINE\Mall\Models\Notification;
 use OFFLINE\Mall\Models\Order;
-use RainLab\Translate\Classes\Translator;
-use RainLab\User\Models\Settings as UserSettings;
 use PDOException;
+use RainLab\Translate\Classes\Translator;
 
 class MailingEventHandler
 {
@@ -71,6 +71,7 @@ class MailingEventHandler
      * A customer has signed up.
      *
      * @param $user
+     * @param mixed $handler
      *
      * @throws \Cms\Classes\CmsException
      */
@@ -81,9 +82,16 @@ class MailingEventHandler
             return;
         }
 
-        $needsConfirmation = UserSettings::get('activate_mode') === UserSettings::ACTIVATE_USER;
-        $confirmCode       = implode('!', [$user->id, $user->getActivationCode()]);
-        $confirmUrl        = $this->getAccountUrl('confirmation') . '?code=' . $confirmCode;
+        // RainLab.User 3.0
+        if (class_exists(\RainLab\User\Models\Setting::class)) {
+            $needsConfirmation = false;
+            $confirmCode       = null;
+            $confirmUrl        = null;
+        } else {
+            $needsConfirmation = UserSettings::get('activate_mode') === UserSettings::ACTIVATE_USER;
+            $confirmCode       = implode('!', [$user->id, $user->getActivationCode()]);
+            $confirmUrl        = $this->getAccountUrl('confirmation') . '?code=' . $confirmCode;
+        }
 
         $data = [
             'user'         => $user,
@@ -132,10 +140,12 @@ class MailingEventHandler
                 'order_url'   => $this->getBackendOrderUrl($result->order),
             ];
             Mail::queue(
-                $this->template('offline.mall::admin.checkout_succeeded'), $data,
-                function ($message) use ($adminMail) {
+                $this->template('offline.mall::admin.checkout_succeeded'),
+                $data,
+                function (Mailable $message) use ($adminMail) {
                     $message->to($adminMail);
-                });
+                }
+            );
         }
     }
 
@@ -167,10 +177,13 @@ class MailingEventHandler
             $this->enabledNotifications->has('offline.mall::admin.checkout_failed')
             && $adminMail = GeneralSettings::get('admin_email')
         ) {
-            Mail::queue($this->template('offline.mall::admin.checkout_failed'), $data,
+            Mail::queue(
+                $this->template('offline.mall::admin.checkout_failed'),
+                $data,
                 function ($message) use ($adminMail) {
                     $message->to($adminMail);
-                });
+                }
+            );
         }
     }
 
@@ -181,7 +194,7 @@ class MailingEventHandler
      */
     public function orderStateChanged($order)
     {
-        if ( ! $order->stateNotification) {
+        if (! $order->stateNotification) {
             return;
         }
 
@@ -196,7 +209,6 @@ class MailingEventHandler
         });
     }
 
-
     /**
      * The order has been shipped.
      *
@@ -206,7 +218,7 @@ class MailingEventHandler
      */
     public function orderShipped($order)
     {
-        if ( ! $order->shippingNotification) {
+        if (! $order->shippingNotification) {
             return;
         }
 
@@ -232,7 +244,8 @@ class MailingEventHandler
     public function orderPaymentStateChanged($order)
     {
         $attr = 'payment_state';
-        if ( ! $order->isDirty($attr) || $order->getOriginal($attr) === $order->getAttribute($attr)) {
+
+        if (! $order->isDirty($attr) || $order->getOriginal($attr) === $order->getAttribute($attr)) {
             return;
         }
 
@@ -252,7 +265,7 @@ class MailingEventHandler
         }
 
         // This notification is disabled.
-        if ( ! $this->enabledNotifications->has('offline.mall::payment.' . $view)) {
+        if (! $this->enabledNotifications->has('offline.mall::payment.' . $view)) {
             return;
         }
 
@@ -274,16 +287,20 @@ class MailingEventHandler
         $failedBecamePaid = $order->getOriginal($attr) === FailedState::class && $order->getAttribute($attr) === PaidState::class;
 
         if ($failedBecamePaid && $adminMail = GeneralSettings::get('admin_email')) {
-            Mail::queue('offline.mall::mail.admin.payment_paid', $data,
+            Mail::queue(
+                'offline.mall::mail.admin.payment_paid',
+                $data,
                 function ($message) use ($adminMail) {
                     $message->to($adminMail);
-                });
+                }
+            );
         }
     }
 
     /**
      * Return the user defined mail template for a given event code.
      *
+     * @param mixed $code
      * @return string
      */
     protected function template($code)
@@ -296,14 +313,16 @@ class MailingEventHandler
      *
      * @param string $page
      *
-     * @return string
      * @throws \Cms\Classes\CmsException
+     * @return string
      */
     protected function getAccountUrl($page = 'orders'): string
     {
-        $controller = Controller::getController() ?: new Controller;
+        $controller = Controller::getController() ?: new Controller();
+
         return $controller->pageUrl(
-            GeneralSettings::get('account_page'), ['page' => $page]
+            GeneralSettings::get('account_page'),
+            ['page' => $page]
         );
     }
 

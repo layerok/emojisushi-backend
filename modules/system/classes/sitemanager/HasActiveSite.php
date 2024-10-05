@@ -15,6 +15,61 @@ use System\Models\SiteDefinition;
 trait HasActiveSite
 {
     /**
+     * applyActiveSiteId
+     */
+    public function applyActiveSiteId($id)
+    {
+        if ($site = $this->getSiteFromId($id)) {
+            $this->applyActiveSite($site);
+        }
+    }
+
+    /**
+     * applyActiveSite applies active site configuration values to the application,
+     * typically used for frontend requests.
+     */
+    public function applyActiveSite(SiteDefinition $site)
+    {
+        if ($site->theme) {
+            if (Config::get('cms.original_theme') === null) {
+                Config::set('cms.original_theme', Config::get('cms.active_theme'));
+            }
+
+            Config::set('cms.active_theme', $site->theme);
+        }
+
+        if ($site->locale) {
+            if (Config::get('app.original_locale') === null) {
+                Config::set('app.original_locale', Config::get('app.locale'));
+            }
+
+            App::setLocale($site->locale);
+
+            if ($site->fallback_locale) {
+                if (Config::get('app.original_fallback_locale') === null) {
+                    Config::set('app.original_fallback_locale', Config::get('app.fallback_locale'));
+                }
+
+                App::setFallbackLocale($site->fallback_locale);
+            }
+        }
+
+        if ($site->is_custom_url) {
+            Config::set('app.url', $site->app_url);
+        }
+
+        if ($site->timezone) {
+            Config::set('cms.timezone', $site->timezone);
+        }
+
+        if ($site->is_prefixed) {
+            Cms::setUrlPrefix($site->route_prefix);
+        }
+
+        $this->setActiveSite($site);
+    }
+
+    /**
      * getActiveSite
      */
     public function getActiveSite()
@@ -60,40 +115,5 @@ trait HasActiveSite
     public function setActiveSite($site)
     {
         $this->setActiveSiteId($site->id);
-    }
-
-    /**
-     * applyActiveSite applies active site configuration values to the application,
-     * typically used for frontend requests.
-     */
-    public function applyActiveSite(SiteDefinition $site)
-    {
-        if ($site->theme) {
-            if (Config::get('cms.original_theme') === null) {
-                Config::set('cms.original_theme', Config::get('cms.active_theme'));
-            }
-
-            Config::set('cms.active_theme', $site->theme);
-        }
-
-        if ($site->locale) {
-            if (Config::get('app.original_locale') === null) {
-                Config::set('app.original_locale', Config::get('app.locale'));
-            }
-
-            App::setLocale($site->locale);
-        }
-
-        if ($site->is_custom_url) {
-            Config::set('app.url', $site->app_url);
-        }
-
-        if ($site->timezone) {
-            Config::set('cms.timezone', $site->timezone);
-        }
-
-        if ($site->is_prefixed) {
-            Cms::setUrlPrefix($site->route_prefix);
-        }
     }
 }

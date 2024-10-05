@@ -143,6 +143,7 @@ class ServiceProvider extends ModuleServiceProvider
             \Tailor\ContentFields\DatePickerField::class => 'datepicker',
             \Tailor\ContentFields\NumberField::class => 'number',
             \Tailor\ContentFields\TagListField::class => 'taglist',
+            \Tailor\ContentFields\RecordFinderField::class => 'recordfinder',
         ];
     }
 

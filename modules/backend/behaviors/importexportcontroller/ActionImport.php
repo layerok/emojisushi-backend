@@ -189,7 +189,6 @@ trait ActionImport
         $widgetConfig = $this->makeConfig('~/modules/backend/behaviors/importexportcontroller/partials/fields_import.yaml');
         $widgetConfig->model = $this->importGetModel();
         $widgetConfig->alias = 'importUploadForm';
-        $widgetConfig->useModelFields = false;
 
         $widget = $this->makeWidget(\Backend\Widgets\Form::class, $widgetConfig);
 

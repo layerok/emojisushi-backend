@@ -72,11 +72,6 @@ class Form extends WidgetBase implements FormElement
      */
     public $isNested = false;
 
-    /**
-     * @var bool useModelFields requests form fields from the supplied model.
-     */
-    public $useModelFields = true;
-
     //
     // Object Properties
     //
@@ -156,7 +151,7 @@ class Form extends WidgetBase implements FormElement
             'context',
             'arrayName',
             'isNested',
-            'useModelFields',
+            'sessionKey',
             'sessionKeySuffix',
             'parentFieldName',
             'previewMode',
@@ -620,24 +615,36 @@ class Form extends WidgetBase implements FormElement
             $this->fields = [];
         }
 
-        $this->addFields($this->fields);
-        $this->addFieldsFromModel();
+        if ($this->fields) {
+            $this->addFields($this->fields);
+        }
+        else {
+            $this->addFieldsFromModel();
+        }
 
         // Primary Tabs + Fields
         if (!isset($this->tabs['fields']) || !is_array($this->tabs['fields'])) {
             $this->tabs['fields'] = [];
         }
 
-        $this->addFields($this->tabs['fields'], FormTabs::SECTION_PRIMARY);
-        $this->addFieldsFromModel(FormTabs::SECTION_PRIMARY);
+        if ($this->tabs['fields']) {
+            $this->addFields($this->tabs['fields'], FormTabs::SECTION_PRIMARY);
+        }
+        else {
+            $this->addFieldsFromModel(FormTabs::SECTION_PRIMARY);
+        }
 
         // Secondary Tabs + Fields
         if (!isset($this->secondaryTabs['fields']) || !is_array($this->secondaryTabs['fields'])) {
             $this->secondaryTabs['fields'] = [];
         }
 
-        $this->addFields($this->secondaryTabs['fields'], FormTabs::SECTION_SECONDARY);
-        $this->addFieldsFromModel(FormTabs::SECTION_SECONDARY);
+        if ($this->secondaryTabs['fields']) {
+            $this->addFields($this->secondaryTabs['fields'], FormTabs::SECTION_SECONDARY);
+        }
+        else {
+            $this->addFieldsFromModel(FormTabs::SECTION_SECONDARY);
+        }
 
         /**
          * @event backend.form.extendFields
@@ -753,42 +760,11 @@ class Form extends WidgetBase implements FormElement
     }
 
     /**
-     * addFieldsFromModel from the model
-     */
-    protected function addFieldsFromModel(string $addToArea = null): void
-    {
-        if (!$this->useModelFields || $this->isNested || !$this->model) {
-            return;
-        }
-
-        switch (strtolower($addToArea)) {
-            case FormTabs::SECTION_PRIMARY:
-                $this->activeTabSection = $this->allTabs->primary;
-                $modelMethod = 'definePrimaryFormFields';
-                break;
-            case FormTabs::SECTION_SECONDARY:
-                $this->activeTabSection = $this->allTabs->secondary;
-                $modelMethod = 'defineSecondaryFormFields';
-                break;
-            default:
-                $this->activeTabSection = $this->allTabs->outside;
-                $modelMethod = 'defineFormFields';
-                break;
-        }
-
-        if (method_exists($this->model, $modelMethod)) {
-            $this->model->$modelMethod($this);
-        }
-
-        $this->activeTabSection = null;
-    }
-
-    /**
      * addFields programmatically, used internally and for extensibility
      * @param array $fields
-     * @param string $addToArea
+     * @param string $inSection
      */
-    public function addFields(array $fields, $addToArea = null): ElementHolder
+    public function addFields(array $fields, $inSection = null): ElementHolder
     {
         $built = [];
         foreach ($fields as $name => $config) {
@@ -804,7 +780,7 @@ class Form extends WidgetBase implements FormElement
 
             $this->allFields[$fieldName] = $fieldObj;
 
-            switch (strtolower($addToArea)) {
+            switch (strtolower($inSection)) {
                 case FormTabs::SECTION_PRIMARY:
                     $this->allTabs->primary->addField($fieldName, $fieldObj);
                     break;

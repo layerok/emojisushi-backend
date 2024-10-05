@@ -194,7 +194,7 @@ oc.Modules.register('backend.component.monacoeditor', function () {
 
             updateLanguage: function updateLanguage(modelDefinition, value) {
                 const ref = this.findModelReferenceByUri(modelDefinition.uriString);
-                if (ref && ref.model.getLanguageIdentifier().language != value) {
+                if (ref && ref.model.getLanguageId() != value) {
                     monaco.editor.setModelLanguage(ref.model, value);
                 }
             },

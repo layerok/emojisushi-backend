@@ -1,7 +1,6 @@
 <?php namespace Cms\Classes;
 
 use Str;
-use File;
 use Lang;
 use Config;
 use October\Rain\Extension\Extendable;
@@ -113,7 +112,13 @@ abstract class ComponentBase extends Extendable implements CallsAnyMethod
     /**
      * componentDetails returns information about this component, including name and description
      */
-    abstract public function componentDetails();
+    public function componentDetails()
+    {
+        return [
+            'name' => Str::title(str_replace('_', ' ', Str::snake(class_basename(static::class)))),
+            'description' => __("No description provided.")
+        ];
+    }
 
     /**
      * makePrimaryAccessor returns the PHP object variable for the Twig view layer.

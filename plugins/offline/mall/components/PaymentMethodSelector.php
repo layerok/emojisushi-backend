@@ -1,10 +1,13 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace OFFLINE\Mall\Components;
 
 use Auth;
-use Validator;
 use Illuminate\Contracts\Encryption\DecryptException;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
+use Illuminate\Http\Exceptions\HttpResponseException;
 use Illuminate\Support\Collection;
 use October\Rain\Exception\ValidationException;
 use OFFLINE\Mall\Classes\Payments\PaymentGateway;
@@ -16,8 +19,7 @@ use OFFLINE\Mall\Models\GeneralSettings;
 use OFFLINE\Mall\Models\Order;
 use OFFLINE\Mall\Models\PaymentMethod;
 use Symfony\Component\HttpFoundation\Response;
-use Illuminate\Database\Eloquent\ModelNotFoundException;
-use Illuminate\Http\Exceptions\HttpResponseException;
+use Validator;
 
 /**
  * The PaymentMethodSelector component allows the user
@@ -33,34 +35,40 @@ class PaymentMethodSelector extends MallComponent
      * @var Cart
      */
     public $cart;
+
     /**
      * The active payment method.
      *
      * @var PaymentMethod
      */
     public $activeMethod;
+
     /**
      * Payment data.
      *
      * @var Collection
      */
     public $paymentData;
+
     /**
      * All available PaymentMethods
      * @var Collection
      */
     public $methods;
+
     /**
      * All available CustomerPaymentMethods
      * @var Collection
      */
     public $customerMethods;
+
     /**
      * The current order.
      *
      * @var Order
      */
     public $order;
+
     /**
      * Depending on whether the order is paid during checkout
      * or later on the component is working on either the Order
@@ -69,6 +77,7 @@ class PaymentMethodSelector extends MallComponent
      * @var Order|Cart
      */
     public $workingOnModel;
+
     /**
      * Backend setting whether shipping should be before payment.
      *
@@ -100,49 +109,6 @@ class PaymentMethodSelector extends MallComponent
     }
 
     /**
-     * This method sets all variables needed for this component to work.
-     *
-     * @return void
-     */
-    protected function setData()
-    {
-        $user = Auth::getUser();
-        if ( ! $user) {
-            return;
-        }
-
-        $this->setVar('cart', Cart::byUser($user));
-        $this->workingOnModel = $this->cart;
-
-        if ($orderId = request()->get('order')) {
-            $orderId = $this->decode($orderId);
-
-            try {
-                $order = Order::byCustomer($user->customer)->findOrFail($orderId);
-                $this->order          = $order;
-                $this->workingOnModel = $order;
-            } catch (ModelNotFoundException $e) {
-                throw new HttpResponseException(redirect('/'));
-            }
-        }
-
-        $method = PaymentMethod::find($this->order->payment_method_id ?? $this->cart->payment_method_id);
-
-        $this->setVar('methods', PaymentMethod::orderBy('sort_order', 'ASC')->get());
-        $this->setVar('customerMethods', $this->getCustomerMethods());
-        $this->setVar('activeMethod', $method);
-        $this->setVar('shippingSelectionBeforePayment', GeneralSettings::get('shipping_selection_before_payment', false));	// Needed by themes
-
-        try {
-            $paymentData = json_decode(decrypt(session()->get('mall.payment_method.data')), true);
-        } catch (DecryptException $e) {
-            $paymentData = [];
-        }
-
-        $this->setVar('paymentData', $paymentData);
-    }
-
-    /**
      * The component is executed.
      *
      * @return string|void
@@ -157,8 +123,8 @@ class PaymentMethodSelector extends MallComponent
      *
      * Any specified payment data is stored in the session.
      *
-     * @return Response
      * @throws \Cms\Classes\CmsException
+     * @return Response
      */
     public function onSubmit()
     {
@@ -182,8 +148,8 @@ class PaymentMethodSelector extends MallComponent
     /**
      * A different payment method has been selected.
      *
-     * @return array
      * @throws ValidationException
+     * @return array
      */
     public function onChangeMethod()
     {
@@ -194,6 +160,7 @@ class PaymentMethodSelector extends MallComponent
         ];
 
         $validation = Validator::make(post(), $rules);
+
         if ($validation->fails()) {
             throw new ValidationException($validation);
         }
@@ -207,7 +174,7 @@ class PaymentMethodSelector extends MallComponent
 
         return [
             '.mall-payment-method-selector' => $this->renderPartial($this->alias . '::selector'),
-            'method'                        => PaymentMethod::find($id),
+            'method'                        => PaymentMethod::where('id', $id)->first(),
         ];
     }
 
@@ -220,9 +187,9 @@ class PaymentMethodSelector extends MallComponent
         $id = $this->decode(post('id'));
 
         $method = CustomerPaymentMethod::where('customer_id', $this->workingOnModel->customer->id)
-                                       ->find($id);
+            ->where('id', $id)->first();
 
-        if ( ! $method) {
+        if (! $method) {
             throw new ValidationException([
                 'customer_method' => trans('customer_payment_method.does_not_exist'),
             ]);
@@ -248,7 +215,7 @@ class PaymentMethodSelector extends MallComponent
      */
     public function renderPaymentForm()
     {
-        if ( ! $this->workingOnModel->payment_method) {
+        if (! $this->workingOnModel->payment_method) {
             return '';
         }
 
@@ -261,9 +228,53 @@ class PaymentMethodSelector extends MallComponent
     }
 
     /**
+     * This method sets all variables needed for this component to work.
+     *
+     * @return void
+     */
+    protected function setData()
+    {
+        $user = Auth::user();
+
+        if (! $user) {
+            return;
+        }
+
+        $this->setVar('cart', Cart::byUser($user));
+        $this->workingOnModel = $this->cart;
+
+        if ($orderId = request()->get('order')) {
+            $orderId = $this->decode($orderId);
+
+            try {
+                $order = Order::byCustomer($user->customer)->where('id', $orderId)->firstOrFail();
+                $this->order          = $order;
+                $this->workingOnModel = $order;
+            } catch (ModelNotFoundException $e) {
+                throw new HttpResponseException(redirect('/'));
+            }
+        }
+
+        $method = PaymentMethod::where('id', $this->order->payment_method_id ?? $this->cart->payment_method_id)->first();
+
+        $this->setVar('paymentMethods', PaymentMethod::getAvailableByCart($this->cart));
+        $this->setVar('customerMethods', $this->getCustomerMethods());
+        $this->setVar('activeMethod', $method);
+        $this->setVar('shippingSelectionBeforePayment', GeneralSettings::get('shipping_selection_before_payment', false));	// Needed by themes
+
+        try {
+            $paymentData = json_decode(decrypt(session()->get('mall.payment_method.data')), true);
+        } catch (DecryptException $e) {
+            $paymentData = [];
+        }
+
+        $this->setVar('paymentData', $paymentData);
+    }
+
+    /**
      * Get the URL to a specific checkout step.
      *
-     * @param      $step
+     * @param $step
      * @param null $via
      *
      * @return string
@@ -271,7 +282,8 @@ class PaymentMethodSelector extends MallComponent
     protected function getStepUrl($step, $via = null): string
     {
         $url = $this->controller->pageUrl($this->page->page->fileName, ['step' => $step]);
-        if ( ! $via) {
+
+        if (! $via) {
             return $url;
         }
 
@@ -286,7 +298,7 @@ class PaymentMethodSelector extends MallComponent
      */
     protected function getCustomerMethods()
     {
-        if ( ! $this->workingOnModel->customer) {
+        if (! $this->workingOnModel->customer) {
             return collect([]);
         }
 
@@ -295,10 +307,10 @@ class PaymentMethodSelector extends MallComponent
 
     /**
      * @param PaymentGateway $gateway
-     * @param                $data
+     * @param $data
      *
-     * @return Response|array
      * @throws \Cms\Classes\CmsException
+     * @return Response|array
      */
     protected function doRedirect(PaymentGateway $gateway, $data)
     {
@@ -319,7 +331,8 @@ class PaymentMethodSelector extends MallComponent
         session()->put('mall.payment_method.data', encrypt(json_encode($data)));
 
         $nextStep = 'confirm';
-        if ( ! $this->shippingSelectionBeforePayment) {
+
+        if (! $this->shippingSelectionBeforePayment) {
             $nextStep = request()->get('via') === 'confirm' ? 'confirm' : 'shipping';
         }
 
@@ -340,6 +353,6 @@ class PaymentMethodSelector extends MallComponent
      */
     protected function getPaymentMethod()
     {
-        return PaymentMethod::findOrFail($this->workingOnModel->payment_method_id);
+        return PaymentMethod::where('id', $this->workingOnModel->payment_method_id)->firstOrFail();
     }
 }

@@ -6,7 +6,7 @@
     background: @dropdown-trigger-bg;
     display: inline-block;
 
-    > a {
+    > button {
         color: @dropdown-trigger-color;
         text-align: center;
         text-decoration: none;
@@ -14,6 +14,8 @@
         font-weight: normal;
         font-size: @font-size-base;
         display: block;
+        background: transparent;
+        border: none;
 
         > i {
             margin-right: 4px;
@@ -27,8 +29,10 @@
         background-color: @dropdown-hover-bg;
         border-color: transparent;
 
-        > a, > a > i {
-            color: @dropdown-hover-color;
+        > button {
+            &, > i {
+                color: @dropdown-hover-color;
+            }
         }
     }
 
@@ -36,8 +40,10 @@
         background-color: @dropdown-active-bg;
         border-color: transparent;
 
-        > a, > a > i {
-            color: @dropdown-hover-color;
+        > button {
+            &, > i {
+                color: @dropdown-hover-color;
+            }
         }
     }
 
@@ -49,4 +55,7 @@
 
 .field-repeater > .field-repeater-builder > .field-repeater-toolbar {
     display: block;
+    > a, > button {
+        width: 100%;
+    }
 }

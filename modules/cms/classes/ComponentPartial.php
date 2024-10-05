@@ -181,13 +181,11 @@ class ComponentPartial extends Extendable implements CmsObjectContract
     {
         $partial = new static($component);
 
-        $filePath = $partial->getFilePath($fileName);
-
-        if (!strlen(File::extension($filePath))) {
-            $filePath .= '.'.$partial->getDefaultExtension();
+        if (!strlen(File::extension($fileName))) {
+            $fileName .= '.' . $partial->getDefaultExtension();
         }
 
-        return File::isFile($filePath);
+        return File::isFile($partial->getFilePath($fileName));
     }
 
     /**

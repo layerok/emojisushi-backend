@@ -26,6 +26,8 @@ oc.Modules.register('backend.formwidget.repeater.builder', function() {
 
         connect() {
             // Locals
+            this.$el = $(this.element);
+            this.$itemContainer = $('> .field-repeater-items', this.$el);
             this.$sidebar = $('> .field-repeater-builder > .field-repeater-groups:first', this.$el);
             this.$sidebar.on('click', '> li:not(.is-placeholder)', this.proxy(this.clickBuilderItem));
 
@@ -117,6 +119,37 @@ oc.Modules.register('backend.formwidget.repeater.builder', function() {
             });
         }
 
+        sortItemsToSidebar() {
+            $('> li', this.$sidebar).each((index, sbItem) => {
+                var itemIndex = $(sbItem).data('repeater-index'),
+                    $item = this.findItemFromIndex(itemIndex);
+
+                this.$itemContainer.append($item);
+            });
+        }
+
+        sortSidebarToItems() {
+            $('> .field-repeater-item', this.$itemContainer).each((index, rItem) => {
+                var $item = $(rItem).closest('li'),
+                    itemIndex = $item.attr('data-repeater-index'),
+                    $sidebarItem = $('> li[data-repeater-index='+itemIndex+']:first', this.$sidebar);
+
+                this.$sidebar.append($sidebarItem);
+            });
+        }
+
+        appendLoadingItem($afterItem) {
+            var templateHtml = $('> [data-group-loading-template]', this.$el).html(),
+                $loadingItem = $(templateHtml);
+
+            if ($afterItem) {
+                $afterItem.after($loadingItem);
+            }
+            else {
+                this.$sidebar.append($loadingItem);
+            }
+        }
+
         //
         // Event Overrides
         //
@@ -138,19 +171,21 @@ oc.Modules.register('backend.formwidget.repeater.builder', function() {
         }
 
         eventSortableOnEnd() {
-            var self = this;
-
-            $('> li', this.$sidebar).each(function() {
-                var itemIndex = $(this).data('repeater-index');
-                self.$itemContainer.append(self.findItemFromIndex(itemIndex));
-            });
+            this.sortable.option('disabled', true);
+            this.sortItemsToSidebar();
+            this.sortable.option('disabled', false);
         }
 
         eventOnAddItem() {
-            var templateHtml = $('> [data-group-loading-template]', this.$el).html(),
-                $loadingItem = $(templateHtml);
+            this.appendLoadingItem();
+        }
 
-            this.$sidebar.append($loadingItem);
+        eventOnDuplicateItem($fromItem) {
+            this.appendLoadingItem($fromItem);
+        }
+
+        eventDuplicateOnEnd() {
+            this.sortSidebarToItems();
         }
 
         eventOnErrorAddItem() {

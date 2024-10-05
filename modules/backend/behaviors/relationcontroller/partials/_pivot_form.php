@@ -1,5 +1,5 @@
 <div id="<?= $relationPivotWidget->getId('pivotPopup') ?>">
-    <?php if ($relationManageId): ?>
+    <?php if ($relationManageId || $relationPivotId): ?>
 
         <?= Form::ajax('onRelationManagePivotUpdate', [
             'data-popup-load-indicator' => true,
@@ -8,17 +8,20 @@
 
             <!-- Passable fields -->
             <input type="hidden" name="_relation_field" value="<?= $relationField ?>" />
-            <input type="hidden" name="_relation_extra_config" value="<?= e($relationExtraConfig) ?>" />
+            <input type="hidden" name="_relation_extra_config" value="<?= e(json_encode($relationExtraConfig)) ?>" />
+            <?php if ($relationPivotId): ?>
+                <input type="hidden" name="pivot_id" value="<?= $relationPivotId ?>" />
+            <?php endif ?>
 
             <div class="modal-header" data-popup-size="<?= $relationPopupSize ?? 950 ?>">
                 <h4 class="modal-title"><?= e($relationPivotTitle) ?></h4>
                 <button type="button" class="btn-close" data-dismiss="popup"></button>
             </div>
             <div class="modal-body">
-                <?= $relationPivotWidget->render(['preview' => $this->readOnly]) ?>
+                <?= $relationPivotWidget->render(['preview' => $relationReadOnly]) ?>
             </div>
             <div class="modal-footer">
-                <?php if ($this->readOnly): ?>
+                <?php if ($relationReadOnly): ?>
                     <button
                         type="button"
                         class="btn btn-secondary"
@@ -54,7 +57,7 @@
 
             <!-- Passable fields -->
             <input type="hidden" name="_relation_field" value="<?= $relationField ?>" />
-            <input type="hidden" name="_relation_extra_config" value="<?= e($relationExtraConfig) ?>" />
+            <input type="hidden" name="_relation_extra_config" value="<?= e(json_encode($relationExtraConfig)) ?>" />
             <?php foreach ((array) $foreignId as $fid): ?>
                 <input type="hidden" name="foreign_id[]" value="<?= $fid ?>" />
             <?php endforeach ?>

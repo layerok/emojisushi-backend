@@ -78,7 +78,7 @@ trait EncodesCsv
         ], $options);
 
         // Prepare CSV
-        $csv = CsvWriter::createFromFileObject(new SplTempFileObject);
+        $csv = CsvWriter::createFromString();
         $csv->setOutputBOM(CsvWriter::BOM_UTF8);
 
         if ($options['delimiter'] !== null) {
@@ -93,7 +93,10 @@ trait EncodesCsv
             $csv->setEscape($options['escape']);
         }
 
-        if ($options['encoding'] !== null) {
+        if (
+            $options['encoding'] !== null &&
+            $csv->supportsStreamFilterOnWrite()
+        ) {
             CharsetConverter::addTo($csv, 'UTF-8', $options['encoding']);
         }
 

@@ -27,6 +27,11 @@ trait HasPivotMode
     protected $pivotTitle;
 
     /**
+     * @var int pivotId of a pivot record using an incrementing id
+     */
+    protected $pivotId;
+
+    /**
      * @var int foreignId of a selected pivot record
      */
     protected $foreignId;
@@ -51,8 +56,22 @@ trait HasPivotMode
 
         $foreignKeyName = $this->relationModel->getQualifiedKeyName();
 
+        // Incrementing pivot record
+        if ($this->pivotId && ($pivotKey = $this->isPivotIncrementing())) {
+            $this->pivotModel = $this->relationObject->wherePivot($pivotKey, $this->pivotId)->first();
+
+            if ($this->pivotModel) {
+                $config->model = $this->pivotModel;
+            }
+            else {
+                throw new ApplicationException(Lang::get('backend::lang.model.not_found', [
+                    'class' => get_class($this->relationObject->newPivot()),
+                    'id' => $this->pivotId,
+                ]));
+            }
+        }
         // Existing record
-        if ($this->manageId) {
+        elseif ($this->manageId) {
             $this->pivotModel = $this->relationObject->where($foreignKeyName, $this->manageId)->first();
 
             if ($this->pivotModel) {
@@ -132,9 +151,21 @@ trait HasPivotMode
                 $this->relationObject->sync(array_fill_keys($foreignIds, $pivotData), false);
             }
 
-            // Save data to models
+            // Find newly attached models to save with deferred binding and nesting
             $foreignKeyName = $this->relationModel->getQualifiedKeyName();
-            $hydratedModels = $this->relationObject->whereIn($foreignKeyName, $foreignIds)->get();
+            if ($pivotKey = $this->isPivotIncrementing()) {
+                // Must guess the models here since there is no way to fetch the last incrementing IDs
+                $hydratedModels = $this->relationObject
+                    ->whereIn($foreignKeyName, $foreignIds)
+                    ->limit(count($foreignIds))
+                    ->orderBy($this->relationObject->qualifyPivotColumn($pivotKey), 'desc')
+                    ->get();
+            }
+            else {
+                $hydratedModels = $this->relationObject->whereIn($foreignKeyName, $foreignIds)->get();
+            }
+
+            // Save data to models
             foreach ($hydratedModels as $hydratedModel) {
                 $modelsToSave = $this->prepareModelsToSave($hydratedModel, $saveData);
                 foreach ($modelsToSave as $modelToSave) {
@@ -208,5 +239,26 @@ trait HasPivotMode
         }
 
         return $pivotData;
+    }
+
+    /**
+     * isPivotIncrementing
+     */
+    protected function isPivotIncrementing()
+    {
+        if ($this->manageMode !== 'pivot') {
+            return false;
+        }
+
+        $definition = $this->relationParent->getRelationDefinition($this->relationName);
+        if (!isset($definition['pivotModel'])) {
+            return false;
+        }
+
+        if (is_string($pivotKey = $definition['pivotKey'] ?? null)) {
+            return $pivotKey;
+        }
+
+        return false;
     }
 }

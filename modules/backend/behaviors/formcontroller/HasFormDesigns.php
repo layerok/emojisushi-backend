@@ -1,7 +1,6 @@
 <?php namespace Backend\Behaviors\FormController;
 
 use Backend;
-use SystemException;
 use ApplicationException;
 
 /**
@@ -10,32 +9,26 @@ use ApplicationException;
 trait HasFormDesigns
 {
     /**
-     * formGetDesignFormSize is an API call used by ListController
-     */
-    protected function formGetDesignFormSize()
-    {
-        return $this->getDesignFormSize();
-    }
-
-    /**
-     * getDesignDisplayMode
+     * getDesignDisplayMode returns the display mode taken from the form configuration,
+     * defaults to `basic` display mode.
      */
     protected function getDesignDisplayMode()
     {
         return $this->getConfig(
             "{$this->context}[design][displayMode]",
             $this->getConfig('design[displayMode]')
-        );
+        ) ?: 'basic';
     }
 
     /**
-     * getDesignFormSize
+     * getDesignFormSize returns the page size taken from the form configuration,
+     * can also specify a custom configuration name, e.g. `sidebarSize`.
      */
-    protected function getDesignFormSize()
+    protected function getDesignFormSize($name = 'size')
     {
         $value = $this->getConfig(
-            "{$this->context}[design][size]",
-            $this->getConfig('design[size]')
+            "{$this->context}[design][{$name}]",
+            $this->getConfig("design[{$name}]")
         ) ?: 'auto';
 
         return Backend::sizeToPixels($value) ?: null;
@@ -47,7 +40,7 @@ trait HasFormDesigns
     protected function getDesignBodyClass()
     {
         if ($this->getDesignDisplayMode() === 'sidebar') {
-            return  'compact-container';
+            return 'compact-container';
         }
 
         return null;

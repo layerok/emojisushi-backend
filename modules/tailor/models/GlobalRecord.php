@@ -168,6 +168,15 @@ class GlobalRecord extends BlueprintModel
     }
 
     /**
+     * isMultisiteSyncEnabled
+     * @return bool
+     */
+    public function isMultisiteSyncEnabled()
+    {
+        return $this->getBlueprintDefinition()->useMultisiteSync();
+    }
+
+    /**
      * fromDateTime handles an extra saved datetime type in the db
      */
     public function fromDateTime($value)

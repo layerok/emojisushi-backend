@@ -1,4 +1,4 @@
-<div class="d-flex h-100 form-with-sidebar">
+<div class="d-flex h-100 form-with-sidebar sidebar-width-<?= $sidebarWidth ?? 300 ?>">
     <div class="flex-grow-1 form-contents">
 
         <div class="d-flex h-100 flex-column">

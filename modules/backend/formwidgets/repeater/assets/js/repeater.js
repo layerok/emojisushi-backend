@@ -6,11 +6,10 @@
 oc.Modules.register('backend.formwidget.repeater.base', function() {
     class RepeaterFormWidgetBase extends oc.ControlBase {
         init() {
-            this.$el = $(this.element);
-            this.$itemContainer = $('> .field-repeater-items', this.$el);
             this.itemCount = 0;
             this.canAdd = true;
             this.canRemove = true;
+            this.toolbarBusy = false;
             this.repeaterId = $.oc.domIdManager.generate('repeater');
             this.initDefaults();
         }
@@ -30,8 +29,8 @@ oc.Modules.register('backend.formwidget.repeater.base', function() {
             };
 
             for (const key in defaults) {
-                if (this.element.dataset[key] === undefined) {
-                    this.element.dataset[key] = defaults[key];
+                if (this.config[key] === undefined) {
+                    this.config[key] = defaults[key];
                 }
             }
         }
@@ -40,6 +39,10 @@ oc.Modules.register('backend.formwidget.repeater.base', function() {
             if (this.config.useReorder) {
                 this.bindSorting();
             }
+
+            // Init elements
+            this.$el = $(this.element);
+            this.$itemContainer = $('> .field-repeater-items', this.$el);
 
             // Items
             var headSelect = this.selectorHeader;
@@ -141,6 +144,10 @@ oc.Modules.register('backend.formwidget.repeater.base', function() {
             $dropdownList.html(templateHtml);
 
             this.eventMenuFilter($item, $dropdownList);
+
+            if (this.toolbarBusy) {
+                $('li', $dropdownList).addClass('disabled');
+            }
         }
 
         clickRemoveItem(ev) {
@@ -196,8 +203,11 @@ oc.Modules.register('backend.formwidget.repeater.base', function() {
                 return;
             }
 
-            this.eventOnAddItem();
-            this.onDuplicateItem(this.findItemFromTarget(ev.target));
+            this.toolbarBusy = true;
+
+            var $item = this.findItemFromTarget(ev.target);
+            this.eventOnDuplicateItem($item);
+            this.onDuplicateItem($item);
         }
 
         onDuplicateItem($item) {
@@ -211,6 +221,7 @@ oc.Modules.register('backend.formwidget.repeater.base', function() {
             $item.request(this.config.duplicateHandler, {
                 data: itemData,
                 afterUpdate: function(data) {
+                    self.toolbarBusy = false;
                     if (data.result) {
                         self.onDuplicateItemSuccess($item, data.result.duplicateIndex);
                     }
@@ -229,6 +240,7 @@ oc.Modules.register('backend.formwidget.repeater.base', function() {
 
             this.countItems();
             this.triggerChange();
+            this.eventDuplicateOnEnd();
         }
 
         clickMoveItemUp(ev) {
@@ -258,6 +270,11 @@ oc.Modules.register('backend.formwidget.repeater.base', function() {
                 templateHtml = $('> [data-group-palette-template]', this.$el).html(),
                 $target = $(ev.target),
                 $form = this.$el.closest('form');
+
+            // Prevent adding new items until last one is finished
+            if ($target.hasClass('oc-loading')) {
+                return;
+            }
 
             $target.ocPopover({
                 content: templateHtml
@@ -546,7 +563,7 @@ oc.Modules.register('backend.formwidget.repeater.base', function() {
             });
 
             var that = this,
-                $buttons = this.$el.find('> .field-repeater-builder > .field-repeater-toolbar a, > .field-repeater-toolbar a');
+                $buttons = this.$el.find('> .field-repeater-builder > .field-repeater-toolbar > button, > .field-repeater-toolbar > button');
 
             $buttons.each(function () {
                 var $button = $(this),
@@ -591,6 +608,12 @@ oc.Modules.register('backend.formwidget.repeater.base', function() {
         }
 
         eventOnErrorAddItem() {
+        }
+
+        eventOnDuplicateItem($fromItem) {
+        }
+
+        eventDuplicateOnEnd() {
         }
 
         eventMenuFilter() {

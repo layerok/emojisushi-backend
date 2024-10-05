@@ -94,7 +94,9 @@
         <td colspan="3">
             <span>
                 <?= e(trans('offline.mall::lang.common.shipping')) ?>:
-                <?= e($order['shipping']['method']['name']) ?>
+                <?php if (!empty($order['shipping']['method'])): ?>
+                    <?= e($order['shipping']['method']['name']) ?>
+                <?php endif; ?>
                 <?php if($order['shipping']['appliedDiscount']): ?>
                 (<?= e($order['shipping']['appliedDiscount']['discount']['name']) ?>,
                 <?= e($money->format($order['shipping']['appliedDiscount']['savings'])) ?>)
@@ -113,7 +115,9 @@
         <td colspan="3">
             <span>
                 <?= e(trans('offline.mall::lang.common.payment')) ?>:
-                <?= e($order['payment']['method']['name']) ?>
+                <?php if (!empty($order['payment']['method'])): ?>
+                    <?= e($order['payment']['method']['name']) ?>
+                <?php endif; ?>
             </span>
         </td>
         <td class="text-right">
@@ -132,20 +136,20 @@
         <td class="text-right"><span><?= e($order->totalPostTaxes()) ?></span></td>
     </tr>
     <?php if ($order['taxes']): ?>
-    <?php foreach ($order['taxes'] as $tax): ?>
-    <tr class="orderfooter orderfooter-taxes separator">
-        <td colspan="3">
-            <span>
-                <?= e($tax['tax']['name']) ?> (<?= e($tax['tax']['percentage']) ?> %)
-            </span>
-        </td>
-        <td class="text-right">
-            <span>
-                <?= e($tax['total_formatted']); ?>
-            </span>
-        </td>
-    </tr>
-    <?php endforeach; ?>
+        <?php foreach ($order['taxes'] as $tax): ?>
+        <tr class="orderfooter orderfooter-taxes separator">
+            <td colspan="3">
+                <span>
+                    <?= e($tax['tax']['name'] ?? '') ?> (<?= e($tax['tax']['percentage']) ?> %)
+                </span>
+            </td>
+            <td class="text-right">
+                <span>
+                    <?= e($tax['total_formatted']); ?>
+                </span>
+            </td>
+        </tr>
+        <?php endforeach; ?>
     <?php endif; ?>
     </tbody>
 </table>

@@ -1,4 +1,5 @@
-<?php 
+<?php
+
 return [
     'plugin' => [
         'name' => 'Mall',
@@ -16,7 +17,7 @@ return [
             'preview' => 'Kategorie-Vorschau',
         ],
         'orders' => [
-            'show' => 'Bestellungsdetails',
+            'show' => 'Bestelldetails',
             'export' => 'Bestellungen exportieren',
         ],
         'discounts' => [
@@ -36,7 +37,6 @@ return [
         'payment_methods' => [
             'create' => 'Zahlungsmethode erstellen',
             'edit' => 'Zahlungsmethode bearbeiten',
-            'reorder' => 'Sortieren',
         ],
         'custom_field_options' => [
             'edit' => 'Feldoptionen bearbeiten',
@@ -73,6 +73,16 @@ return [
             'create' => 'Review erstellen',
             'update' => 'Review bearbeiten',
         ],
+        'currencies' => [
+            'create' => 'Währung erstellen',
+            'update' => 'Währung bearbeiten',
+            'reorder' => 'Währungen sortieren',
+        ],
+        'price_categories' => [
+            'create' => 'Preiskategorie erstellen',
+            'update' => 'Preiskategorie bearbeiten',
+            'reorder' => 'Preiskategorien sortieren',
+        ],
     ],
     'menu_items' => [
         'all_categories' => 'Alle Shop-Kategorien',
@@ -91,8 +101,19 @@ return [
         'currency_format' => 'Formatierung',
         'currency_symbol' => 'Symbol',
         'currency_rate' => 'Kurs zu Basiswährung',
-        'is_default' => 'Ist Standard',
+        'is_default' => 'Standard',
+        'set_as_default' => 'Als Standard-Währung festlegen',
+        'is_enabled' => 'Aktiv',
         'unknown' => 'Unbekannte Währung',
+        'help_title' => 'Hilfe mit der Formatierung der Währung',
+        'help_default_label' => 'Die Standard-Formatierung der Währung ist:',
+        'help_variables_label' => 'Folgende Variablen können genutzt werden:',
+        'help_variable_price_label' => 'Der gesamte Preis des Produkts als float (bsp. <code>1500.42</code>).',
+        'help_variable_integers_label' => 'Der Preis ohne Nachkommastellen (bsp. <code>1500</code>).',
+        'help_variable_decimals_label' => 'Die reinen Nachkommastellen des Preises (bsp. <code>42</code>).',
+        'help_variable_currency_label' => 'Die Währungsdaten die du festgelegt hast (bsp. <code>{code: "EUR", rate: 1, symbol: "€", decimals: 2}</code>).',
+        'help_variable_product_label' => 'Das Produkt-Model von dem der Preis stammt (bsp. eine vollständige <code>Product</code> Model-Instanz).',
+        'help_plugin_docs_link' => 'Auf <a href=":link" target="_blank">der Plugin-Dokumentationsseite</a> findest du weitere Beispiele.',
     ],
     'payment_gateway_settings' => [
         'label' => 'Zahlungsanbieter',
@@ -128,15 +149,25 @@ return [
     'price_category_settings' => [
         'label' => 'Preiskategorien',
         'description' => 'Zusätzliche Preiskategorien verwalten',
+        'is_enabled' => 'Aktiv',
+        'title_label' => 'Bezeichnung',
+        'title_description' => 'Eine ausführlichere Bezeichnung, welche im Front-End verwendet werden kann.',
     ],
     'order_state_settings' => [
         'description' => 'Mögliche Status für Bestellungen verwalten',
+        'is_enabled' => 'Aktiviert',
     ],
     'payment_method_settings' => [
         'description' => 'Zahlungsmethoden verwalten',
+        'is_default' => 'Standard',
+        'set_as_default' => 'Als Standard-Zahlungsmethode festlegen',
+        'is_enabled' => 'Aktiv',
     ],
     'shipping_method_settings' => [
         'description' => 'Versandmethoden verwalten',
+        'is_default' => 'Standard',
+        'set_as_default' => 'Als Standard-Versandmethode festlegen',
+        'is_enabled' => 'Aktiv',
     ],
     'tax_settings' => [
         'description' => 'Steuern verwalten',
@@ -174,18 +205,18 @@ return [
         'customizations' => 'Optionen',
         'customizations_comment' => 'Globale Konfigurationseinstellungen für deinen Shop',
         'category_page_comment' => 'Füge die Komponente "products" zu dieser Seite hinzu.',
-        'order_number_start' => 'Beginn Bestellungsnummerierung',
+        'order_number_start' => 'Beginn Bestellnummerierung',
         'order_number_start_comment' => 'Die erste Bestellung erhält diese Nummer',
         'index_driver' => 'Index-Treiber',
         'index_driver_comment' => 'Wenn deine Datenbank JSON unterstützt wird der Datenbank-Treiber empfohlen.',
         'index_driver_filesystem' => 'Dateisystem',
         'index_driver_database' => 'Datenbank (MySQL 5.7+, MariaDB 10.2+, SQLite 3.19+)',
-        'index_driver_hint' => 'Nachdem diese Option geändert wurde muss "php artisan mall:reindex" auf der Konsole ausgeführt werden!',
+        'index_driver_hint' => 'Nachdem diese Option geändert wurde muss :command auf der Konsole ausgeführt werden!',
     ],
     'feed_settings' => [
         'description' => 'Feeds konfigurieren',
         'google_merchant_enabled' => 'Verwende Google Merchant Center Feed',
-        'google_merchant_enabled_comment' => 'Ein Produktfeed wird über eine URL zugänglich gemacht',
+        'google_merchant_enabled_comment' => 'Ein Produkt-Feed wird über eine URL zugänglich gemacht',
         'google_merchant_url' => 'Deine Google Merchant Feed URL',
         'google_merchant_url_locale' => 'Füge ?locale=xy zur URL hinzu um einen übersetzten Feed zu erhalten.',
     ],
@@ -196,7 +227,7 @@ return [
         'moderated' => 'Reviews moderieren',
         'moderated_comment' => 'Reviews werden erst nach manueller Prüfung auf der Website sichtbar',
         'allow_anonymous' => 'Anonyme Reviews zulassen',
-        'allow_anonymous_comment' => 'Unregistrierte Benutzer dürfen Reviews erstellen',
+        'allow_anonymous_comment' => 'Nicht registrierte Benutzer dürfen Reviews erstellen',
     ],
     'common' => [
         'shop' => 'Shop',
@@ -276,7 +307,7 @@ return [
         'stock_limit_reached' => 'Es stehen keine weiteren Stücke dieses Artikels zur Verfügung',
         'deleted_at' => 'Gelöscht am',
         'sort_order' => 'Sortierreihenfolge',
-        'order_states' => 'Bestellungs-Status',
+        'order_states' => 'Bestellstatus',
         'website' => 'Website',
         'brands' => 'Marken',
         'brand' => 'Marke',
@@ -329,6 +360,9 @@ return [
             'single' => 'Artikel',
             'variant' => 'Artikelvarianten',
         ],
+        'create' => 'Variante erstellen',
+        'delete' => 'Ausgewählte löschen',
+        'delete_confirm' => 'Willst du die ausgewählten Artikelvarianten wirklich entfernen? Diese Aktion kann nicht rückgängig gemacht werden.',
     ],
     'properties' => [
         'use_for_variants' => 'Verwende für Varianten',
@@ -413,8 +447,8 @@ return [
         'group_by_property' => 'Attribut für Varianten-Gruppierung',
         'additional_descriptions' => 'Zusätzliche Beschreibungen',
         'additional_properties' => 'Zusätzliche Eigenschaften',
-        'gtin' => 'Global Trade Item Number (GTIN)',
-        'mpn' => 'Manufacturer Part Number (MPN)',
+        'gtin' => 'Global-Trade Item Number (GTIN)',
+        'mpn' => 'Hersteller-Teilenummer (MPN)',
         'price_table_modal' => [
             'trigger' => 'Preise und Lagerbestand bearbeiten',
             'label' => 'Preise und Lagerbestand',
@@ -437,6 +471,8 @@ return [
         'session_required_comment' => 'Die Datei kann nur nach dem Login mit einem Kundenkonto heruntergeladen werden (Link ist nicht teilbar).',
         'file' => 'Datei',
         'download_count' => 'Anz. Downloads',
+        'limit_to_variants' => 'Auf Varianten begrenzen',
+        'limit_to_variants_comment' => 'Ordne diese Produktdatei einer oder mehreren Varianten zu.',
         'errors' => [
             'invalid' => 'Ungültiger Download-Link',
             'expired' => 'Download-Link ist nicht mehr gültig',
@@ -479,9 +515,11 @@ return [
     'tax' => [
         'percentage' => 'Prozent',
         'countries' => 'Steuer gilt nur für Versand in diese Länder',
-        'countries_comment' => 'Wird kein Land ausgewhält gilt die Steuer weltweit.',
-        'is_default' => 'Ist Standard',
-        'is_default_comment' => 'Diese Steuer wird verwendet falls das Versand-Land noch nicht bekannt ist',
+        'countries_comment' => 'Wird kein Land ausgewählt gilt die Steuer weltweit.',
+        'is_default' => 'Standard',
+        'set_as_default' => 'Ist Standard',
+        'set_as_default_comment' => 'Diese Steuer wird verwendet falls das Versand-Land noch nicht bekannt ist',
+        'is_enabled' => 'Aktiv',
     ],
     'discounts' => [
         'name' => 'Name',
@@ -529,7 +567,7 @@ return [
         'price' => 'Fixkosten',
         'price_comment' => 'Der Betrag wird zum Total dazugerechnet',
         'fee_percentage' => 'Prozentuale Kosten',
-        'fee_percentage_comment' => 'Prozent des Gesamttotals, wird zum Total dazugerechnet',
+        'fee_percentage_comment' => 'Prozent des Gesamtpreises, wird zum Total dazugerechnet',
         'fee_label' => 'Gebührenbezeichnung',
         'fee_label_comment' => 'Dieser Text wird dem Kunden im Warenkorb angezeigt',
         'instructions' => 'Zahlungsanweisung',
@@ -582,13 +620,13 @@ return [
         'items_total' => 'Artikeltotal',
         'subtotal' => 'Zwischentotal',
         'taxable_total' => 'Steuerbares Total',
-        'total_weight' => 'Gesamgtgewicht',
+        'total_weight' => 'Gesamtgewicht',
         'total_rebate_rate' => 'Gesamt-Rabatt',
         'notes' => 'Notiz',
         'custom_fields' => 'Benutzerdefinierte Felder',
         'shipping_enabled' => 'Versand aktiv',
         'payment_transaction_id' => 'Transaktions-ID',
-        'change_order_status' => 'Bestellungsstatus ändern',
+        'change_order_status' => 'Bestellstatus ändern',
         'change_payment_status' => 'Bezahlstatus ändern',
         'items' => 'Artikel',
         'quantity' => 'Menge',
@@ -603,7 +641,7 @@ return [
         'shipped' => 'Versendet',
         'shipping_pending' => 'Versand pendent',
         'not_shipped' => 'Versand ausstehend',
-        'data' => 'Bestellungsdaten',
+        'data' => 'Bestelldaten',
         'total_revenue' => 'Gesamteinnahmen',
         'download_invoice' => 'Rechnung herunterladen',
         'order_file_name' => 'bestellung-:order',
@@ -758,7 +796,7 @@ return [
         'myAccount' => [
             'details' => [
                 'name' => 'Benutzeraccount',
-                'description' => 'Zeigt dem Kunden alle Informationen zu seinem Bentzerkonto an',
+                'description' => 'Zeigt dem Kunden alle Informationen zu seinem Benutzerkonto an',
             ],
             'properties' => [
                 'page' => [
@@ -776,15 +814,11 @@ return [
                 'name' => 'Kundenprofil',
                 'description' => 'Zeigt ein Formular zur Bearbeitung der Kundendaten an.',
             ],
-            'properties' => [
-            ],
         ],
         'currencyPicker' => [
             'details' => [
                 'name' => 'Währungsauswahl',
                 'description' => 'Zeigt eine Auswahl für die aktive Währung an',
-            ],
-            'properties' => [
             ],
         ],
         'dependencies' => [
@@ -792,18 +826,14 @@ return [
                 'name' => 'Frontend-Abhängigkeiten',
                 'description' => 'Bindet alle benötigten Frontend-Abhängigkeiten ein',
             ],
-            'properties' => [
-            ],
         ],
         'addressList' => [
             'details' => [
                 'name' => 'Adressliste',
                 'description' => 'Zeigt alle erfassten Adressen eines Kunden an',
             ],
-            'properties' => [
-            ],
             'errors' => [
-                'address_not_found' => 'Die gesuchte Addresse wurde nicht gefunden',
+                'address_not_found' => 'Die gesuchte Adresse wurde nicht gefunden',
                 'cannot_delete_last_address' => 'Sie können Ihre letzte Adresse nicht löschen',
             ],
             'messages' => [
@@ -814,10 +844,8 @@ return [
         ],
         'ordersList' => [
             'details' => [
-                'name' => 'Bestellungsliste',
+                'name' => 'Bestellliste',
                 'description' => 'Zeigt alle Bestellungen eines Kunden an',
-            ],
-            'properties' => [
             ],
         ],
         'product' => [
@@ -924,8 +952,6 @@ return [
             'details' => [
                 'name' => 'Auswahl für Adressen',
                 'description' => 'Zeige eine Auflistung aller Adressen eines Kunden an',
-            ],
-            'errors' => [
             ],
         ],
         'addressForm' => [
@@ -1070,8 +1096,8 @@ return [
         ],
         'enhancedEcommerceAnalytics' => [
             'details' => [
-                'name' => 'Enhanced Ecommerce (UA) Component',
-                'description' => 'Implements a Google Tag Manager Data Layer',
+                'name' => 'Erweiterte E-Commerce-Berichte für Tag Manager (UA)',
+                'description' => 'Implementiert einen Google Tag Manager Daten-Layer',
             ],
         ],
         'wishlistButton' => [
@@ -1122,7 +1148,7 @@ return [
         ],
     ],
     'customer_group' => [
-        'code_comment' => 'Dieser Code kann verwendet werden, um diese Gruppe programmtechnisch anzusteuern',
+        'code_comment' => 'Dieser Code kann verwendet werden, um diese Gruppe programmatisch anzusteuern',
         'discount_comment' => 'Dieser Benutzergruppe wird dieser Rabatt in % auf das komplette Sortiment gewährt',
     ],
     'order_status' => [
@@ -1141,7 +1167,7 @@ return [
     'payment_log' => [
         'payment_data' => 'Zahlungsdaten',
         'data_comment' => 'Diese Daten wurden vom Zahlungsanbieter zurückgegeben',
-        'order_data_comment' => 'Diese Bestellungsdaten gehören zu der Zahlung',
+        'order_data_comment' => 'Diese Bestelldaten gehören zu der Zahlung',
         'message_comment' => 'Diese Nachricht wurde vom Zahlungsanbieter zurückgegeben',
         'code_comment' => 'Dieser Code wurde vom Zahlungsanbieter zurückgegeben',
         'failed_only' => 'Nur fehlgeschlagene',

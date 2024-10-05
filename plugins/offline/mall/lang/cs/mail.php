@@ -1,4 +1,6 @@
-<?php return [
+<?php
+
+return [
     'common' => [
         'hello' => 'Dobrý den :firstname',
         'view_order_status_online' => 'Zobrazit stav objednávky online',
@@ -63,8 +65,6 @@
             'subject' => 'Chyba při objednávce #:number',
             'problem_message' => 'Je nám velmi líto, že během procesu platby došlo k problému. Budeme se zabývat problémem a kontaktovat vás s dalšími informacemi.',
             'check_order_status' => 'Chcete-li zkontrolovat stav své objednávky, můžete se kdykoli přihlásit do našeho obchodu.',
-            'payment_id' => 'ID platby',
-            'error' => 'Chybové hlášení',
         ],
     ],
     'admin' => [
@@ -76,6 +76,8 @@
             'subject' => 'Objednávka se nezdařila #:number',
             'not_processed' => 'Následující objednávku nelze správně zpracovat. Je možné, že musíte kontaktovat zákazníka.',
             'error_details' => 'Detaily chyby',
+            'payment_id' => 'ID platby',
+            'error' => 'Chybové hlášení',
         ],
     ],
 ];

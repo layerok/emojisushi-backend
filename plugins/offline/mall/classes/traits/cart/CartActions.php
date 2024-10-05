@@ -3,7 +3,6 @@
 namespace OFFLINE\Mall\Classes\Traits\Cart;
 
 use DB;
-use Event;
 use Illuminate\Support\Collection;
 use OFFLINE\Mall\Classes\Exceptions\OutOfStockException;
 use OFFLINE\Mall\Models\Cart;
@@ -16,9 +15,9 @@ trait CartActions
     /**
      * Adds a product to the cart.
      *
-     * @param Product    $product
-     * @param Variant    $variant
-     * @param int|null   $quantity
+     * @param Product $product
+     * @param Variant $variant
+     * @param int|null $quantity
      * @param Collection $values
      *
      * @return Cart
@@ -30,8 +29,8 @@ trait CartActions
         ?Collection $values = null,
         ?array $serviceOptionIds = []
     ) {
-        $cartEntry = DB::transaction(function () use ($product, $quantity, $variant, $values, $serviceOptionIds) {
-            if ( ! $this->exists) {
+        return DB::transaction(function () use ($product, $quantity, $variant, $values, $serviceOptionIds) {
+            if (! $this->exists) {
                 $this->save();
             }
 
@@ -48,9 +47,9 @@ trait CartActions
 
                 $newQuantity = $product->normalizeQuantity($cartEntry->quantity + $quantity, $product);
 
-                $cartEntry->update(['quantity' => $newQuantity]);
-
                 $this->validateStock($variant ?? $product, $quantity);
+                $cartEntry->update(['quantity' => $newQuantity]);
+                
                 $this->validateShippingMethod();
 
                 return $this->load('products');
@@ -71,7 +70,7 @@ trait CartActions
             $cartEntry->weight     = $variant ? $variant->weight : $product->weight;
             // Skip any setter methods from the JsonPrice trait
             $cartEntry->attributes['price'] = $cartEntry->mapJsonPrice($price, 1);
-
+            
             $this->products()->save($cartEntry);
             $this->load('products');
 
@@ -85,8 +84,6 @@ trait CartActions
 
             return $cartEntry;
         });
-
-        return $cartEntry;
     }
 
     public function removeProduct(CartProduct $product)
@@ -109,16 +106,16 @@ trait CartActions
     protected function getTotalQuantityInCart($item, $ignoreRecord): int
     {
         $query = CartProduct::where('cart_id', $this->id)
-                            ->when($ignoreRecord, function ($q) use ($ignoreRecord) {
-                                $q->where('id', '<>', $ignoreRecord);
-                            })
-                            ->when($item instanceof Product, function ($q) use ($item) {
-                                $q->where('product_id', $item->id);
-                            })
-                            ->when($item instanceof Variant, function ($q) use ($item) {
-                                $q->where('product_id', $item->product_id)
-                                  ->where('variant_id', $item->id);
-                            });
+            ->when($ignoreRecord, function ($q) use ($ignoreRecord) {
+                $q->where('id', '<>', $ignoreRecord);
+            })
+            ->when($item instanceof Product, function ($q) use ($item) {
+                $q->where('product_id', $item->id);
+            })
+            ->when($item instanceof Variant, function ($q) use ($item) {
+                $q->where('product_id', $item->product_id)
+                    ->where('variant_id', $item->id);
+            });
 
         return (int)$query->sum('quantity');
     }

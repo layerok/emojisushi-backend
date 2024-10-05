@@ -285,12 +285,19 @@
 
         this.isLoading = val;
 
-        var self = this;
         if (val) {
-            setTimeout(function() { self.$backdrop.addClass('loading'); }, 100);
+            setTimeout(() => {
+                if (this.$backdrop) {
+                    this.$backdrop.addClass('loading');
+                }
+            }, 100);
         }
         else {
-            setTimeout(function() { self.$backdrop.removeClass('loading'); }, 100);
+            setTimeout(() => {
+                if (this.$backdrop) {
+                    this.$backdrop.removeClass('loading');
+                }
+            }, 100);
         }
     }
 
@@ -444,7 +451,7 @@
     // Popup loading indicator will only show if the handlers are an exact match.
     $(document)
         // Prevent subsequent requests while loading (mis-doubleclick)
-        .on('ajax:before-request', '[data-popup-load-indicator]', function(event) {
+        .on('ajax:setup', '[data-popup-load-indicator]', function(event) {
             if ($(this).data('request') !== event.detail.context.handler) return;
             if (!$(this).closest('.control-popup').hasClass('show')) event.preventDefault();
         })

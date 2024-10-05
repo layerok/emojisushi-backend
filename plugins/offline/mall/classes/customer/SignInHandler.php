@@ -1,9 +1,8 @@
 <?php
 
-
 namespace OFFLINE\Mall\Classes\Customer;
 
-use OFFLINE\Mall\Models\User;
+use RainLab\User\Models\User;
 
 interface SignInHandler
 {

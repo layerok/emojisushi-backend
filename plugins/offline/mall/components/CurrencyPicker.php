@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace OFFLINE\Mall\Components;
 
@@ -18,6 +20,7 @@ class CurrencyPicker extends MallComponent
      * @var Collection
      */
     public $currencies;
+
     /**
      * The currently active currency.
      *
@@ -66,11 +69,11 @@ class CurrencyPicker extends MallComponent
      */
     public function onSwitchCurrency()
     {
-        if ( ! $currency = post('currency')) {
+        if (! $currency = post('currency')) {
             return;
         }
 
-        Currency::setActiveCurrency(Currency::findOrFail($currency));
+        Currency::setActiveCurrency(Currency::where('id', $currency)->firstOrFail());
 
         $pageUrl = $this->getUrl();
 
@@ -96,7 +99,7 @@ class CurrencyPicker extends MallComponent
             $staticPage = $page->apiBag['staticPage'];
             $localeUrl  = array_get($staticPage->attributes, 'viewBag.url');
         } else {
-            $router    = new RainRouter;
+            $router    = new RainRouter();
             $params    = $this->getRouter()->getParameters();
             $localeUrl = $router->urlFromPattern($page->url, $params);
         }

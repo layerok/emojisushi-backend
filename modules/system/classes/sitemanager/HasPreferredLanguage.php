@@ -11,38 +11,26 @@ trait HasPreferredLanguage
     /**
      * getSiteFromBrowser locates the site based on the browser locale, e.g. HTTP_ACCEPT_LANGUAGE
      */
-    public function getSiteFromBrowser(string $acceptLanguage)
+    public function getSiteFromBrowser(string $acceptLanguage, $groupId = null)
     {
-        $locales = $this->findAcceptedLocales($acceptLanguage);
+        $locales = $this->getLocalesFromBrowser($acceptLanguage);
+
+        $sites = $this->listEnabled()->inGroup($groupId);
 
         foreach ($locales as $locale => $priority) {
-            if ($foundSite = $this->getSiteForLocale($locale)) {
+            if ($foundSite = $sites->inLocale($locale)->first()) {
                 return $foundSite;
             }
         }
 
-        return $this->getPrimarySite();
+        return $sites->first();
     }
 
     /**
-     * getSiteForLocale
-     */
-    public function getSiteForLocale(string $locale)
-    {
-        return $this->listSites()
-            ->where('is_enabled', true)
-            ->filter(function($site) use ($locale) {
-                return $site->matchesLocale($locale);
-            })
-            ->first()
-        ;
-    }
-
-    /**
-     * findAcceptedLocales based on an accepted string, e.g. en-GB,en-US;q=0.9,en;q=0.8
+     * getLocalesFromBrowser based on an accepted string, e.g. en-GB,en-US;q=0.9,en;q=0.8
      * Returns a sorted array in format of `[(string) locale => (float) priority]`
      */
-    protected function findAcceptedLocales(string $acceptedStr): array
+    public function getLocalesFromBrowser(string $acceptedStr): array
     {
         $result = $matches = [];
         $acceptedStr = strtolower($acceptedStr);
@@ -68,5 +56,13 @@ trait HasPreferredLanguage
 
         arsort($result);
         return $result;
+    }
+
+    /**
+     * @deprecated use Site::listEnabled()->inLocale()->first()
+     */
+    public function getSiteForLocale(string $locale)
+    {
+        return $this->listEnabled()->inLocale($locale)->first();
     }
 }

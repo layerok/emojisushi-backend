@@ -10,17 +10,19 @@
     oc.registerControl('formwidget', class extends oc.ControlBase {
 
         init() {
-            this.$el = $(this.element);
-            this.$form = this.$el.closest('form');
-            this.options = Object.assign({}, this.config || {});
-            this.fieldElementCache = null;
-
             // Throttle dependency updating
             this.dependantUpdateInterval = 300;
             this.dependantUpdateTimers = {};
+
+            this.fieldElementCache = null;
+            this.disposeCallbacks = [];
         }
 
         connect() {
+            this.$el = $(this.element);
+            this.$form = this.$el.closest('form');
+            this.options = Object.assign({}, this.config || {});
+
             this.$el.on('change.oc.formwidget', '[data-change-handler]', this.proxy(this.onRefreshChangeField));
             $('.nav-tabs', this.$el).on('shown.bs.tab shownLinkable.oc.tab', 'li.tab-lazy > a', this.proxy(this.showLazyTab));
             this.$el.on('oc.triggerOn.afterUpdate', '.field-checkboxlist', this.proxy(this.toggleCheckboxlist));
@@ -44,6 +46,9 @@
             this.$el.off('click', '[data-field-checkboxlist-all]');
             this.$el.off('click', '[data-field-checkboxlist-none]');
             $('.section-field[data-field-collapsible]', this.$form).off('click');
+
+            this.disposeCallbacks.forEach(callback => callback());
+            this.disposeCallbacks = [];
 
             removeEventListener('trigger:complete', this.proxy(this.toggleEmptyTabs));
             oc.Events.off(this.$el.get(0), 'trigger:empty', '.field-checkboxlist', this.proxy(this.clearCheckboxlist));
@@ -119,35 +124,34 @@
                 return;
             }
 
-            var self = this,
-                fieldMap = {},
+            var fieldMap = {},
                 fieldElements = this.getFieldElements();
 
             // Map master and slave fields
-            fieldElements.filter('[data-field-depends]').each(function() {
-                var name = $(this).data('field-name'),
-                    depends = $(this).data('field-depends');
+            fieldElements.filter('[data-field-depends]').each((index, element) => {
+                var name = $(element).data('field-name'),
+                    depends = $(element).data('field-depends');
 
-                $.each(depends, function(index, depend){
+                $.each(depends, (index, depend) => {
                     if (!fieldMap[depend]) {
                         fieldMap[depend] = { fields: [] };
                     }
 
                     fieldMap[depend].fields.push(name);
                 })
-            })
+            });
 
             // When a master is updated, refresh its slaves
-            $.each(fieldMap, function(fieldName, toRefresh){
+            $.each(fieldMap, (fieldName, toRefresh) => {
                 fieldElements.filter('[data-field-name="'+fieldName+'"]')
-                    .on('change.oc.formwidget', $.proxy(self.onRefreshDependents, self, fieldName, toRefresh));
+                    .on('change.oc.formwidget', $.proxy(this.onRefreshDependents, this, fieldName, toRefresh));
 
                 // Set up disposal
-                self.$el.one('dispose-control', function() {
+                this.disposeCallbacks.push(function() {
                     fieldElements.filter('[data-field-name="'+fieldName+'"]')
                         .off('change.oc.formwidget');
                 });
-            })
+            });
         }
 
         // Refresh a dependency field

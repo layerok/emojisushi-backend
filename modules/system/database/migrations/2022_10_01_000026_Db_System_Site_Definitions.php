@@ -17,6 +17,7 @@ return new class extends Migration
             $table->string('app_url')->nullable();
             $table->string('theme')->nullable();
             $table->string('locale')->nullable();
+            $table->string('fallback_locale')->nullable();
             $table->string('timezone')->nullable();
             $table->boolean('is_host_restricted')->default(0);
             $table->mediumText('allow_hosts')->nullable();

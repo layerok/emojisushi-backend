@@ -227,17 +227,19 @@ class RepeaterItem extends ExpandoModel
             return $this->getFieldsetDefinition();
         }
 
+        $manager = FieldManager::instance();
+
         $config = null;
         foreach ($this->fieldsetConfig as $code => $attributes) {
             if ($config === null) {
                 $config = $attributes;
             }
             else {
-                $config['fields'] += $attributes['fields'] ?? [];
+                $config['fields'] += $manager->rewriteMixinNames($attributes['fields'] ?? []);
             }
         }
 
-        return FieldManager::instance()->makeFieldset((array) $config);
+        return $manager->makeFieldset((array) $config);
     }
 
     /**

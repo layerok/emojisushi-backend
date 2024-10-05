@@ -484,27 +484,29 @@
     }
 
     Table.prototype.commitEditedRow = function() {
-        if (this.editedRowKey === null)
-            return
-
-        var editedRow = this.dataTable.querySelector('tr[data-row="'+this.editedRowKey+'"]')
-        if (!editedRow)
-            return
-
-        if (editedRow.getAttribute('data-dirty') != 1)
-            return
-
-        var cells = editedRow.children,
-            data = {}
-
-        for (var i=0, len = cells.length; i < len; i++) {
-            var cell = cells[i]
-
-            data[cell.getAttribute('data-column')] = this.getCellValue(cell)
+        if (this.editedRowKey === null) {
+            return;
         }
 
-        this.dataSource.updateRecord(this.editedRowKey, data)
-        editedRow.setAttribute('data-dirty', 0)
+        var editedRow = this.dataTable.querySelector('tr[data-row="'+CSS.escape(this.editedRowKey)+'"]')
+        if (!editedRow) {
+            return;
+        }
+
+        if (editedRow.getAttribute('data-dirty') != 1) {
+            return;
+        }
+
+        var cells = editedRow.children,
+            data = {};
+
+        for (var i=0, len = cells.length; i < len; i++) {
+            var cell = cells[i];
+            data[cell.getAttribute('data-column')] = this.getCellValue(cell);
+        }
+
+        this.dataSource.updateRecord(this.editedRowKey, data);
+        editedRow.setAttribute('data-dirty', 0);
     }
 
     /*

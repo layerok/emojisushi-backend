@@ -1,9 +1,10 @@
 <?php namespace Cms\Classes;
 
 use Illuminate\Http\Response;
-use Illuminate\Support\Collection;
 use October\Rain\Exception\ApplicationException;
 use October\Rain\Exception\ValidationException;
+use October\Rain\Exception\ForbiddenException;
+use October\Rain\Exception\NotFoundException;
 use Illuminate\Http\RedirectResponse;
 use ArrayAccess;
 
@@ -115,6 +116,12 @@ class AjaxResponse extends Response implements ArrayAccess
         }
         elseif ($exception instanceof ApplicationException) {
             $this->setStatusCode(400);
+        }
+        elseif ($exception instanceof ForbiddenException) {
+            $this->setStatusCode(403);
+        }
+        elseif ($exception instanceof NotFoundException) {
+            $this->setStatusCode(404);
         }
         else {
             $this->setStatusCode(500);

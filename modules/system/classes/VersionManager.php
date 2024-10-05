@@ -329,7 +329,17 @@ class VersionManager
 
         $versions = $this->getFileVersions($code);
 
+        // Quick check
         $position = array_search($version, array_keys($versions));
+
+        // Version compare check
+        if ($position === false) {
+            foreach (array_keys($versions) as $index => $fileVersion) {
+                if (version_compare((string) $version, (string) $fileVersion) !== -1) {
+                    $position = $index;
+                }
+            }
+        }
 
         if ($position === false) {
             $position = -1;
@@ -360,7 +370,7 @@ class VersionManager
 
         // Sort result
         uksort($versionInfo, function ($a, $b) {
-            return version_compare($a, $b);
+            return version_compare((string) $a, (string) $b);
         });
 
         // Normalize result

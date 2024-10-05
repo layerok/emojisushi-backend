@@ -56,7 +56,7 @@ class PluginInstall extends Command
         }
 
         // Splice in version
-        if ($requireVersion = $this->option('want')) {
+        if ($requireVersion = $this->getWantOption()) {
             $composerVersion = $requireVersion;
         }
 
@@ -163,5 +163,20 @@ class PluginInstall extends Command
     protected static function passthruArtisan($command, &$errCode = null)
     {
         passthru('"'.PHP_BINARY.'" artisan ' .$command, $errCode);
+    }
+
+    /**
+     * getWantOption adds the ^ character to a standard version number (1.0)
+     */
+    protected function getWantOption()
+    {
+        $want = $this->option('want');
+
+        $parts = explode('.', $want);
+        if (count($parts) === 2 && is_numeric($parts[0]) && is_numeric($parts[1])) {
+            $want = '^'.$want;
+        }
+
+        return $want;
     }
 }

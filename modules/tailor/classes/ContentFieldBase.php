@@ -96,7 +96,8 @@ abstract class ContentFieldBase extends FieldDefinition
     }
 
     /**
-     * extendModelMultisite
+     * extendModelMultisite flags relations as propagatable and must come after
+     * the extendModelObject call
      */
     public function extendModelMultisite($model)
     {
@@ -119,5 +120,18 @@ abstract class ContentFieldBase extends FieldDefinition
     public function validate()
     {
         $this->validateConfig();
+    }
+
+    /**
+     * transferConfig is used to reuse base configuration on a secondary definition,
+     * such as a list column or filter scope.
+     */
+    protected function transferConfig($toElement, array $transferable)
+    {
+        foreach ($transferable as $name) {
+            if ($this->{$name} !== null) {
+                $toElement->{$name}($this->{$name});
+            }
+        }
     }
 }

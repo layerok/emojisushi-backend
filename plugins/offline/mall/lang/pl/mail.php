@@ -1,4 +1,6 @@
-<?php return [
+<?php
+
+return [
     'common' => [
         'hello' => 'Hello :Imię',
         'view_order_status_online' => 'Wyświetl status zamówienia online',
@@ -63,8 +65,6 @@
             'subject' => 'Checkout error for order #:number',
             'problem_message' => 'We are very sorry that there was a problem during your checkout process. We will look into the problem and contact you with further information.',
             'check_order_status' => 'To check the status of your order you may log in to our store at any time.',
-            'payment_id' => 'Payment ID',
-            'error' => 'Error message',
         ],
     ],
     'admin' => [
@@ -76,6 +76,8 @@
             'subject' => 'Checkout failed #:number',
             'not_processed' => 'The following order could not be processed correctly. It is possible that you have to contact the customer.',
             'error_details' => 'Error details',
+            'payment_id' => 'Payment ID',
+            'error' => 'Error message',
         ],
         'payment_paid' => [
             'subject' => 'Payment for order #:number successful',

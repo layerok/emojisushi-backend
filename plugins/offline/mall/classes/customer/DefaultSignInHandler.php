@@ -2,17 +2,18 @@
 
 namespace OFFLINE\Mall\Classes\Customer;
 
+use Auth;
 use Event;
 use Exception;
 use Flash;
 use October\Rain\Auth\AuthException;
 use October\Rain\Exception\ValidationException;
+use OFFLINE\Mall\Classes\User\Settings;
 use OFFLINE\Mall\Models\Cart;
 use OFFLINE\Mall\Models\Customer;
-use OFFLINE\Mall\Models\User;
-use Auth;
 use OFFLINE\Mall\Models\Wishlist;
-use Redirect;
+use RainLab\User\Models\Setting;
+use RainLab\User\Models\User;
 use Validator;
 
 class DefaultSignInHandler implements SignInHandler
@@ -52,16 +53,26 @@ class DefaultSignInHandler implements SignInHandler
         Event::fire('rainlab.user.beforeAuthenticate', [$this, $credentials]);
         Event::fire('mall.customer.beforeAuthenticate', [$this, $credentials]);
 
-        $user = Auth::authenticate($credentials, true);
+        // RainLab.User 3.0 compatibility
+        if (class_exists(Setting::class)) {
+            if (Auth::attempt(['email' => $credentials['login'], 'password' => $credentials['password']], true)) {
+                $user = Auth::user();
+            } else {
+                throw new AuthException('rainlab.user::lang.account.invalid_login');
+            }
+        } else {
+            $user = Auth::authenticate($credentials, true);
+        }
 
-        if ($user->isBanned()) {
+        if (method_exists($user, 'isBanned') && $user->isBanned()) {
             Auth::logout();
+
             throw new AuthException('rainlab.user::lang.account.banned');
         }
 
         // If the user doesn't have a Customer model it was created via the backend.
         // Make sure to add the Customer model now
-        if ( ! $user->customer && ! $user->is_guest) {
+        if (! $user->customer && ! $user->is_guest) {
             $customer            = new Customer();
             $customer->firstname = $user->name;
             $customer->lastname  = $user->surname;
@@ -74,6 +85,7 @@ class DefaultSignInHandler implements SignInHandler
 
         if ($user->customer->is_guest) {
             Auth::logout();
+
             throw new AuthException('offline.mall::lang.components.signup.errors.user_is_guest');
         }
 
@@ -88,7 +100,7 @@ class DefaultSignInHandler implements SignInHandler
      */
     protected function validate(array $data)
     {
-        $minPasswordLength = \RainLab\User\Models\User::getMinPasswordLength();
+        $minPasswordLength = Settings::getMinPasswordLength();
         $rules    = [
             'login'    => 'required|email|between:6,255',
             'password' => sprintf('required|min:%d|max:255', $minPasswordLength),
@@ -102,6 +114,7 @@ class DefaultSignInHandler implements SignInHandler
         ];
 
         $validation = Validator::make($data, $rules, $messages);
+
         if ($validation->fails()) {
             throw new ValidationException($validation);
         }

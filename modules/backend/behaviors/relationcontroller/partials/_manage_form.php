@@ -8,7 +8,8 @@
         ]) ?>
             <!-- Passable fields -->
             <input type="hidden" name="_relation_field" value="<?= $relationField ?>" />
-            <input type="hidden" name="_relation_extra_config" value="<?= e($relationExtraConfig) ?>" />
+            <input type="hidden" name="_relation_extra_config" value="<?= e(json_encode($relationExtraConfig)) ?>" />
+            <input type="hidden" name="_form_session_key" value="<?= $formSessionKey ?>" />
 
             <div class="modal-header" data-popup-size="<?= $relationPopupSize ?? 950 ?>">
                 <h4 class="modal-title"><?= e($relationManageTitle) ?></h4>
@@ -16,11 +17,11 @@
             </div>
 
             <div class="modal-body">
-                <?= $relationManageFormWidget->render(['preview' => $this->readOnly]) ?>
+                <?= $relationManageFormWidget->render(['preview' => $relationReadOnly]) ?>
             </div>
 
             <div class="modal-footer">
-                <?php if ($this->readOnly): ?>
+                <?php if ($relationReadOnly): ?>
                     <button
                         type="button"
                         class="btn btn-secondary"
@@ -55,7 +56,8 @@
         ]) ?>
             <!-- Passable fields -->
             <input type="hidden" name="_relation_field" value="<?= $relationField ?>" />
-            <input type="hidden" name="_relation_extra_config" value="<?= e($relationExtraConfig) ?>" />
+            <input type="hidden" name="_relation_extra_config" value="<?= e(json_encode($relationExtraConfig)) ?>" />
+            <input type="hidden" name="_form_session_key" value="<?= $formSessionKey ?>" />
 
             <div class="modal-header" data-popup-size="<?= $relationPopupSize ?? 950 ?>">
                 <h4 class="modal-title"><?= e($relationManageTitle) ?></h4>
@@ -91,6 +93,7 @@
 <script>
     oc.popup.bindToPopups('#<?= $relationManageFormWidget->getId("managePopup") ?>', {
         _relation_field: '<?= $relationField ?>',
-        _relation_extra_config: '<?= e($relationExtraConfig) ?>'
+        _relation_extra_config: '<?= e(json_encode($relationExtraConfig)) ?>',
+        _form_session_key: '<?= $formSessionKey ?>'
     });
 </script>

@@ -1,7 +1,7 @@
 <div id="relationManagePopup">
     <?= Form::open() ?>
         <input type="hidden" name="_relation_field" value="<?= $relationField ?>" />
-        <input type="hidden" name="_relation_extra_config" value="<?= e($relationExtraConfig) ?>" />
+        <input type="hidden" name="_relation_extra_config" value="<?= e(json_encode($relationExtraConfig)) ?>" />
 
         <div class="modal-header" data-popup-size="<?= $relationPopupSize ?? 950 ?>">
             <h4 class="modal-title"><?= e($relationManageTitle) ?></h4>

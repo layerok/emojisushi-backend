@@ -50,6 +50,14 @@ class EntryBlueprint extends Blueprint
     }
 
     /**
+     * useSoftDeletes determines if this section should use soft deletion
+     */
+    public function useSoftDeletes(): bool
+    {
+        return $this->softDeletes !== false;
+    }
+
+    /**
      * useVersions determines if this section should capture version history
      */
     public function useVersions(): bool
@@ -73,7 +81,8 @@ class EntryBlueprint extends Blueprint
      */
     public function useMultisiteSync(): bool
     {
-        if (in_array($this->multisite, ['sync', 'locale', 'all', 'group'])) {
+        // Strict check since multisite can be set to true
+        if (in_array($this->multisite, ['sync', 'locale', 'all', 'group'], true)) {
             return true;
         }
 
@@ -115,7 +124,8 @@ class EntryBlueprint extends Blueprint
         }
 
         if (is_array($this->pagefinder) && isset($this->pagefinder['context'])) {
-            return $this->pagefinder['context'] === $context;
+            return $this->pagefinder['context'] === $context ||
+                $this->pagefinder['context'] === 'all';
         }
 
         return true;

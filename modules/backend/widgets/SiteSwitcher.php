@@ -45,7 +45,8 @@ class SiteSwitcher extends WidgetBase
             $this->applyEditSiteFromPreference();
         }
 
-        $this->applyEditSiteAndBanner();
+        // Disable banner for now
+        // $this->applyEditSiteBanner();
     }
 
     /**
@@ -88,7 +89,7 @@ class SiteSwitcher extends WidgetBase
     /**
      * setSwitchHandler enables the use of an AJAX handler when switching the site
      */
-    public function setSwitchHandler(string $name)
+    public function setSwitchHandler(string $name = null)
     {
         $this->switchHandler = $name;
     }
@@ -114,6 +115,10 @@ class SiteSwitcher extends WidgetBase
         }
 
         $this->storeBackendPreference($id);
+
+        Site::applyEditSiteId($id);
+
+        Site::resetCache();
     }
 
     /**
@@ -121,7 +126,7 @@ class SiteSwitcher extends WidgetBase
      */
     protected function applyEditSiteFromHeader($id)
     {
-        Site::setEditSiteId($id);
+        Site::applyEditSiteId($id);
     }
 
     /**
@@ -130,30 +135,19 @@ class SiteSwitcher extends WidgetBase
     protected function applyEditSiteFromPreference()
     {
         if ($site = $this->getBackendPreference()) {
-            Site::setEditSite($site);
+            Site::applyEditSite($site);
         }
     }
 
     /**
-     * applyEditSiteAndBanner
+     * applyEditSiteBanner
      */
-    protected function applyEditSiteAndBanner()
+    protected function applyEditSiteBanner()
     {
         $site = Site::getEditSite();
-        if (!$site) {
+        if (!$site || !$site->is_styled) {
             return;
         }
-
-        // Apply parameters
-        Site::applyEditSite($site);
-
-        // Apply banner
-        if (!$site->is_styled) {
-            return;
-        }
-
-        // Disable banner for now
-        return;
 
         Block::append('banner-area', $this->makePartial('sitebanner', [
             'siteName' => $site->name,
@@ -206,10 +200,6 @@ class SiteSwitcher extends WidgetBase
         UserPreference::forUser()->set('system::site.edit', $id);
 
         Cookie::queue(Cookie::forever('admin_site', $id));
-
-        Site::setEditSiteId($id);
-
-        Site::resetCache();
 
         /**
          * @event backend.site.setEditSite

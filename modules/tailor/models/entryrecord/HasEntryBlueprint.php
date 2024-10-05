@@ -99,26 +99,26 @@ trait HasEntryBlueprint
     }
 
     /**
-     * useMultisite
-     */
-    public function useMultisite(): bool
-    {
-        return $this->getBlueprintDefinition()->useMultisite();
-    }
-
-    /**
-     * useMultisiteSync
-     */
-    public function useMultisiteSync(): bool
-    {
-        return $this->getBlueprintDefinition()->useMultisiteSync();
-    }
-
-    /**
      * isEntryEnabledByDefault
      */
     public function isEntryEnabledByDefault(): bool
     {
         return $this->getBlueprintDefinition()->isEntryEnabledByDefault();
+    }
+
+    /**
+     * @deprecated use isMultisiteEnabled
+     */
+    public function useMultisite(): bool
+    {
+        return $this->isMultisiteEnabled();
+    }
+
+    /**
+     * @deprecated use isMultisiteSyncEnabled
+     */
+    public function useMultisiteSync(): bool
+    {
+        return $this->isMultisiteSyncEnabled();
     }
 }

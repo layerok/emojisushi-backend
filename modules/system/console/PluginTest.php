@@ -6,6 +6,8 @@ use Symfony\Component\Process\Exception\RuntimeException;
 use Symfony\Component\Process\Process;
 use Illuminate\Console\Command;
 use Illuminate\Support\Str;
+use DOMDocument;
+use DOMXPath;
 
 /**
  * PluginTest command
@@ -78,7 +80,7 @@ class PluginTest extends Command
             $binaryPath = 'vendor/pestphp/pest/bin/pest';
         }
 
-        if ('phpdbg' === PHP_SAPI) {
+        if (PHP_SAPI === 'phpdbg') {
             return [PHP_BINARY, '-qrr', $binaryPath];
         }
 
@@ -97,13 +99,22 @@ class PluginTest extends Command
             return !Str::startsWith($option, ['--env=', '--pest']);
         }));
 
+        return array_merge(['--configuration', $this->getTestConfigurationFile()], $options);
+    }
+
+    /**
+     * getTestConfigurationFile
+     */
+    protected function getTestConfigurationFile()
+    {
         $lookupMethod = $this->isAppNamespace() ? 'app_path' : [$this, 'pluginPath'];
 
-        if (!file_exists($file = $lookupMethod('phpunit.xml'))) {
+        $file = $lookupMethod('phpunit.xml');
+        if (!file_exists($file)) {
             $file = $lookupMethod('phpunit.xml.dist');
         }
 
-        return array_merge(['-c', $file], $options);
+        return $file;
     }
 
     /**
@@ -113,7 +124,15 @@ class PluginTest extends Command
      */
     protected function env()
     {
-        return null;
+        $document = new DomDocument;
+        $document->loadXML(file_get_contents($this->getTestConfigurationFile()));
+        $vars = (new DOMXPath($document))->query('php/env');
+
+        $env = [];
+        foreach ($vars as $var) {
+            $env[$var->getAttribute('name')] = $var->getAttribute('value');
+        }
+        return $env;
     }
 
     /**

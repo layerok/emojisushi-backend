@@ -171,8 +171,8 @@ trait ManagesProject
     {
         $cacheKey = 'system-market-project';
 
-        if (Cache::has($cacheKey)) {
-            return @json_decode(@base64_decode(Cache::get($cacheKey)), true) ?: [];
+        if ($cache = Cache::get($cacheKey)) {
+            return @json_decode(@base64_decode($cache), true) ?: [];
         }
 
         $data = $this->requestProjectDetails();
@@ -195,8 +195,8 @@ trait ManagesProject
 
         $cacheKey = "system-market-browse-{$type}-{$page}";
 
-        if (Cache::has($cacheKey)) {
-            return @json_decode(@base64_decode(Cache::get($cacheKey)), true) ?: [];
+        if ($cache = Cache::get($cacheKey)) {
+            return @json_decode(@base64_decode($cache), true) ?: [];
         }
 
         $data = $this->requestServerData('package/browse', [

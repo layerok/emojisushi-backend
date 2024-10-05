@@ -6,14 +6,19 @@
 trait HasExtraConfig
 {
     /**
-     * @var array extraConfig provided by the relationRender method
+     * @var array extraConfig as a final state
      */
-    protected $extraConfig;
+    protected $extraConfig = [];
 
     /**
-     * @var string extraConfigString for rendering as a variable
+     * @var string extraConfigChain provided by the relationship chain
      */
-    protected $extraConfigString;
+    protected $extraConfigChain = [];
+
+    /**
+     * @var string extraConfigRender provided by the relationRender method
+     */
+    protected $extraConfigRender = [];
 
     /**
      * @var bool bumpSessionKeys is used to create a new session for forms
@@ -21,9 +26,9 @@ trait HasExtraConfig
     protected $bumpSessionKeys = false;
 
     /**
-     * prepareExtraConfig returns extra config with the relation chain, encoded
+     * setExtraConfigForChain returns extra config with the relation chain, encoded
      */
-    protected function prepareExtraConfig()
+    protected function setExtraConfigForChain()
     {
         if ($this->bumpSessionKeys) {
             $this->relationSessionKey = $this->sessionKey;
@@ -35,11 +40,21 @@ trait HasExtraConfig
         $extraConfig['manageIds'][$this->field] = $this->manageId;
         $extraConfig['sessionKeys'][$this->field] = [$this->sessionKey, $this->relationSessionKey];
 
-        $this->extraConfigString = json_encode($extraConfig);
+        $this->extraConfigChain = $this->extraConfig = $extraConfig;
     }
 
     /**
-     * setExtraConfig
+     * setExtraConfigForRender comes from the render call method
+     */
+    protected function setExtraConfigForRender($config)
+    {
+        $this->extraConfigRender = $config;
+
+        $this->setExtraConfig($config);
+    }
+
+    /**
+     * setExtraConfig usually comes from the postback variable
      */
     protected function setExtraConfig($config)
     {
@@ -47,9 +62,15 @@ trait HasExtraConfig
             $config = json_decode($config, true);
         }
 
-        if (is_array($config)) {
-            $this->extraConfig = $config;
+        if (!is_array($config)) {
+            $config = [];
         }
+
+        $this->extraConfig = array_merge(
+            $config,
+            $this->extraConfigChain,
+            $this->extraConfigRender
+        );
     }
 
     /**

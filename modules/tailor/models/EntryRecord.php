@@ -23,10 +23,12 @@ class EntryRecord extends BlueprintModel
     use \Tailor\Traits\DeferredContentModel;
     use \Tailor\Models\EntryRecord\HasDuplication;
     use \Tailor\Models\EntryRecord\HasStatusScopes;
+    use \Tailor\Models\EntryRecord\HasCoreModifiers;
     use \Tailor\Models\EntryRecord\HasEntryBlueprint;
     use \October\Rain\Database\Traits\Multisite;
     use \October\Rain\Database\Traits\SoftDelete;
     use \October\Rain\Database\Traits\Validation;
+    use \October\Rain\Database\Traits\UserFootprints;
 
     /**
      * @var array rules for validation
@@ -92,8 +94,8 @@ class EntryRecord extends BlueprintModel
     public function defineListColumns(ListElement $host)
     {
         $host->defineColumn('id', 'ID')->invisible();
-        $host->defineColumn('title', 'Title')->searchable(true);
-        $host->defineColumn('slug', 'Slug')->searchable(true)->invisible();
+        $host->defineColumn('title', 'Title')->searchable();
+        $host->defineColumn('slug', 'Slug')->searchable()->invisible();
 
         if ($this->isEntryStructure()) {
             $host->defineColumn('fullslug', 'Full Slug')->searchable(false)->invisible();
@@ -105,6 +107,11 @@ class EntryRecord extends BlueprintModel
 
         $host->defineColumn('published_at_date', 'Published Date')->shortLabel('Published')->displayAs('date')->invisible(!$this->isEntryStream())->sortableDefault($this->isEntryStream() ? 'desc' : false);
         $host->defineColumn('status_code', 'Status')->shortLabel('')->displayAs('selectable')->sortable(false)->align('right');
+        $host->defineColumn('created_at', 'Created At')->displayAs('datetime')->invisible();
+        $host->defineColumn('updated_at', 'Updated At')->displayAs('datetime')->invisible();
+        $host->defineColumn('created_user', 'Created By')->relation('created_user')->valueFrom('full_name')->invisible();
+        $host->defineColumn('updated_user', 'Updated By')->relation('updated_user')->valueFrom('full_name')->invisible();
+
         $this->applyCoreColumnModifiers($host);
     }
 
@@ -118,6 +125,8 @@ class EntryRecord extends BlueprintModel
         $this->getContentFieldsetDefinition()->defineAllFilterScopes($host, ['except' => $this->fieldModifiers]);
 
         $host->defineScope('published_at_date', 'Published Date')->displayAs('date');
+
+        $this->applyCoreScopeModifiers($host);
     }
 
     /**
@@ -153,88 +162,6 @@ class EntryRecord extends BlueprintModel
         $host->addFormField('expired_at', 'Expiry Date')->displayAs('datepicker')->defaultTimeMidnight();
         $host->addFormField('parent_id', 'Parent')->displayAs('dropdown');
         $this->applyCoreFieldModifiers($host);
-    }
-
-    /**
-     * applyCoreFieldModifiers will transfer modified attributes from the blueprint
-     * to the core field definition. For example, the title placeholder value or
-     * the is_enabled default state.
-     */
-    protected function applyCoreFieldModifiers(FormElement $host)
-    {
-        $toTransfer = [
-            'scope',
-            'column',
-            'default',
-            'label',
-            'comment',
-            'commentAbove',
-            'commentHtml',
-            'placeholder',
-            'readOnly',
-            'hidden'
-        ];
-
-        $fieldset = $this->getFieldsetDefinition();
-        $formFields = $host->getFormFieldset();
-
-        foreach ($formFields->getAllFields() as $name => $field) {
-            if ($modifier = $fieldset->getField($name)) {
-                $field->useConfig(array_only($modifier->getConfig(), $toTransfer));
-            }
-
-            // Remove required validation for title field
-            if ($name === 'title' && $field->hidden) {
-                unset($this->rules['title']);
-            }
-        }
-    }
-
-    /**
-     * applyCoreColumnModifiers will transfer modified attributes from the blueprint
-     * to the core column definition. For example, the title column.
-     */
-    protected function applyCoreColumnModifiers(ListElement $host)
-    {
-        $coreColumns = [
-            'id',
-            'title',
-            'slug',
-            'fullslug',
-            'entry_type_name',
-            'published_at_date',
-            'status_code',
-        ];
-
-        $toTransfer = [
-            'label',
-            'shortLabel',
-            'valueFrom',
-            'invisible',
-            'hidden'
-        ];
-
-        $fieldset = $this->getFieldsetDefinition();
-        $listColumns = $host->getColumns();
-
-        foreach ($coreColumns as $columnName) {
-            $column = $listColumns[$columnName] ?? null;
-            $field = $fieldset->getField($columnName);
-            if (!$column || !$field) {
-                continue;
-            }
-
-            $modifier = $field->column;
-            if (is_array($modifier)) {
-                $column->useConfig(array_only($modifier, $toTransfer));
-            }
-            elseif (is_string($modifier)) {
-                $column->$modifier();
-            }
-            elseif ($field->hidden || $modifier === false) {
-                $column->hidden();
-            }
-        }
     }
 
     /**
@@ -468,12 +395,21 @@ class EntryRecord extends BlueprintModel
     }
 
     /**
+     * isSoftDeleteEnabled allows for programmatic toggling
+     * @return bool
+     */
+    public function isSoftDeleteEnabled()
+    {
+        return $this->getBlueprintDefinition()->useSoftDeletes();
+    }
+
+    /**
      * isMultisiteEnabled allows for programmatic toggling
      * @return bool
      */
     public function isMultisiteEnabled()
     {
-        return $this->useMultisite();
+        return $this->getBlueprintDefinition()->useMultisite();
     }
 
     /**
@@ -482,7 +418,7 @@ class EntryRecord extends BlueprintModel
      */
     public function isMultisiteSyncEnabled()
     {
-        return $this->useMultisiteSync();
+        return $this->getBlueprintDefinition()->useMultisiteSync();
     }
 
     /**
@@ -491,5 +427,24 @@ class EntryRecord extends BlueprintModel
     public function getMultisiteConfig($key, $default = null)
     {
         return $this->getBlueprintDefinition()->getMultisiteConfig($key, $default);
+    }
+
+    /**
+     * makePageUrlParams returns parameters used when linking to this record as a page
+     */
+    public function makePageUrlParams(): array
+    {
+        $replacements = parent::makePageUrlParams();
+
+        // Use context for correct relations
+        Site::withContext($this->site_id, function() use (&$replacements) {
+            $wantReplace = $this->getBlueprintDefinition()->getPageFinderReplacements();
+
+            foreach ($wantReplace as $key => $path) {
+                $replacements[$key] = array_get($this, $path);
+            }
+        });
+
+        return $replacements;
     }
 }

@@ -120,6 +120,10 @@ Vue.component('cms-editor-component-asset-editor', {
         },
 
         getDocumentLanguage: function getDocumentLanguage(fileName) {
+            if (!fileName) {
+                return 'plaintext';
+            }
+
             if (fileName.endsWith('.css')) {
                 return 'css';
             }

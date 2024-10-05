@@ -181,14 +181,14 @@ trait HasManageMode
             $widget->addFilter([$this->manageFilterWidget, 'applyAllScopesToQuery']);
         }
 
-        // Exclude existing relationships
-        $widget->bindEvent('list.extendQuery', function ($query) {
-            // Where not in the current list of related records
-            $existingIds = $this->findExistingRelationIds();
-            if (count($existingIds)) {
-                $query->whereNotIn($this->manageModel->getQualifiedKeyName(), $existingIds);
-            }
-        });
+        // Exclude existing relationships for non-incrementing pivots
+        if (!$this->isPivotIncrementing()) {
+            $widget->bindEvent('list.extendQuery', function ($query) {
+                if (count($existingIds = $this->findExistingRelationIds())) {
+                    $query->whereNotIn($this->manageModel->getQualifiedKeyName(), $existingIds);
+                }
+            });
+        }
 
         return $widget;
     }
@@ -246,7 +246,7 @@ trait HasManageMode
         }
 
         // Updating an existing record
-        if ($this->manageMode === 'pivot' && $this->manageId) {
+        if ($this->manageMode === 'pivot' && ($this->manageId || $this->pivotId)) {
             return $this->onRelationManagePivotForm();
         }
 
@@ -272,7 +272,7 @@ trait HasManageMode
 
         $modelsToSave = $this->prepareModelsToSave($newModel, $saveData);
         foreach ($modelsToSave as $modelToSave) {
-            $modelToSave->save(['sessionKey' => $this->manageFormWidget->getSessionKey()]);
+            $modelToSave->save(['sessionKey' => $this->manageFormWidget->getSessionKey(), 'propagate' => true]);
         }
 
         // No need to add relationships that have a valid association via HasOneOrMany::make
@@ -312,7 +312,7 @@ trait HasManageMode
 
         $modelsToSave = $this->prepareModelsToSave($this->manageModel, $saveData);
         foreach ($modelsToSave as $modelToSave) {
-            $modelToSave->save(['sessionKey' => $this->manageFormWidget->getSessionKey()]);
+            $modelToSave->save(['sessionKey' => $this->manageFormWidget->getSessionKey(), 'propagate' => true]);
         }
 
         // Display updated form
@@ -341,7 +341,14 @@ trait HasManageMode
         if ($this->viewMode === 'multi') {
             if (($checkedIds = post('checked')) && is_array($checkedIds)) {
                 foreach ($checkedIds as $relationId) {
-                    if (!$obj = $this->findManageModelObject($relationId)) {
+                    if ($pivotKey = $this->isPivotIncrementing()) {
+                        $obj = $this->relationObject->wherePivot($pivotKey, $relationId)->first();
+                    }
+                    else {
+                        $obj = $this->findManageModelObject($relationId);
+                    }
+
+                    if (!$obj) {
                         continue;
                     }
 
@@ -383,7 +390,7 @@ trait HasManageMode
 
         // Add
         if ($this->viewMode === 'multi') {
-            $checkedIds = $recordId ? [$recordId] : post('checked');
+            $checkedIds = $recordId ? [$recordId] : $this->manageListWidget->getAllCheckedIds();
 
             if (is_array($checkedIds)) {
                 // Remove existing relations from the array
@@ -436,9 +443,14 @@ trait HasManageMode
             $checkedIds = $recordId ? [$recordId] : post('checked');
 
             if (is_array($checkedIds)) {
-                $foreignKeyName = $relatedModel->getKeyName();
+                if ($pivotKey = $this->isPivotIncrementing()) {
+                    $models = $this->relationObject->wherePivotIn($pivotKey, $checkedIds)->get();
+                }
+                else {
+                    $foreignKeyName = $relatedModel->getKeyName();
+                    $models = $relatedModel->whereIn($foreignKeyName, $checkedIds)->get();
+                }
 
-                $models = $relatedModel->whereIn($foreignKeyName, $checkedIds)->get();
                 foreach ($models as $model) {
                     $this->relationObject->remove($model, $sessionKey);
                 }

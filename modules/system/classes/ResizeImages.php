@@ -313,11 +313,11 @@ class ResizeImages
     {
         $cacheKey = 'resizer.'.$cacheKey;
 
-        if (!Cache::has($cacheKey)) {
-            return false;
+        if ($cache = Cache::get($cacheKey)) {
+            return @unserialize(@base64_decode($cache));
         }
 
-        return @unserialize(@base64_decode(Cache::get($cacheKey)));
+        return false;
     }
 
     /**
@@ -325,8 +325,10 @@ class ResizeImages
      */
     protected function getExistsCacheKey(string $filePath): string
     {
-        $payload = ['type' => 'resizer-file', 'path' => $filePath];
-        return md5(json_encode($payload));
+        return md5(json_encode([
+            'type' => 'resizer-file',
+            'path' => $filePath
+        ]));
     }
 
     /**
@@ -335,8 +337,8 @@ class ResizeImages
      */
     public static function resetCache()
     {
-        if (Cache::has('resizer.index')) {
-            $index = (array) @unserialize(@base64_decode(Cache::get('resizer.index'))) ?: [];
+        if ($cache = Cache::get('resizer.index')) {
+            $index = (array) @unserialize(@base64_decode($cache)) ?: [];
 
             foreach ($index as $cacheKey) {
                 Cache::forget($cacheKey);
@@ -358,8 +360,8 @@ class ResizeImages
     {
         $index = [];
 
-        if (Cache::has('resizer.index')) {
-            $index = (array) @unserialize(@base64_decode(Cache::get('resizer.index'))) ?: [];
+        if ($cache = Cache::get('resizer.index')) {
+            $index = (array) @unserialize(@base64_decode($cache)) ?: [];
         }
 
         if (in_array($cacheKey, $index)) {

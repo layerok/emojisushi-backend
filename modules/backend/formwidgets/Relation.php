@@ -21,6 +21,11 @@ class Relation extends FormWidgetBase
     //
 
     /**
+     * @var bool readOnly if the sensitive field cannot be edited, but can be toggled
+     */
+    public $readOnly = false;
+
+    /**
      * @var string nameFrom is the model column to use for the name reference
      */
     public $nameFrom = 'name';
@@ -85,6 +90,7 @@ class Relation extends FormWidgetBase
     public function init()
     {
         $this->fillFromConfig([
+            'readOnly',
             'nameFrom',
             'emptyOption',
             'defaultSort',
@@ -287,7 +293,17 @@ class Relation extends FormWidgetBase
             $this->controller->asExtension('RelationController')->beforeDisplay();
         }
 
-        $this->controller->relationRegisterField($this->getRelationControllerFieldName(), $this->useControllerConfig);
+        $controllerConfig = $this->useControllerConfig;
+
+        if (!isset($controllerConfig['readOnly']) && $this->readOnly === true) {
+            $controllerConfig['readOnly'] = $this->readOnly;
+        }
+
+        if (!isset($controllerConfig['sessionKey'])) {
+            $controllerConfig['sessionKey'] = $this->getParentForm()?->getSessionKeyWithSuffix();
+        }
+
+        $this->controller->relationRegisterField($this->getRelationControllerFieldName(), $controllerConfig);
     }
 
     /**
@@ -297,7 +313,7 @@ class Relation extends FormWidgetBase
     {
         $relationName = $this->valueFrom;
 
-        if ($parentFieldName = $this->getParentForm()->parentFieldName) {
+        if ($parentFieldName = $this->getParentForm()?->parentFieldName) {
             $relationName = $parentFieldName . '['.implode('][', HtmlHelper::nameToArray($relationName)).']';
         }
 
@@ -318,5 +334,16 @@ class Relation extends FormWidgetBase
         }
 
         return $value;
+    }
+
+    /**
+     * resetFormValue from the form field
+     */
+    public function resetFormValue()
+    {
+        // Transfer approved config
+        $this->scope = $this->formField->scope;
+        $this->conditions = $this->formField->conditions;
+        $this->defaultSort = $this->formField->defaultSort;
     }
 }

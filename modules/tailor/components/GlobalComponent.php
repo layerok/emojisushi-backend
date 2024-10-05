@@ -16,7 +16,7 @@ class GlobalComponent extends ComponentModuleBase
     public function componentDetails()
     {
         return [
-            'name' => 'Global',
+            'name' => 'Global_',
             'description' => 'Makes globals available to the page.',
             'icon' => 'icon-cogs'
         ];

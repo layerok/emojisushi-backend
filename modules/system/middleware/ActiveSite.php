@@ -18,10 +18,9 @@ class ActiveSite
      */
     public function handle($request, Closure $next)
     {
-        $site = Site::getSiteFromRequest($request->getHost(), $this->getRoutedUri($request));
+        $site = Site::getSiteFromRequest($request->root(), $this->getRoutedUri($request));
 
         if ($site && $site->is_enabled) {
-            Site::setActiveSite($site);
             Site::applyActiveSite($site);
         }
 

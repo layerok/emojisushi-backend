@@ -211,9 +211,15 @@ class Date extends FilterWidgetBase
         ], $options));
 
         try {
-            $date = is_int($value)
-                ? DateFacade::createFromTimestamp($value)
-                : DateFacade::parse($value);
+            if (is_int($value)) {
+                $date = DateFacade::createFromTimestamp($value);
+            }
+            elseif (strtolower($value) === 'now') {
+                $date = DateFacade::now()->startOfDay();
+            }
+            else {
+                $date = DateFacade::parse($value);
+            }
 
             if ($isEndOfDay) {
                 $date = $date->copy()->addDay()->addMinutes(-1);

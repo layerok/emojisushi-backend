@@ -22,6 +22,7 @@ use ApplicationException;
  * - compile less: Compile registered LESS files only.
  * - compile scss: Compile registered SCSS files only.
  * - compile lang: Compile registered Language files only.
+ * - compile docs: Compile complex documentation file for a theme or plugin.
  * - set build: Pull the latest stable build number from the update gateway and set it as the current build number.
  *
  * Available patch versions:
@@ -37,6 +38,7 @@ class OctoberUtil extends Command
     use \System\Console\OctoberUtilPatches;
     use \System\Console\OctoberUtilCommands;
     use \System\Console\OctoberUtilRefitLang;
+    use \System\Console\OctoberUtilPackageDocs;
 
     /**
      * The console command name.

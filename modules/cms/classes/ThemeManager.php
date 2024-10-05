@@ -287,7 +287,7 @@ class ThemeManager
         }
 
         uksort($updates, function ($a, $b) {
-            return version_compare($b, $a);
+            return version_compare((string) $b, (string) $a);
         });
 
         return $updates;

@@ -19,10 +19,11 @@
         ]) ?>
             <!-- Passable fields -->
             <input type="hidden" name="_relation_field" value="<?= $relationField ?>" />
-            <input type="hidden" name="_relation_extra_config" value="<?= e($relationExtraConfig) ?>" />
+            <input type="hidden" name="_relation_extra_config" value="<?= e(json_encode($relationExtraConfig)) ?>" />
+            <input type="hidden" name="_form_session_key" value="<?= $formSessionKey ?>" />
             <input type="hidden" name="EntryRecord[content_group]" value="<?= e($formModel->content_group) ?>"/>
 
-            <div class="modal-header">
+            <div class="modal-header" data-popup-size="<?= $relationPopupSize ?? 950 ?>">
                 <div class="flex-grow-1">
                     <h4 class="modal-title"><?= e($relationManageTitle) ?></h4>
                 </div>
@@ -32,30 +33,33 @@
                 <button type="button" class="btn-close" data-dismiss="popup"></button>
             </div>
 
-            <div class="modal-body">
-                <?= $relationManageFormWidget->render(['preview' => $this->readOnly]) ?>
+            <div class="modal-body" data-popup-size="<?= $relationPopupSize ?? 950 ?>">
+                <?= $relationManageFormWidget->render(['preview' => $relationReadOnly]) ?>
             </div>
 
             <div class="modal-footer">
-                <?php if ($this->readOnly): ?>
+                <?php if ($relationReadOnly): ?>
                     <button
                         type="button"
-                        class="btn btn-default"
+                        class="btn btn-secondary"
                         data-dismiss="popup">
-                        <?= e(trans('backend::lang.relation.close')) ?>
+                        <?= e($this->relationGetMessage('buttonCloseForm')) ?>
                     </button>
                 <?php else: ?>
                     <button
                         type="submit"
                         class="btn btn-primary">
-                        <?= e(trans('backend::lang.relation.update')) ?>
+                        <?= e($this->relationGetMessage('buttonUpdateForm')) ?>
                     </button>
-                    <button
-                        type="button"
-                        class="btn btn-default"
-                        data-dismiss="popup">
-                        <?= e(trans('backend::lang.relation.cancel')) ?>
-                    </button>
+                    <span class="btn-text">
+                        <span class="button-separator"><?= __("or") ?></span>
+                        <a
+                            href="javascript:;"
+                            class="btn btn-link p-0"
+                            data-dismiss="popup">
+                            <?= e($this->relationGetMessage('buttonCancelForm')) ?>
+                        </a>
+                    </span>
                 <?php endif ?>
             </div>
         <?= Form::close() ?>
@@ -69,10 +73,11 @@
         ]) ?>
             <!-- Passable fields -->
             <input type="hidden" name="_relation_field" value="<?= $relationField ?>" />
-            <input type="hidden" name="_relation_extra_config" value="<?= e($relationExtraConfig) ?>" />
+            <input type="hidden" name="_relation_extra_config" value="<?= e(json_encode($relationExtraConfig)) ?>" />
+            <input type="hidden" name="_form_session_key" value="<?= $formSessionKey ?>" />
             <input type="hidden" name="EntryRecord[content_group]" value="<?= e($formModel->content_group) ?>"/>
 
-            <div class="modal-header">
+            <div class="modal-header" data-popup-size="<?= $relationPopupSize ?? 950 ?>">
                 <div class="flex-grow-1">
                     <h4 class="modal-title"><?= e($relationManageTitle) ?></h4>
                 </div>
@@ -82,7 +87,7 @@
                 <button type="button" class="btn-close" data-dismiss="popup"></button>
             </div>
 
-            <div class="modal-body">
+            <div class="modal-body" data-popup-size="<?= $relationPopupSize ?? 950 ?>">
                 <?= $relationManageFormWidget->render() ?>
             </div>
 
@@ -90,14 +95,17 @@
                 <button
                     type="submit"
                     class="btn btn-primary">
-                    <?= e(trans('backend::lang.relation.create')) ?>
+                    <?= e($this->relationGetMessage('buttonCreateForm')) ?>
                 </button>
-                <button
-                    type="button"
-                    class="btn btn-default"
-                    data-dismiss="popup">
-                    <?= e(trans('backend::lang.relation.cancel')) ?>
-                </button>
+                <span class="btn-text">
+                    <span class="button-separator"><?= __("or") ?></span>
+                    <a
+                        href="javascript:;"
+                        class="btn btn-link p-0"
+                        data-dismiss="popup">
+                        <?= e($this->relationGetMessage('buttonCancelForm')) ?>
+                    </a>
+                </span>
             </div>
         <?= Form::close() ?>
 
