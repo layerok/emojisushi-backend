@@ -4,6 +4,8 @@ namespace Layerok\PosterPos\Console;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Artisan;
 use Layerok\PosterPos\Classes\RootCategory;
+use Layerok\PosterPos\Models\City;
+use Layerok\PosterPos\Models\District;
 use Layerok\PosterPos\Models\HideCategory;
 use Layerok\PosterPos\Models\HideProduct;
 use Layerok\PosterPos\Models\PosterAccount;
@@ -102,6 +104,27 @@ class ImportData extends Command {
         $index = app(Index::class);
         $index->drop(ProductEntry::INDEX);
         $index->drop(VariantEntry::INDEX);
+
+        $this->output->newLine();
+        $this->output->writeln('Creating cities...');
+        $this->output->newLine();
+
+        $odesaCity = new City([
+            'name' => 'Odessa',
+        ]);
+
+//        $chornomorskCity = new City([
+//            'name' => 'Chornomorsk'
+//        ]);
+
+        $this->output->newLine();
+        $this->output->writeln('Creating districts...');
+        $this->output->newLine();
+
+        $centerDistrict = new District([
+            'name' => 'Центр',
+            'city_id' => $odesaCity->id
+        ]);
 
         $this->output->newLine();
         $this->output->writeln('Create uah currency...');
@@ -227,6 +250,8 @@ class ImportData extends Command {
 
             $address->save();
 
+            // todo: save address as string
+
             Spot::create([
                 'address_id' => $address->id,
                 'name' => $record->spot_name,
@@ -234,7 +259,8 @@ class ImportData extends Command {
                 'chat_id' => $chat_id,
                 'poster_account_id' => $account->id,
                 'phones' => '+38 (093) 366 28 69, +38 (068) 303 45 51',
-                'poster_id' => $record->spot_id
+                'poster_id' => $record->spot_id,
+                'district_id' => $centerDistrict->id
             ]);
 
             $this->output->progressAdvance();
