@@ -1,0 +1,23 @@
+name: Deploy
+
+# Trigger the workflow on push to the master branch
+on:
+    push:
+        branches:
+            - stage
+
+# Authenticate to the the server via ssh
+# and run our deployment script
+jobs:
+    deploy:
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v2
+            - name: Deploy to server
+              uses: appleboy/ssh-action@master
+              with:
+                  host: ${{ secrets.HOST }}
+                  username: ${{ secrets.USERNAME }}
+                  port: ${{ secrets.PORT }}
+                  key: ${{ secrets.SSHKEY }}
+                  script: "cd domains/emojisushi.com.ua/stage-api && chmod 777 ./.scripts/deploy-stage.sh && ./.scripts/deploy-stage.sh"
