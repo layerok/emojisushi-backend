@@ -31,8 +31,8 @@ class PosterAccount extends Model
     ];
 
     public $morphedByMany = [
-        'posts'  => [Product::class, 'name' => 'poster_accountable'],
-        'videos' => [Variant::class, 'name' => 'poster_accountable'],
+        'products'  => [Product::class, 'name' => 'poster_accountable'],
+        'variants' => [Variant::class, 'name' => 'poster_accountable'],
         'categories' => [Category::class, 'name' => 'poster_accountable'],
         'properties' => [Property::class, 'name' => 'poster_accountable'],
         'property_groups' => [PropertyGroup::class, 'name' => 'poster_accountable'],

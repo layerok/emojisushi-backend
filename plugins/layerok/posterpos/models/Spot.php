@@ -36,7 +36,8 @@ class Spot extends Model
         'address',
         'cover',
         'slug',
-        'poster_id'
+        'poster_id',
+        'poster_account_id'
     ];
 
     public $slugs = [
@@ -74,6 +75,7 @@ class Spot extends Model
         'city' => City::class,
         'tablet' => Tablet::class,
         'district' => District::class,
+        'posterAccount' => PosterAccount::class,
     ];
 
     public function afterDelete() {

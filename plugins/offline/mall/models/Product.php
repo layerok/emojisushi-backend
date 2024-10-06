@@ -7,6 +7,7 @@ namespace OFFLINE\Mall\Models;
 use Cache;
 use Cms\Classes\Page;
 use DB;
+use Layerok\PosterPos\Models\PosterAccount;
 use Model;
 use October\Rain\Database\Models\DeferredBinding;
 use October\Rain\Database\Traits\Nullable;

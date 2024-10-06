@@ -4,15 +4,7 @@ use Backend;
 use File;
 use Illuminate\Support\Facades\Event;
 use Layerok\PosterPos\Classes\Customer\AuthManager;
-use Layerok\PosterPos\Console\ImportCategories;
-use Layerok\PosterPos\Console\CreatePaymentMethods;
-use Layerok\PosterPos\Console\CreateShippingMethods;
-use Layerok\PosterPos\Console\CreateUAHCurrency;
 use Layerok\PosterPos\Console\ImportData;
-use Layerok\PosterPos\Console\ImportIngredients;
-use Layerok\PosterPos\Console\ImportProducts;
-use Layerok\PosterPos\Console\ImportSpots;
-use Layerok\PosterPos\Console\ImportTablets;
 use Layerok\PosterPos\Models\Cart;
 use Layerok\PosterPos\Models\PosterAccount;
 use Layerok\PosterPos\Models\Spot;
@@ -63,14 +55,6 @@ class Plugin extends PluginBase
     public function register()
     {
         $this->registerConsoleCommand('poster.import', ImportData::class);
-        $this->registerConsoleCommand('poster.import-products', ImportProducts::class);
-        $this->registerConsoleCommand('poster.import-spots', ImportSpots::class);
-        $this->registerConsoleCommand('poster.import-tablets', ImportTablets::class);
-        $this->registerConsoleCommand('poster.import-categories', ImportCategories::class);
-        $this->registerConsoleCommand('poster.import-ingredients', ImportIngredients::class);
-        $this->registerConsoleCommand('poster.create-uah-currency', CreateUAHCurrency::class);
-        $this->registerConsoleCommand('poster.create-payment-methods', CreatePaymentMethods::class);
-        $this->registerConsoleCommand('poster.create-shipping-methods', CreateShippingMethods::class);
         App::register(ExcelServiceProvider::class);
         App::registerClassAlias('Excel',  Excel::class);
     }

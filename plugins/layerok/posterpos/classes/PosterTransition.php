@@ -42,36 +42,26 @@ class PosterTransition
             'inventory_management_method' => 'single'
         ]);
 
-        if(isset($value->spots)) {
-            foreach($value->spots as $spot) {
-                $spotModel = Spot::where('poster_id', $spot->spot_id)->first();
-                if(!$spotModel) {
-                    continue;
-                }
-                if(!(int)$spot->visible) {
-                    HideProduct::create([
-                        'spot_id' => $spotModel->id,
-                        'product_id' => $product->id
-                    ]);
-                    $product->published = 0;
-                    $product->save();
-                } else {
-                    HideProduct::where([
-                        'spot_id' => $spotModel->id,
-                        'product_id' => $product->id
-                    ])->delete();
-                }
+        foreach(($value->spots ?? []) as $spot) {
+            $spotModel = Spot::where('poster_id', $spot->spot_id)->first();
+            if(!$spotModel) {
+                continue;
+            }
+            if(!(int)$spot->visible) {
+                HideProduct::create([
+                    'spot_id' => $spotModel->id,
+                    'product_id' => $product->id
+                ]);
+                $product->published = 0;
+                $product->save();
             }
         }
 
         $rootCategory = Category::where('slug', RootCategory::SLUG_KEY)->first();
 
-        // После создания товара нужно связать товар с категорией
-        // 1. Найдем категорию к которой нужно привязать товар
         $category = Category::where('poster_id', '=', $value->menu_category_id)->first();
-        // 2. Привяжем категорию к товару
-        if (!empty($category)) {
-            $product->categories()->detach([$category['id'], $rootCategory['id']]);
+
+        if ($category) {
             $product->categories()->sync([
                 $category['id'] => ['sort_order' => (int)$value->sort_order],
                 $rootCategory['id'] => ['sort_order' => (int)$value->sort_order],
@@ -80,19 +70,11 @@ class PosterTransition
 
         $currency = Currency::where('code', '=', 'UAH')->first();
 
-        if(!$currency) {
-            // Если не существует гривневой валюты, то создаем
-            \Artisan::call('poster:create-uah-currency');
-            $currency = Currency::where('code', '=', 'UAH')->first();
-        }
 
-
-        // Добавим цену товару
-        // Нужно учесть две ситуации, когда мы имеем дела с товаров и когда с тех картой
         if (isset($value->modifications)) {
-           $group = PropertyGroup::create([
-               "name" =>'Модификаторы для товара ' . $value->product_name
-           ]);
+            $group = PropertyGroup::create([
+                "name" =>'Модификаторы для товара ' . $value->product_name
+            ]);
             // Товар
             $product->inventory_management_method = 'variant';
             $product->save();
@@ -105,8 +87,8 @@ class PosterTransition
                 'slug' => str_slug($value->product_name) . "_mod",
                 'type' => 'dropdown',
             ]);
-            foreach ($value->modifications as $mod) {
 
+            foreach ($value->modifications as $mod) {
 
                 $options[] = [
                     'value' => $mod->modificator_name,
@@ -157,6 +139,7 @@ class PosterTransition
 
             // Привяжем свойство к группе свойств модификаторов
             $property->property_groups()->attach($group->id, ['use_for_variants' => 1, 'filter_type'=>'set']);
+
         }
         else {
             // Тех. карта
@@ -165,39 +148,36 @@ class PosterTransition
                 'product_id' => $product['id'],
                 'currency_id' => $currency->id,
             ]);
-
-            if (isset($value->ingredients)) {
-                foreach ($value->ingredients as $key => $i) {
-                    $property = Property::where('poster_id', $i->ingredient_id)->first();
+            foreach (($value->ingredients ?? []) as $key => $i) {
+                $property = Property::where('poster_id', $i->ingredient_id)->first();
 
 
-                    $name = $i->ingredient_name;
+                $name = $i->ingredient_name;
 
-                    if(!$property) {
-                        $group = PropertyGroup::where('name', 'unknown_ingredient_group')->first();//must be created already
+                if(!$property) {
+                    $group = PropertyGroup::where('name', 'unknown_ingredient_group')->first();//must be created already
 
-                        $property = Property::create([
-                            'type' => 'checkbox',
-                            'poster_id' => $i->ingredient_id,
-                            'name' => $i->ingredient_name,
-                        ]);
-
-                        $property->property_groups()->attach($group->id, ['use_for_variants' => 0, 'filter_type'=>'set']);
-                        $category->property_groups()->detach($group->id);
-                        $category->property_groups()->attach($group->id);
-
-                    }
-
-                    PropertyValue::create([
-                        'product_id' => $product->id,
-                        'property_id' => $property->id,
-                        'value' => $name
+                    $property = Property::create([
+                        'type' => 'checkbox',
+                        'poster_id' => $i->ingredient_id,
+                        'name' => $i->ingredient_name,
                     ]);
+
+                    $property->property_groups()->attach($group->id, ['use_for_variants' => 0, 'filter_type'=>'set']);
+                    $category->property_groups()->detach($group->id);
+                    $category->property_groups()->attach($group->id);
 
                 }
 
-                $product->save();
+                PropertyValue::create([
+                    'product_id' => $product->id,
+                    'property_id' => $property->id,
+                    'value' => $name
+                ]);
+
             }
+
+            $product->save();
         }
 
 /*        if (!empty($value->photo)) {
