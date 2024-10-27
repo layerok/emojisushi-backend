@@ -19,6 +19,7 @@ use Layerok\Restapi\Http\Controllers\RefreshController;
 use \Layerok\Restapi\Http\Controllers\CityController;
 use \Layerok\Restapi\Http\Controllers\PromotionController;
 use \Layerok\Restapi\Http\Controllers\BannerController;
+use \Layerok\Restapi\Http\Controllers\OrderControllerV2;
 use \Fruitcake\Cors\HandleCors;
 
 Route::group([
@@ -43,6 +44,9 @@ Route::group([
     Route::get('ingredients', [IngredientController::class, 'all']);
     Route::prefix('order')->group(function() {
         Route::post('place', [OrderController::class, 'place']);
+    });
+    Route::prefix('order/v2')->group(function() {
+        Route::post('place', [OrderControllerV2::class, 'place']);
     });
 
     Route::prefix('cart')->group(function() {
