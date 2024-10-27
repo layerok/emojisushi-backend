@@ -5,6 +5,7 @@ namespace Layerok\PosterPos\Classes;
 
 use Illuminate\Support\Collection;
 use Layerok\PosterPos\Models\HideProduct;
+use Layerok\PosterPos\Models\PosterAccount;
 use Layerok\PosterPos\Models\Spot;
 use OFFLINE\Mall\Classes\Index\Index;
 use OFFLINE\Mall\Classes\Observers\ProductObserver;
@@ -22,8 +23,35 @@ use System\Models\File;
 
 class PosterTransition
 {
+    const EMOJI_BAR_ACCOUNT_NAME = 'emoji-bar2';
+
+    public function findProductByPosterId($poster_id, $poster_account) {
+        return Product::whereHas('poster_accounts', function ($query) use ($poster_account, $poster_id) {
+            $query->where([
+                ['poster_id', $poster_id],
+                ['poster_account_id', $poster_account->id],
+            ]);
+        })->first();
+    }
+    public function findCategoryByPosterId($poster_id, $poster_account) {
+        return Category::whereHas('poster_accounts', function ($query) use ($poster_account, $poster_id) {
+            $query->where([
+                ['poster_id', $poster_id],
+                ['poster_account_id', $poster_account->id],
+            ]);
+        })->first();
+    }
+    public function findPropertyByPosterId($poster_id, $poster_account) {
+        return Property::whereHas('poster_accounts', function ($query) use ($poster_account, $poster_id) {
+            $query->where([
+                ['poster_id', $poster_id],
+                ['poster_account_id', $poster_account->id],
+            ]);
+        })->first();
+    }
     public function createProduct($value) {
-        $product = Product::where('poster_id', '=', $value->product_id)->first();
+        $emojibar = PosterAccount::where('account_name', self::EMOJI_BAR_ACCOUNT_NAME)->first();
+        $product = $this->findProductByPosterId($value->product_id, $emojibar);
 
         if ($product) {
             // deleting product
@@ -33,7 +61,6 @@ class PosterTransition
         $product = Product::create([
             'name' => (string)$value->product_name,
             'slug' => str_slug($value->product_name),
-            'poster_id' => (int)$value->product_id,
             'user_defined_id' => (int)$value->product_id,
             'weight'  => isset($value->out) ? (int)$value->out: 0,
             'allow_out_of_stock_purchases' => 1,
@@ -42,26 +69,43 @@ class PosterTransition
             'inventory_management_method' => 'single'
         ]);
 
-        foreach(($value->spots ?? []) as $spot) {
-            $spotModel = Spot::where('poster_id', $spot->spot_id)->first();
-            if(!$spotModel) {
-                continue;
-            }
-            if(!(int)$spot->visible) {
-                HideProduct::create([
-                    'spot_id' => $spotModel->id,
-                    'product_id' => $product->id
-                ]);
-                $product->published = 0;
-                $product->save();
+        $product->poster_accounts()->sync([
+            $emojibar->id => [
+                'poster_id' => (int)$value->product_id
+            ]
+        ]);
+
+        if(isset($value->spots)) {
+            foreach($value->spots as $spot) {
+//                $spotModel = Spot::where('poster_id', $spot->spot_id)->first();
+//                if(!$spotModel) {
+//                    continue;
+//                }
+//                if(!(int)$spot->visible) {
+//                    HideProduct::create([
+//                        'spot_id' => $spotModel->id,
+//                        'product_id' => $product->id
+//                    ]);
+//                    $product->published = 0;
+//                    $product->save();
+//                } else {
+//                    HideProduct::where([
+//                        'spot_id' => $spotModel->id,
+//                        'product_id' => $product->id
+//                    ])->delete();
+//                }
             }
         }
 
         $rootCategory = Category::where('slug', RootCategory::SLUG_KEY)->first();
 
-        $category = Category::where('poster_id', '=', $value->menu_category_id)->first();
+        // После создания товара нужно связать товар с категорией
+        // 1. Найдем категорию к которой нужно привязать товар
+        $category = $this->findCategoryByPosterId($value->menu_category_id, $emojibar);
 
-        if ($category) {
+        // 2. Привяжем категорию к товару
+        if (!empty($category)) {
+            $product->categories()->detach([$category['id'], $rootCategory['id']]);
             $product->categories()->sync([
                 $category['id'] => ['sort_order' => (int)$value->sort_order],
                 $rootCategory['id'] => ['sort_order' => (int)$value->sort_order],
@@ -70,11 +114,19 @@ class PosterTransition
 
         $currency = Currency::where('code', '=', 'UAH')->first();
 
+        if(!$currency) {
+            // Если не существует гривневой валюты, то создаем
+            \Artisan::call('poster:create-uah-currency');
+            $currency = Currency::where('code', '=', 'UAH')->first();
+        }
 
+
+        // Добавим цену товару
+        // Нужно учесть две ситуации, когда мы имеем дела с товаров и когда с тех картой
         if (isset($value->modifications)) {
-            $group = PropertyGroup::create([
-                "name" =>'Модификаторы для товара ' . $value->product_name
-            ]);
+           $group = PropertyGroup::create([
+               "name" =>'Модификаторы для товара ' . $value->product_name
+           ]);
             // Товар
             $product->inventory_management_method = 'variant';
             $product->save();
@@ -87,9 +139,7 @@ class PosterTransition
                 'slug' => str_slug($value->product_name) . "_mod",
                 'type' => 'dropdown',
             ]);
-
             foreach ($value->modifications as $mod) {
-
                 $options[] = [
                     'value' => $mod->modificator_name,
                     'poster_id' => $mod->modificator_id
@@ -102,7 +152,12 @@ class PosterTransition
                     'stock' => 99999,
                     'published' => 1,
                     'allow_out_of_stock_purchases' => 1,
-                    'poster_id' => $mod->modificator_id
+                ]);
+
+                $variant->poster_accounts()->sync([
+                    $emojibar->id => [
+                        'poster_id' => $mod->modificator_id
+                    ]
                 ]);
 
                 // Создадим цену для варианта
@@ -139,7 +194,6 @@ class PosterTransition
 
             // Привяжем свойство к группе свойств модификаторов
             $property->property_groups()->attach($group->id, ['use_for_variants' => 1, 'filter_type'=>'set']);
-
         }
         else {
             // Тех. карта
@@ -148,36 +202,44 @@ class PosterTransition
                 'product_id' => $product['id'],
                 'currency_id' => $currency->id,
             ]);
-            foreach (($value->ingredients ?? []) as $key => $i) {
-                $property = Property::where('poster_id', $i->ingredient_id)->first();
+
+            if (isset($value->ingredients)) {
+                foreach ($value->ingredients as $key => $i) {
+                    $property = $this->findPropertyByPosterId($i->ingredient_id, $emojibar);
 
 
-                $name = $i->ingredient_name;
+                    $name = $i->ingredient_name;
 
-                if(!$property) {
-                    $group = PropertyGroup::where('name', 'unknown_ingredient_group')->first();//must be created already
+                    if(!$property) {
+                        $group = PropertyGroup::where('name', 'unknown_ingredient_group')->first();//must be created already
 
-                    $property = Property::create([
-                        'type' => 'checkbox',
-                        'poster_id' => $i->ingredient_id,
-                        'name' => $i->ingredient_name,
+                        $property = Property::create([
+                            'type' => 'checkbox',
+                            'name' => $i->ingredient_name,
+                        ]);
+
+                        $property->poster_accounts()->sync([
+                            $emojibar->id => [
+                                'poster_id' => $i->ingredient_id
+                            ]
+                        ]);
+
+                        $property->property_groups()->attach($group->id, ['use_for_variants' => 0, 'filter_type'=>'set']);
+                        $category->property_groups()->detach($group->id);
+                        $category->property_groups()->attach($group->id);
+
+                    }
+
+                    PropertyValue::create([
+                        'product_id' => $product->id,
+                        'property_id' => $property->id,
+                        'value' => $name
                     ]);
-
-                    $property->property_groups()->attach($group->id, ['use_for_variants' => 0, 'filter_type'=>'set']);
-                    $category->property_groups()->detach($group->id);
-                    $category->property_groups()->attach($group->id);
 
                 }
 
-                PropertyValue::create([
-                    'product_id' => $product->id,
-                    'property_id' => $property->id,
-                    'value' => $name
-                ]);
-
+                $product->save();
             }
-
-            $product->save();
         }
 
 /*        if (!empty($value->photo)) {
@@ -224,7 +286,8 @@ class PosterTransition
 
     public function deleteProduct($id)
     {
-        $product = Product::where('poster_id', '=', $id)->first();
+        $emojibar = PosterAccount::where('account_name', self::EMOJI_BAR_ACCOUNT_NAME)->first();
+        $product = $this->findProductByPosterId($id, $emojibar);
         if ($product) {
             (new ProductObserver(app(Index::class)))->deleted($product);
             $product->delete();
@@ -233,8 +296,8 @@ class PosterTransition
 
     public function updateProduct($value)
     {
-
-        $product = Product::where('poster_id', '=', $value->product_id)->first();
+        $emojibar = PosterAccount::where('account_name', self::EMOJI_BAR_ACCOUNT_NAME)->first();
+        $product = $this->findProductByPosterId($value->product_id, $emojibar);
         if (!$product) {
             // Если такого товара не существует, то выходим
             return;
@@ -249,13 +312,13 @@ class PosterTransition
         $rootCategory = Category::where('slug', RootCategory::SLUG_KEY)->first();
 
         // 1. Найдем категорию к которой нужно привязать товар
-        $category = Category::where('poster_id', '=', $value->menu_category_id)->first();
+        $category = $this->findCategoryByPosterId($value->menu_category_id, $emojibar);
+
         // 2. Привяжем категорию к товару
         if (!empty($category)) {
             $product->categories()->detach();
             $product->categories()->sync([$category['id'], $rootCategory['id']]);
         }
-
 
 
         // Добавим цену товару
@@ -326,8 +389,5 @@ class PosterTransition
                 $observer->updated($product);
             });
         });
-
-
-
     }
 }
