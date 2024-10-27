@@ -337,12 +337,10 @@ class OrderControllerV2 extends Controller
             })
             ->newLine()
             ->field(trans('layerok.restapi::lang.receipt.total'), $money->format(
-                20000,
+                $products->reduce(fn($acc, $product) => $acc + $product->prices[0]->price, 0),
                 null,
                 Currency::$defaultCurrency
             ));
-
-        // $products->reduce(fn($acc, $product) => $acc + $product, 0);
 
         return $receipt->getText();
     }
