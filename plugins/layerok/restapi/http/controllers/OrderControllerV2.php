@@ -205,7 +205,7 @@ class OrderControllerV2 extends Controller
 
         $poster_order_id = $posterResult->response->incoming_order_id + $add_to_poster_id;
 
-        $telegramRes = $api->sendMessage([
+        $api->sendMessage([
             'text' => $this->generateReceipt(
                 trans('layerok.restapi::lang.receipt.new_order') . ' #' . $poster_order_id,
                 $cart,
@@ -281,10 +281,11 @@ class OrderControllerV2 extends Controller
 
         $receiptProducts = $products->map(function (Product $product) use($cart) {
             $cartProduct = collect($cart['items'])->first(fn ($item) => $item['id'] === (string)$product->id);
-            $item = [];
-            $item['name'] = $product['name'];
-            $item['count'] = $cartProduct['quantity'];
-            return $item;
+
+            return [
+                'name' => $product['name'],
+                'count' => $cartProduct['quantity']
+            ];
         });
 
         $receipt
