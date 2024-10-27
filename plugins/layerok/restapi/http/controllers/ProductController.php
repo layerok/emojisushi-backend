@@ -47,16 +47,10 @@ class ProductController extends Controller
             }
         }
 
-        $items = $this->getItems();
-
-        $group = PropertyGroup::where('id', 1)->first(); // 1 - id группы "Ингридиенты"
-        $filters = $group->properties()->get();
-
         return response()->json([
-            'data' => $items->toArray(),
+            'data' => $this->getItems()->toArray(),
             'total' => $this->totalCount,
             'sort_options' => $this->getSortOptions(),
-            'filters' => $filters
         ]);
     }
 
