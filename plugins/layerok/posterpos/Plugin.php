@@ -14,6 +14,7 @@ use Maatwebsite\Excel\Facades\Excel;
 use OFFLINE\Mall\Controllers\Categories;
 use OFFLINE\Mall\Controllers\Products;
 
+use OFFLINE\Mall\Controllers\ShippingMethods;
 use OFFLINE\Mall\Models\Category;
 use OFFLINE\Mall\Models\Order;
 use OFFLINE\Mall\Models\Product;
@@ -21,6 +22,7 @@ use OFFLINE\Mall\Models\Property;
 use OFFLINE\Mall\Models\PropertyGroup;
 use OFFLINE\Mall\Models\ShippingMethod;
 use OFFLINE\Mall\Models\Variant;
+use Backend\Widgets\Form;
 
 use System\Classes\PluginBase;
 use App;
@@ -285,7 +287,7 @@ class Plugin extends PluginBase
         });
 
 
-        Event::listen('backend.form.extendFields', function ($widget) {
+        Event::listen('backend.form.extendFields', function (Form $widget) {
             if ($widget->model instanceof Category) {
                 $widget->addFields([
                     'published' => [
@@ -293,12 +295,23 @@ class Plugin extends PluginBase
                         'span' => 'left',
                         'type' => 'switch'
                     ]
-                ]);
+                ], Backend\Classes\FormTabs::SECTION_PRIMARY);
+            }
+
+            if ($widget->model instanceof ShippingMethod) {
+                $widget->addFields([
+                    'code' => [
+                        'label' => 'Code',
+                        'span' => 'auto',
+                        'type' => 'text',
+                        'tab' => 'offline.mall::lang.common.general'
+                    ]
+                ], Backend\Classes\FormTabs::SECTION_PRIMARY);
             }
         });
 
         // Extend all backend list usage
-        Event::listen('backend.list.extendColumns', function ($widget) {
+        Event::listen('backend.list.extendColumns', function (Backend\Widgets\Lists $widget) {
             if ($widget->model instanceof Category && $widget->getController() instanceof Categories) {
                 $widget->addColumns([
                     'published' => [
@@ -310,6 +323,15 @@ class Plugin extends PluginBase
                 ]);
             }
 
+            if ($widget->model instanceof ShippingMethod && $widget->getController() instanceof ShippingMethods) {
+                $widget->addColumns([
+                    'code' => [
+                        'label' => 'Code',
+                        'type' => 'text',
+                        'sortable' => true,
+                    ]
+                ]);
+            }
         });
 
 
