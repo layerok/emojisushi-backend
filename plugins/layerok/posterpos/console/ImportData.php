@@ -117,6 +117,16 @@ class ImportData extends Command {
 //            'name' => 'Chornomorsk'
 //        ]);
 
+//        Bot::create([
+//            'token' => '2',
+//            'name' => 'Test bot'
+//        ]);
+//
+//        Chat::create([
+//            'chat_id' => '',
+//            'name' => 'Test chat'
+//        ]);
+
         $this->output->newLine();
         $this->output->writeln('Creating districts...');
         $this->output->newLine();
