@@ -172,6 +172,7 @@ class ImportData extends Command {
 
         $method = new ShippingMethod([
             'name' => 'Самовивіз',
+            'code' => 'takeaway',
             'sort_order' => 1
         ]);
 
@@ -188,8 +189,10 @@ class ImportData extends Command {
 
         $method = new ShippingMethod([
             'name' => "Кур'єр",
+            'code' => 'courier',
             'sort_order' => 1
         ]);
+
         $method->save();
 
         (new Price([
