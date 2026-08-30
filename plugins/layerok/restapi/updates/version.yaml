@@ -52,3 +52,7 @@
 1.0.26:
     - 'Widen products/cart columns on online_orders to text'
     - change_online_orders_column_types.php
+
+1.0.27:
+    - 'Add city to fcm_tokens table'
+    - add_city_to_fcm_tokens_table.php

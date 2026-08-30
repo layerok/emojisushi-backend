@@ -12,5 +12,6 @@ class FcmToken extends Model
         'user_id',
         'platform',
         'last_used_at',
+        'city',
     ];
 }
