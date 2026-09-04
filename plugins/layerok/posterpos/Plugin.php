@@ -291,6 +291,11 @@ class Plugin extends PluginBase
                     'type' => 'switch',
                     'tab' => 'offline.mall::lang.product.general',
                 ];
+                $config['tabs']['fields']['slightly_spicy'] = [
+                    'label' => 'Слегка острое',
+                    'type' => 'switch',
+                    'tab' => 'offline.mall::lang.product.general',
+                ];
                 $config['tabs']['fields']['unavailable_products_in_spot'] = [
                     'label' => 'Недоступный товар на точке',
                     'type' => 'relation',
@@ -409,6 +414,8 @@ class Plugin extends PluginBase
 
         Product::extend(function ($model) {
             $model->fillable[] = 'mobile';
+            $model->fillable[] = 'spicy';
+            $model->fillable[] = 'slightly_spicy';
             $model->belongsToMany['hide_products_in_spot'] = [
                 Spot::class,
                 'table'    => 'layerok_posterpos_hide_products_in_spot',
