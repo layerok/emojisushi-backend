@@ -145,7 +145,11 @@ class OrderControllerV2 extends Controller
             ];
         });
 
-        if (intval($data['sticks']) > 0) {
+        // no_cutlery suppresses sticks/training_sticks entirely — no cutlery-related
+        // poster line items, and their info is overwritten in the comment/receipt below
+        $noCutlery = !empty($data['no_cutlery']);
+
+        if (!$noCutlery && intval($data['sticks']) > 0) {
             $posterSticks = $posterProducts->first(function ($posterProduct) {
                 return $posterProduct['product_id'] === $this->getSticksPosterId();
             });
@@ -164,6 +168,25 @@ class OrderControllerV2 extends Controller
             ]);
         }
 
+        if (!$noCutlery && intval($data['training_sticks'] ?? 0) > 0) {
+            $posterTrainingSticks = $posterProducts->first(function ($posterProduct) {
+                return $posterProduct['product_id'] === $this->getTrainingSticksPosterId();
+            });
+
+            if ($posterTrainingSticks) {
+                $posterProducts = $posterProducts->filter(function ($posterProduct) {
+                    return $posterProduct['product_id'] !== $this->getTrainingSticksPosterId();
+                });
+            }
+
+            $posterProducts->add([
+                'name' => 'Затискач для паличок',
+                'product_id' => $this->getTrainingSticksPosterId(),
+                // merge training sticks count from checkout form and from the cart
+                'count' => $data['training_sticks'] + ($posterTrainingSticks['count'] ?? 0)
+            ]);
+        }
+
         PosterApi::init([
             'account_name' => $poster_account->account_name,
             'application_id' => $poster_account->application_id,
@@ -171,12 +194,20 @@ class OrderControllerV2 extends Controller
             'access_token' => $poster_account->access_token,
         ]);
 
-        $posterComment = collect([
+        // no_cutlery overwrites persons/sticks info with a single "no cutlery" message
+        $cutleryComments = $noCutlery
+            ? [['', trans('layerok.restapi::lang.receipt.no_cutlery')]]
+            : [
+                [trans('layerok.restapi::lang.receipt.persons_amount'), $data['sticks']],
+                [trans('layerok.restapi::lang.receipt.training_sticks_amount'), $data['training_sticks'] ?? null],
+            ];
+
+        $posterComment = collect(array_merge([
             ['', $data['comment']],
             [trans('layerok.restapi::lang.receipt.change'), $data['change']],
             [trans('layerok.restapi::lang.receipt.payment_method'), $paymentMethod->name],
-            [trans('layerok.restapi::lang.receipt.persons_amount'), $data['sticks']],
-        ])->filter(fn($part) => !empty($part[1]))
+        ], $cutleryComments))
+            ->filter(fn($part) => !empty($part[1]))
             ->map(fn($part) => ($part[0] ? $part[0] . ': ' : '') . $part[1])
             ->join(' || ');
 
@@ -453,7 +484,8 @@ class OrderControllerV2 extends Controller
                         $cart,
                         $shippingMethod,
                         $paymentMethod,
-                        $data
+                        $data,
+                        $spot
                     ),
                     'parse_mode' => "html",
                     'chat_id' => $spot->chat->internal_id
@@ -519,7 +551,8 @@ class OrderControllerV2 extends Controller
                     $cart,
                     $shippingMethod,
                     $paymentMethod,
-                    $data
+                    $data,
+                    $spot
                 ),
                 'parse_mode' => "html",
                 'chat_id' => $spot->chat->internal_id
@@ -582,7 +615,8 @@ class OrderControllerV2 extends Controller
         $cart,
         ShippingMethod $shippingMethod,
         PaymentMethod $paymentMethod,
-        $data
+        $data,
+        ?Spot $spot = null
     ): string {
         $money = app()->make(Money::class);
         $receipt = new Receipt();
@@ -612,8 +646,19 @@ class OrderControllerV2 extends Controller
             $phone_formatted = substr($phone_formatted, 3);
         }
 
+        $noCutlery = !empty($data['no_cutlery']);
+
+        // no_cutlery overwrites persons/sticks info with a single "no cutlery" message
+        $personsAmount = $noCutlery ? null : ($data['sticks'] ?? null);
+        $trainingSticksAmount = $noCutlery ? null : ($data['training_sticks'] ?? null);
+        $cutleryMessage = $noCutlery ? trans('layerok.restapi::lang.receipt.no_cutlery') : null;
+
         $receipt
             ->headline(htmlspecialchars($headline))
+            ->field(
+                trans('layerok.restapi::lang.receipt.spot'),
+                htmlspecialchars($spot->name ?? null)
+            )
             ->field(
                 trans('layerok.restapi::lang.receipt.first_name'),
                 htmlspecialchars($data['firstname'] ?? null)
@@ -644,7 +689,15 @@ class OrderControllerV2 extends Controller
             )
             ->field(
                 trans('layerok.restapi::lang.receipt.persons_amount'),
-                htmlspecialchars($data['sticks'] ?? null)
+                htmlspecialchars($personsAmount ?? '')
+            )
+            ->field(
+                trans('layerok.restapi::lang.receipt.training_sticks_amount'),
+                htmlspecialchars($trainingSticksAmount ?? '')
+            )
+            ->field(
+                trans('layerok.restapi::lang.receipt.cutlery'),
+                htmlspecialchars($cutleryMessage ?? '')
             )
             ->field(
                 trans('layerok.restapi::lang.receipt.comment'),
@@ -708,6 +761,11 @@ class OrderControllerV2 extends Controller
     public function getSticksPosterId()
     {
         return Config::get('layerok.restapi::order.sushi_sticks_poster_id');
+    }
+
+    public function getTrainingSticksPosterId()
+    {
+        return Config::get('layerok.restapi::order.training_sticks_poster_id');
     }
 
     private function pointInPolygon($x, $y, $poly)

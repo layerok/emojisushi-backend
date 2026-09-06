@@ -47,13 +47,13 @@ services:
       SERVICE_NAME: mysql
     volumes:
     - ./compose/mysql/my.cnf:/etc/mysql/my.cnf
-#    - dbdata:/var/lib/mysql/
+    - dbdata:/var/lib/mysql/
     networks:
       - laravel
-#    healthcheck:
-#        test: [ "CMD", "mysqladmin" ,"ping", "-h", "localhost" ]
-#        timeout: 20s
-#        retries: 10
+    healthcheck:
+       test: [ "CMD", "mysqladmin" ,"ping", "-h", "localhost" ]
+       timeout: 20s
+       retries: 10
 
   redis:
     image: "redis:alpine"
