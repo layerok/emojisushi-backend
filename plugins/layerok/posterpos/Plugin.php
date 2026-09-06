@@ -299,21 +299,25 @@ class Plugin extends PluginBase
                 $config['tabs']['fields']['calories'] = [
                     'label' => 'Калорийность (ккал)',
                     'type' => 'number',
+                    'span' => 'auto',
                     'tab' => 'offline.mall::lang.product.general',
                 ];
                 $config['tabs']['fields']['proteins'] = [
                     'label' => 'Белки (г)',
                     'type' => 'number',
+                    'span' => 'auto',
                     'tab' => 'offline.mall::lang.product.general',
                 ];
                 $config['tabs']['fields']['fats'] = [
                     'label' => 'Жиры (г)',
                     'type' => 'number',
+                    'span' => 'auto',
                     'tab' => 'offline.mall::lang.product.general',
                 ];
                 $config['tabs']['fields']['carbs'] = [
                     'label' => 'Углеводы (г)',
                     'type' => 'number',
+                    'span' => 'auto',
                     'tab' => 'offline.mall::lang.product.general',
                 ];
                 $config['tabs']['fields']['unavailable_products_in_spot'] = [
