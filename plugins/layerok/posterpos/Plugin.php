@@ -291,6 +291,31 @@ class Plugin extends PluginBase
                     'type' => 'switch',
                     'tab' => 'offline.mall::lang.product.general',
                 ];
+                $config['tabs']['fields']['slightly_spicy'] = [
+                    'label' => 'Слегка острое',
+                    'type' => 'switch',
+                    'tab' => 'offline.mall::lang.product.general',
+                ];
+                $config['tabs']['fields']['calories'] = [
+                    'label' => 'Калорийность (ккал)',
+                    'type' => 'number',
+                    'tab' => 'offline.mall::lang.product.general',
+                ];
+                $config['tabs']['fields']['proteins'] = [
+                    'label' => 'Белки (г)',
+                    'type' => 'number',
+                    'tab' => 'offline.mall::lang.product.general',
+                ];
+                $config['tabs']['fields']['fats'] = [
+                    'label' => 'Жиры (г)',
+                    'type' => 'number',
+                    'tab' => 'offline.mall::lang.product.general',
+                ];
+                $config['tabs']['fields']['carbs'] = [
+                    'label' => 'Углеводы (г)',
+                    'type' => 'number',
+                    'tab' => 'offline.mall::lang.product.general',
+                ];
                 $config['tabs']['fields']['unavailable_products_in_spot'] = [
                     'label' => 'Недоступный товар на точке',
                     'type' => 'relation',
@@ -409,6 +434,12 @@ class Plugin extends PluginBase
 
         Product::extend(function ($model) {
             $model->fillable[] = 'mobile';
+            $model->fillable[] = 'spicy';
+            $model->fillable[] = 'slightly_spicy';
+            $model->fillable[] = 'calories';
+            $model->fillable[] = 'proteins';
+            $model->fillable[] = 'fats';
+            $model->fillable[] = 'carbs';
             $model->belongsToMany['hide_products_in_spot'] = [
                 Spot::class,
                 'table'    => 'layerok_posterpos_hide_products_in_spot',
