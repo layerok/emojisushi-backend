@@ -100,7 +100,7 @@ class OrderControllerV2 extends Controller
                 $spot = Spot::find($spotId);
                 $delivery_time = $spot->wait_minutes_delivery + $area["delivery_minutes"];
                 // $incomingOrder['spot_id'] = $spot->tablet->tablet_id;
-                $address = $address->name_ua . ', ' . $address->suburb_ua . ', ' . $data['address_details'] ?? null;
+                $address = $this->formatDeliveryAddress($address, $spot, $data);
                 $data['address'] = $address;
             } else {
                 $address = $data['address'] ?? null;
@@ -766,6 +766,41 @@ class OrderControllerV2 extends Controller
     public function getTrainingSticksPosterId()
     {
         return Config::get('layerok.restapi::order.training_sticks_poster_id');
+    }
+
+    /**
+     * Composes the delivery address as a single line, e.g.
+     * "вулиця Академіка Сахарова, 40/1, Одеса, Котовського, Квартира: 39, Під'їзд: 1, Поверх: 10"
+     *
+     * The street and suburb come from the picked Address record, the city from the
+     * spot resolved by the delivery area, and the rest from the fields the client
+     * already sends alongside the order. Empty values are dropped together with
+     * their label so the line never contains a dangling "Квартира: ".
+     */
+    private function formatDeliveryAddress(Address $address, ?Spot $spot, array $data): string
+    {
+        $parts = [
+            $address->name_ua,
+            $data['house'] ?? null,
+            $spot ? optional($spot->city)->name : null,
+            $address->suburb_ua,
+        ];
+
+        $details = [
+            'Квартира' => $data['apartment'] ?? null,
+            "Під'їзд" => $data['entrance'] ?? null,
+            'Поверх' => $data['floor'] ?? null,
+        ];
+
+        foreach ($details as $label => $value) {
+            if (trim((string) $value) !== '') {
+                $parts[] = $label . ': ' . $value;
+            }
+        }
+
+        return collect($parts)
+            ->filter(fn($part) => trim((string) $part) !== '')
+            ->join(', ');
     }
 
     private function pointInPolygon($x, $y, $poly)
