@@ -25,6 +25,10 @@ class PosterTransition
 {
     const EMOJI_BAR_ACCOUNT_NAME = 'emoji-bar2';
     // const EMOJI_BAR_ACCOUNT_NAME = 'demo';
+    /** Ingredient that is counted by the piece, matched ignoring case and spacing. */
+    const PIECE_INGREDIENT_KEY = 'соєвийсоус40г';
+    const PIECE_INGREDIENT_LABEL = 'Соєвий соус 40 г';
+
     public function generateDescription($ingredients)
     {
         $specialIngredients = ['васабі', 'імбир', 'соєвий соус'];
@@ -36,6 +40,14 @@ class PosterTransition
                     return null;
                 }
 
+                if ($this->isPieceIngredient($item->ingredient_name)) {
+                    $count = $this->formatAmount($item->structure_brutto ?? null);
+
+                    return $count === null
+                        ? self::PIECE_INGREDIENT_LABEL
+                        : $count . 'х ' . self::PIECE_INGREDIENT_LABEL;
+                }
+
                 if (in_array(mb_strtolower($item->ingredient_name), $specialIngredients)) {
                     return $item->ingredient_name . ' - ' . $item->structure_brutto . ' грам';
                 }
@@ -43,6 +55,20 @@ class PosterTransition
                 return $item->ingredient_name;
             }, $ingredients))
         );
+    }
+
+    private function isPieceIngredient($name)
+    {
+        return preg_replace('/\s+/u', '', mb_strtolower((string) $name)) === self::PIECE_INGREDIENT_KEY;
+    }
+
+    private function formatAmount($amount)
+    {
+        if ($amount === null || $amount === '' || !is_numeric($amount)) {
+            return null;
+        }
+
+        return rtrim(rtrim(number_format((float) $amount, 3, '.', ''), '0'), '.');
     }
     public function findProductByPosterId($poster_id, $poster_account)
     {
