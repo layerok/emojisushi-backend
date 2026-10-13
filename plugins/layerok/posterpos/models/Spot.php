@@ -6,6 +6,7 @@ use Layerok\Telegram\Models\Bot;
 use Layerok\Telegram\Models\Chat;
 use October\Rain\Database\Model;
 use October\Rain\Database\Traits\Sluggable;
+use October\Rain\Exception\ValidationException;
 use OFFLINE\Mall\Models\Category;
 use OFFLINE\Mall\Models\Product;
 
@@ -48,8 +49,29 @@ class Spot extends Model
         'wait_minutes_delivery',
         'extra_wait_enabled',
         'extra_wait_minutes',
+        'transfer_card',
     ];
-    protected $hidden = ['merchant_account', 'merchant_secret_key'];
+    // The spot is served to the public site and app; none of these belong there.
+    // The transfer card goes to couriers only, through the courier API.
+    protected $hidden = ['merchant_account', 'merchant_secret_key', 'transfer_card'];
+
+    /**
+     * The transfer card is typed with or without spaces; it is kept as 16 digits.
+     */
+    public function beforeSave()
+    {
+        if (!$this->isDirty('transfer_card')) {
+            return;
+        }
+
+        $digits = preg_replace('/\D/', '', (string) $this->transfer_card);
+
+        if ($digits !== '' && strlen($digits) !== 16) {
+            throw new ValidationException(['transfer_card' => 'Номер карты должен содержать 16 цифр.']);
+        }
+
+        $this->transfer_card = $digits !== '' ? $digits : null;
+    }
 
     protected $appends = ['extra_wait_categories'];
 

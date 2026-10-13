@@ -21,6 +21,10 @@ class OpenDeliveries
 
     public const SERVICE_MODE_DELIVERY = 3;
 
+    // dash.getTransactions status filter
+    public const STATUS_OPEN = 1;
+    public const STATUS_CLOSED = 2;
+
     public static function now(): Carbon
     {
         return Carbon::now(self::TIMEZONE);
@@ -32,10 +36,25 @@ class OpenDeliveries
      */
     public function openTransactions(string $dateFrom, string $dateTo, ?int $spotPosterId = null): Collection
     {
+        return $this->deliveryTransactions(self::STATUS_OPEN, $dateFrom, $dateTo, $spotPosterId);
+    }
+
+    /**
+     * Closed delivery receipts. Poster filters closed receipts by their local
+     * close date, so a receipt opened at 23:50 and closed at 00:20 belongs to the
+     * next day.
+     */
+    public function closedTransactions(string $dateFrom, string $dateTo, ?int $spotPosterId = null): Collection
+    {
+        return $this->deliveryTransactions(self::STATUS_CLOSED, $dateFrom, $dateTo, $spotPosterId);
+    }
+
+    private function deliveryTransactions(int $status, string $dateFrom, string $dateTo, ?int $spotPosterId): Collection
+    {
         $params = [
             'dateFrom' => date('Ymd', strtotime($dateFrom)),
             'dateTo' => date('Ymd', strtotime($dateTo)),
-            'status' => 1,                 // open receipts only
+            'status' => $status,
             'service_mode' => self::SERVICE_MODE_DELIVERY,
             'include_delivery' => 'true',
         ];

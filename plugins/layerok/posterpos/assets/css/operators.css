@@ -27,7 +27,7 @@
 .op-metric b.pending { color: #5a5a60; }
 
 /* panels */
-.op-grid { display: grid; grid-template-columns: minmax(0, 1fr) 380px 320px; gap: 12px; align-items: start; }
+.op-grid { display: grid; grid-template-columns: minmax(0, 1fr) 320px 380px; gap: 12px; align-items: start; }
 .op-side { display: flex; flex-direction: column; gap: 12px; }
 .op-card { border: 1px solid #e2e2e2; border-radius: 8px; background: #fff; padding: 16px; }
 .op-card h3 { font-size: 16px; font-weight: 800; margin: 0 0 6px; }
@@ -75,12 +75,15 @@
 
 @media (max-width: 1300px) {
     .op-grid { grid-template-columns: minmax(0, 1fr) 360px; }
-    .op-side { grid-column: 1 / -1; display: grid; grid-template-columns: 1fr 1fr; }
+    /* late orders stay top right; the side column moves under both */
+    .op-card-late { grid-column: 2; grid-row: 1; }
+    .op-side { grid-column: 1 / -1; grid-row: 2; display: grid; grid-template-columns: 1fr 1fr; }
 }
 
 @media (max-width: 900px) {
     .op-spots { grid-template-columns: repeat(2, minmax(0, 1fr)); }
     .op-grid, .op-side { grid-template-columns: 1fr; display: grid; }
+    .op-card-late, .op-side { grid-column: auto; grid-row: auto; }
     .op-event { grid-template-columns: 58px 80px minmax(0, 1fr); }
     .op-event > div:last-child { display: none; }
 }

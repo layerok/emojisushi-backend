@@ -2,12 +2,12 @@
 
 use BackendMenu;
 use Backend\Classes\Controller;
+use Layerok\PosterPos\Classes\Delivery\DeliveryLocations;
 use Layerok\PosterPos\Classes\Delivery\OpenDeliveries;
-use Layerok\PosterPos\Classes\GeocodeService;
 use Illuminate\Support\Facades\Log;
-use Layerok\PosterPos\Models\Address;
 use Layerok\PosterPos\Models\Area;
 use Layerok\PosterPos\Models\Courier;
+use Layerok\PosterPos\Models\CourierState;
 use Layerok\PosterPos\Models\OnlineOrder;
 use Layerok\PosterPos\Models\Spot;
 
@@ -27,7 +27,7 @@ class DeliveryMap extends Controller
      */
     private const SHOW_PENDING_ACCEPT = false;
 
-    private ?GeocodeService $geocoder = null;
+    private ?DeliveryLocations $locations = null;
 
     private ?OpenDeliveries $deliveries = null;
 
@@ -114,14 +114,23 @@ class DeliveryMap extends Controller
         }
 
         $streets = $transactions
-            ->map(fn($transaction) => $this->streetOf((object) (((object) $transaction)->delivery ?? null)))
-            ->merge($pending->map(fn($order) => $this->streetFromLine(((object) $order)->address ?? '')));
+            ->map(fn($transaction) => $this->locations()->streetOf((object) (((object) $transaction)->delivery ?? null)))
+            ->merge($pending->map(fn($order) => $this->locations()->streetFromLine(((object) $order)->address ?? '')));
 
-        $coords = $this->streetCoordinates($streets);
+        $coords = $this->locations()->streetCoordinates($streets);
+
+        $current = $this->currentOrders();
 
         $orders = $transactions
             ->map(fn($transaction) => $this->presentOrder((object) $transaction, $couriers, $coords))
-            ->merge($pending->map(fn($order) => $this->presentPendingOrder((object) $order, $coords)))
+            ->map(fn(array $order) => $order + [
+                // The courier app's «Везу сейчас»: the order on its way that this
+                // courier is driving to right now.
+                'is_current' => $order['processing_status'] === 40
+                    && $order['courier_id']
+                    && ($current[$order['id']] ?? null) === $order['courier_id'],
+            ])
+            ->merge($pending->map(fn($order) => $this->presentPendingOrder((object) $order, $coords) + ['is_current' => false]))
             ->values();
 
         return [
@@ -140,7 +149,7 @@ class DeliveryMap extends Controller
     private function presentPendingOrder(object $order, array $coords): array
     {
         $line = (string) ($order->address ?? '');
-        $street = $this->streetFromLine($line);
+        $street = $this->locations()->streetFromLine($line);
         $point = $street !== null && isset($coords[$street])
             ? $coords[$street] + ['source' => 'street']
             : ['lat' => null, 'lng' => null, 'source' => null];
@@ -171,19 +180,12 @@ class DeliveryMap extends Controller
         ];
     }
 
-    private function streetFromLine(string $line): ?string
-    {
-        $street = trim(explode(',', trim($line))[0]);
-
-        return $street !== '' ? $street : null;
-    }
-
     private function presentOrder(object $transaction, array $couriers, array $coords = []): array
     {
         $delivery = (object) ($transaction->delivery ?? []);
         $courierId = OpenDeliveries::courierIdOf($transaction);
 
-        $point = $this->resolvePoint($delivery, $coords);
+        $point = $this->locations()->resolvePoint($delivery, $coords);
 
         return [
             'id' => (string) ($transaction->transaction_id ?? ''),
@@ -204,128 +206,30 @@ class DeliveryMap extends Controller
             'processing_status' => (int) ($transaction->processing_status ?? 0),
         ];
     }
-    /**
-     * Poster does not always return coordinates for a delivery, so the street is
-     * matched back against our own address book, which is where the coordinates
-     * came from in the first place. Street level, not house level.
-     */
-    /**
-     * Coordinates for the streets these orders are on.
-     *
-     * Several streets share a name across the city, so every record is indexed
-     * both by "street|suburb" and by street alone. The caller tries the specific
-     * key first; the bare street is only a last resort and may be the wrong one
-     * of a set of namesakes.
-     */
-    private function streetCoordinates($streets): array
-    {
-        $streets = collect($streets)->filter()->unique()->values();
-
-        if ($streets->isEmpty()) {
-            return [];
-        }
-
-        $coords = [];
-
-        foreach (Address::whereIn('name_ua', $streets->all())->get(['name_ua', 'suburb_ua', 'lat', 'lon']) as $address) {
-            $point = [
-                'lat' => $address->lat !== null ? (float) $address->lat : null,
-                'lng' => $address->lon !== null ? (float) $address->lon : null,
-            ];
-
-            $coords[$this->coordKey($address->name_ua, $address->suburb_ua)] = $point;
-
-            if (!isset($coords[$address->name_ua])) {
-                $coords[$address->name_ua] = $point;
-            }
-        }
-
-        return $coords;
-    }
-
-    private function coordKey(?string $street, ?string $suburb): string
-    {
-        return trim((string) $street) . '|' . trim((string) $suburb);
-    }
 
     /**
-     * The district, which buildClientAddress writes into the address comment as
-     * "<city>, <suburb>" and Poster returns verbatim.
+     * Each courier's current order as the courier app last reported it:
+     * transaction id => the courier's Poster employee id.
      */
-    private function suburbOf($delivery): ?string
+    private function currentOrders(): array
     {
-        $parts = array_filter(array_map('trim', explode(',', (string) ($delivery->comment ?? ''))));
-
-        return $parts ? (string) end($parts) : null;
-    }
-
-    /**
-     * The street part of a delivery address, i.e. everything before the house
-     * number that buildClientAddress appended.
-     */
-    private function streetOf($delivery): ?string
-    {
-        $line = trim((string) ($delivery->address1 ?? ''));
-
-        if ($line === '') {
-            return null;
-        }
-
-        $street = trim(explode(',', $line)[0]);
-
-        return $street !== '' ? $street : null;
-    }
-
-    /**
-     * Best point available, in descending order of precision: what Poster stored,
-     * the geocoded building, then the street the address book knows.
-     */
-    private function resolvePoint($delivery, array $coords): array
-    {
-        if (isset($delivery->lat, $delivery->lng) && $delivery->lat !== null && $delivery->lng !== null) {
-            return ['lat' => (float) $delivery->lat, 'lng' => (float) $delivery->lng, 'source' => 'building'];
-        }
-
-        $street = $this->streetOf($delivery);
-        $suburb = $this->suburbOf($delivery);
-
-        if ($street === null) {
-            return ['lat' => null, 'lng' => null, 'source' => null];
-        }
-
-        // The street in its own district first — a bare street name can match the
-        // wrong one of several namesakes.
-        $specific = $this->coordKey($street, $suburb);
-        $known = ($suburb !== null && isset($coords[$specific]))
-            ? $coords[$specific]
-            : ($coords[$street] ?? ['lat' => null, 'lng' => null]);
-
-        $building = $this->geocoder()->coordinatesFor($street, $this->houseOf($delivery), $known);
-
-        if ($building) {
-            return $building + ['source' => 'building'];
-        }
-
-        return $known + ['source' => $known['lat'] !== null ? 'street' : null];
-    }
-
-    /**
-     * The house number, which buildClientAddress appends after the street name.
-     */
-    private function houseOf($delivery): ?string
-    {
-        $parts = array_map('trim', explode(',', trim((string) ($delivery->address1 ?? ''))));
-
-        return isset($parts[1]) && $parts[1] !== '' ? $parts[1] : null;
-    }
-
-    private function geocoder(): GeocodeService
-    {
-        return $this->geocoder ?: ($this->geocoder = new GeocodeService());
+        return CourierState::with('courier')
+            ->whereNotNull('current_transaction_id')
+            ->get()
+            ->filter(fn(CourierState $s) => $s->courier && $s->courier->poster_user_id)
+            ->mapWithKeys(fn(CourierState $s) => [
+                (string) $s->current_transaction_id => (int) $s->courier->poster_user_id,
+            ])
+            ->all();
     }
 
     private function deliveries(): OpenDeliveries
     {
         return $this->deliveries ?: ($this->deliveries = new OpenDeliveries());
+    }
+
+    private function locations(): DeliveryLocations
+    {
+        return $this->locations ?: ($this->locations = new DeliveryLocations());
     }
 }

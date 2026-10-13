@@ -88,3 +88,29 @@
 .dm-pin-assigned { background: #1fa766; }
 .dm-pin-unassigned { background: #f6a700; }
 .dm-pin-pending { background: #8e8e93; }
+
+/* State classes shared by list, badge, popup and pin: pending (not accepted),
+   unassigned, assigned, intrip (processing_status 40 — the courier has left). */
+.dm-order-courier.unassigned { background: #fff5d7; color: #936200; }
+.dm-popup-pill.unassigned { background: #fff5d7; color: #8d6000; }
+.dm-popup-pill.assigned { background: #eaf8f1; color: #177a4c; }
+
+.dm-order.intrip { border-left-color: #3577f6; background: #f7f9ff; }
+.dm-order-courier.intrip { background: #eaf0ff; color: #315fb4; }
+.dm-popup-pill.intrip { background: #eaf0ff; color: #315fb4; }
+.dm-dot-intrip { background: #3577f6; }
+.dm-pin-intrip { background: #3577f6; }
+
+/* delivered (processing_status 50): handed over, receipt not yet closed at the register */
+.dm-order.delivered { border-left-color: #7c3aed; background: #faf7ff; }
+.dm-order-courier.delivered { background: #f1eaff; color: #5b21b6; }
+.dm-popup-pill.delivered { background: #f1eaff; color: #5b21b6; }
+.dm-dot-delivered { background: #7c3aed; }
+.dm-pin-delivered { background: #7c3aed; }
+
+/* The order a courier is driving to right now («Везу сейчас» in the courier app):
+   still blue, with a ring around the pin and a marked card. */
+.dm-pin-current { box-shadow: 0 0 0 3px #fff, 0 0 0 6px #3577f6, 0 2px 8px rgba(0,0,0,.35); }
+.dm-order.current { border-color: #3577f6; box-shadow: 0 0 0 1px #3577f6; }
+.dm-popup-current { margin-top: 10px; padding: 7px 9px; border-radius: 9px; background: #eaf0ff; color: #315fb4; font-size: 12px; font-weight: 800; }
+.dm-dot-current { background: #3577f6; box-shadow: 0 0 0 2px #fff, 0 0 0 3.5px #3577f6; }

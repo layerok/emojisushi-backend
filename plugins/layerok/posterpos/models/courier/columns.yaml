@@ -12,3 +12,10 @@ columns:
     active:
         label: На смене
         type: switch
+    live_status:
+        label: Сейчас
+        type: partial
+        path: $/layerok/posterpos/models/courier/_live_status.htm
+        sortable: false
+        searchable: false
+        clickable: false

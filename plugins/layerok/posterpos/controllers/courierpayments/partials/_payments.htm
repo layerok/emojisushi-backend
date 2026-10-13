@@ -1,0 +1,90 @@
+<div class="courier-payments-screen" data-export-url="<?= e(Backend::url('layerok/posterpos/courierpayments/export')) ?>">
+    <div class="cp-toolbar">
+        <div class="cp-field">
+            <label>Дата</label>
+            <input id="cpDate" type="date" class="form-control" value="<?= e($today) ?>">
+        </div>
+        <div class="cp-field">
+            <label>Заведение</label>
+            <select id="cpSpot" class="form-control">
+                <option value="">Все заведения</option>
+                <?php foreach ($spots as $spot): ?>
+                    <option value="<?= $spot->id ?>"><?= e($spot->name) ?></option>
+                <?php endforeach ?>
+            </select>
+        </div>
+        <div class="cp-actions">
+            <button type="button" class="btn btn-default" id="cpRefresh">↻ Обновить</button>
+        </div>
+    </div>
+
+    <div class="cp-error" id="cpError" hidden></div>
+    <div class="cp-warnings" id="cpWarnings"></div>
+
+    <div class="cp-layout">
+        <section class="cp-card cp-table-card">
+            <div class="cp-card-head">
+                <div>
+                    <b>Курьеры этого дня</b>
+                    <div class="cp-sub">
+                        Нажмите на курьера, чтобы увидеть все чеки и дополнительные поездки.
+                        Ошибочные записи можно убрать из расчёта.
+                    </div>
+                </div>
+                <span class="cp-state" id="cpState"></span>
+            </div>
+            <div class="cp-table-wrap">
+                <table class="cp-table">
+                    <thead>
+                        <tr>
+                            <th>Курьер</th>
+                            <th>Чеков</th>
+                            <th>Довозы / закупки</th>
+                            <th>Всего доставок</th>
+                            <th><?= (int) $pricePerDelivery ?> ₴ / доставка</th>
+                            <th>Пробег, км</th>
+                            <th>Ставка / км</th>
+                            <th>Итого</th>
+                        </tr>
+                    </thead>
+                    <tbody id="cpRows">
+                        <tr><td colspan="8" class="cp-empty">Загрузка…</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <aside class="cp-card cp-pay">
+            <div class="cp-eyebrow">К выплате за день</div>
+            <div class="cp-grand" id="cpGrand">—</div>
+            <div class="cp-formula">
+                <b>Расчёт автоматический.</b> Заказы — закрытые чеки доставки из Poster за этот день
+                плюс довозы, закупки и поездки в магазин. Вводится только километраж,
+                ставка за км берётся из карточки курьера.
+            </div>
+            <div class="cp-line"><span>Оплата за доставки</span><strong id="cpBase">—</strong></div>
+            <div class="cp-line"><span>Оплата километража</span><strong id="cpKm">—</strong></div>
+            <div class="cp-divider"></div>
+            <div class="cp-line cp-line-total"><span>Итого</span><strong id="cpTotal">—</strong></div>
+            <div class="cp-pay-actions">
+                <a class="btn btn-default" id="cpExport" href="#">Скачать отчёт</a>
+                <button type="button" class="btn btn-primary" id="cpClose">Закрыть день</button>
+                <button type="button" class="btn btn-default" id="cpReopen" hidden>Открыть заново</button>
+            </div>
+        </aside>
+    </div>
+
+    <template id="cpTaskForm">
+        <form class="cp-task-form" onsubmit="return false">
+            <select name="type" class="form-control">
+                <?php foreach ($taskTypes as $code => $label): ?>
+                    <option value="<?= e($code) ?>"><?= e($label) ?></option>
+                <?php endforeach ?>
+            </select>
+            <input name="details" class="form-control" maxlength="255" placeholder="Что именно / куда">
+            <input name="comment" class="form-control" placeholder="Комментарий">
+            <input name="time" class="form-control cp-time" type="time" title="Время (необязательно)">
+            <button type="submit" class="btn btn-default">＋ Добавить поездку</button>
+        </form>
+    </template>
+</div>

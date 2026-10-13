@@ -16,10 +16,25 @@ fields:
         type: number
         span: right
         default: 0
+    # Browsers ignore autocomplete="off" on a login/password pair and fill in the
+    # admin's own saved backend credentials. They never fill a readonly input, so
+    # these stay readonly until clicked. The data-* flags do the same for
+    # LastPass and 1Password.
     login:
         label: Логин
         span: left
+        attributes:
+            readonly: readonly
+            onfocus: this.removeAttribute('readonly')
+            data-lpignore: 'true'
+            data-1p-ignore: 'true'
     password:
         label: Пароль
         type: password
         span: right
+        comment: Оставьте пустым, чтобы не менять текущий пароль.
+        attributes:
+            readonly: readonly
+            onfocus: this.removeAttribute('readonly')
+            data-lpignore: 'true'
+            data-1p-ignore: 'true'

@@ -113,6 +113,32 @@
         select.val(current && select.find('option[value="' + current + '"]').length ? current : 'all');
     }
 
+    // Poster's processing_status: 40 — the courier has left with the order,
+    // 50 — the courier has handed it over (the receipt stays open until the
+    // register closes it).
+    var IN_DELIVERY = 40;
+    var DELIVERED = 50;
+
+    /**
+     * One state per order, shared by the list, the pins and the popup:
+     * not accepted yet, waiting without a courier, assigned, on its way, or
+     * delivered but not yet closed at the register.
+     */
+    function stateOf(o) {
+        if (o.pending_accept) { return 'pending'; }
+        if (o.processing_status >= DELIVERED) { return 'delivered'; }
+        if (o.processing_status === IN_DELIVERY) { return 'intrip'; }
+        return o.courier_id ? 'assigned' : 'unassigned';
+    }
+
+    var STATE_LABELS = {
+        pending: 'Не принят',
+        unassigned: 'Без курьера',
+        assigned: 'Назначен',
+        intrip: 'В пути',
+        delivered: 'Доставлен'
+    };
+
     function visibleOrders() {
         var filter = $('#dmCourier').val();
 
@@ -121,8 +147,11 @@
             if (filter === 'unassigned') { return !o.courier_id; }
             return String(o.courier_id) === String(filter);
         }).sort(function (a, b) {
-            return (a.pending_accept ? 0 : 1) - (b.pending_accept ? 0 : 1) ||
-                (a.courier_id ? 1 : 0) - (b.courier_id ? 1 : 0) ||
+            // What still needs someone's attention first; orders already on
+            // their way go last.
+            var rank = { pending: 0, unassigned: 1, assigned: 2, intrip: 3, delivered: 4 };
+
+            return rank[stateOf(a)] - rank[stateOf(b)] ||
                 String(a.due).localeCompare(String(b.due));
         });
     }
@@ -176,9 +205,13 @@
         }
 
         var html = list.map(function (o) {
-            var state = o.pending_accept ? 'pending' : (o.courier_id ? 'assigned' : '');
+            var state = stateOf(o);
+            var badge = o.is_current ? 'Везёт сейчас · ' + escapeHtml(o.courier || '') :
+                state === 'intrip' ? 'В пути · ' + escapeHtml(o.courier || '') :
+                state === 'delivered' ? 'Доставлен · ' + escapeHtml(o.courier || '') :
+                state === 'assigned' ? escapeHtml(o.courier) : STATE_LABELS[state];
 
-            return '<div class="dm-order ' + state + (activeKey === o.key ? ' active' : '') +
+            return '<div class="dm-order ' + state + (o.is_current ? ' current' : '') + (activeKey === o.key ? ' active' : '') +
                 '" data-key="' + escapeHtml(o.key) + '">' +
                 '<div class="dm-order-top"><span class="dm-order-num">#' + escapeHtml(o.id) + '</span>' +
                 (o.due ? '<span class="dm-order-due">' +
@@ -187,9 +220,7 @@
                 '<div class="dm-order-meta"><span>' + escapeHtml(o.client) + '</span><b>' +
                 (o.amount === null ? '—' : o.amount + ' &#8372;') + '</b></div>' +
                 '<div class="dm-order-meta"><span>' + escapeHtml(o.phone) + '</span></div>' +
-                '<span class="dm-order-courier ' + (o.pending_accept ? 'pending' : (o.courier_id ? '' : 'none')) + '">' +
-                (o.pending_accept ? 'Не принят' : (o.courier_id ? escapeHtml(o.courier) : 'Без курьера')) +
-                '</span></div>';
+                '<span class="dm-order-courier ' + state + '">' + badge + '</span></div>';
         }).join('');
 
         $('#dmOrders').html(html);
@@ -205,12 +236,13 @@
     }
 
     function pinIcon(o) {
-        var state = o.pending_accept ? 'pending' : (o.courier_id ? 'assigned' : 'unassigned');
+        var state = stateOf(o);
         var label = o.courier_id ? initials(o.courier) : '';
 
         return L.divIcon({
             className: 'dm-pin-wrap',
-            html: '<span class="dm-pin dm-pin-' + state + '">' + escapeHtml(label) + '</span>',
+            // The order a courier is driving to right now keeps its blue, with a ring.
+            html: '<span class="dm-pin dm-pin-' + state + (o.is_current ? ' dm-pin-current' : '') + '">' + escapeHtml(label) + '</span>',
             iconSize: [28, 28],
             iconAnchor: [14, 14],
             popupAnchor: [0, -14]
@@ -243,15 +275,17 @@
             '<div class="dm-popup-head">' +
                 '<div><div class="dm-popup-eyebrow">Чек #' + escapeHtml(o.id) + '</div>' +
                 '<div class="dm-popup-client">' + escapeHtml(o.client) + '</div></div>' +
-                '<span class="dm-popup-pill ' + (o.pending_accept ? 'pending' : (o.courier_id ? 'ok' : 'warn')) + '">' +
-                (o.pending_accept ? 'Не принят' : (o.courier_id ? 'Назначен' : 'Без курьера')) + '</span>' +
+                '<span class="dm-popup-pill ' + stateOf(o) + '">' + STATE_LABELS[stateOf(o)] + '</span>' +
             '</div>' +
+            (o.is_current
+                ? '<div class="dm-popup-current">📍 ' + escapeHtml(o.courier || 'Курьер') + ' везёт этот заказ сейчас</div>'
+                : '') +
             '<div class="dm-popup-address">' + escapeHtml(fullAddress(o)) + '</div>' +
             '<div class="dm-popup-grid">' +
                 field('Доставить до', o.due || '—') +
                 field('Сумма', o.amount === null ? '—' : o.amount + ' &#8372;') +
                 field('Телефон', o.phone || '—') +
-                field('Курьер', o.courier || 'Не назначен') +
+                field('Курьер', escapeHtml(o.courier || 'Не назначен')) +
                 field('Точка на карте', precisionLabel(o)) +
                 (o.comment ? field('Комментарий', escapeHtml(o.comment), 'wide') : '') +
             '</div>' +
