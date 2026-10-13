@@ -2,6 +2,7 @@
 
 use BackendMenu;
 use Backend\Classes\Controller;
+use Layerok\PosterPos\Classes\Delivery\OpenDeliveries;
 use Layerok\PosterPos\Classes\GeocodeService;
 use Illuminate\Support\Facades\Log;
 use Layerok\PosterPos\Models\Address;
@@ -9,7 +10,6 @@ use Layerok\PosterPos\Models\Area;
 use Layerok\PosterPos\Models\Courier;
 use Layerok\PosterPos\Models\OnlineOrder;
 use Layerok\PosterPos\Models\Spot;
-use poster\src\PosterApi;
 
 /**
  * Live delivery map. Open delivery receipts are read from Poster; the zones are
@@ -23,11 +23,13 @@ class DeliveryMap extends Controller
      *
      * Those orders are not transactions, so they come from
      * incomingOrders.getIncomingOrders instead of dash.getTransactions and carry
-     * neither a total nor coordinates — see pendingOrders() for the detail.
+     * neither a total nor coordinates — see presentPendingOrder() for the detail.
      */
     private const SHOW_PENDING_ACCEPT = false;
 
     private ?GeocodeService $geocoder = null;
+
+    private ?OpenDeliveries $deliveries = null;
 
     public $requiredPermissions = ['layerok.posterpos.delivery_map'];
 
@@ -48,7 +50,10 @@ class DeliveryMap extends Controller
         $this->addCss($this->asset('css/delivery-map.css'));
 
         $this->vars['spots'] = Spot::where('published', true)->orderBy('name')->get();
-        $this->vars['today'] = date('Y-m-d');
+        $this->vars['today'] = OpenDeliveries::now()->toDateString();
+        // Set when arriving from the operator overview: a spot id, or "all". Without
+        // it the first spot stays selected, as before.
+        $this->vars['selectedSpot'] = get('spot');
         $this->vars['showPendingAccept'] = self::SHOW_PENDING_ACCEPT;
     }
 
@@ -93,28 +98,15 @@ class DeliveryMap extends Controller
     public function onLoadOrders()
     {
         $spot = Spot::find(post('spot_id'));
-        $date = post('date') ?: date('Y-m-d');
-        $ymd = date('Ymd', strtotime($date));
-
-        $params = [
-            'dateFrom' => $ymd,
-            'dateTo' => $ymd,
-            'status' => 1,                 // open receipts only
-            'service_mode' => 3,           // delivery
-            'include_delivery' => 'true',
-        ];
-
-        if ($spot && $spot->poster_id) {
-            $params['type'] = 'spots';
-            $params['id'] = $spot->poster_id;
-        }
+        $date = post('date') ?: OpenDeliveries::now()->toDateString();
+        $spotPosterId = $spot && $spot->poster_id ? (int) $spot->poster_id : null;
 
         try {
-            $transactions = collect($this->posterRequest(fn() => PosterApi::dash()->getTransactions($params)) ?: []);
+            $transactions = $this->deliveries()->openTransactions($date, $date, $spotPosterId);
             $pending = self::SHOW_PENDING_ACCEPT
-                ? $this->pendingOrders($spot, $date)
+                ? $this->deliveries()->unacceptedOrders($date, $date, $spotPosterId)
                 : collect();
-            $couriers = $this->courierNames();
+            $couriers = $this->deliveries()->courierNames();
         } catch (\Throwable $e) {
             Log::error('Delivery map failed to load orders', ['error' => $e->getMessage()]);
 
@@ -139,29 +131,6 @@ class DeliveryMap extends Controller
                 ->map(fn(Courier $c) => ['id' => (int) $c->poster_user_id, 'name' => $c->name])
                 ->values(),
         ];
-    }
-
-    /**
-     * Online orders the register has not accepted yet. They are not transactions,
-     * so dash.getTransactions cannot see them at all.
-     */
-    private function pendingOrders(?Spot $spot, string $date)
-    {
-        $rows = collect($this->posterRequest(fn() => PosterApi::incomingOrders()->getIncomingOrders([
-            'status' => 0,                 // new, not accepted
-            'date_from' => $date . ' 00:00:00',
-            'date_to' => $date . ' 23:59:59',
-        ])) ?: []);
-
-        return $rows->filter(function ($order) use ($spot) {
-            $order = (object) $order;
-
-            if ((int) ($order->service_mode ?? 0) !== 3) {
-                return false;
-            }
-
-            return !$spot || !$spot->poster_id || (int) ($order->spot_id ?? 0) === (int) $spot->poster_id;
-        })->values();
     }
 
     /**
@@ -212,15 +181,7 @@ class DeliveryMap extends Controller
     private function presentOrder(object $transaction, array $couriers, array $coords = []): array
     {
         $delivery = (object) ($transaction->delivery ?? []);
-        $courierId = isset($delivery->courier_id) ? (int) $delivery->courier_id : 0;
-
-        $address = collect([$delivery->address1 ?? null, $delivery->address2 ?? null])
-            ->filter(fn($part) => trim((string) $part) !== '')
-            ->join(', ');
-
-        $client = collect([$transaction->client_firstname ?? null, $transaction->client_lastname ?? null])
-            ->filter(fn($part) => trim((string) $part) !== '')
-            ->join(' ');
+        $courierId = OpenDeliveries::courierIdOf($transaction);
 
         $point = $this->resolvePoint($delivery, $coords);
 
@@ -228,18 +189,18 @@ class DeliveryMap extends Controller
             'id' => (string) ($transaction->transaction_id ?? ''),
             'key' => 'transaction:' . ($transaction->transaction_id ?? ''),
             'pending_accept' => false,
-            'client' => $client ?: '—',
+            'client' => OpenDeliveries::clientName($transaction->client_firstname ?? null, $transaction->client_lastname ?? null),
             'phone' => $transaction->client_phone ?? '',
-            'amount' => (int) round(((int) ($transaction->sum ?? 0)) / 100),
-            'address' => $address ?: ($delivery->comment ?? ''),
+            'amount' => OpenDeliveries::amountOf($transaction),
+            'address' => OpenDeliveries::addressOf($transaction),
             'place' => $delivery->comment ?? '',
             'comment' => trim((string) ($transaction->transaction_comment ?? '')),
             'due' => !empty($delivery->delivery_time) ? date('H:i', strtotime($delivery->delivery_time)) : '',
             'lat' => $point['lat'],
             'location_source' => $point['source'] ?? null,
             'lng' => $point['lng'],
-            'courier_id' => $courierId ?: null,
-            'courier' => $courierId ? ($couriers[$courierId] ?? ('ID ' . $courierId)) : null,
+            'courier_id' => $courierId,
+            'courier' => OpenDeliveries::courierLabel($courierId, $couriers),
             'processing_status' => (int) ($transaction->processing_status ?? 0),
         ];
     }
@@ -363,29 +324,8 @@ class DeliveryMap extends Controller
         return $this->geocoder ?: ($this->geocoder = new GeocodeService());
     }
 
-    /**
-     * Couriers come from our own registry rather than Poster, because Poster has
-     * no way to say which employees are couriers. An id with no registry entry is
-     * shown as a bare id, which is the signal that a mapping is missing.
-     */
-    private function courierNames(): array
+    private function deliveries(): OpenDeliveries
     {
-        return Courier::whereNotNull('poster_user_id')
-            ->get(['poster_user_id', 'name'])
-            ->mapWithKeys(fn(Courier $courier) => [(int) $courier->poster_user_id => $courier->name])
-            ->all();
-    }
-
-    private function posterRequest(callable $request)
-    {
-        PosterApi::init(config('poster'));
-
-        $result = (object) $request();
-
-        if (isset($result->error)) {
-            throw new \RuntimeException('Poster: ' . ($result->message ?? $result->error));
-        }
-
-        return $result->response ?? [];
+        return $this->deliveries ?: ($this->deliveries = new OpenDeliveries());
     }
 }

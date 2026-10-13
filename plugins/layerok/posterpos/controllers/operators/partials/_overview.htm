@@ -1,0 +1,66 @@
+<div class="operators-screen" data-map-url="<?= e($mapUrl) ?>">
+    <div class="op-toolbar">
+        <div class="op-field">
+            <label>Город</label>
+            <select id="opCity" class="form-control">
+                <option value="">Все заведения</option>
+                <?php foreach ($cities as $city): ?>
+                    <option value="<?= $city->id ?>"><?= e($city->name) ?></option>
+                <?php endforeach ?>
+            </select>
+        </div>
+        <div class="op-actions">
+            <span class="op-updated" id="opUpdated"></span>
+            <button type="button" class="btn btn-default" id="opRefresh">↻ Обновить</button>
+            <a class="btn btn-primary" href="<?= e($mapUrl) ?>?spot=all">Открыть общую карту</a>
+        </div>
+    </div>
+
+    <div class="op-error" id="opError" hidden></div>
+
+    <div class="op-spots" id="opSpots">
+        <div class="op-empty">Загрузка…</div>
+    </div>
+
+    <div class="op-grid">
+        <section class="op-card">
+            <div class="op-card-head">
+                <div>
+                    <div class="op-eyebrow">Все заведения</div>
+                    <h3>Последние события</h3>
+                </div>
+            </div>
+            <div id="opEvents"><div class="op-empty">Загрузка…</div></div>
+        </section>
+
+        <section class="op-card op-card-late">
+            <div class="op-card-head">
+                <div>
+                    <div class="op-eyebrow op-eyebrow-red">Требуют реакции</div>
+                    <h3>Просроченные заказы</h3>
+                    <p class="op-sub">Считается от обещанного времени доставки</p>
+                </div>
+                <span class="op-late-count" id="opLateCount">0</span>
+            </div>
+            <div id="opLate"><div class="op-empty">Загрузка…</div></div>
+        </section>
+
+        <div class="op-side">
+            <section class="op-card">
+                <h3>Нагрузка сейчас</h3>
+                <div id="opSummary"></div>
+            </section>
+
+            <section class="op-card">
+                <div class="op-card-head">
+                    <div>
+                        <h3>Не принятые онлайн-заказы</h3>
+                        <p class="op-sub">Ещё не приняты на кассе — в чеках выше их нет</p>
+                    </div>
+                    <span class="op-pending-count" id="opUnacceptedCount">0</span>
+                </div>
+                <div id="opUnaccepted"></div>
+            </section>
+        </div>
+    </div>
+</div>

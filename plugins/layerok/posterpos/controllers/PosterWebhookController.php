@@ -3,6 +3,7 @@
 namespace Layerok\PosterPos\Controllers;
 
 use Illuminate\Support\Facades\Log;
+use Layerok\PosterPos\Classes\Delivery\DeliveryEventRecorder;
 use Layerok\PosterPos\Classes\PosterTransition;
 use Layerok\RestApi\Models\BonusTransaction;
 use Layerok\Restapi\Services\BonusService;
@@ -82,6 +83,32 @@ class PosterWebhookController
             echo json_encode(['status' => 'retry']);
 
             return;
+        }
+
+        // Лента событий операторов. Ошибка здесь не должна вызывать повтор
+        // вебхука — иначе Poster заново прогонит и бонусную логику выше.
+        try {
+            if ($postData['object'] === 'transaction') {
+                (new DeliveryEventRecorder())->recordTransaction(
+                    (int) $postData['object_id'],
+                    $postData['action'] ?? '',
+                    isset($postData['time']) ? (int) $postData['time'] : null
+                );
+            }
+
+            if ($postData['object'] === 'incoming_order') {
+                (new DeliveryEventRecorder())->recordIncomingOrder(
+                    (int) $postData['object_id'],
+                    $postData['action'] ?? '',
+                    isset($postData['time']) ? (int) $postData['time'] : null
+                );
+            }
+        } catch (\Throwable $e) {
+            Log::error('Delivery event webhook failed', [
+                'object' => $postData['object'],
+                'object_id' => $postData['object_id'],
+                'error' => $e->getMessage(),
+            ]);
         }
 
         // Меню: ошибки синхронизации не должны вызывать бесконечные повторы.

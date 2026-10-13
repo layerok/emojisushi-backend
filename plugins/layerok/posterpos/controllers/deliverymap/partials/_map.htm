@@ -4,8 +4,9 @@
             <label>Заведение</label>
             <select id="dmSpot" class="form-control">
                 <?php foreach ($spots as $spot): ?>
-                    <option value="<?= $spot->id ?>"><?= e($spot->name) ?></option>
+                    <option value="<?= $spot->id ?>" <?= (string) $selectedSpot === (string) $spot->id ? 'selected' : '' ?>><?= e($spot->name) ?></option>
                 <?php endforeach ?>
+                <option value="" <?= $selectedSpot === 'all' ? 'selected' : '' ?>>Все заведения</option>
             </select>
         </div>
         <div class="dm-field">
