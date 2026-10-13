@@ -228,15 +228,18 @@ class CourierPayments extends Controller
     }
 
     /**
-     * The spot picker narrows the list to couriers who worked there. Their
-     * totals still cover every spot, since pay is per courier per day.
+     * Only couriers with something on the day are listed. The spot picker
+     * narrows that to couriers who worked there; their totals still cover every
+     * spot, since pay is per courier per day.
      */
     private function filterBySpot(array $rows, $spotId): array
     {
         $spot = $spotId ? Spot::find($spotId) : null;
 
         if (!$spot) {
-            return $rows;
+            // Every spot: only couriers with something to pay or check — a
+            // delivery, an extra trip, a receipt left out of pay, or km typed in.
+            return array_values(array_filter($rows, fn($row) => !empty($row['items']) || $row['km'] > 0));
         }
 
         return array_values(array_filter($rows, function ($row) use ($spot) {
