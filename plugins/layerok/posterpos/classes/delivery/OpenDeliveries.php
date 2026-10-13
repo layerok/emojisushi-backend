@@ -66,6 +66,10 @@ class OpenDeliveries
 
         return collect($this->request(fn() => PosterApi::dash()->getTransactions($params)) ?: [])
             ->map(fn($transaction) => (object) $transaction)
+            // Poster applies service_mode itself; checked again here so a
+            // takeaway or dine-in receipt can never count as a delivery.
+            ->filter(fn($transaction) => !isset($transaction->service_mode)
+                || (int) $transaction->service_mode === self::SERVICE_MODE_DELIVERY)
             ->values();
     }
 
