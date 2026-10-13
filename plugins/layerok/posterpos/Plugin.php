@@ -512,6 +512,14 @@ class Plugin extends PluginBase
                 'tab' => 'Доставка',
                 'label' => 'Карта доставки',
             ],
+            'layerok.posterpos.operator' => [
+                'tab' => 'Доставка',
+                'label' => 'Операторы (все заведения)',
+            ],
+            'layerok.posterpos.courier_payments' => [
+                'tab' => 'Доставка',
+                'label' => 'Расчёт курьеров (выплаты)',
+            ],
             'layerok.posterpos.addresses' => [
                 'tab' => 'PosterPos',
                 'label' => 'Адреса и зоны доставки',
@@ -555,11 +563,23 @@ class Plugin extends PluginBase
                         'url'         => Backend::url('layerok/posterpos/deliverymap'),
                         'permissions' => ['layerok.posterpos.delivery_map'],
                     ],
+                    'delivery-operators' => [
+                        'label'       => 'Операторы',
+                        'icon'        => 'icon-headphones',
+                        'url'         => Backend::url('layerok/posterpos/operators'),
+                        'permissions' => ['layerok.posterpos.operator'],
+                    ],
                     'delivery-couriers' => [
                         'label'       => 'Курьеры',
                         'icon'        => 'icon-motorcycle',
                         'url'         => Backend::url('layerok/posterpos/courier'),
                         'permissions' => ['layerok.posterpos.couriers'],
+                    ],
+                    'delivery-payments' => [
+                        'label'       => 'Расчёт курьеров',
+                        'icon'        => 'icon-money',
+                        'url'         => Backend::url('layerok/posterpos/courierpayments'),
+                        'permissions' => ['layerok.posterpos.courier_payments'],
                     ],
                 ],
             ],

@@ -195,3 +195,27 @@
 1.2.15:
     - 'Add extra wait time per spot'
     - add_extra_wait_to_spots_table.php
+
+1.2.16:
+    - 'Add delivery snapshots and events for the operator overview'
+    - add_delivery_events_tables.php
+
+1.2.17:
+    - 'Add courier tasks, shifts and excluded receipts for courier payments'
+    - add_courier_payments_tables.php
+
+1.2.18:
+    - 'Add courier app tokens and hash courier passwords'
+    - add_courier_tokens_table.php
+
+1.2.19:
+    - 'Add client_uuid to courier tasks so app retries are not duplicated'
+    - add_client_uuid_to_courier_tasks.php
+
+1.2.20:
+    - 'Add transfer card number to spots for the courier app'
+    - add_transfer_card_to_spots_table.php
+
+1.2.21:
+    - 'Add courier states reported by the courier app'
+    - add_courier_states_table.php

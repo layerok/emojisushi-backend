@@ -35,6 +35,11 @@ fields:
     merchant_secret_key:
         label: Merchant secret key
         span: auto
+    transfer_card:
+        label: Карта для перевода
+        comment: 16 цифр. Курьер показывает её клиенту, который платит переводом. Видна только в приложении курьера.
+        span: auto
+        placeholder: 0000 0000 0000 0000
     domain_name:
         label: Domain name
         span: auto

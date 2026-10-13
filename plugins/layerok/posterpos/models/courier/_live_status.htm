@@ -1,0 +1,21 @@
+<?php
+    // What the courier is doing right now: on a trip and which order they are
+    // driving to (from Poster and the courier app), heading back, or at the spot.
+    $status = \Layerok\PosterPos\Classes\Couriers\CourierLiveStatus::of($record);
+    $tones = [
+        'ride' => 'background:#eaf0ff;color:#315fb4',
+        'back' => 'background:#f1eaff;color:#5b21b6',
+        'waiting' => 'background:#fff5d7;color:#806900',
+        'free' => 'background:#eaf8f1;color:#177a4c',
+        'unknown' => 'background:#f1f1f1;color:#777',
+    ];
+?>
+<span style="display:inline-block;padding:3px 8px;border-radius:999px;font-size:11px;font-weight:700;<?= $tones[$status['state']] ?? $tones['unknown'] ?>">
+    <?= e($status['label']) ?>
+</span>
+<?php if ($status['detail']): ?>
+    <div style="font-size:11px;color:#666;margin-top:3px"><?= e($status['detail']) ?></div>
+<?php endif ?>
+<?php if ($status['seen']): ?>
+    <div style="font-size:10px;color:#999;margin-top:2px"><?= e($status['seen']) ?></div>
+<?php endif ?>

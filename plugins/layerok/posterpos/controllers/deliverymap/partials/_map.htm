@@ -4,8 +4,9 @@
             <label>Заведение</label>
             <select id="dmSpot" class="form-control">
                 <?php foreach ($spots as $spot): ?>
-                    <option value="<?= $spot->id ?>"><?= e($spot->name) ?></option>
+                    <option value="<?= $spot->id ?>" <?= (string) $selectedSpot === (string) $spot->id ? 'selected' : '' ?>><?= e($spot->name) ?></option>
                 <?php endforeach ?>
+                <option value="" <?= $selectedSpot === 'all' ? 'selected' : '' ?>>Все заведения</option>
             </select>
         </div>
         <div class="dm-field">
@@ -38,6 +39,9 @@
                 <?php endif ?>
                 <span><i class="dm-dot dm-dot-pending"></i>Не назначен</span>
                 <span><i class="dm-dot dm-dot-assigned"></i>Курьер назначен</span>
+                <span><i class="dm-dot dm-dot-intrip"></i>В пути</span>
+                <span><i class="dm-dot dm-dot-current"></i>Везёт сейчас</span>
+                <span><i class="dm-dot dm-dot-delivered"></i>Доставлен</span>
             </div>
             <div class="dm-orders-scroll" id="dmOrders">
                 <div class="dm-empty">Загрузка…</div>
