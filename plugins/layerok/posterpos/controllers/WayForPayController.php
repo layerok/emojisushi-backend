@@ -316,11 +316,14 @@ class WayForPayController
             'access_token' => $poster_account->access_token,
         ]);
 
-        // The client was charged the total less any points they spent, so the
-        // prepayment reported to Poster must match. The register adds the points
-        // back as a setOrderBonus line and the bill balances.
+        // The client was charged the total less any points they spent, but the
+        // points are reported to Poster as part of the prepayment, so the bill
+        // arrives fully paid. A setOrderBonus line on the register cannot be relied
+        // on here: Poster counts the prepayment against discountable products
+        // first, so with a points-excluded product in the order maxOrderBonus
+        // drops to 0 and the register's bonus line is refused.
         $bonusRow = (new BonusService())->appliedForOnlineOrder((int) $order->id);
-        $paidSum = $order->total + $order->delivery_price - ($bonusRow->amount ?? 0);
+        $paidSum = $order->total + $order->delivery_price;
 
         $incomingOrder = [
             'spot_id' => $order->spot_id,

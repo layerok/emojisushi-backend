@@ -391,9 +391,9 @@ class OrderControllerV2 extends Controller
                 optional($data)['phone']
             );
 
-            // Prepaid orders are charged the discounted amount. The register adds the
-            // points back as a setOrderBonus line, so the Poster bill still balances:
-            // (total - points) prepaid + points bonus line = total.
+            // Prepaid orders are charged the discounted amount. Poster is told the
+            // full total was prepaid (see WayForPayController::sendPosterOrder), so
+            // the bill arrives fully paid with the points folded into the payment.
             $way_total = ($total - $usedBonus) / 100;
 
             $merchantAccount = $spot->merchant_account ?? null;

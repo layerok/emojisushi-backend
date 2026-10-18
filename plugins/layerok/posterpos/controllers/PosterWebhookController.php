@@ -55,14 +55,7 @@ class PosterWebhookController
             // 'client' fires on a manual edit, 'client_payed_sum' when a bill closes
             // with a linked customer — which is when Poster grants points.
             if ($postData['object'] === 'client' || $postData['object'] === 'client_payed_sum') {
-                $row = (new BonusService())->recordExternalChange((int) $postData['object_id']);
-
-                Log::channel('single')->debug(sprintf(
-                    '[BONUS] %s #%s -> %s',
-                    $postData['object'],
-                    $postData['object_id'],
-                    $row ? 'delta ' . $row->delta : 'no change recorded'
-                ));
+                (new BonusService())->recordExternalChange((int) $postData['object_id']);
             }
 
             if ($postData['object'] === 'transaction') {
