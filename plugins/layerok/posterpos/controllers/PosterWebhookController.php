@@ -5,6 +5,7 @@ namespace Layerok\PosterPos\Controllers;
 use Illuminate\Support\Facades\Log;
 use Layerok\PosterPos\Classes\Delivery\DeliveryEventRecorder;
 use Layerok\PosterPos\Classes\PosterTransition;
+use Layerok\PosterPos\Classes\SpotStockService;
 use Layerok\RestApi\Models\BonusTransaction;
 use Layerok\Restapi\Services\BonusService;
 use poster\src\PosterApi;
@@ -121,7 +122,8 @@ class PosterWebhookController
 
     /**
      * Запоминаем, в какой чек превратился онлайн-заказ, чтобы вебхук транзакции
-     * нашёл списание при закрытии. Отменённый заказ возвращает бонусы клиенту.
+     * нашёл списание при закрытии. Отменённый заказ возвращает бонусы клиенту
+     * и лимитированные товары — на остаток заведения.
      */
     private function handleIncomingOrder(int $incomingOrderId, string $action = ''): void
     {
@@ -129,14 +131,21 @@ class PosterWebhookController
             ->where('status', BonusTransaction::STATUS_APPLIED)
             ->first();
 
-        if (!$row) {
+        $stock = new SpotStockService();
+        $holdsStock = $stock->hasReservedForIncomingOrder($incomingOrderId);
+
+        if (!$row && !$holdsStock) {
             return;
         }
 
         // A deleted online order will not come back, and the lookup below may no
         // longer resolve it, so refund straight from the webhook action.
         if ($action === 'removed') {
-            (new BonusService())->refund($row, 'Online order removed in Poster');
+            if ($row) {
+                (new BonusService())->refund($row, 'Online order removed in Poster');
+            }
+
+            $stock->releaseForIncomingOrder($incomingOrderId);
 
             return;
         }
@@ -154,12 +163,16 @@ class PosterWebhookController
 
         // 0 — новый, 1 — принят, 7 — отменён
         if ((int) ($order->status ?? 0) === 7) {
-            (new BonusService())->refund($row, 'Online order canceled in Poster');
+            if ($row) {
+                (new BonusService())->refund($row, 'Online order canceled in Poster');
+            }
+
+            $stock->releaseForIncomingOrder($incomingOrderId);
 
             return;
         }
 
-        if (!empty($order->transaction_id)) {
+        if ($row && !empty($order->transaction_id)) {
             $row->transaction_id = (int) $order->transaction_id;
             $row->save();
         }

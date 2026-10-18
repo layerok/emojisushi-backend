@@ -1,0 +1,15 @@
+# ===================================
+#  List Column Definitions
+# ===================================
+
+columns:
+    product:
+        label: Товар
+        relation: product
+        select: name
+        searchable: true
+    amount:
+        label: Осталось
+    updated_at:
+        label: Обновлено
+        type: datetime

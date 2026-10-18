@@ -1,0 +1,13 @@
+# ===================================
+#  Relation Behavior Config
+# ===================================
+
+stocks:
+    label: Лимитированный товар
+    view:
+        list: $/layerok/posterpos/models/spotstock/columns.yaml
+        toolbarButtons: create|delete
+        showCheckboxes: true
+        recordsPerPage: 50
+    manage:
+        form: $/layerok/posterpos/models/spotstock/fields.yaml

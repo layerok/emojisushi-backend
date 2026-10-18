@@ -12,6 +12,7 @@ use Layerok\Basecode\Classes\Receipt;
 use Layerok\PosterPos\Classes\OnlineOrderStatus;
 use Layerok\PosterPos\Classes\ServiceMode;
 use Layerok\PosterPos\Classes\ShippingMethodCode;
+use Layerok\PosterPos\Classes\SpotStockService;
 use Layerok\PosterPos\Models\Spot;
 use Layerok\PosterPos\Models\Settings as PosterSettings;
 use Layerok\PosterPos\Models\User;
@@ -254,6 +255,17 @@ class OrderControllerV2 extends Controller
         $incomingOrder['delivery_time'] = $deliveryAt->format('Y-m-d H:i:s');
         $incomingOrder['delivery_minutes'] = $overriddenTime ? null : $delivery_time;
 
+        // A copy of the promised time in the comment, so it is printed and visible
+        // wherever Poster's own delivery time field is not. It goes in before the
+        // bonus marker, which the register expects at the very end.
+        $incomingOrder['comment'] = collect([
+            $incomingOrder['comment'],
+            trans($shippingMethod->code === ShippingMethodCode::COURIER
+                ? 'layerok.restapi::lang.receipt.deliver_at'
+                : 'layerok.restapi::lang.receipt.ready_at'
+            ) . ': ' . self::formatDeliveryAt($deliveryAt),
+        ])->filter()->join(' || ');
+
         $data['delivery_at'] = $deliveryAt;
         $data['callcenter_delivery_at'] = $overriddenTime ? $deliveryAt : null;
         $data['spot_minutes'] = $delivery_time;
@@ -342,7 +354,19 @@ class OrderControllerV2 extends Controller
                 trans('layerok.restapi::lang.receipt.bonuses_used') . ': ' . intdiv($usedBonus, 100) . ' ₴',
             ])->filter()->join(' || ');
         }
+        $stock = new SpotStockService();
+
         if ($paymentMethod->code === 'wayforpay') {
+            $merchantAccount = $spot->merchant_account ?? null;
+            $merchantSecretKey = $spot->merchant_secret_key ?? null;
+            $domainName = $spot->domain_name ?? null;
+
+            // Checked before anything is taken: failing after the points and stock
+            // are reserved would leave them held by an order that can never be paid.
+            if (!$merchantAccount || !$merchantSecretKey) {
+                throw new \Exception("WayForPay credentials missing for this spot");
+            }
+
             $incomingOrderTest = $incomingOrder;
             $incomingOrderTest['products'] = null;
             $posterTest = (object) PosterApi::incomingOrders()
@@ -364,7 +388,18 @@ class OrderControllerV2 extends Controller
                 }
             }
 
-            $order = $this->createOnlineOrder($incomingOrder, $total, $cart, $spot->id, $deliveryAt, $overriddenTime);
+            // Held while the client pays; a declined or expired payment puts it back.
+            $reservations = $stock->reserveOrFail($spot->id, $stock->quantitiesFromCart($cart));
+
+            try {
+                $order = $this->createOnlineOrder($incomingOrder, $total, $cart, $spot->id, $deliveryAt, $overriddenTime);
+            } catch (\Throwable $e) {
+                $stock->release($reservations);
+
+                throw $e;
+            }
+
+            $stock->link($reservations, ['online_order_id' => $order->id]);
             $order_id = $order->id;
             $wayforpay_id = $order_id . '-' . time();
             $order->online_payment_id = $wayforpay_id;
@@ -396,13 +431,6 @@ class OrderControllerV2 extends Controller
             // the bill arrives fully paid with the points folded into the payment.
             $way_total = ($total - $usedBonus) / 100;
 
-            $merchantAccount = $spot->merchant_account ?? null;
-            $merchantSecretKey = $spot->merchant_secret_key ?? null;
-            $domainName = $spot->domain_name ?? null;
-
-            if (!$merchantAccount || !$merchantSecretKey) {
-                throw new \Exception("WayForPay credentials missing for this spot");
-            }
             $credential = new AccountSecretCredential($merchantAccount, $merchantSecretKey);
             $products = [
                 new WayForPayProduct(
@@ -529,13 +557,21 @@ class OrderControllerV2 extends Controller
                 'poster_order' => $order_id
             ]);
         }
+        $reservations = $stock->reserveOrFail($spot->id, $stock->quantitiesFromCart($cart));
+
         // todo: create DTO for the poster order
-        $posterResult = (object) PosterApi::incomingOrders()
-            ->createIncomingOrder($incomingOrder);
+        try {
+            $posterResult = (object) PosterApi::incomingOrders()
+                ->createIncomingOrder($incomingOrder);
+        } catch (\Throwable $e) {
+            $stock->release($reservations);
 
-
+            throw $e;
+        }
 
         if (isset($posterResult->error)) {
+            $stock->release($reservations);
+
             $key = 'layerok.restapi::lang.poster.errors.' . $posterResult->error;
             if (\Lang::has($key)) {
                 $err_text = trans(
@@ -553,6 +589,7 @@ class OrderControllerV2 extends Controller
 
         if (!isset($posterResult->response)) {
             // probably poster pos services are down
+            // Stock stays taken: the order still reaches the spot, through Telegram.
             $api = new Api($spot->bot->token);
 
             try {
@@ -598,6 +635,9 @@ class OrderControllerV2 extends Controller
 
 
         $poster_order_id = $posterResult->response->incoming_order_id + $add_to_poster_id;
+
+        // So a cancellation in Poster can put the stock back.
+        $stock->link($reservations, ['incoming_order_id' => (int) $poster_order_id]);
 
         if ($user) {
             $usedBonus = (int) ($data['bonuses_to_use'] ?? 0);

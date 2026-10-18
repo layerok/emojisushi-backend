@@ -1,0 +1,19 @@
+# ===================================
+#  Form Field Definitions
+# ===================================
+
+fields:
+    product:
+        label: Товар
+        type: relation
+        nameFrom: name
+        emptyOption: '-- выберите товар --'
+        required: true
+        span: left
+    amount:
+        label: Количество
+        comment: Сколько штук ещё можно продать онлайн. Каждый заказ уменьшает его; при 0 товар недоступен в этом заведении.
+        type: number
+        min: 0
+        required: true
+        span: right

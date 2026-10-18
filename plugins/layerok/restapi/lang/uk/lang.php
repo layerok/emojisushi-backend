@@ -29,6 +29,8 @@ return [
         'delivery_minutes' => 'Час доставки',
         'spot_minutes' => 'Час приготування',
         'callcenter_delivery_at' => 'Призначений час',
+        'deliver_at' => 'Доставити',
+        'ready_at' => 'Видати',
         'payment_method' => 'Спосіб оплаты',
         'sticks_name' => 'Палички для суші',
         'target' => 'Джерело замовлення',

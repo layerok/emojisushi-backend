@@ -30,6 +30,8 @@ return [
         'delivery_minutes' => 'Время доставки',
         'spot_minutes' => 'Время приготовления',
         'callcenter_delivery_at' => 'Назначенное время',
+        'deliver_at' => 'Доставить',
+        'ready_at' => 'Выдать',
         'sticks_name' => 'Палочки для суши',
         'target' => 'Источник заказа',
         'persons_amount' => 'Количество персон',

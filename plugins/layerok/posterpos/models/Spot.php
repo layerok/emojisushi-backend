@@ -142,6 +142,8 @@ class Spot extends Model
     public $hasMany = [
         'districts' => District::class,
         'areas' => \Layerok\PosterPos\Models\Area::class,
+        // Limited products; removed with the spot.
+        'stocks' => [SpotStock::class, 'delete' => true],
     ];
 
     public function afterDelete()
