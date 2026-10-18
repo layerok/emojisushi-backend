@@ -9,9 +9,12 @@
     function initMap(el) {
         map = L.map(el).setView([46.4825, 30.7233], 12); // Odesa
 
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        // OpenStreetMap's tile usage policy: one host (the a/b/c subdomains are
+        // retired), a Referer on every tile and the credit with a link.
+        L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
             maxZoom: 19,
-            attribution: '&copy; OpenStreetMap'
+            referrerPolicy: 'strict-origin-when-cross-origin',
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a>'
         }).addTo(map);
 
         zoneLayer = L.layerGroup().addTo(map);

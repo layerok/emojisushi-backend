@@ -5,6 +5,7 @@ namespace Layerok\PosterPos\Controllers;
 use BackendMenu;
 use Backend\Classes\Controller;
 use Illuminate\Http\JsonResponse;
+use Layerok\PosterPos\Classes\SpotStockService;
 use Layerok\PosterPos\Models\AddressSettings;
 use Layerok\PosterPos\Models\Spot;
 use OFFLINE\Mall\Models\Product;
@@ -256,13 +257,21 @@ class Addresses extends Controller
         $spots = Spot::with('unavailable_categories', 'unavailable_products', 'recommended_products')
             ->where('city_id', $city->id)
             ->get();
-        $spotMap = $spots->mapWithKeys(function ($spot) {
+        $limitsBySpot = (new SpotStockService())->limitsBySpot();
+        $spotMap = $spots->mapWithKeys(function ($spot) use ($limitsBySpot) {
+            $limits = $limitsBySpot[$spot->id] ?? [];
+
             return [
                 $spot->id => [
                     'name' => $spot->name,
                     'unavailable_categories' => $spot->unavailable_categories->pluck('id')->toArray(),
-                    'unavailable_products' => $spot->unavailable_products->pluck('id')->toArray(),
+                    // Limited products that ran out are unavailable just like ones switched off.
+                    'unavailable_products' => array_values(array_unique(array_merge(
+                        $spot->unavailable_products->pluck('id')->toArray(),
+                        SpotStockService::soldOut($limits)
+                    ))),
                     'recommended_products' => $spot->recommended_products->pluck('id')->toArray(),
+                    'limited_products' => $limits,
                     'wait_minutes_delivery' => $spot->wait_minutes_delivery
                 ],
             ];
@@ -303,6 +312,7 @@ class Addresses extends Controller
             $unavailableCategories = null;
             $unavailableProducts = null;
             $recommendedProducts = null;
+            $limitedProducts = null;
             $min_amount = null;
             $delivery_price = null;
             $min = null;
@@ -316,6 +326,7 @@ class Addresses extends Controller
                     $unavailableCategories = $spotMap[$spotId]['unavailable_categories'] ?? null;
                     $unavailableProducts = $spotMap[$spotId]['unavailable_products'] ?? null;
                     $recommendedProducts = $spotMap[$spotId]['recommended_products'] ?? null;
+                    $limitedProducts = $spotMap[$spotId]['limited_products'] ?? null;
                     $wait_minutes_delivery += $spotMap[$spotId]['wait_minutes_delivery'] ?? 0;
                     $wait_minutes_delivery += $area['delivery_minutes'] ?? 0;
 
@@ -347,6 +358,7 @@ class Addresses extends Controller
                 'unavailable_categories' => $unavailableCategories,
                 'unavailable_products' => $unavailableProducts,
                 'recommended_products' => $recommendedProducts,
+                'limited_products' => $limitedProducts,
                 'wait_minutes_delivery' => $wait_minutes_delivery
             ];
         })->filter();

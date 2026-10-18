@@ -26,6 +26,7 @@ class OnlineOrder extends Model
         'client_address',
         'delivery_at',
         'callcenter_delivery_at',
+        'real_spot_id',
     ];
 
 }

@@ -219,3 +219,7 @@
 1.2.21:
     - 'Add courier states reported by the courier app'
     - add_courier_states_table.php
+
+1.2.22:
+    - 'Add limited per-spot stock and the reservations orders take from it'
+    - create_spot_stock_tables.php

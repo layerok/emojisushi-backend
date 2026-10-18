@@ -20,6 +20,7 @@ use poster\src\PosterApi;
 use Layerok\PosterPos\Classes\ShippingMethodCode;
 use OFFLINE\Mall\Models\PaymentMethod;
 use Layerok\Restapi\Services\BonusService;
+use Layerok\PosterPos\Classes\SpotStockService;
 
 use Redirect;
 
@@ -88,6 +89,7 @@ class WayForPayController
 
             $order->save();
             $this->attachPosterOrderToBonuses($order, $poster_id);
+            $this->attachPosterOrderToStock($order, $poster_id);
 
 
             $message = sprintf(
@@ -117,11 +119,20 @@ class WayForPayController
                 $transaction->getCurrency(),
                 $transaction->getOrderReference()
             );
+        } else if ($this->arrivedAfterApproval($transaction)) {
+            // WayForPay can report a failed attempt after a successful one on the same
+            // invoice. The order is paid and already in Poster; nothing is undone.
+            $message = sprintf(
+                "Статус платежу %s після успішної оплати — ігнорується \nНомер замовлення: %s",
+                $transaction->getStatus(),
+                $transaction->getOrderReference()
+            );
         } else if ($transaction->isStatusDeclined()) {
             $order = OnlineOrder::where('online_payment_id', $transaction->getOrderReference())->first();
             $order->status = OnlineOrderStatus::CANCELLED;
             $order->save();
             $this->refundBonuses($order, "Payment declined");
+            $this->releaseStock($order);
             $message = sprintf(
                 "Платіж скасовано \nСума: %s %s \nНомер замовлення: %s",
                 $transaction->getAmount(),
@@ -133,6 +144,7 @@ class WayForPayController
             $order->status = OnlineOrderStatus::EXPIRED;
             $order->save();
             $this->refundBonuses($order, "Payment expired");
+            $this->releaseStock($order);
             $message = sprintf(
                 "❌ Час на оплату вичерпано \nСума: %s %s \nНомер замовлення: %s",
                 $transaction->getAmount(),
@@ -281,6 +293,57 @@ class WayForPayController
     }
 
     /**
+     * A Declined or Expired callback for an order that was already paid.
+     */
+    private function arrivedAfterApproval(TransactionService $transaction): bool
+    {
+        if (!$transaction->isStatusDeclined() && !$transaction->isStatusExpired()) {
+            return false;
+        }
+
+        $order = OnlineOrder::where('online_payment_id', $transaction->getOrderReference())->first();
+
+        return $order && (int) $order->status === OnlineOrderStatus::PAID;
+    }
+
+    /**
+     * Same as for bonuses: once the order is in Poster, a cancellation there is
+     * what puts the stock back, so the reservation has to point at it.
+     */
+    private function attachPosterOrderToStock(OnlineOrder $order, $posterOrderId): void
+    {
+        if (!$posterOrderId) {
+            return;
+        }
+
+        try {
+            (new SpotStockService())->linkOnlineToIncoming((int) $order->id, (int) $posterOrderId);
+        } catch (\Throwable $e) {
+            Log::error('Linking stock reservation to Poster order failed', [
+                'online_order_id' => $order->id,
+                'error' => $e->getMessage(),
+            ]);
+        }
+    }
+
+    /**
+     * The order will never be made, so what it reserved goes back on sale.
+     * Not done on a refund: by then the order has usually been cooked; a
+     * cancellation in Poster releases it through the webhook instead.
+     */
+    private function releaseStock(OnlineOrder $order): void
+    {
+        try {
+            (new SpotStockService())->releaseForOnlineOrder((int) $order->id);
+        } catch (\Throwable $e) {
+            Log::error('Stock release after failed payment failed', [
+                'online_order_id' => $order->id,
+                'error' => $e->getMessage(),
+            ]);
+        }
+    }
+
+    /**
      * Payment was refunded, so the points go back — but only while the write-off
      * is still open. A bill already closed on the register is left for manual
      * handling, since the discount has been rung up.
@@ -316,11 +379,14 @@ class WayForPayController
             'access_token' => $poster_account->access_token,
         ]);
 
-        // The client was charged the total less any points they spent, so the
-        // prepayment reported to Poster must match. The register adds the points
-        // back as a setOrderBonus line and the bill balances.
+        // The client was charged the total less any points they spent, but the
+        // points are reported to Poster as part of the prepayment, so the bill
+        // arrives fully paid. A setOrderBonus line on the register cannot be relied
+        // on here: Poster counts the prepayment against discountable products
+        // first, so with a points-excluded product in the order maxOrderBonus
+        // drops to 0 and the register's bonus line is refused.
         $bonusRow = (new BonusService())->appliedForOnlineOrder((int) $order->id);
-        $paidSum = $order->total + $order->delivery_price - ($bonusRow->amount ?? 0);
+        $paidSum = $order->total + $order->delivery_price;
 
         $incomingOrder = [
             'spot_id' => $order->spot_id,

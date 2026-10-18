@@ -4,6 +4,7 @@ namespace Layerok\Restapi\Http\Controllers;
 
 use Illuminate\Http\JsonResponse;
 use Illuminate\Routing\Controller;
+use Layerok\PosterPos\Classes\SpotStockService;
 use Layerok\PosterPos\Models\ShippingMethod;
 use Layerok\PosterPos\Models\Spot;
 use OFFLINE\Mall\Models\PaymentMethod;
@@ -40,10 +41,18 @@ class CheckoutController extends Controller
             ->where('published', 1)
             ->get();
 
-        return $spots->map(function ($spot) {
-            $data = $spot->toArray();
+        $limitsBySpot = (new SpotStockService())->limitsBySpot();
 
-            $data['unavailable_products'] = $spot->unavailable_products->pluck('id')->toArray();
+        return $spots->map(function ($spot) use ($limitsBySpot) {
+            $data = $spot->toArray();
+            $limits = $limitsBySpot[$spot->id] ?? [];
+
+            // Limited products that ran out are unavailable just like ones switched off.
+            $data['unavailable_products'] = array_values(array_unique(array_merge(
+                $spot->unavailable_products->pluck('id')->toArray(),
+                SpotStockService::soldOut($limits)
+            )));
+            $data['limited_products'] = $limits;
             $productIds = $spot->recommended_products->pluck('id')->toArray();
 
             $unorderedProducts = Product::with([

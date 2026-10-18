@@ -613,8 +613,11 @@ $(document).on("render", function () {
         },
     });
     map.addControl(drawControl);
-    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+    // OpenStreetMap's tile usage policy: one host, a Referer and the credit.
+    L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
         maxZoom: 19,
+        referrerPolicy: "strict-origin-when-cross-origin",
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a>',
     }).addTo(map);
     layerGroup.clearLayers();
     loadAreas();

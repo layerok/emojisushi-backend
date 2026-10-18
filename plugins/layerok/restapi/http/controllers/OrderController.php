@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\Validator;
 use Layerok\Basecode\Classes\Receipt;
 use Layerok\PosterPos\Classes\ServiceMode;
 use Layerok\PosterPos\Classes\ShippingMethodCode;
+use Layerok\PosterPos\Classes\SpotStockService;
 use Layerok\PosterPos\Models\Cart;
 use Layerok\PosterPos\Models\CartProduct;
 use Layerok\PosterPos\Models\Spot;
@@ -162,11 +163,28 @@ class OrderController extends Controller
             $incomingOrder['service_mode'] = ServiceMode::TAKEAWAY;
         }
 
+        $stock = new SpotStockService();
+        $reservations = $stock->reserveOrFail(
+            $spot->id,
+            $cart->products()->get()
+                ->groupBy('product_id')
+                ->map(fn($lines) => (int) $lines->sum('quantity'))
+                ->all()
+        );
+
         // todo: create DTO for the poster order
-        $posterResult = (object)PosterApi::incomingOrders()
-            ->createIncomingOrder($incomingOrder);
+        try {
+            $posterResult = (object)PosterApi::incomingOrders()
+                ->createIncomingOrder($incomingOrder);
+        } catch (\Throwable $e) {
+            $stock->release($reservations);
+
+            throw $e;
+        }
 
         if (isset($posterResult->error)) {
+            $stock->release($reservations);
+
             $key = 'layerok.restapi::lang.poster.errors.' . $posterResult->error;
             if (\Lang::has($key)) {
                 $err_text = trans(
@@ -229,6 +247,9 @@ class OrderController extends Controller
         $api = new Api($spot->bot->token);
 
         $poster_order_id = $posterResult->response->incoming_order_id + $add_to_poster_id;
+
+        // So a cancellation in Poster can put the stock back.
+        $stock->link($reservations, ['incoming_order_id' => (int) $posterResult->response->incoming_order_id]);
 
         try {
             $telegramRes = $api->sendMessage([

@@ -91,3 +91,8 @@ fields:
     recommended_products:
         label: Рекомендуемые товары
         type:  relation
+    stocks:
+        label: Лимитированные товары
+        comment: Товары с ограниченным количеством. Онлайн-заказы списывают его; товара нет в списке — значит, не ограничен.
+        type: partial
+        path: $/layerok/posterpos/controllers/spot/_stocks.htm

@@ -74,7 +74,13 @@ class CourierLiveStatus
         }
 
         if ($waiting) {
-            return $result('waiting', 'На точке · ждёт выезда', count($waiting) . ' ' . self::orders(count($waiting)) . ' назначено');
+            // Poster only says the orders are assigned; that the courier is at the
+            // spot waiting is something only the app could tell.
+            return $result(
+                'waiting',
+                isset($snapshot['seen'][$courier->id]) ? 'На точке · ждёт выезда' : 'Не в приложении',
+                count($waiting) . ' ' . self::orders(count($waiting)) . ' назначено'
+            );
         }
 
         // Never signed in to the app: there's nothing to say beyond that.
